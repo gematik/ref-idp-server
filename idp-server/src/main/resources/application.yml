@@ -1,0 +1,20 @@
+idp:
+  version: @project.version@
+  authKeyFile: classpath:authenticatorModule_idpServer.p12
+  tokenKeyFile: classpath:authenticatorModule_idpServer.p12
+  discoveryKeyFile: classpath:authenticatorModule_idpServer.p12
+  redirectUri: http://www.eRezeptFd.de
+  debug:
+    requestLogging: true
+logging:
+  level:
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+    de.gematik: DEBUG
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    httptrace:
+      enabled: true

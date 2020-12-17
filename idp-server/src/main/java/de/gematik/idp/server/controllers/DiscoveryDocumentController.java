@@ -1,0 +1,84 @@
+/*
+ * Copyright (c) 2020 gematik GmbH
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package de.gematik.idp.server.controllers;
+
+import static de.gematik.idp.IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.gematik.idp.authentication.IdpJwtProcessor;
+import de.gematik.idp.data.IdpDiscoveryDocument;
+import de.gematik.idp.data.IdpJwksDocument;
+import de.gematik.idp.discoveryDocument.DiscoveryDocumentBuilder;
+import de.gematik.idp.server.ServerUrlService;
+import de.gematik.idp.server.exceptions.IdpServerException;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import java.util.HashMap;
+import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@Api(tags = {
+    "DiscoveryDocument-Dienst"}, description = "REST Endpunkte für das Abfragen der öffentlichen Informationen des IDP Rest Services")
+@RequiredArgsConstructor
+public class DiscoveryDocumentController {
+
+    private final IdpKey tokenKey;
+    private final IdpKey discKey;
+    private final ObjectMapper objectMapper;
+    private final ServerUrlService serverUrlService;
+    private final DiscoveryDocumentBuilder discoveryDocumentBuilder;
+
+    @GetMapping("/jwks")
+    @ApiOperation(value = "Endpunkt für Schlüsselinformationen für die Tokenabfrage", notes = "Verbaut Schlüsselinformationen in ein JwksDocument und liefert dieses zurück.")
+    public IdpJwksDocument getJwks() {
+        return tokenKey.buildJwks();
+    }
+
+    @GetMapping(value = {DISCOVERY_DOCUMENT_ENDPOINT,
+        "/auth/realms/idp/.well-known/openid-configuration"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "Endpunkt für Abfrage aller öffentlich verfügbaren Informationen zum IDP Server", notes = "Diese Daten sind mit dem privaten Schlüssel des IDP Servers verschlüsselt.")
+    public String getDiscoveryDocument(final HttpServletRequest request, final HttpServletResponse response) {
+        final String serverUrl = serverUrlService.determineServerUrl(request);
+        setCacheHeader(response);
+        return signDiscoveryDocument(discoveryDocumentBuilder
+            .buildDiscoveryDocument(serverUrl));
+    }
+
+    private String signDiscoveryDocument(final IdpDiscoveryDocument discoveryDocument) {
+        final IdpJwtProcessor jwtProcessor = new IdpJwtProcessor(discKey.getIdentity());
+        final Map<String, Object> header = new HashMap<>();
+        try {
+            return jwtProcessor
+                .buildJws(objectMapper.writeValueAsString(discoveryDocument), header, true)
+                .getJwtRawString();
+        } catch (final JsonProcessingException e) {
+            throw new IdpServerException("Error during discovery-document serialization", e);
+        }
+    }
+
+    private void setCacheHeader(final HttpServletResponse response) {
+        response.setHeader("Cache-Control", "max-age=300");
+    }
+
+}

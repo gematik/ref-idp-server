@@ -1,0 +1,2166 @@
+<!--
+  ~ Copyright (c) 2020 gematik GmbH
+  ~ 
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~ 
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~ 
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!DOCTYPE html>
+<html lang="DE">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<title>Gematik IDP Identity Provider</title>
+<style>
+/* Shared CSS for AsciiDoc xhtml11 and html5 backends */
+
+/* Default font. */
+body {
+    font-family: Georgia, serif;
+}
+
+/* Title font. */
+h1, h2, h3, h4, h5, h6,
+div.title, caption.title,
+thead, p.table.header,
+#toctitle,
+#author, #revnumber, #revdate, #revremark,
+#footer {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    margin: 1em 5% 1em 5%;
+}
+
+a {
+    color: darkblue;
+    text-decoration: none;
+}
+
+a:hover {
+    color: darkgreen;
+}
+
+a:visited {
+    color: forestgreen;
+}
+
+em {
+    font-style: italic;
+    color: navy;
+}
+
+strong {
+    font-weight: bold;
+    color: #083194;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #527bbd;
+    margin-top: 1.2em;
+    margin-bottom: 0.5em;
+    line-height: 1.3;
+}
+
+h1, h2, h3 {
+    border-bottom: 2px solid silver;
+}
+
+h2 {
+    padding-top: 0.5em;
+}
+
+h3 {
+    float: left;
+}
+
+h3 + * {
+    clear: left;
+}
+
+h5 {
+    font-size: 1.0em;
+}
+
+div.sectionbody {
+    margin-left: 0;
+}
+
+hr {
+    border: 1px solid silver;
+}
+
+p {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+ul, ol, li > p {
+    margin-top: 0;
+}
+
+ul > li {
+    color: #aaa;
+}
+
+ul > li > * {
+    color: black;
+}
+
+.monospaced, code, pre {
+    font-family: "Courier New", Courier, monospace;
+    font-size: inherit;
+    color: darkslategray;
+    padding: 0.5rem;
+    background: lightgoldenrodyellow;
+    margin: 0;
+    border-radius: 0.3rem;
+    margin: 0;
+}
+
+pre {
+    white-space: pre-wrap;
+}
+
+#author {
+    color: #527bbd;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+#email {
+}
+
+#revnumber, #revdate, #revremark {
+}
+
+#footer {
+    font-size: small;
+    border-top: 2px solid silver;
+    padding-top: 0.5em;
+    margin-top: 4.0em;
+}
+
+#footer-text {
+    float: left;
+    padding-bottom: 0.5em;
+}
+
+#footer-badges {
+    float: right;
+    padding-bottom: 0.5em;
+}
+
+#preamble {
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
+}
+
+div.imageblock, div.exampleblock, div.verseblock,
+div.quoteblock, div.literalblock, div.listingblock, div.sidebarblock,
+div.admonitionblock {
+    margin-top: 1.0em;
+    margin-bottom: 1.5em;
+}
+
+div.admonitionblock {
+    margin-top: 2.0em;
+    margin-bottom: 2.0em;
+    margin-right: 10%;
+    color: #606060;
+}
+
+div.content { /* Block element content. */
+    padding: 0;
+}
+
+/* Block element titles. */
+div.title, caption.title {
+    color: #527bbd;
+    font-weight: bold;
+    text-align: left;
+    margin-top: 1.0em;
+    margin-bottom: 0.5em;
+}
+
+div.title + * {
+    margin-top: 0;
+}
+
+td div.title:first-child {
+    margin-top: 0.0em;
+}
+
+div.content div.title:first-child {
+    margin-top: 0.0em;
+}
+
+div.content + div.title {
+    margin-top: 0.0em;
+}
+
+div.sidebarblock > div.content {
+    background: #ffffee;
+    border: 1px solid #dddddd;
+    border-left: 4px solid #f0f0f0;
+    padding: 0.5em;
+}
+
+div.listingblock > div.content {
+    border: 1px solid #dddddd;
+    border-left: 5px solid #f0f0f0;
+    background: #f8f8f8;
+    padding: 0.5em;
+}
+
+div.quoteblock, div.verseblock {
+    padding-left: 1.0em;
+    margin-left: 1.0em;
+    margin-right: 10%;
+    border-left: 5px solid #f0f0f0;
+    color: #888;
+}
+
+div.quoteblock > div.attribution {
+    padding-top: 0.5em;
+    text-align: right;
+}
+
+div.verseblock > pre.content {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+div.verseblock > div.attribution {
+    padding-top: 0.75em;
+    text-align: left;
+}
+
+/* DEPRECATED: Pre version 8.2.7 verse style literal block. */
+div.verseblock + div.attribution {
+    text-align: left;
+}
+
+div.admonitionblock .icon {
+    vertical-align: top;
+    font-size: 1.1em;
+    font-weight: bold;
+    text-decoration: underline;
+    color: #527bbd;
+    padding-right: 0.5em;
+}
+
+div.admonitionblock td.content {
+    padding-left: 0.5em;
+    border-left: 3px solid #dddddd;
+}
+
+div.exampleblock > div.content {
+    border-left: 3px solid #dddddd;
+    padding-left: 0.5em;
+}
+
+div.imageblock div.content {
+    padding-left: 0;
+}
+
+span.image img {
+    border-style: none;
+    vertical-align: text-bottom;
+}
+
+a.image:visited {
+    color: white;
+}
+
+dl {
+    margin-top: 0.8em;
+    margin-bottom: 0.8em;
+}
+
+dt {
+    margin-top: 0.5em;
+    margin-bottom: 0;
+    font-style: normal;
+    color: navy;
+}
+
+dd > *:first-child {
+    margin-top: 0.1em;
+}
+
+ul, ol {
+    list-style-position: outside;
+}
+
+ol.arabic {
+    list-style-type: decimal;
+}
+
+ol.loweralpha {
+    list-style-type: lower-alpha;
+}
+
+ol.upperalpha {
+    list-style-type: upper-alpha;
+}
+
+ol.lowerroman {
+    list-style-type: lower-roman;
+}
+
+ol.upperroman {
+    list-style-type: upper-roman;
+}
+
+div.compact ul, div.compact ol,
+div.compact p, div.compact p,
+div.compact div, div.compact div {
+    margin-top: 0.1em;
+    margin-bottom: 0.1em;
+}
+
+tfoot {
+    font-weight: bold;
+}
+
+td > div.verse {
+    white-space: pre;
+}
+
+div.hdlist {
+    margin-top: 0.8em;
+    margin-bottom: 0.8em;
+}
+
+div.hdlist tr {
+    padding-bottom: 15px;
+}
+
+dt.hdlist1.strong, td.hdlist1.strong {
+    font-weight: bold;
+}
+
+td.hdlist1 {
+    vertical-align: top;
+    font-style: normal;
+    padding-right: 0.8em;
+    color: navy;
+}
+
+td.hdlist2 {
+    vertical-align: top;
+}
+
+div.hdlist.compact tr {
+    margin: 0;
+    padding-bottom: 0;
+}
+
+.comment {
+    background: yellow;
+}
+
+.footnote, .footnoteref {
+    font-size: 0.8em;
+}
+
+span.footnote, span.footnoteref {
+    vertical-align: super;
+}
+
+#footnotes {
+    margin: 20px 0 20px 0;
+    padding: 7px 0 0 0;
+}
+
+#footnotes div.footnote {
+    margin: 0 0 5px 0;
+}
+
+#footnotes hr {
+    border: none;
+    border-top: 1px solid silver;
+    height: 1px;
+    text-align: left;
+    margin-left: 0;
+    width: 20%;
+    min-width: 100px;
+}
+
+div.colist td {
+    padding-right: 0.5em;
+    padding-bottom: 0.3em;
+    vertical-align: top;
+}
+
+div.colist td img {
+    margin-top: 0.3em;
+}
+
+@media print {
+    #footer-badges {
+        display: none;
+    }
+}
+
+#toc {
+    margin-bottom: 2.5em;
+}
+
+#toctitle {
+    color: #527bbd;
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-top: 1.0em;
+    margin-bottom: 0.1em;
+}
+
+div.toclevel0, div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+div.toclevel2 {
+    margin-left: 2em;
+    font-size: 0.9em;
+}
+
+div.toclevel3 {
+    margin-left: 4em;
+    font-size: 0.9em;
+}
+
+div.toclevel4 {
+    margin-left: 6em;
+    font-size: 0.9em;
+}
+
+span.aqua {
+    color: aqua;
+}
+
+span.black {
+    color: black;
+}
+
+span.blue {
+    color: blue;
+}
+
+span.fuchsia {
+    color: fuchsia;
+}
+
+span.gray {
+    color: gray;
+}
+
+span.green {
+    color: green;
+}
+
+span.lime {
+    color: lime;
+}
+
+span.maroon {
+    color: maroon;
+}
+
+span.navy {
+    color: navy;
+}
+
+span.olive {
+    color: olive;
+}
+
+span.purple {
+    color: purple;
+}
+
+span.red {
+    color: red;
+}
+
+span.silver {
+    color: silver;
+}
+
+span.teal {
+    color: teal;
+}
+
+span.white {
+    color: white;
+}
+
+span.yellow {
+    color: yellow;
+}
+
+span.aqua-background {
+    background: aqua;
+}
+
+span.black-background {
+    background: black;
+}
+
+span.blue-background {
+    background: blue;
+}
+
+span.fuchsia-background {
+    background: fuchsia;
+}
+
+span.gray-background {
+    background: gray;
+}
+
+span.green-background {
+    background: green;
+}
+
+span.lime-background {
+    background: lime;
+}
+
+span.maroon-background {
+    background: maroon;
+}
+
+span.navy-background {
+    background: navy;
+}
+
+span.olive-background {
+    background: olive;
+}
+
+span.purple-background {
+    background: purple;
+}
+
+span.red-background {
+    background: red;
+}
+
+span.silver-background {
+    background: silver;
+}
+
+span.teal-background {
+    background: teal;
+}
+
+span.white-background {
+    background: white;
+}
+
+span.yellow-background {
+    background: yellow;
+}
+
+span.big {
+    font-size: 2em;
+}
+
+span.small {
+    font-size: 0.6em;
+}
+
+span.underline {
+    text-decoration: underline;
+}
+
+span.overline {
+    text-decoration: overline;
+}
+
+span.line-through {
+    text-decoration: line-through;
+}
+
+div.unbreakable {
+    page-break-inside: avoid;
+}
+
+
+/*
+ * xhtml11 specific
+ *
+ * */
+
+div.tableblock {
+    margin-top: 1.0em;
+    margin-bottom: 1.5em;
+}
+
+div.tableblock > table {
+    border: 3px solid #527bbd;
+}
+
+thead, p.table.header {
+    font-weight: bold;
+    color: #527bbd;
+}
+
+p.table {
+    margin-top: 0;
+}
+
+/* Because the table frame attribute is overriden by CSS in most browsers. */
+div.tableblock > table[frame="void"] {
+    border-style: none;
+}
+
+div.tableblock > table[frame="hsides"] {
+    border-left-style: none;
+    border-right-style: none;
+}
+
+div.tableblock > table[frame="vsides"] {
+    border-top-style: none;
+    border-bottom-style: none;
+}
+
+
+/*
+ * html5 specific
+ *
+ * */
+
+table.tableblock {
+    margin-top: 1.0em;
+    margin-bottom: 1.5em;
+}
+
+thead, p.tableblock.header {
+    font-weight: bold;
+    color: #527bbd;
+}
+
+p.tableblock {
+    margin-top: 0;
+}
+
+table.tableblock {
+    border-width: 3px;
+    border-spacing: 0px;
+    border-style: solid;
+    border-color: lightskyblue;
+    border-collapse: collapse;
+}
+
+table.tableblock > thead {
+    background-color: aliceblue;
+}
+
+th.tableblock, td.tableblock {
+    border-width: 1px;
+    padding: 4px;
+    border-style: solid;
+    border-color: #b1defa;
+}
+
+th.tableblock {
+    background: aliceblue;
+    padding: 0.5rem;
+}
+
+
+table.tableblock.frame-topbot {
+    border-left-style: hidden;
+    border-right-style: hidden;
+}
+
+table.tableblock.frame-sides {
+    border-top-style: hidden;
+    border-bottom-style: hidden;
+}
+
+table.tableblock.frame-none {
+    border-style: hidden;
+}
+
+th.tableblock.halign-left, td.tableblock.halign-left {
+    text-align: left;
+}
+
+th.tableblock.halign-center, td.tableblock.halign-center {
+    text-align: center;
+}
+
+th.tableblock.halign-right, td.tableblock.halign-right {
+    text-align: right;
+}
+
+th.tableblock.valign-top, td.tableblock.valign-top {
+    vertical-align: top;
+}
+
+th.tableblock.valign-middle, td.tableblock.valign-middle {
+    vertical-align: middle;
+}
+
+th.tableblock.valign-bottom, td.tableblock.valign-bottom {
+    vertical-align: bottom;
+}
+
+
+/*
+ * manpage specific
+ *
+ * */
+
+body.manpage h1 {
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    border-top: 2px solid silver;
+    border-bottom: 2px solid silver;
+}
+
+body.manpage h2 {
+    border-style: none;
+}
+
+body.manpage div.sectionbody {
+    margin-left: 3em;
+}
+
+@media print {
+    body.manpage div#toc {
+        display: none;
+    }
+}
+
+@media only screen and (min-width: 1280px) {
+    body.toc2 {
+        padding-left: 20em;
+    }
+
+    #toc.toc2 {
+        position: fixed;
+        width: 20em;
+        left: 0;
+        top: 0;
+        border-right: 1px solid lightsalmon;
+        border-bottom: 0;
+        z-index: 1000;
+        padding: 1em;
+        height: 100%;
+        overflow: auto;
+        background-color: lightgoldenrodyellow;
+    }
+
+    #toc.toc2 #toctitle {
+        margin-top: 0;
+    }
+
+    #toc.toc2 > ul {
+        font-size: .95em;
+    }
+
+    #toc.toc2 ul ul {
+        margin-left: 0;
+        padding-left: 1.25em;
+    }
+
+    #toc.toc2 ul.sectlevel0 ul.sectlevel1 {
+        padding-left: 0;
+        margin-top: 0.5em;
+        margin-bottom: 0.5em;
+    }
+
+    body.toc2.toc-right {
+        padding-left: 0;
+        padding-right: 20em;
+    }
+
+    body.toc2.toc-right #toc.toc2 {
+        border-right: 0;
+        border-left: 2px solid lightsalmon;
+        left: auto;
+        right: 0;
+    }
+}
+
+
+.maxfullwidth img {
+    max-width: 100%;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #527bbd;
+    padding-top: 2rem !important;
+    margin-bottom: 0.5em;
+    line-height: 1.3;
+}
+
+</style>
+</head>
+<body class="book toc2 toc-left">
+<div id="header">
+<h1>Gematik IDP Identity Provider</h1>
+<div class="details">
+<span id="revnumber">version 0.1-SNAPSHOT,</span>
+<span id="revdate">2020-10-31T23:18:46Z</span>
+</div>
+<div id="toc" class="toc2">
+<div id="toctitle">Inhaltsverzeichnis</div>
+<ul class="sectlevel1">
+<li><a href="#_overview">1. Übersicht</a>
+<ul class="sectlevel2">
+<li><a href="#_aktuelle_version">1.1. Aktuelle Version</a></li>
+<li><a href="#_lizenzinformationen">1.2. Lizenzinformationen</a></li>
+<li><a href="#_uri_schema">1.3. URI Schema</a></li>
+<li><a href="#_tags">1.4. Tags</a></li>
+</ul>
+</li>
+<li><a href="#introduction">2. Einführung</a></li>
+<li><a href="#_paths">3. Ressourcen</a>
+<ul class="sectlevel2">
+<li><a href="#_idp-dienst_resource">3.1. Idp-Dienst</a>
+<ul class="sectlevel3">
+<li><a href="#_authenticationendpointusingpost">3.1.1. authenticationEndpoint</a></li>
+<li><a href="#_authorizationendpointusingget">3.1.2. authorizationEndpoint</a></li>
+<li><a href="#_tokenendpointusingpost">3.1.3. Frage nach einem Token</a></li>
+</ul>
+</li>
+<li><a href="#_discovery-document-controller_resource">3.2. Discovery-document-controller</a>
+<ul class="sectlevel3">
+<li><a href="#_getdiscoverydocumentusingget">3.2.1. Liefere alle öffentlich verfügbaren Informationen zum IDP Server</a></li>
+<li><a href="#_getdiscoverydocumentusingget_1">3.2.2. Liefere alle öffentlich verfügbaren Informationen zum IDP Server</a></li>
+<li><a href="#_getjwksusingget">3.2.3. Liefere das Jwks Dokument(?)</a></li>
+</ul>
+</li>
+<li><a href="#_key-information-controller_resource">3.3. Key-information-controller</a>
+<ul class="sectlevel3">
+<li><a href="#_getauthjwksusingget">3.3.1. getAuthJwks</a></li>
+<li><a href="#_getdiscjwksusingget">3.3.2. getDiscJwks</a></li>
+<li><a href="#_gettokenjwksusingget">3.3.3. getTokenJwks</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_definitions">4. Definitionen</a>
+<ul class="sectlevel2">
+<li><a href="#_authenticationchallenge">4.1. AuthenticationChallenge</a></li>
+<li><a href="#_idpjwksdocument">4.2. IdpJwksDocument</a></li>
+<li><a href="#_idpkeydescriptor">4.3. IdpKeyDescriptor</a></li>
+<li><a href="#_tokenresponse">4.4. TokenResponse</a></li>
+<li><a href="#_userconsent">4.5. UserConsent</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_overview"><a class="anchor" href="#_overview"></a><a class="link" href="#_overview">1. Übersicht</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Der Gematik IDP Server dient zur Identifizierung von Versicherten und Leistungserbringenden Organisationen.</p>
+</div>
+<div class="sect2">
+<h3 id="_aktuelle_version"><a class="anchor" href="#_aktuelle_version"></a><a class="link" href="#_aktuelle_version">1.1. Aktuelle Version</a></h3>
+<div class="paragraph">
+<p><em>Version</em> : 0.1.0</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_lizenzinformationen"><a class="anchor" href="#_lizenzinformationen"></a><a class="link" href="#_lizenzinformationen">1.2. Lizenzinformationen</a></h3>
+<div class="paragraph">
+<p><em>Lizenz</em> : Apache 2.0<br>
+<em>Lizenz-URL</em> : <a href="http://www.apache.org/licenses/LICENSE-2.0" class="bare">http://www.apache.org/licenses/LICENSE-2.0</a><br>
+<em>Nutzungsbedingungen</em> : null</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_uri_schema"><a class="anchor" href="#_uri_schema"></a><a class="link" href="#_uri_schema">1.3. URI Schema</a></h3>
+<div class="paragraph">
+<p><em>Host</em> : 172.17.0.2:8080<br>
+<em>Basis-Pfad</em> : /v2/api-docs</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_tags"><a class="anchor" href="#_tags"></a><a class="link" href="#_tags">1.4. Tags</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Idp-Dienst : Idp Controller</p>
+</li>
+<li>
+<p>discovery-document-controller : REST Endpunkt für das Abfragen der öffentlichen Informationen des IDP Rest Services</p>
+</li>
+<li>
+<p>key-information-controller : Key Information Controller</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="introduction"><a class="anchor" href="#introduction"></a><a class="link" href="#introduction">2. Einführung</a></h2>
+<div class="sectionbody">
+<div class="imageblock">
+<div class="content">
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABhGlDQ1BJQ0MgcHJvZmlsZQAAKJF9kT1Iw0AcxV9bRVsqDnYQ6ZChOlkQFXXUKhShQqgVWnUwufQLmjQkKS6OgmvBwY/FqoOLs64OroIg+AHi5Oik6CIl/i8ptIjx4Lgf7+497t4B/kaFqWbXGKBqlpFOJoRsblXoeUUIUQQxjaDETH1OFFPwHF/38PH1Ls6zvM/9OfqUvMkAn0A8y3TDIt4gntq0dM77xBFWkhTic+JRgy5I/Mh12eU3zkWH/TwzYmTS88QRYqHYwXIHs5KhEk8SxxRVo3x/1mWF8xZntVJjrXvyF4bz2soy12lGkcQiliBCgIwayqjAQpxWjRQTadpPePiHHL9ILplcZTByLKAKFZLjB/+D392ahYlxNymcALpfbPtjGOjZBZp12/4+tu3mCRB4Bq60tr/aAGY+Sa+3tdgR0L8NXFy3NXkPuNwBBp90yZAcKUDTXygA72f0TTlg4BYIrbm9tfZx+gBkqKvUDXBwCIwUKXvd4929nb39e6bV3w9/3HKsqmPsxAAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAAuIwAALiMBeKU/dgAAAAd0SU1FB+QKHAk3JlylHfQAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAI6UlEQVR42uWbe1BU9xXHP7+7l92FheWNqBCKoE5UoqISdWzaRDvGKESbqSYdR/ocbZrUxs7UDqbpNEZSM00yTWtDTJtWTSaP1ic6anzEMY2PVcQExPjAKCJvgeXNPu7tHyDqsjx2uYurnv/uPb97fud8f7/z+t17Bb1QcXZ6APA+kAHsBp5Lysotw4+pYFnaMOBvwBxgB7A4Jcdi72m81Ie8J4CFgBFYAJwpzk5ffH71E35n+Nc/n0LBsrTFwJlOXY2duveqbF8AXHe5DgM26XS67cXZ6UP8aNWH2HViO7CpU8febPAIgP8BK4B2l/sZQFFxdvqi4ux5d9DwhylYlrYIKOrU6VZqB1aIDht6JNHXJDNnwvqZ6WOADcBkN0M2A79IysqtHuRVjwbeBp5ywz4JZP46x1J0oA85or8TFr+aLqOyEngJ0Luwq4FlqOqWpFU7fWr4V0vTEILvAzlAtAvbBrwMrE3JsTj6I094MvmHS2eQlhCeAmwEJrgZ8jHwbFJWbq2PVj0C+DuwyA37NLDkYKW1YPnWc/2WKbxRpDM9rgKygAAXdgWwFJUdSatyNTG8cOnDqELNAN4BYl3YdiAbWNNbutMUAIBzr8xDlsTEzt0wzs2Q94Hnk7Jy6we06kvTwhD8FVjsDhtgiRNd/oSco17JFwNdneJX0/Wo/AH4LSC7sMuAn6mK2J384g6P5H75y1QkpzwH+AcwzIXtAF4D/piSY7ENRH+hxRa99Mo8VElM6cwUD7oZ8h7wQlJWbkO/At2yNLOAN4GfuGGfBTIllBNjc04OWHehZZAqzs4wgPoy8BtA58K+CvxUBMj7EpWt4cBCBGM4TwCCInR8VOCYUSNk2/eAfwLxLs87gdeBl1JyLO1a6awpAADFa9JBMK1zN4x05UdKZVtCRd4swNwRTLq0aK6VE/eXiegn3Yi9AGSqgqMPvW3RVF/NAbglUwQCa4DlNyrOEFFHtORSmJ27XYsy+UFqRciNSwX4C7AqJcfS6gs9JV8BkJSV2xpcV7oCeBS4JOEkUsrv87lY50VkFIBLwKMGHSt8ZbzPdoC6ljDgWWAuEKkSFOQkOF6myk0+7a6FQ4QgqW1XJeytCBoQ7ELHWyKHWr8HQF3LNGAbENO/gqKfWghqkZgv1vO53wKgriWhsyQN639F5YEWgkZ0TBTvUKyVzrcVLh/vO0Hi0FgdiDjA4KkwZe+81ZLjdJiv/BWVEKc0+s+bd32w0mNDZZ0SFBx0VRK0z5w+ujsAlsLSccDqzqMkg+fKKSAU3/fBqmO+UJ3zVaHz6DGHw0lDfaNdCPHptj2nfj//8dT8rixgKSxd0NlDz/fKeMBga0Kyf+Vz+3X2YoLbm719PEBV1blOp3Js6+5TiwAkS2FpEvCBt4Z35VNlEFb/xlzqgEXoFUXZsG1P/mgZ+B0Q2HWiYLNRdq0Up+L0SGK4vdFtS+gLqii9TIXe5BloQmJo7DD0+q51NiiKskoGZt30EwcbN/2b8soqj5VKDWxj9qjBASB/31YO2PUePzcsKprMRZnIctcRxkwJiLtx1dBg9cp4gHZVDJoLKF5OVVZTTWNT4814qqpDJTc9vHcHJO0BKPgeBBX40qHTSpzQrBdwqBIlzZN8DkCJfRS1imYAaNsM7agcheq7/goV2GxN9N9ucH+jmZ3l6ag+cAUVyG34NptagzWVK2ut6LtVQ/mm7RkyYs7zgCkPCXXAhpfYR7GlIZGNLcGaAyv7YqvubzCzv2EyskhltMGOQag9djdNldU9dkOK6Ah4Wvr8oABwa2A802boI6gZGLwEOognQncLaQaATqiodyEAmrjAc9+1MnNMFfZylfWWB9h/zXj/7ICUWDuzxleikxSMsoMfji+/v1zg6al1SLdEsShTKz9Ibr4/XGBMjIOxCdZu92ePrOaTiyaPonuQ0cjkseMJNAZq0zCpCue/uciV8jLfAfDMtDokNzk+JriFp0Y0s+VS/3p2FfjxwiVEhEdqurppk6axJfe/nL1crK0LOFVIHW4jJaHnN9+Pj6phSKCC0o/UMDQySnPjASRJYmTSyIHtgOFmhRnJrQwPtxNpthET2k6oyYYxoPcTo9iQZt6d9zXNtgCsbQYqG41cbwngitXA3pJA2pw3HaT8eg21dbVEhEdoe26gKFy4dMF7ABLDnfzp6SsEGhxeK2HS2zHp7QwzN3Xde2yEmV8diOuKEQL41ycb/C8GTB3ROiDjewQ2soFQg0JD+00PbGlr43Decf9Kg3lXjNgd2lfLZdZg6tv9owrvVYvzNTLr9sZj0xCEqqYgVn8+3G+akD6D4MELBhzOeJ6fU4ohwDmgySoaTbx4KJ6qtu7mf2fKNCakpKKTtIFGBWpqqvjPrq202W0DqwMOXzLg2BnP8rlXCdR7B0JZQzBZn8VRa+tuYEiQiRlTH0GStN0XwaZgHkmbzqdfHBp4HXDkip7Xc+OxeXEiW95oYuXBeLfG31Wl8LESfefm8ozqW/VY7T0Xxo0tzXxx7DDjfeACh08c0Q6A8UPt6GXP3wHGmNr6HHPoxFEOnTg66DvAI7iTY+xeTRJuaiVA8s/jEo8ASIi2eT1JapTdLwHwyAWGhPb8fWJZnYkIRwtG2X3lmBxu43iV/u5uhyNDuq9iVX0gO05Gsb0gkCijQua4eqYnVKPXOV3igN0v22GPACgoCSY2vAWAuiYDe/Kj+DCvo+cXAq63S7yRF8FHRWH86KFaJsfVIEsKTkVwsjzojrXDmgHw1mdhXKwwEKRXyS0MxOZ0n9rKWiWyj0fxrTPhPPZAM6erjJyq6Xn7+2077EoC2H22/z56uUnHe0Xmfsn1y3Z4MOlOtsNduU0Iwb1OLhYqElBy4yo0NIzkxMR71viR8QmYzTe/4xRCXBWWwtI3gBduDRxWaz2qOjiVW2lJJYPxdlQAZnPYbR2nEGKdsBSWxtLx81HknViVq5cruEOvh62yrBsrpY2Lq6Djt9Pr3D9klSSR8eTsidckgLRxcUfo+PXtTTp+T7Hdg0YrQogrQoh1sqwbu2DOpMMA/weSpx5hrOneWgAAAABJRU5ErkJggg==" alt="Logo">
+</div>
+</div>
+<div class="paragraph">
+<p>Der manual_content.adoc Gematik IDP Server dient zur Identifizierung von Versicherten und Leistungserbringenden Organisationen.</p>
+</div>
+<div class="imageblock maxfullwidth">
+<div class="content">
+<img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiBjb250ZW50U2NyaXB0VHlwZT0iYXBwbGljYXRpb24vZWNtYXNjcmlwdCIgY29udGVudFN0eWxlVHlwZT0idGV4dC9jc3MiIGhlaWdodD0iNDM2cHgiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiIHN0eWxlPSJ3aWR0aDoxNTQxcHg7aGVpZ2h0OjQzNnB4OyIgdmVyc2lvbj0iMS4xIiB2aWV3Qm94PSIwIDAgMTU0MSA0MzYiIHdpZHRoPSIxNTQxcHgiIHpvb21BbmRQYW49Im1hZ25pZnkiPjxkZWZzPjxmaWx0ZXIgaGVpZ2h0PSIzMDAlIiBpZD0iZjF2MjIyczlrZXYzbXgiIHdpZHRoPSIzMDAlIiB4PSItMSIgeT0iLTEiPjxmZUdhdXNzaWFuQmx1ciByZXN1bHQ9ImJsdXJPdXQiIHN0ZERldmlhdGlvbj0iMi4wIi8+PGZlQ29sb3JNYXRyaXggaW49ImJsdXJPdXQiIHJlc3VsdD0iYmx1ck91dDIiIHR5cGU9Im1hdHJpeCIgdmFsdWVzPSIwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAuNCAwIi8+PGZlT2Zmc2V0IGR4PSI0LjAiIGR5PSI0LjAiIGluPSJibHVyT3V0MiIgcmVzdWx0PSJibHVyT3V0MyIvPjxmZUJsZW5kIGluPSJTb3VyY2VHcmFwaGljIiBpbjI9ImJsdXJPdXQzIiBtb2RlPSJub3JtYWwiLz48L2ZpbHRlcj48L2RlZnM+PGc+PCEtLWNsYXNzIEF1dGhlbnRpY2F0aW9uQ2hhbGxlbmdlLS0+PHJlY3QgZmlsbD0iI0ZFRkVDRSIgZmlsdGVyPSJ1cmwoI2YxdjIyMnM5a2V2M214KSIgaGVpZ2h0PSI3Ny45NDY4IiBpZD0iQXV0aGVudGljYXRpb25DaGFsbGVuZ2UiIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS41OyIgd2lkdGg9IjE4MCIgeD0iMTU0IiB5PSIxNDYiLz48ZWxsaXBzZSBjeD0iMTc1LjMiIGN5PSIxNjIiIGZpbGw9IiNBREQxQjIiIHJ4PSIxMSIgcnk9IjExIiBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDEuMDsiLz48cGF0aCBkPSJNMTczLjIwNjMsMTYxLjg0MzggUTE3My4yMDYzLDE2My43MTg4IDE3My43ODQ0LDE2NC43MzQ0IFExNzQuMzYyNSwxNjUuNzM0NCAxNzUuNTE4OCwxNjUuNzM0NCBRMTc2Ljg2MjUsMTY1LjczNDQgMTc3LjUxODgsMTYzLjcxODggTDE3OS43ODQ0LDE2NC4xNDA2IFExNzguNjc1LDE2Ny42NzE5IDE3NS41MDMxLDE2Ny42NzE5IFExNzMuMTU5NCwxNjcuNjcxOSAxNzEuOTQwNiwxNjYuMTg3NSBRMTcwLjcyMTksMTY0LjcwMzEgMTcwLjcyMTksMTYxLjg0MzggUTE3MC43MjE5LDE1Ni4xMjUgMTc1LjQyNSwxNTYuMTI1IFExNzYuOTcxOSwxNTYuMTI1IDE3OC4wMDMxLDE1Ni45Mzc1IFExNzkuMDUsMTU3Ljc1IDE3OS41NSwxNTkuMzU5NCBMMTc3LjI4NDQsMTU5LjkwNjMgUTE3Ny4wNSwxNTkuMDMxMyAxNzYuNTY1NiwxNTguNTQ2OSBRMTc2LjA4MTMsMTU4LjA0NjkgMTc1LjQ1NjMsMTU4LjA0NjkgUTE3My4yMDYzLDE1OC4wNDY5IDE3My4yMDYzLDE2MS44NDM4IFogIi8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTIiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgdGV4dExlbmd0aD0iMTM0IiB4PSIxOTAuNyIgeT0iMTY2LjM1NjQiPkF1dGhlbnRpY2F0aW9uQ2hhbGxlbmdlPC90ZXh0PjxsaW5lIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS41OyIgeDE9IjE1NSIgeDI9IjMzMyIgeTE9IjE3OCIgeTI9IjE3OCIvPjxyZWN0IGZpbGw9Im5vbmUiIGhlaWdodD0iNiIgc3R5bGU9InN0cm9rZTogI0M4MjkzMDsgc3Ryb2tlLXdpZHRoOiAxLjA7IiB3aWR0aD0iNiIgeD0iMTYyIiB5PSIxODYuODI0NSIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjQ2IiB4PSIxNzQiIHk9IjE5Mi4zMTc5Ij5jaGFsbGVuZ2U8L3RleHQ+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjM2IiB4PSIyMjMiIHk9IjE5Mi4zMTc5Ij46U3RyaW5nPC90ZXh0PjxyZWN0IGZpbGw9Im5vbmUiIGhlaWdodD0iNiIgc3R5bGU9InN0cm9rZTogI0M4MjkzMDsgc3Ryb2tlLXdpZHRoOiAxLjA7IiB3aWR0aD0iNiIgeD0iMTYyIiB5PSIxOTkuNDczNCIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjU4IiB4PSIxNzQiIHk9IjIwNC45NjY4Ij5zaG93X29uY2U8L3RleHQ+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjQ3IiB4PSIyMzUiIHk9IjIwNC45NjY4Ij46Qm9vbGVhbjwvdGV4dD48cmVjdCBmaWxsPSJub25lIiBoZWlnaHQ9IjYiIHN0eWxlPSJzdHJva2U6ICNDODI5MzA7IHN0cm9rZS13aWR0aDogMS4wOyIgd2lkdGg9IjYiIHg9IjE2MiIgeT0iMjEyLjEyMjMiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSI2NyIgeD0iMTc0IiB5PSIyMTcuNjE1NyI+dXNlcl9jb25zZW50PC90ZXh0Pjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmb250LXdlaWdodD0iYm9sZCIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSI4NCIgeD0iMjQ0IiB5PSIyMTcuNjE1NyI+OlVzZXJDb25zZW50W108L3RleHQ+PCEtLWNsYXNzIElkcEp3a3NEb2N1bWVudC0tPjxyZWN0IGZpbGw9IiNGRUZFQ0UiIGZpbHRlcj0idXJsKCNmMXYyMjJzOWtldjNteCkiIGhlaWdodD0iNTIuNjQ4OSIgaWQ9IklkcEp3a3NEb2N1bWVudCIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjU7IiB3aWR0aD0iMTU4IiB4PSI4OTAiIHk9IjE1OC41Ii8+PGVsbGlwc2UgY3g9IjkxNS44IiBjeT0iMTc0LjUiIGZpbGw9IiNBREQxQjIiIHJ4PSIxMSIgcnk9IjExIiBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDEuMDsiLz48cGF0aCBkPSJNOTEzLjcwNjMsMTc0LjM0MzggUTkxMy43MDYzLDE3Ni4yMTg4IDkxNC4yODQ0LDE3Ny4yMzQ0IFE5MTQuODYyNSwxNzguMjM0NCA5MTYuMDE4OCwxNzguMjM0NCBROTE3LjM2MjUsMTc4LjIzNDQgOTE4LjAxODgsMTc2LjIxODggTDkyMC4yODQ0LDE3Ni42NDA2IFE5MTkuMTc1LDE4MC4xNzE5IDkxNi4wMDMxLDE4MC4xNzE5IFE5MTMuNjU5NCwxODAuMTcxOSA5MTIuNDQwNiwxNzguNjg3NSBROTExLjIyMTksMTc3LjIwMzEgOTExLjIyMTksMTc0LjM0MzggUTkxMS4yMjE5LDE2OC42MjUgOTE1LjkyNSwxNjguNjI1IFE5MTcuNDcxOSwxNjguNjI1IDkxOC41MDMxLDE2OS40Mzc1IFE5MTkuNTUsMTcwLjI1IDkyMC4wNSwxNzEuODU5NCBMOTE3Ljc4NDQsMTcyLjQwNjMgUTkxNy41NSwxNzEuNTMxMyA5MTcuMDY1NiwxNzEuMDQ2OSBROTE2LjU4MTMsMTcwLjU0NjkgOTE1Ljk1NjMsMTcwLjU0NjkgUTkxMy43MDYzLDE3MC41NDY5IDkxMy43MDYzLDE3NC4zNDM4IFogIi8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTIiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgdGV4dExlbmd0aD0iMTAyIiB4PSI5MzIuMiIgeT0iMTc4Ljg1NjQiPklkcEp3a3NEb2N1bWVudDwvdGV4dD48bGluZSBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDEuNTsiIHgxPSI4OTEiIHgyPSIxMDQ3IiB5MT0iMTkwLjUiIHkyPSIxOTAuNSIvPjxyZWN0IGZpbGw9Im5vbmUiIGhlaWdodD0iNiIgc3R5bGU9InN0cm9rZTogI0M4MjkzMDsgc3Ryb2tlLXdpZHRoOiAxLjA7IiB3aWR0aD0iNiIgeD0iODk4IiB5PSIxOTkuMzI0NSIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjIzIiB4PSI5MTAiIHk9IjIwNC44MTc5Ij5rZXlzPC90ZXh0Pjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmb250LXdlaWdodD0iYm9sZCIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSIxMDYiIHg9IjkzNiIgeT0iMjA0LjgxNzkiPjpJZHBLZXlEZXNjcmlwdG9yW108L3RleHQ+PCEtLWNsYXNzIElkcEtleURlc2NyaXB0b3ItLT48cmVjdCBmaWxsPSIjRkVGRUNFIiBmaWx0ZXI9InVybCgjZjF2MjIyczlrZXYzbXgpIiBoZWlnaHQ9IjE0MS4xOTE0IiBpZD0iSWRwS2V5RGVzY3JpcHRvciIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjU7IiB3aWR0aD0iMTI2IiB4PSI5MDYiIHk9IjI4NCIvPjxlbGxpcHNlIGN4PSI5MjEiIGN5PSIzMDAiIGZpbGw9IiNBREQxQjIiIHJ4PSIxMSIgcnk9IjExIiBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDEuMDsiLz48cGF0aCBkPSJNOTE4LjkwNjMsMjk5Ljg0MzggUTkxOC45MDYzLDMwMS43MTg4IDkxOS40ODQ0LDMwMi43MzQ0IFE5MjAuMDYyNSwzMDMuNzM0NCA5MjEuMjE4OCwzMDMuNzM0NCBROTIyLjU2MjUsMzAzLjczNDQgOTIzLjIxODgsMzAxLjcxODggTDkyNS40ODQ0LDMwMi4xNDA2IFE5MjQuMzc1LDMwNS42NzE5IDkyMS4yMDMxLDMwNS42NzE5IFE5MTguODU5NCwzMDUuNjcxOSA5MTcuNjQwNiwzMDQuMTg3NSBROTE2LjQyMTksMzAyLjcwMzEgOTE2LjQyMTksMjk5Ljg0MzggUTkxNi40MjE5LDI5NC4xMjUgOTIxLjEyNSwyOTQuMTI1IFE5MjIuNjcxOSwyOTQuMTI1IDkyMy43MDMxLDI5NC45Mzc1IFE5MjQuNzUsMjk1Ljc1IDkyNS4yNSwyOTcuMzU5NCBMOTIyLjk4NDQsMjk3LjkwNjMgUTkyMi43NSwyOTcuMDMxMyA5MjIuMjY1NiwyOTYuNTQ2OSBROTIxLjc4MTMsMjk2LjA0NjkgOTIxLjE1NjMsMjk2LjA0NjkgUTkxOC45MDYzLDI5Ni4wNDY5IDkxOC45MDYzLDI5OS44NDM4IFogIi8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTIiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgdGV4dExlbmd0aD0iOTQiIHg9IjkzNSIgeT0iMzA0LjM1NjQiPklkcEtleURlc2NyaXB0b3I8L3RleHQ+PGxpbmUgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjU7IiB4MT0iOTA3IiB4Mj0iMTAzMSIgeTE9IjMxNiIgeTI9IjMxNiIvPjxyZWN0IGZpbGw9Im5vbmUiIGhlaWdodD0iNiIgc3R5bGU9InN0cm9rZTogI0M4MjkzMDsgc3Ryb2tlLXdpZHRoOiAxLjA7IiB3aWR0aD0iNiIgeD0iOTE0IiB5PSIzMjQuODI0NSIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjE2IiB4PSI5MjYiIHk9IjMzMC4zMTc5Ij5jcnY8L3RleHQ+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjM2IiB4PSI5NDUiIHk9IjMzMC4zMTc5Ij46U3RyaW5nPC90ZXh0PjxyZWN0IGZpbGw9Im5vbmUiIGhlaWdodD0iNiIgc3R5bGU9InN0cm9rZTogI0M4MjkzMDsgc3Ryb2tlLXdpZHRoOiAxLjA7IiB3aWR0aD0iNiIgeD0iOTE0IiB5PSIzMzcuNDczNCIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjYiIHg9IjkyNiIgeT0iMzQyLjk2NjgiPmU8L3RleHQ+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjM2IiB4PSI5MzUiIHk9IjM0Mi45NjY4Ij46U3RyaW5nPC90ZXh0PjxyZWN0IGZpbGw9Im5vbmUiIGhlaWdodD0iNiIgc3R5bGU9InN0cm9rZTogI0M4MjkzMDsgc3Ryb2tlLXdpZHRoOiAxLjA7IiB3aWR0aD0iNiIgeD0iOTE0IiB5PSIzNTAuMTIyMyIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjEzIiB4PSI5MjYiIHk9IjM1NS42MTU3Ij5raWQ8L3RleHQ+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjM2IiB4PSI5NDIiIHk9IjM1NS42MTU3Ij46U3RyaW5nPC90ZXh0PjxyZWN0IGZpbGw9Im5vbmUiIGhlaWdodD0iNiIgc3R5bGU9InN0cm9rZTogI0M4MjkzMDsgc3Ryb2tlLXdpZHRoOiAxLjA7IiB3aWR0aD0iNiIgeD0iOTE0IiB5PSIzNjIuNzcxMiIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjE0IiB4PSI5MjYiIHk9IjM2OC4yNjQ2Ij5rdHk8L3RleHQ+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjM2IiB4PSI5NDMiIHk9IjM2OC4yNjQ2Ij46U3RyaW5nPC90ZXh0PjxyZWN0IGZpbGw9Im5vbmUiIGhlaWdodD0iNiIgc3R5bGU9InN0cm9rZTogI0M4MjkzMDsgc3Ryb2tlLXdpZHRoOiAxLjA7IiB3aWR0aD0iNiIgeD0iOTE0IiB5PSIzNzUuNDIwMiIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjYiIHg9IjkyNiIgeT0iMzgwLjkxMzYiPm48L3RleHQ+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjM2IiB4PSI5MzUiIHk9IjM4MC45MTM2Ij46U3RyaW5nPC90ZXh0PjxyZWN0IGZpbGw9Im5vbmUiIGhlaWdodD0iNiIgc3R5bGU9InN0cm9rZTogI0M4MjkzMDsgc3Ryb2tlLXdpZHRoOiAxLjA7IiB3aWR0aD0iNiIgeD0iOTE0IiB5PSIzODguMDY5MSIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjYiIHg9IjkyNiIgeT0iMzkzLjU2MjUiPng8L3RleHQ+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjM2IiB4PSI5MzUiIHk9IjM5My41NjI1Ij46U3RyaW5nPC90ZXh0PjxyZWN0IGZpbGw9Im5vbmUiIGhlaWdodD0iNiIgc3R5bGU9InN0cm9rZTogI0M4MjkzMDsgc3Ryb2tlLXdpZHRoOiAxLjA7IiB3aWR0aD0iNiIgeD0iOTE0IiB5PSI0MDAuNzE4Ii8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgdGV4dExlbmd0aD0iMTgiIHg9IjkyNiIgeT0iNDA2LjIxMTQiPng1YzwvdGV4dD48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZm9udC13ZWlnaHQ9ImJvbGQiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgdGV4dExlbmd0aD0iNDQiIHg9Ijk0NyIgeT0iNDA2LjIxMTQiPjpTdHJpbmdbXTwvdGV4dD48cmVjdCBmaWxsPSJub25lIiBoZWlnaHQ9IjYiIHN0eWxlPSJzdHJva2U6ICNDODI5MzA7IHN0cm9rZS13aWR0aDogMS4wOyIgd2lkdGg9IjYiIHg9IjkxNCIgeT0iNDEzLjM2NjkiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSI2IiB4PSI5MjYiIHk9IjQxOC44NjA0Ij55PC90ZXh0Pjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmb250LXdlaWdodD0iYm9sZCIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSIzNiIgeD0iOTM1IiB5PSI0MTguODYwNCI+OlN0cmluZzwvdGV4dD48IS0tY2xhc3MgVG9rZW5SZXNwb25zZS0tPjxyZWN0IGZpbGw9IiNGRUZFQ0UiIGZpbHRlcj0idXJsKCNmMXYyMjJzOWtldjNteCkiIGhlaWdodD0iNjUuMjk3OSIgaWQ9IlRva2VuUmVzcG9uc2UiIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS41OyIgd2lkdGg9IjEzMyIgeD0iMzY5LjUiIHk9IjE1Mi41Ii8+PGVsbGlwc2UgY3g9IjM4OC41NSIgY3k9IjE2OC41IiBmaWxsPSIjQUREMUIyIiByeD0iMTEiIHJ5PSIxMSIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjA7Ii8+PHBhdGggZD0iTTM4Ni40NTYzLDE2OC4zNDM4IFEzODYuNDU2MywxNzAuMjE4OCAzODcuMDM0NCwxNzEuMjM0NCBRMzg3LjYxMjUsMTcyLjIzNDQgMzg4Ljc2ODgsMTcyLjIzNDQgUTM5MC4xMTI1LDE3Mi4yMzQ0IDM5MC43Njg4LDE3MC4yMTg4IEwzOTMuMDM0NCwxNzAuNjQwNiBRMzkxLjkyNSwxNzQuMTcxOSAzODguNzUzMSwxNzQuMTcxOSBRMzg2LjQwOTQsMTc0LjE3MTkgMzg1LjE5MDYsMTcyLjY4NzUgUTM4My45NzE5LDE3MS4yMDMxIDM4My45NzE5LDE2OC4zNDM4IFEzODMuOTcxOSwxNjIuNjI1IDM4OC42NzUsMTYyLjYyNSBRMzkwLjIyMTksMTYyLjYyNSAzOTEuMjUzMSwxNjMuNDM3NSBRMzkyLjMsMTY0LjI1IDM5Mi44LDE2NS44NTk0IEwzOTAuNTM0NCwxNjYuNDA2MyBRMzkwLjMsMTY1LjUzMTMgMzg5LjgxNTYsMTY1LjA0NjkgUTM4OS4zMzEzLDE2NC41NDY5IDM4OC43MDYzLDE2NC41NDY5IFEzODYuNDU2MywxNjQuNTQ2OSAzODYuNDU2MywxNjguMzQzOCBaICIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjEyIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjkyIiB4PSI0MDMuNDUiIHk9IjE3Mi44NTY0Ij5Ub2tlblJlc3BvbnNlPC90ZXh0PjxsaW5lIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS41OyIgeDE9IjM3MC41IiB4Mj0iNTAxLjUiIHkxPSIxODQuNSIgeTI9IjE4NC41Ii8+PHJlY3QgZmlsbD0ibm9uZSIgaGVpZ2h0PSI2IiBzdHlsZT0ic3Ryb2tlOiAjQzgyOTMwOyBzdHJva2Utd2lkdGg6IDEuMDsiIHdpZHRoPSI2IiB4PSIzNzcuNSIgeT0iMTkzLjMyNDUiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSI2OCIgeD0iMzg5LjUiIHk9IjE5OC44MTc5Ij5hY2Nlc3NfdG9rZW48L3RleHQ+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjM2IiB4PSI0NjAuNSIgeT0iMTk4LjgxNzkiPjpTdHJpbmc8L3RleHQ+PHJlY3QgZmlsbD0ibm9uZSIgaGVpZ2h0PSI2IiBzdHlsZT0ic3Ryb2tlOiAjQzgyOTMwOyBzdHJva2Utd2lkdGg6IDEuMDsiIHdpZHRoPSI2IiB4PSIzNzcuNSIgeT0iMjA1Ljk3MzQiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSI0MCIgeD0iMzg5LjUiIHk9IjIxMS40NjY4Ij5pZF90b2tlbjwvdGV4dD48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZm9udC13ZWlnaHQ9ImJvbGQiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgdGV4dExlbmd0aD0iMzYiIHg9IjQzMi41IiB5PSIyMTEuNDY2OCI+OlN0cmluZzwvdGV4dD48IS0tY2xhc3MgVXNlckNvbnNlbnQtLT48cmVjdCBmaWxsPSIjRkVGRUNFIiBmaWx0ZXI9InVybCgjZjF2MjIyczlrZXYzbXgpIiBoZWlnaHQ9IjY1LjI5NzkiIGlkPSJVc2VyQ29uc2VudCIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjU7IiB3aWR0aD0iMTIyIiB4PSIxODMiIHk9IjMyMiIvPjxlbGxpcHNlIGN4PSIyMDUuMiIgY3k9IjMzOCIgZmlsbD0iI0FERDFCMiIgcng9IjExIiByeT0iMTEiIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS4wOyIvPjxwYXRoIGQ9Ik0yMDMuMTA2MywzMzcuODQzOCBRMjAzLjEwNjMsMzM5LjcxODggMjAzLjY4NDQsMzQwLjczNDQgUTIwNC4yNjI1LDM0MS43MzQ0IDIwNS40MTg4LDM0MS43MzQ0IFEyMDYuNzYyNSwzNDEuNzM0NCAyMDcuNDE4OCwzMzkuNzE4OCBMMjA5LjY4NDQsMzQwLjE0MDYgUTIwOC41NzUsMzQzLjY3MTkgMjA1LjQwMzEsMzQzLjY3MTkgUTIwMy4wNTk0LDM0My42NzE5IDIwMS44NDA2LDM0Mi4xODc1IFEyMDAuNjIxOSwzNDAuNzAzMSAyMDAuNjIxOSwzMzcuODQzOCBRMjAwLjYyMTksMzMyLjEyNSAyMDUuMzI1LDMzMi4xMjUgUTIwNi44NzE5LDMzMi4xMjUgMjA3LjkwMzEsMzMyLjkzNzUgUTIwOC45NSwzMzMuNzUgMjA5LjQ1LDMzNS4zNTk0IEwyMDcuMTg0NCwzMzUuOTA2MyBRMjA2Ljk1LDMzNS4wMzEzIDIwNi40NjU2LDMzNC41NDY5IFEyMDUuOTgxMywzMzQuMDQ2OSAyMDUuMzU2MywzMzQuMDQ2OSBRMjAzLjEwNjMsMzM0LjA0NjkgMjAzLjEwNjMsMzM3Ljg0MzggWiAiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSI3NCIgeD0iMjIwLjgiIHk9IjM0Mi4zNTY0Ij5Vc2VyQ29uc2VudDwvdGV4dD48bGluZSBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDEuNTsiIHgxPSIxODQiIHgyPSIzMDQiIHkxPSIzNTQiIHkyPSIzNTQiLz48cmVjdCBmaWxsPSJub25lIiBoZWlnaHQ9IjYiIHN0eWxlPSJzdHJva2U6ICNDODI5MzA7IHN0cm9rZS13aWR0aDogMS4wOyIgd2lkdGg9IjYiIHg9IjE5MSIgeT0iMzYyLjgyNDUiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSI1NyIgeD0iMjAzIiB5PSIzNjguMzE3OSI+Y2xpZW50X25hbWU8L3RleHQ+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjM2IiB4PSIyNjMiIHk9IjM2OC4zMTc5Ij46U3RyaW5nPC90ZXh0PjxyZWN0IGZpbGw9Im5vbmUiIGhlaWdodD0iNiIgc3R5bGU9InN0cm9rZTogI0M4MjkzMDsgc3Ryb2tlLXdpZHRoOiAxLjA7IiB3aWR0aD0iNiIgeD0iMTkxIiB5PSIzNzUuNDczNCIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjEyIiB4PSIyMDMiIHk9IjM4MC45NjY4Ij51cmw8L3RleHQ+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjM2IiB4PSIyMTgiIHk9IjM4MC45NjY4Ij46U3RyaW5nPC90ZXh0PjwhLS1jbGFzcyBEaXNjb3ZlcnktZG9jdW1lbnQtY29udHJvbGxlckFwaS0tPjxyZWN0IGZpbGw9IiNGRUZFQ0UiIGZpbHRlcj0idXJsKCNmMXYyMjJzOWtldjNteCkiIGhlaWdodD0iNzcuOTQ2OCIgaWQ9IkRpc2NvdmVyeS1kb2N1bWVudC1jb250cm9sbGVyQXBpIiBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDEuNTsiIHdpZHRoPSIyMzciIHg9IjcwOC41IiB5PSI4Ii8+PGVsbGlwc2UgY3g9IjczMi4wNSIgY3k9IjI0IiBmaWxsPSIjQjRBN0U1IiByeD0iMTEiIHJ5PSIxMSIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjA7Ii8+PHBhdGggZD0iTTcyOC4zNDY5LDE4LjI5NjkgTDczNS45NTYzLDE4LjI5NjkgTDczNS45NTYzLDIwLjE4NzUgTDczMy4zNzgxLDIwLjE4NzUgTDczMy4zNzgxLDI3LjYwOTQgTDczNS45NTYzLDI3LjYwOTQgTDczNS45NTYzLDI5LjUgTDcyOC4zNDY5LDI5LjUgTDcyOC4zNDY5LDI3LjYwOTQgTDczMC45NDA2LDI3LjYwOTQgTDczMC45NDA2LDIwLjE4NzUgTDcyOC4zNDY5LDIwLjE4NzUgTDcyOC4zNDY5LDE4LjI5NjkgWiAiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgZm9udC1zdHlsZT0iaXRhbGljIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjE4NiIgeD0iNzQ3Ljk1IiB5PSIyOC4zNTY0Ij5EaXNjb3ZlcnktZG9jdW1lbnQtY29udHJvbGxlckFwaTwvdGV4dD48bGluZSBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDEuNTsiIHgxPSI3MDkuNSIgeDI9Ijk0NC41IiB5MT0iNDAiIHkyPSI0MCIvPjxlbGxpcHNlIGN4PSI3MTkuNSIgY3k9IjUxLjgyNDUiIGZpbGw9IiM4NEJFODQiIHJ4PSIzIiByeT0iMyIgc3R5bGU9InN0cm9rZTogIzAzODA0ODsgc3Ryb2tlLXdpZHRoOiAxLjA7Ii8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtc3R5bGU9Iml0YWxpYyIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSIxNzMiIHg9IjcyOC41IiB5PSI1NC4zMTc5Ij5nZXREaXNjb3ZlcnlEb2N1bWVudFVzaW5nR0VUKCk8L3RleHQ+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjI2IiB4PSI5MDEuNSIgeT0iNTQuMzE3OSI+OnZvaWQ8L3RleHQ+PGVsbGlwc2UgY3g9IjcxOS41IiBjeT0iNjQuNDczNCIgZmlsbD0iIzg0QkU4NCIgcng9IjMiIHJ5PSIzIiBzdHlsZT0ic3Ryb2tlOiAjMDM4MDQ4OyBzdHJva2Utd2lkdGg6IDEuMDsiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZm9udC1zdHlsZT0iaXRhbGljIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjE4NSIgeD0iNzI4LjUiIHk9IjY2Ljk2NjgiPmdldERpc2NvdmVyeURvY3VtZW50VXNpbmdHRVRfMSgpPC90ZXh0Pjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmb250LXdlaWdodD0iYm9sZCIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSIyNiIgeD0iOTEzLjUiIHk9IjY2Ljk2NjgiPjp2b2lkPC90ZXh0PjxlbGxpcHNlIGN4PSI3MTkuNSIgY3k9Ijc3LjEyMjMiIGZpbGw9IiM4NEJFODQiIHJ4PSIzIiByeT0iMyIgc3R5bGU9InN0cm9rZTogIzAzODA0ODsgc3Ryb2tlLXdpZHRoOiAxLjA7Ii8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtc3R5bGU9Iml0YWxpYyIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSI5OSIgeD0iNzI4LjUiIHk9Ijc5LjYxNTciPmdldEp3a3NVc2luZ0dFVCgpPC90ZXh0Pjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmb250LXdlaWdodD0iYm9sZCIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSIxMDYiIHg9IjgyNy41IiB5PSI3OS42MTU3Ij46SWRwSndrc0RvY3VtZW50PC90ZXh0PjwhLS1jbGFzcyBJZHAtRGllbnN0QXBpLS0+PHJlY3QgZmlsbD0iI0ZFRkVDRSIgZmlsdGVyPSJ1cmwoI2YxdjIyMnM5a2V2M214KSIgaGVpZ2h0PSI3Ny45NDY4IiBpZD0iSWRwLURpZW5zdEFwaSIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjU7IiB3aWR0aD0iNjY4IiB4PSI2IiB5PSI4Ii8+PGVsbGlwc2UgY3g9IjI5OC4yNSIgY3k9IjI0IiBmaWxsPSIjQjRBN0U1IiByeD0iMTEiIHJ5PSIxMSIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjA7Ii8+PHBhdGggZD0iTTI5NC41NDY5LDE4LjI5NjkgTDMwMi4xNTYzLDE4LjI5NjkgTDMwMi4xNTYzLDIwLjE4NzUgTDI5OS41NzgxLDIwLjE4NzUgTDI5OS41NzgxLDI3LjYwOTQgTDMwMi4xNTYzLDI3LjYwOTQgTDMwMi4xNTYzLDI5LjUgTDI5NC41NDY5LDI5LjUgTDI5NC41NDY5LDI3LjYwOTQgTDI5Ny4xNDA2LDI3LjYwOTQgTDI5Ny4xNDA2LDIwLjE4NzUgTDI5NC41NDY5LDIwLjE4NzUgTDI5NC41NDY5LDE4LjI5NjkgWiAiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgZm9udC1zdHlsZT0iaXRhbGljIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9Ijc1IiB4PSIzMTguNzUiIHk9IjI4LjM1NjQiPklkcC1EaWVuc3RBcGk8L3RleHQ+PGxpbmUgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjU7IiB4MT0iNyIgeDI9IjY3MyIgeTE9IjQwIiB5Mj0iNDAiLz48ZWxsaXBzZSBjeD0iMTciIGN5PSI1MS44MjQ1IiBmaWxsPSIjODRCRTg0IiByeD0iMyIgcnk9IjMiIHN0eWxlPSJzdHJva2U6ICMwMzgwNDg7IHN0cm9rZS13aWR0aDogMS4wOyIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmb250LXN0eWxlPSJpdGFsaWMiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgdGV4dExlbmd0aD0iMjk3IiB4PSIyNiIgeT0iNTQuMzE3OSI+YXV0aGVudGljYXRpb25FbmRwb2ludFVzaW5nUE9TVChTdHJpbmcgc2lnbmVkX2NoYWxsZW5nZSk8L3RleHQ+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjI2IiB4PSIzMjMiIHk9IjU0LjMxNzkiPjp2b2lkPC90ZXh0PjxlbGxpcHNlIGN4PSIxNyIgY3k9IjY0LjQ3MzQiIGZpbGw9IiM4NEJFODQiIHJ4PSIzIiByeT0iMyIgc3R5bGU9InN0cm9rZTogIzAzODA0ODsgc3Ryb2tlLXdpZHRoOiAxLjA7Ii8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtc3R5bGU9Iml0YWxpYyIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSI1MDQiIHg9IjI2IiB5PSI2Ni45NjY4Ij5hdXRob3JpemF0aW9uRW5kcG9pbnRVc2luZ0dFVChTdHJpbmcgY2xpZW50X2lkLFN0cmluZyBjb2RlX2NoYWxsZW5nZSxTdHJpbmcgcmVkaXJlY3RfdXJpLFN0cmluZyBzdGF0ZSk8L3RleHQ+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjEzOCIgeD0iNTMwIiB5PSI2Ni45NjY4Ij46QXV0aGVudGljYXRpb25DaGFsbGVuZ2U8L3RleHQ+PGVsbGlwc2UgY3g9IjE3IiBjeT0iNzcuMTIyMyIgZmlsbD0iIzg0QkU4NCIgcng9IjMiIHJ5PSIzIiBzdHlsZT0ic3Ryb2tlOiAjMDM4MDQ4OyBzdHJva2Utd2lkdGg6IDEuMDsiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZm9udC1zdHlsZT0iaXRhbGljIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjE5MiIgeD0iMjYiIHk9Ijc5LjYxNTciPnRva2VuRW5kcG9pbnRVc2luZ1BPU1QoU3RyaW5nIGNvZGUpPC90ZXh0Pjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmb250LXdlaWdodD0iYm9sZCIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSI5NCIgeD0iMjE4IiB5PSI3OS42MTU3Ij46VG9rZW5SZXNwb25zZTwvdGV4dD48IS0tY2xhc3MgS2V5LWluZm9ybWF0aW9uLWNvbnRyb2xsZXJBcGktLT48cmVjdCBmaWxsPSIjRkVGRUNFIiBmaWx0ZXI9InVybCgjZjF2MjIyczlrZXYzbXgpIiBoZWlnaHQ9Ijc3Ljk0NjgiIGlkPSJLZXktaW5mb3JtYXRpb24tY29udHJvbGxlckFwaSIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjU7IiB3aWR0aD0iMjYyIiB4PSI5ODEiIHk9IjgiLz48ZWxsaXBzZSBjeD0iMTAyNy43NSIgY3k9IjI0IiBmaWxsPSIjQjRBN0U1IiByeD0iMTEiIHJ5PSIxMSIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjA7Ii8+PHBhdGggZD0iTTEwMjQuMDQ2OSwxOC4yOTY5IEwxMDMxLjY1NjMsMTguMjk2OSBMMTAzMS42NTYzLDIwLjE4NzUgTDEwMjkuMDc4MSwyMC4xODc1IEwxMDI5LjA3ODEsMjcuNjA5NCBMMTAzMS42NTYzLDI3LjYwOTQgTDEwMzEuNjU2MywyOS41IEwxMDI0LjA0NjksMjkuNSBMMTAyNC4wNDY5LDI3LjYwOTQgTDEwMjYuNjQwNiwyNy42MDk0IEwxMDI2LjY0MDYsMjAuMTg3NSBMMTAyNC4wNDY5LDIwLjE4NzUgTDEwMjQuMDQ2OSwxOC4yOTY5IFogIi8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTIiIGZvbnQtc3R5bGU9Iml0YWxpYyIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSIxNjAiIHg9IjEwNDguMjUiIHk9IjI4LjM1NjQiPktleS1pbmZvcm1hdGlvbi1jb250cm9sbGVyQXBpPC90ZXh0PjxsaW5lIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS41OyIgeDE9Ijk4MiIgeDI9IjEyNDIiIHkxPSI0MCIgeTI9IjQwIi8+PGVsbGlwc2UgY3g9Ijk5MiIgY3k9IjUxLjgyNDUiIGZpbGw9IiM4NEJFODQiIHJ4PSIzIiByeT0iMyIgc3R5bGU9InN0cm9rZTogIzAzODA0ODsgc3Ryb2tlLXdpZHRoOiAxLjA7Ii8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtc3R5bGU9Iml0YWxpYyIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSIxMjEiIHg9IjEwMDEiIHk9IjU0LjMxNzkiPmdldEF1dGhKd2tzVXNpbmdHRVQoKTwvdGV4dD48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZm9udC13ZWlnaHQ9ImJvbGQiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgdGV4dExlbmd0aD0iMTA2IiB4PSIxMTIyIiB5PSI1NC4zMTc5Ij46SWRwSndrc0RvY3VtZW50PC90ZXh0PjxlbGxpcHNlIGN4PSI5OTIiIGN5PSI2NC40NzM0IiBmaWxsPSIjODRCRTg0IiByeD0iMyIgcnk9IjMiIHN0eWxlPSJzdHJva2U6ICMwMzgwNDg7IHN0cm9rZS13aWR0aDogMS4wOyIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIiBmb250LXN0eWxlPSJpdGFsaWMiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgdGV4dExlbmd0aD0iMTIyIiB4PSIxMDAxIiB5PSI2Ni45NjY4Ij5nZXREaXNjSndrc1VzaW5nR0VUKCk8L3RleHQ+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZvbnQtd2VpZ2h0PSJib2xkIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjEwNiIgeD0iMTEyMyIgeT0iNjYuOTY2OCI+OklkcEp3a3NEb2N1bWVudDwvdGV4dD48ZWxsaXBzZSBjeD0iOTkyIiBjeT0iNzcuMTIyMyIgZmlsbD0iIzg0QkU4NCIgcng9IjMiIHJ5PSIzIiBzdHlsZT0ic3Ryb2tlOiAjMDM4MDQ4OyBzdHJva2Utd2lkdGg6IDEuMDsiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZm9udC1zdHlsZT0iaXRhbGljIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjEzMCIgeD0iMTAwMSIgeT0iNzkuNjE1NyI+Z2V0VG9rZW5Kd2tzVXNpbmdHRVQoKTwvdGV4dD48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSIgZm9udC13ZWlnaHQ9ImJvbGQiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgdGV4dExlbmd0aD0iMTA2IiB4PSIxMTMxIiB5PSI3OS42MTU3Ij46SWRwSndrc0RvY3VtZW50PC90ZXh0PjxwYXRoIGQ9Ik0xMjc4LjUsMjcgTDEyNzguNSw2Ni44OTc1IEwxNTI5LjUsNjYuODk3NSBMMTUyOS41LDM3IEwxNTE5LjUsMjcgTDEyNzguNSwyNyAiIGZpbGw9IiNGQkZCNzciIGZpbHRlcj0idXJsKCNmMXYyMjJzOWtldjNteCkiIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS4wOyIvPjxwYXRoIGQ9Ik0xNTE5LjUsMjcgTDE1MTkuNSwzNyBMMTUyOS41LDM3IEwxNTE5LjUsMjcgIiBmaWxsPSIjRkJGQjc3IiBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDEuMDsiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMyIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSIzOCIgeD0iMTI4NC41IiB5PSI0NC4xOTM4Ij5OYW1lOjwvdGV4dD48dGV4dCBmaWxsPSIjNDE2OUUxIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMyIgZm9udC13ZWlnaHQ9ImJvbGQiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgdGV4dExlbmd0aD0iMTg4IiB4PSIxMzI2LjUiIHk9IjQ0LjE5MzgiPkdlbWF0aWsgSURQIElkZW50aXR5IFByb3ZpZGVyPC90ZXh0Pjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjEzIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjQ4IiB4PSIxMjg0LjUiIHk9IjU5LjE0MjYiPlZlcnNpb246PC90ZXh0Pjx0ZXh0IGZpbGw9IiM0MTY5RTEiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjEzIiBmb250LXdlaWdodD0iYm9sZCIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSIyOSIgeD0iMTMzNi41IiB5PSI1OS4xNDI2Ij4wLjEuMDwvdGV4dD48IS0tbGluayBBdXRoZW50aWNhdGlvbkNoYWxsZW5nZSB0byBVc2VyQ29uc2VudC0tPjxwYXRoIGQ9Ik0yNDQsMjM3LjA1IEMyNDQsMjY0LjY4IDI0NCwyOTcuOTQgMjQ0LDMyMS44MyAiIGZpbGw9Im5vbmUiIGlkPSJBdXRoZW50aWNhdGlvbkNoYWxsZW5nZS1Vc2VyQ29uc2VudCIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjA7Ii8+PHBvbHlnb24gZmlsbD0iI0E4MDAzNiIgcG9pbnRzPSIyNDQsMjI0LjAxLDI0MCwyMzAuMDEsMjQ0LDIzNi4wMSwyNDgsMjMwLjAxLDI0NCwyMjQuMDEiIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS4wOyIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjEzIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjIwIiB4PSIyMjEuODEyNSIgeT0iMzExLjQxNzIiPjAuLio8L3RleHQ+PCEtLWxpbmsgSWRwSndrc0RvY3VtZW50IHRvIElkcEtleURlc2NyaXB0b3ItLT48cGF0aCBkPSJNOTY5LDIyNC45OCBDOTY5LDI0Mi41MSA5NjksMjYzLjc1IDk2OSwyODMuODggIiBmaWxsPSJub25lIiBpZD0iSWRwSndrc0RvY3VtZW50LUlkcEtleURlc2NyaXB0b3IiIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS4wOyIvPjxwb2x5Z29uIGZpbGw9IiNBODAwMzYiIHBvaW50cz0iOTY5LDIxMS44LDk2NSwyMTcuOCw5NjksMjIzLjgsOTczLDIxNy44LDk2OSwyMTEuOCIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjA7Ii8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTMiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgdGV4dExlbmd0aD0iMjAiIHg9Ijk0Ny44NDM4IiB5PSIyNzMuMTQyOCI+MC4uKjwvdGV4dD48IS0tbGluayBEaXNjb3ZlcnktZG9jdW1lbnQtY29udHJvbGxlckFwaSB0byBJZHBKd2tzRG9jdW1lbnQtLT48cGF0aCBkPSJNODY2LjkzLDg2LjI1IEM4ODkuNjQsMTA3Ljk5IDkxNy42MiwxMzQuNzkgOTM4LjU0LDE1NC44MyAiIGZpbGw9Im5vbmUiIGlkPSJEaXNjb3ZlcnktZG9jdW1lbnQtY29udHJvbGxlckFwaS1JZHBKd2tzRG9jdW1lbnQiIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS4wOyIvPjxwb2x5Z29uIGZpbGw9IiNBODAwMzYiIHBvaW50cz0iOTQyLjM2LDE1OC40OSw5MzguNjM5MSwxNDkuMzcxLDkzOC43NTM2LDE1NS4wMjY3LDkzMy4wOTc5LDE1NS4xNDEyLDk0Mi4zNiwxNTguNDkiIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS4wOyIvPjwhLS1saW5rIElkcC1EaWVuc3RBcGkgdG8gQXV0aGVudGljYXRpb25DaGFsbGVuZ2UtLT48cGF0aCBkPSJNMzEzLDg2LjI1IEMzMDAuOTQsMTAzLjM0IDI4Ni42NywxMjMuNTYgMjc0LjI0LDE0MS4xNiAiIGZpbGw9Im5vbmUiIGlkPSJJZHAtRGllbnN0QXBpLUF1dGhlbnRpY2F0aW9uQ2hhbGxlbmdlIiBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDEuMDsiLz48cG9seWdvbiBmaWxsPSIjQTgwMDM2IiBwb2ludHM9IjI3MS4xMywxNDUuNTcsMjc5LjU3NzYsMTQwLjUwNjYsMjc0LjAwNSwxNDEuNDc5MiwyNzMuMDMyNCwxMzUuOTA2NiwyNzEuMTMsMTQ1LjU3IiBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDEuMDsiLz48IS0tbGluayBJZHAtRGllbnN0QXBpIHRvIFRva2VuUmVzcG9uc2UtLT48cGF0aCBkPSJNMzY3LDg2LjI1IEMzODAuNzEsMTA1LjY3IDM5Ny4yOCwxMjkuMTQgNDEwLjc0LDE0OC4yMSAiIGZpbGw9Im5vbmUiIGlkPSJJZHAtRGllbnN0QXBpLVRva2VuUmVzcG9uc2UiIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS4wOyIvPjxwb2x5Z29uIGZpbGw9IiNBODAwMzYiIHBvaW50cz0iNDEzLjc0LDE1Mi40Niw0MTEuODE1MSwxNDIuODAxMSw0MTAuODU1NSwxNDguMzc2LDQwNS4yODA2LDE0Ny40MTYzLDQxMy43NCwxNTIuNDYiIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS4wOyIvPjwhLS1saW5rIEtleS1pbmZvcm1hdGlvbi1jb250cm9sbGVyQXBpIHRvIElkcEp3a3NEb2N1bWVudC0tPjxwYXRoIGQ9Ik0xMDcxLjc5LDg2LjI1IEMxMDQ4LjkyLDEwNy45OSAxMDIwLjc0LDEzNC43OSA5OTkuNjcsMTU0LjgzICIgZmlsbD0ibm9uZSIgaWQ9IktleS1pbmZvcm1hdGlvbi1jb250cm9sbGVyQXBpLUlkcEp3a3NEb2N1bWVudCIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjA7Ii8+PHBvbHlnb24gZmlsbD0iI0E4MDAzNiIgcG9pbnRzPSI5OTUuODMsMTU4LjQ5LDEwMDUuMTEyLDE1NS4xOTcsOTk5LjQ1NzEsMTU1LjA0ODUsOTk5LjYwNTYsMTQ5LjM5MzYsOTk1LjgzLDE1OC40OSIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjA7Ii8+PCEtLQpAc3RhcnR1bWwNCmhpZGUgZW1wdHkgbWVtYmVycw0Kc2V0IG5hbWVzcGFjZVNlcGFyYXRvciBub25lDQoNCmNsYXNzICBBdXRoZW50aWNhdGlvbkNoYWxsZW5nZSB7DQoJIC0gY2hhbGxlbmdlIDxiPjpTdHJpbmc8L2I+DQoJIC0gc2hvd19vbmNlIDxiPjpCb29sZWFuPC9iPg0KCSAtIHVzZXJfY29uc2VudCA8Yj46VXNlckNvbnNlbnRbXTwvYj4NCn0NCg0KY2xhc3MgIElkcEp3a3NEb2N1bWVudCB7DQoJIC0ga2V5cyA8Yj46SWRwS2V5RGVzY3JpcHRvcltdPC9iPg0KfQ0KDQpjbGFzcyAgSWRwS2V5RGVzY3JpcHRvciB7DQoJIC0gY3J2IDxiPjpTdHJpbmc8L2I+DQoJIC0gZSA8Yj46U3RyaW5nPC9iPg0KCSAtIGtpZCA8Yj46U3RyaW5nPC9iPg0KCSAtIGt0eSA8Yj46U3RyaW5nPC9iPg0KCSAtIG4gPGI+OlN0cmluZzwvYj4NCgkgLSB4IDxiPjpTdHJpbmc8L2I+DQoJIC0geDVjIDxiPjpTdHJpbmdbXTwvYj4NCgkgLSB5IDxiPjpTdHJpbmc8L2I+DQp9DQoNCmNsYXNzICBUb2tlblJlc3BvbnNlIHsNCgkgLSBhY2Nlc3NfdG9rZW4gPGI+OlN0cmluZzwvYj4NCgkgLSBpZF90b2tlbiA8Yj46U3RyaW5nPC9iPg0KfQ0KDQpjbGFzcyAgVXNlckNvbnNlbnQgew0KCSAtIGNsaWVudF9uYW1lIDxiPjpTdHJpbmc8L2I+DQoJIC0gdXJsIDxiPjpTdHJpbmc8L2I+DQp9DQoNCg0KaW50ZXJmYWNlIERpc2NvdmVyeS1kb2N1bWVudC1jb250cm9sbGVyQXBpIHsNCgkgKyA8aT5nZXREaXNjb3ZlcnlEb2N1bWVudFVzaW5nR0VUKCk8L2k+PGI+OnZvaWQ8L2I+IA0KCSArIDxpPmdldERpc2NvdmVyeURvY3VtZW50VXNpbmdHRVRfMSgpPC9pPjxiPjp2b2lkPC9iPiANCgkgKyA8aT5nZXRKd2tzVXNpbmdHRVQoKTwvaT48Yj46SWRwSndrc0RvY3VtZW50PC9iPiANCn0NCg0KaW50ZXJmYWNlIElkcC1EaWVuc3RBcGkgew0KCSArIDxpPmF1dGhlbnRpY2F0aW9uRW5kcG9pbnRVc2luZ1BPU1QoU3RyaW5nIHNpZ25lZF9jaGFsbGVuZ2UpPC9pPjxiPjp2b2lkPC9iPiANCgkgKyA8aT5hdXRob3JpemF0aW9uRW5kcG9pbnRVc2luZ0dFVChTdHJpbmcgY2xpZW50X2lkLFN0cmluZyBjb2RlX2NoYWxsZW5nZSxTdHJpbmcgcmVkaXJlY3RfdXJpLFN0cmluZyBzdGF0ZSk8L2k+PGI+OkF1dGhlbnRpY2F0aW9uQ2hhbGxlbmdlPC9iPiANCgkgKyA8aT50b2tlbkVuZHBvaW50VXNpbmdQT1NUKFN0cmluZyBjb2RlKTwvaT48Yj46VG9rZW5SZXNwb25zZTwvYj4gDQp9DQoNCmludGVyZmFjZSBLZXktaW5mb3JtYXRpb24tY29udHJvbGxlckFwaSB7DQoJICsgPGk+Z2V0QXV0aEp3a3NVc2luZ0dFVCgpPC9pPjxiPjpJZHBKd2tzRG9jdW1lbnQ8L2I+IA0KCSArIDxpPmdldERpc2NKd2tzVXNpbmdHRVQoKTwvaT48Yj46SWRwSndrc0RvY3VtZW50PC9iPiANCgkgKyA8aT5nZXRUb2tlbkp3a3NVc2luZ0dFVCgpPC9pPjxiPjpJZHBKd2tzRG9jdW1lbnQ8L2I+IA0KfQ0KDQoNCkF1dGhlbnRpY2F0aW9uQ2hhbGxlbmdlICAqLSAtICIwLi4qIiAgVXNlckNvbnNlbnQNCklkcEp3a3NEb2N1bWVudCAgKi0gLSAiMC4uKiIgIElkcEtleURlc2NyaXB0b3INCiJEaXNjb3ZlcnktZG9jdW1lbnQtY29udHJvbGxlckFwaSIgLSAtPiAgICBJZHBKd2tzRG9jdW1lbnQNCiJJZHAtRGllbnN0QXBpIiAtIC0+ICAgIEF1dGhlbnRpY2F0aW9uQ2hhbGxlbmdlDQoiSWRwLURpZW5zdEFwaSIgLSAtPiAgICBUb2tlblJlc3BvbnNlDQoiS2V5LWluZm9ybWF0aW9uLWNvbnRyb2xsZXJBcGkiIC0gLT4gICAgSWRwSndrc0RvY3VtZW50DQoNCm5vdGUgYXMgTjENCiAgTmFtZTogPGI+PGNvbG9yOnJveWFsQmx1ZT5HZW1hdGlrIElEUCBJZGVudGl0eSBQcm92aWRlcjwvY29sb3I+DQogIFZlcnNpb246IDxiPjxjb2xvcjpyb3lhbEJsdWU+MC4xLjA8L2NvbG9yPg0KZW5kIG5vdGUNCg0KDQpAZW5kdW1sDQoKUGxhbnRVTUwgdmVyc2lvbiAxLjIwMTkuMDcoTW9uIEp1biAyNCAyMTo1OToyMCBDRVNUIDIwMTkpCihHUEwgc291cmNlIGRpc3RyaWJ1dGlvbikKSmF2YSBSdW50aW1lOiBPcGVuSkRLIFJ1bnRpbWUgRW52aXJvbm1lbnQKSlZNOiBPcGVuSkRLIDY0LUJpdCBTZXJ2ZXIgVk0KSmF2YSBWZXJzaW9uOiAxNCszNgpPcGVyYXRpbmcgU3lzdGVtOiBMaW51eApPUyBWZXJzaW9uOiA1LjQuMC01Mi1nZW5lcmljCkRlZmF1bHQgRW5jb2Rpbmc6IFVURi04Ckxhbmd1YWdlOiBlbgpDb3VudHJ5OiBVUwotLT48L2c+PC9zdmc+" alt="swagger">
+</div>
+<div class="title">Abbildung 1. Klassenübersicht</div>
+</div>
+<div class="imageblock maxfullwidth">
+<div class="content">
+<img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiBjb250ZW50U2NyaXB0VHlwZT0iYXBwbGljYXRpb24vZWNtYXNjcmlwdCIgY29udGVudFN0eWxlVHlwZT0idGV4dC9jc3MiIGhlaWdodD0iODMzcHgiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiIHN0eWxlPSJ3aWR0aDo5OTVweDtoZWlnaHQ6ODMzcHg7IiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCA5OTUgODMzIiB3aWR0aD0iOTk1cHgiIHpvb21BbmRQYW49Im1hZ25pZnkiPjxkZWZzPjxmaWx0ZXIgaGVpZ2h0PSIzMDAlIiBpZD0iZjZyZmVocXVybm5vdSIgd2lkdGg9IjMwMCUiIHg9Ii0xIiB5PSItMSI+PGZlR2F1c3NpYW5CbHVyIHJlc3VsdD0iYmx1ck91dCIgc3RkRGV2aWF0aW9uPSIyLjAiLz48ZmVDb2xvck1hdHJpeCBpbj0iYmx1ck91dCIgcmVzdWx0PSJibHVyT3V0MiIgdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIC40IDAiLz48ZmVPZmZzZXQgZHg9IjQuMCIgZHk9IjQuMCIgaW49ImJsdXJPdXQyIiByZXN1bHQ9ImJsdXJPdXQzIi8+PGZlQmxlbmQgaW49IlNvdXJjZUdyYXBoaWMiIGluMj0iYmx1ck91dDMiIG1vZGU9Im5vcm1hbCIvPjwvZmlsdGVyPjwvZGVmcz48Zz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjE0IiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjEyMCIgeD0iMjUyLjUiIHk9IjI4LjQ5NDEiPihDYW5ub3TCoGRlY29kZSk8L3RleHQ+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTgiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgdGV4dExlbmd0aD0iMCIgeD0iMzc3LjUiIHk9IjI4Ljg4MzgiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0LWRlY29yYXRpb249InVuZGVybGluZSIgdGV4dExlbmd0aD0iMzcwIiB4PSIzNzcuNSIgeT0iMjguODgzOCI+SURQIFNlcnZlciB3b3JrZmxvdyAtIEF1dGhlbnRpY2F0aW9uIGVuZCBwb2ludDwvdGV4dD48cmVjdCBmaWxsPSIjODdDRUVCIiBoZWlnaHQ9Ijc4Ny4yMjMxIiByeD0iMTAiIHJ5PSIxMCIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjA7IiB3aWR0aD0iNTc5IiB4PSIzMDYiIHk9IjQwLjY5ODIiLz48cmVjdCBmaWxsPSIjRkZGRkZGIiBmaWx0ZXI9InVybCgjZjZyZmVocXVybm5vdSkiIGhlaWdodD0iMjQyLjU4OTgiIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS4wOyIgd2lkdGg9IjEwIiB4PSIzOTQiIHk9IjIxMS42NDMxIi8+PHJlY3QgZmlsbD0iI0ZGRkZGRiIgZmlsdGVyPSJ1cmwoI2Y2cmZlaHF1cm5ub3UpIiBoZWlnaHQ9IjI0OS42NDExIiBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDEuMDsiIHdpZHRoPSIxMCIgeD0iMzk0IiB5PSI0ODMuMTgxNiIvPjxyZWN0IGZpbGw9IiNGRkZGRkYiIGZpbHRlcj0idXJsKCNmNnJmZWhxdXJubm91KSIgaGVpZ2h0PSIxNTQuNzk0OSIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjA7IiB3aWR0aD0iMTAiIHg9Ijc5MSIgeT0iMjcwLjQ4OTMiLz48cmVjdCBmaWxsPSIjRkZGRkZGIiBmaWx0ZXI9InVybCgjZjZyZmVocXVybm5vdSkiIGhlaWdodD0iMTYzLjc5NDkiIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS4wOyIgd2lkdGg9IjEwIiB4PSI3OTEiIHk9IjU2OS4wMjc4Ii8+PGxpbmUgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjA7IHN0cm9rZS1kYXNoYXJyYXk6IDUuMCw1LjA7IiB4MT0iNDkiIHgyPSI0OSIgeTE9IjEyMi43OTY5IiB5Mj0iNzQxLjgyMjgiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDEuMDsgc3Ryb2tlLWRhc2hhcnJheTogNS4wLDUuMDsiIHgxPSIyMDEiIHgyPSIyMDEiIHkxPSIxMjIuNzk2OSIgeTI9Ijc0MS44MjI4Ii8+PGxpbmUgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjA7IHN0cm9rZS1kYXNoYXJyYXk6IDUuMCw1LjA7IiB4MT0iMzk5IiB4Mj0iMzk5IiB5MT0iMTIyLjc5NjkiIHkyPSI3NDEuODIyOCIvPjxsaW5lIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS4wOyBzdHJva2UtZGFzaGFycmF5OiA1LjAsNS4wOyIgeDE9Ijc5NiIgeDI9Ijc5NiIgeTE9IjEyMi43OTY5IiB5Mj0iNzQxLjgyMjgiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0LWRlY29yYXRpb249InVuZGVybGluZSIgdGV4dExlbmd0aD0iODIiIHg9IjUiIHk9IjExOS44MzAxIj5WZXJzaWNoZXJ0ZVI8L3RleHQ+PGVsbGlwc2UgY3g9IjQ5IiBjeT0iNDkuNjk4MiIgZmlsbD0iI0ZFRkVDRSIgZmlsdGVyPSJ1cmwoI2Y2cmZlaHF1cm5ub3UpIiByeD0iOCIgcnk9IjgiIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMi4wOyIvPjxwYXRoIGQ9Ik00OSw1Ny42OTgyIEw0OSw4NC42OTgyIE0zNiw2NS42OTgyIEw2Miw2NS42OTgyIE00OSw4NC42OTgyIEwzNiw5OS42OTgyIE00OSw4NC42OTgyIEw2Miw5OS42OTgyICIgZmlsbD0ibm9uZSIgZmlsdGVyPSJ1cmwoI2Y2cmZlaHF1cm5ub3UpIiBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDIuMDsiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0LWRlY29yYXRpb249InVuZGVybGluZSIgdGV4dExlbmd0aD0iODIiIHg9IjUiIHk9Ijc1My45NTQ2Ij5WZXJzaWNoZXJ0ZVI8L3RleHQ+PGVsbGlwc2UgY3g9IjQ5IiBjeT0iNzY2LjkyMTQiIGZpbGw9IiNGRUZFQ0UiIGZpbHRlcj0idXJsKCNmNnJmZWhxdXJubm91KSIgcng9IjgiIHJ5PSI4IiBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDIuMDsiLz48cGF0aCBkPSJNNDksNzc0LjkyMTQgTDQ5LDgwMS45MjE0IE0zNiw3ODIuOTIxNCBMNjIsNzgyLjkyMTQgTTQ5LDgwMS45MjE0IEwzNiw4MTYuOTIxNCBNNDksODAxLjkyMTQgTDYyLDgxNi45MjE0ICIgZmlsbD0ibm9uZSIgZmlsdGVyPSJ1cmwoI2Y2cmZlaHF1cm5ub3UpIiBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDIuMDsiLz48cmVjdCBmaWxsPSIjRkVGRUNFIiBmaWx0ZXI9InVybCgjZjZyZmVocXVybm5vdSkiIGhlaWdodD0iMzAuMDk4NiIgcng9IjEwIiByeT0iMTAiIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS41OyIgd2lkdGg9IjE1MyIgeD0iMTIzIiB5PSI4Ny42OTgyIi8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgdGV4dC1kZWNvcmF0aW9uPSJ1bmRlcmxpbmUiIHRleHRMZW5ndGg9IjEzOSIgeD0iMTMwIiB5PSIxMDcuODMwMSI+QW53ZW5kdW5nc0Zyb250ZW5kPC90ZXh0PjxyZWN0IGZpbGw9IiNGRUZFQ0UiIGZpbHRlcj0idXJsKCNmNnJmZWhxdXJubm91KSIgaGVpZ2h0PSIzMC4wOTg2IiByeD0iMTAiIHJ5PSIxMCIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjU7IiB3aWR0aD0iMTUzIiB4PSIxMjMiIHk9Ijc0MC44MjI4Ii8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgdGV4dC1kZWNvcmF0aW9uPSJ1bmRlcmxpbmUiIHRleHRMZW5ndGg9IjEzOSIgeD0iMTMwIiB5PSI3NjAuOTU0NiI+QW53ZW5kdW5nc0Zyb250ZW5kPC90ZXh0PjxyZWN0IGZpbGw9IiNGRUZFQ0UiIGZpbHRlcj0idXJsKCNmNnJmZWhxdXJubm91KSIgaGVpZ2h0PSIzMC4wOTg2IiByeD0iMTAiIHJ5PSIxMCIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjU7IiB3aWR0aD0iMTM0IiB4PSIzMzAiIHk9Ijg3LjY5ODIiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0LWRlY29yYXRpb249InVuZGVybGluZSIgdGV4dExlbmd0aD0iMTIwIiB4PSIzMzciIHk9IjEwNy44MzAxIj5BdXRoZW50aWNhdG9yQ2xpZW50PC90ZXh0PjxyZWN0IGZpbGw9IiNGRUZFQ0UiIGZpbHRlcj0idXJsKCNmNnJmZWhxdXJubm91KSIgaGVpZ2h0PSIzMC4wOTg2IiByeD0iMTAiIHJ5PSIxMCIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjU7IiB3aWR0aD0iMTM0IiB4PSIzMzAiIHk9Ijc0MC44MjI4Ii8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgdGV4dC1kZWNvcmF0aW9uPSJ1bmRlcmxpbmUiIHRleHRMZW5ndGg9IjEyMCIgeD0iMzM3IiB5PSI3NjAuOTU0NiI+QXV0aGVudGljYXRvckNsaWVudDwvdGV4dD48cmVjdCBmaWxsPSIjRkVGRUNFIiBmaWx0ZXI9InVybCgjZjZyZmVocXVybm5vdSkiIGhlaWdodD0iMzAuMDk4NiIgcng9IjEwIiByeT0iMTAiIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS41OyIgd2lkdGg9IjEyNiIgeD0iNzMxIiB5PSI4Ny42OTgyIi8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgdGV4dC1kZWNvcmF0aW9uPSJ1bmRlcmxpbmUiIHRleHRMZW5ndGg9IjExMiIgeD0iNzM4IiB5PSIxMDcuODMwMSI+SURQX0F1dGhvcml6YXRpb248L3RleHQ+PHJlY3QgZmlsbD0iI0ZFRkVDRSIgZmlsdGVyPSJ1cmwoI2Y2cmZlaHF1cm5ub3UpIiBoZWlnaHQ9IjMwLjA5ODYiIHJ4PSIxMCIgcnk9IjEwIiBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDEuNTsiIHdpZHRoPSIxMjYiIHg9IjczMSIgeT0iNzQwLjgyMjgiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0LWRlY29yYXRpb249InVuZGVybGluZSIgdGV4dExlbmd0aD0iMTEyIiB4PSI3MzgiIHk9Ijc2MC45NTQ2Ij5JRFBfQXV0aG9yaXphdGlvbjwvdGV4dD48cmVjdCBmaWxsPSIjRkZGRkZGIiBmaWx0ZXI9InVybCgjZjZyZmVocXVybm5vdSkiIGhlaWdodD0iMjQyLjU4OTgiIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS4wOyIgd2lkdGg9IjEwIiB4PSIzOTQiIHk9IjIxMS42NDMxIi8+PHJlY3QgZmlsbD0iI0ZGRkZGRiIgZmlsdGVyPSJ1cmwoI2Y2cmZlaHF1cm5ub3UpIiBoZWlnaHQ9IjI0OS42NDExIiBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDEuMDsiIHdpZHRoPSIxMCIgeD0iMzk0IiB5PSI0ODMuMTgxNiIvPjxyZWN0IGZpbGw9IiNGRkZGRkYiIGZpbHRlcj0idXJsKCNmNnJmZWhxdXJubm91KSIgaGVpZ2h0PSIxNTQuNzk0OSIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjA7IiB3aWR0aD0iMTAiIHg9Ijc5MSIgeT0iMjcwLjQ4OTMiLz48cmVjdCBmaWxsPSIjRkZGRkZGIiBmaWx0ZXI9InVybCgjZjZyZmVocXVybm5vdSkiIGhlaWdodD0iMTYzLjc5NDkiIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS4wOyIgd2lkdGg9IjEwIiB4PSI3OTEiIHk9IjU2OS4wMjc4Ii8+PHBvbHlnb24gZmlsbD0iI0E4MDAzNiIgcG9pbnRzPSIxODkuNSwxNDkuNzQ1NiwxOTkuNSwxNTMuNzQ1NiwxODkuNSwxNTcuNzQ1NiwxOTMuNSwxNTMuNzQ1NiIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjA7Ii8+PGxpbmUgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAyLjA7IiB4MT0iNDkiIHgyPSIxOTUuNSIgeTE9IjE1My43NDU2IiB5Mj0iMTUzLjc0NTYiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMyIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSI1MSIgeD0iNTYiIHk9IjE0OC45OTA3Ij5zdGFydCBhcHA8L3RleHQ+PHBvbHlnb24gZmlsbD0iI0E4MDAzNiIgcG9pbnRzPSIxODkuNSwxNzguNjk0MywxOTkuNSwxODIuNjk0MywxODkuNSwxODYuNjk0MywxOTMuNSwxODIuNjk0MyIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjA7Ii8+PGxpbmUgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAyLjA7IiB4MT0iNDkiIHgyPSIxOTUuNSIgeTE9IjE4Mi42OTQzIiB5Mj0iMTgyLjY5NDMiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMyIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSIxMjIiIHg9IjU2IiB5PSIxNzcuOTM5NSI+cmVxdWVzdCBkYXRhIGZyb20gRkQ8L3RleHQ+PHBvbHlnb24gZmlsbD0iI0E4MDAzNiIgcG9pbnRzPSIzODIsMjA3LjY0MzEsMzkyLDIxMS42NDMxLDM4MiwyMTUuNjQzMSwzODYsMjExLjY0MzEiIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS4wOyIvPjxsaW5lIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMi4wOyIgeDE9IjIwMS41IiB4Mj0iMzg4IiB5MT0iMjExLjY0MzEiIHkyPSIyMTEuNjQzMSIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjEzIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjEwNSIgeD0iMjA4LjUiIHk9IjIwNi44ODgyIj5nZXRDb2RlQ2hhbGxlbmdlPC90ZXh0Pjxwb2x5Z29uIGZpbGw9IiNBODAwMzYiIHBvaW50cz0iNzc5LDI2Ni40ODkzLDc4OSwyNzAuNDg5Myw3NzksMjc0LjQ4OTMsNzgzLDI3MC40ODkzIiBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDEuMDsiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDIuMDsiIHgxPSI0MDQiIHgyPSI3ODUiIHkxPSIyNzAuNDg5MyIgeTI9IjI3MC40ODkzIi8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTMiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgdGV4dExlbmd0aD0iMTI3IiB4PSI0MTEiIHk9IjIzNS44MzY5Ij5QZXJmb3JtIGF1dGhvcml6YXRpb246PC90ZXh0Pjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjEzIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjM2NCIgeD0iNDExIiB5PSIyNTAuNzg1NiI+R0VUIC9hdXRob3JpemF0aW9uIGNsaWVudF9pZCwgc3RhdGUsIHJlZGlyZWN0dXJsLCBjb2RlX2NoYWxsZW5nZSw8L3RleHQ+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTMiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgdGV4dExlbmd0aD0iNTUiIHg9IjQxMSIgeT0iMjY1LjczNDQiPnNjb3BlLCAuLi48L3RleHQ+PGxpbmUgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAyLjA7IiB4MT0iODAxIiB4Mj0iODQzIiB5MT0iMjk5LjQzOCIgeTI9IjI5OS40MzgiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDIuMDsiIHgxPSI4NDMiIHgyPSI4NDMiIHkxPSIyOTkuNDM4IiB5Mj0iMzEyLjQzOCIvPjxsaW5lIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMi4wOyIgeDE9IjgwMiIgeDI9Ijg0MyIgeTE9IjMxMi40MzgiIHkyPSIzMTIuNDM4Ii8+PHBvbHlnb24gZmlsbD0iI0E4MDAzNiIgcG9pbnRzPSI4MTIsMzA4LjQzOCw4MDIsMzEyLjQzOCw4MTIsMzE2LjQzOCw4MDgsMzEyLjQzOCIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjA7Ii8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTMiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgdGV4dExlbmd0aD0iODMiIHg9IjgwOCIgeT0iMjk0LjY4MzEiPmNyZWF0ZVNlc3Npb248L3RleHQ+PGxpbmUgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAyLjA7IiB4MT0iODAxIiB4Mj0iODQzIiB5MT0iMzQxLjM4NjciIHkyPSIzNDEuMzg2NyIvPjxsaW5lIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMi4wOyIgeDE9Ijg0MyIgeDI9Ijg0MyIgeTE9IjM0MS4zODY3IiB5Mj0iMzU0LjM4NjciLz48bGluZSBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDIuMDsiIHgxPSI4MDIiIHgyPSI4NDMiIHkxPSIzNTQuMzg2NyIgeTI9IjM1NC4zODY3Ii8+PHBvbHlnb24gZmlsbD0iI0E4MDAzNiIgcG9pbnRzPSI4MTIsMzUwLjM4NjcsODAyLDM1NC4zODY3LDgxMiwzNTguMzg2Nyw4MDgsMzU0LjM4NjciIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS4wOyIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjEzIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjkzIiB4PSI4MDgiIHk9IjMzNi42MzE4Ij5jcmVhdGVDaGFsbGVuZ2U8L3RleHQ+PGxpbmUgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAyLjA7IiB4MT0iODAxIiB4Mj0iODQzIiB5MT0iMzgzLjMzNTQiIHkyPSIzODMuMzM1NCIvPjxsaW5lIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMi4wOyIgeDE9Ijg0MyIgeDI9Ijg0MyIgeTE9IjM4My4zMzU0IiB5Mj0iMzk2LjMzNTQiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDIuMDsiIHgxPSI4MDIiIHgyPSI4NDMiIHkxPSIzOTYuMzM1NCIgeTI9IjM5Ni4zMzU0Ii8+PHBvbHlnb24gZmlsbD0iI0E4MDAzNiIgcG9pbnRzPSI4MTIsMzkyLjMzNTQsODAyLDM5Ni4zMzU0LDgxMiw0MDAuMzM1NCw4MDgsMzk2LjMzNTQiIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS4wOyIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjEzIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjExOCIgeD0iODA4IiB5PSIzNzguNTgwNiI+Z2V0VXNlckNvbnNlbnRUZXh0PC90ZXh0Pjxwb2x5Z29uIGZpbGw9IiNBODAwMzYiIHBvaW50cz0iNDE1LDQyMS4yODQyLDQwNSw0MjUuMjg0Miw0MTUsNDI5LjI4NDIsNDExLDQyNS4yODQyIiBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDEuMDsiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDIuMDsgc3Ryb2tlLWRhc2hhcnJheTogMi4wLDIuMDsiIHgxPSI0MDkiIHgyPSI3OTUiIHkxPSI0MjUuMjg0MiIgeTI9IjQyNS4yODQyIi8+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTMiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgdGV4dExlbmd0aD0iMTQwIiB4PSI0MjEiIHk9IjQyMC41MjkzIj5BdXRoZW50aWNhdGlvbkNoYWxsZW5nZTwvdGV4dD48cG9seWdvbiBmaWxsPSIjQTgwMDM2IiBwb2ludHM9IjYwLDQ1MC4yMzI5LDUwLDQ1NC4yMzI5LDYwLDQ1OC4yMzI5LDU2LDQ1NC4yMzI5IiBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDEuMDsiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDIuMDsiIHgxPSI1NCIgeDI9IjM5OCIgeTE9IjQ1NC4yMzI5IiB5Mj0iNDU0LjIzMjkiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMyIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSIxMTYiIHg9IjY2IiB5PSI0NDkuNDc4Ij5kaXNwbGF5VXNlckNvbnNlbnQ8L3RleHQ+PHBvbHlnb24gZmlsbD0iI0E4MDAzNiIgcG9pbnRzPSIzODIsNDc5LjE4MTYsMzkyLDQ4My4xODE2LDM4Miw0ODcuMTgxNiwzODYsNDgzLjE4MTYiIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS4wOyIvPjxsaW5lIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMi4wOyIgeDE9IjQ5IiB4Mj0iMzg4IiB5MT0iNDgzLjE4MTYiIHkyPSI0ODMuMTgxNiIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjEzIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjkwIiB4PSI1NiIgeT0iNDc4LjQyNjgiPmNvbmZpcm1Db25zZW50PC90ZXh0PjxsaW5lIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMi4wOyIgeDE9IjQwNCIgeDI9IjQ0NiIgeTE9IjUxMi4xMzA0IiB5Mj0iNTEyLjEzMDQiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDIuMDsiIHgxPSI0NDYiIHgyPSI0NDYiIHkxPSI1MTIuMTMwNCIgeTI9IjUyNS4xMzA0Ii8+PGxpbmUgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAyLjA7IiB4MT0iNDA1IiB4Mj0iNDQ2IiB5MT0iNTI1LjEzMDQiIHkyPSI1MjUuMTMwNCIvPjxwb2x5Z29uIGZpbGw9IiNBODAwMzYiIHBvaW50cz0iNDE1LDUyMS4xMzA0LDQwNSw1MjUuMTMwNCw0MTUsNTI5LjEzMDQsNDExLDUyNS4xMzA0IiBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDEuMDsiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMyIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSI4MSIgeD0iNDExIiB5PSI1MDcuMzc1NSI+c2lnbkNoYWxsZW5nZTwvdGV4dD48cG9seWdvbiBmaWxsPSIjQTgwMDM2IiBwb2ludHM9Ijc3OSw1NjUuMDI3OCw3ODksNTY5LjAyNzgsNzc5LDU3My4wMjc4LDc4Myw1NjkuMDI3OCIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjA7Ii8+PGxpbmUgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAyLjA7IiB4MT0iNDA0IiB4Mj0iNzg1IiB5MT0iNTY5LjAyNzgiIHkyPSI1NjkuMDI3OCIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjEzIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjEzNiIgeD0iNDExIiB5PSI1NDkuMzI0MiI+UGVyZm9ybSBBdXRoZW50aWNhdGlvbjo8L3RleHQ+PHRleHQgZmlsbD0iIzAwMDAwMCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTMiIGxlbmd0aEFkanVzdD0ic3BhY2luZ0FuZEdseXBocyIgdGV4dExlbmd0aD0iMjI4IiB4PSI0MTUiIHk9IjU2NC4yNzI5Ij5QT1NUIC9hdXRoZW50aWNhdGlvbiBzaWduZWRfY2hhbGxlbmdlPC90ZXh0PjxsaW5lIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMi4wOyIgeDE9IjgwMSIgeDI9Ijg0MyIgeTE9IjU5Ny45NzY2IiB5Mj0iNTk3Ljk3NjYiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDIuMDsiIHgxPSI4NDMiIHgyPSI4NDMiIHkxPSI1OTcuOTc2NiIgeTI9IjYxMC45NzY2Ii8+PGxpbmUgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAyLjA7IiB4MT0iODAyIiB4Mj0iODQzIiB5MT0iNjEwLjk3NjYiIHkyPSI2MTAuOTc2NiIvPjxwb2x5Z29uIGZpbGw9IiNBODAwMzYiIHBvaW50cz0iODEyLDYwNi45NzY2LDgwMiw2MTAuOTc2Niw4MTIsNjE0Ljk3NjYsODA4LDYxMC45NzY2IiBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDEuMDsiLz48dGV4dCBmaWxsPSIjMDAwMDAwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMyIgbGVuZ3RoQWRqdXN0PSJzcGFjaW5nQW5kR2x5cGhzIiB0ZXh0TGVuZ3RoPSIxODAiIHg9IjgwOCIgeT0iNTkzLjIyMTciPkF1dGhlbnRpY2F0aW9uQ2hhbGxlbmdlVmVyaWZpZXI8L3RleHQ+PGxpbmUgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAyLjA7IiB4MT0iODAxIiB4Mj0iODQzIiB5MT0iNjM5LjkyNTMiIHkyPSI2MzkuOTI1MyIvPjxsaW5lIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMi4wOyIgeDE9Ijg0MyIgeDI9Ijg0MyIgeTE9IjYzOS45MjUzIiB5Mj0iNjUyLjkyNTMiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDIuMDsiIHgxPSI4MDIiIHgyPSI4NDMiIHkxPSI2NTIuOTI1MyIgeTI9IjY1Mi45MjUzIi8+PHBvbHlnb24gZmlsbD0iI0E4MDAzNiIgcG9pbnRzPSI4MTIsNjQ4LjkyNTMsODAyLDY1Mi45MjUzLDgxMiw2NTYuOTI1Myw4MDgsNjUyLjkyNTMiIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS4wOyIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjEzIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjcxIiB4PSI4MDgiIHk9IjYzNS4xNzA0Ij5hZGRJZGVudGl0eSgpPC90ZXh0PjxsaW5lIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMi4wOyIgeDE9IjgwMSIgeDI9Ijg0MyIgeTE9IjY4MS44NzQiIHkyPSI2ODEuODc0Ii8+PGxpbmUgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAyLjA7IiB4MT0iODQzIiB4Mj0iODQzIiB5MT0iNjgxLjg3NCIgeTI9IjY5NC44NzQiLz48bGluZSBzdHlsZT0ic3Ryb2tlOiAjQTgwMDM2OyBzdHJva2Utd2lkdGg6IDIuMDsiIHgxPSI4MDIiIHgyPSI4NDMiIHkxPSI2OTQuODc0IiB5Mj0iNjk0Ljg3NCIvPjxwb2x5Z29uIGZpbGw9IiNBODAwMzYiIHBvaW50cz0iODEyLDY5MC44NzQsODAyLDY5NC44NzQsODEyLDY5OC44NzQsODA4LDY5NC44NzQiIHN0eWxlPSJzdHJva2U6ICNBODAwMzY7IHN0cm9rZS13aWR0aDogMS4wOyIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjEzIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9Ijg4IiB4PSI4MDgiIHk9IjY3Ny4xMTkxIj5nZW5lcmF0ZUNvZGUoKTwvdGV4dD48cG9seWdvbiBmaWxsPSIjQTgwMDM2IiBwb2ludHM9IjQxNSw3MTkuODIyOCw0MDUsNzIzLjgyMjgsNDE1LDcyNy44MjI4LDQxMSw3MjMuODIyOCIgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAxLjA7Ii8+PGxpbmUgc3R5bGU9InN0cm9rZTogI0E4MDAzNjsgc3Ryb2tlLXdpZHRoOiAyLjA7IHN0cm9rZS1kYXNoYXJyYXk6IDIuMCwyLjA7IiB4MT0iNDA5IiB4Mj0iNzkwIiB5MT0iNzIzLjgyMjgiIHkyPSI3MjMuODIyOCIvPjx0ZXh0IGZpbGw9IiMwMDAwMDAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjEzIiBsZW5ndGhBZGp1c3Q9InNwYWNpbmdBbmRHbHlwaHMiIHRleHRMZW5ndGg9IjM2MSIgeD0iNDIxIiB5PSI3MTkuMDY3OSI+c2VuZCAzMDIgcmVkaXJlY3QgdG8gdG9rZW4gZW5kIHBvaW50IHdpdGggY29kZSBhcyBxdWVyeSBwYXJhbTwvdGV4dD48IS0tTUQ1PVs2YTI4YzA4MDg3NGIyNDA3ZjE0ZWJiN2M0OTg2MWJmZl0KQHN0YXJ0dW1sDQoNCnRpdGxlDQo8aW1nOmltYWdlcy9JRFBMb2dvLTY0LnBuZz4gPHU+SURQIFNlcnZlciB3b3JrZmxvdyAtIEF1dGhlbnRpY2F0aW9uIGVuZCBwb2ludDwvdT4NCmVuZCB0aXRsZQ0KDQpza2lucGFyYW0gc2VxdWVuY2VBcnJvd1RoaWNrbmVzcyAyDQpza2lucGFyYW0gcm91bmRjb3JuZXIgMjANCnNraW5wYXJhbSBzZXF1ZW5jZVBhcnRpY2lwYW50IHVuZGVybGluZQ0Kc2tpbnBhcmFtIG1heE1lc3NhZ2VTaXplIDQwMA0Kc2tpbnBhcmFtIFBhcnRpY2lwYW50UGFkZGluZyAyMA0KDQphY3RvciBWZXJzaWNoZXJ0ZVIgYXMgVg0KcGFydGljaXBhbnQgQW53ZW5kdW5nc0Zyb250ZW5kIGFzIEFud0ZFDQonIHBhcnRpY2lwYW50IEZhY2hkaWVuc3QgYXMgRkQNCmJveCAjc2t5Ymx1ZQ0KcGFydGljaXBhbnQgQXV0aGVudGljYXRvckNsaWVudCBhcyBhdXRoQ2xpZW50DQpwYXJ0aWNpcGFudCBJRFBfQXV0aG9yaXphdGlvbiBhcyBJRFBBdXRoDQonIHBhcnRpY2lwYW50IElEUF9Ub2tlbiBhcyBJRFBUb2tlbg0KJyBwYXJ0aWNpcGFudCBJRFBfRGlzY292ZXJ5IGFzIElEUERJU0MNCicgYWN0b3IgSURQX1JlZGlyZWN0aW9uIGFzIElEUFJlZGlyDQplbmRib3gNCicgcGFydGljaXBhbnQgIk9DIFNQL1RTTCBEaWVuc3QiIGFzIE9DU1BEDQoNCg0KViAtPiBBbndGRSA6IHN0YXJ0IGFwcA0KViAtPiBBbndGRSA6IHJlcXVlc3QgZGF0YSBmcm9tIEZEDQpBbndGRSAtPiBhdXRoQ2xpZW50ICsrIDogZ2V0Q29kZUNoYWxsZW5nZQ0KYXV0aENsaWVudCAtPiBJRFBBdXRoICsrIDogUGVyZm9ybSBhdXRob3JpemF0aW9uOlxuR0VUIC9hdXRob3JpemF0aW9uIGNsaWVudF9pZCwgc3RhdGUsIHJlZGlyZWN0dXJsLCBjb2RlX2NoYWxsZW5nZSwgc2NvcGUsIC4uLg0KJyBUT0RPIHdvaGVyIGtyaWVndCBkZXIgYXV0aENMaWVudCBkZW4gc2NvcGU/Pz8gaGFyZGNvZGVkPw0KJyBUT0RPIHdvenUgaXN0IGRlciBzdGF0ZT8NCklEUEF1dGggLT4gSURQQXV0aCA6IGNyZWF0ZVNlc3Npb24NCicgVE9ETyBsw6R1ZnQgYW0gc2VydmVyIGF1dG9tYXRpc2NoIGFiPyBTcHJpbmdib290IGNvbmZpZyx3ZW5uIGphIHdlbGNoZXMgc2Vzc2lvbiBzeXN0ZW0/IGRiIGJhc2VkPw0KSURQQXV0aCAtPiBJRFBBdXRoIDogY3JlYXRlQ2hhbGxlbmdlDQpJRFBBdXRoIC0+IElEUEF1dGggOiBnZXRVc2VyQ29uc2VudFRleHQNCnJldHVybiBBdXRoZW50aWNhdGlvbkNoYWxsZW5nZQ0KJyBUT0RPIGlzdCBkZXIgdXNlciBjb25zZW50IGRhcyBzdWJqZWN0IG9kZXIgd29oZXIga3JpZWdlbiB3aXIgZGFzPw0KYXV0aENsaWVudCAtPiBWIC0gLSA6IGRpc3BsYXlVc2VyQ29uc2VudA0KViAtPiBhdXRoQ2xpZW50ICsrIDogY29uZmlybUNvbnNlbnQNCmF1dGhDbGllbnQgLT4gYXV0aENsaWVudCA6IHNpZ25DaGFsbGVuZ2UNCmF1dGhDbGllbnQgLT4gSURQQXV0aCArKyA6IFBlcmZvcm0gQXV0aGVudGljYXRpb246XG4gUE9TVCAvYXV0aGVudGljYXRpb24gc2lnbmVkX2NoYWxsZW5nZQ0KSURQQXV0aCAtPiBJRFBBdXRoIDogQXV0aGVudGljYXRpb25DaGFsbGVuZ2VWZXJpZmllcg0KJyBUT0RPIG5vIGNvZGUNCklEUEF1dGggLT4gSURQQXV0aDogYWRkSWRlbnRpdHkoKQ0KJyBUT0RPIHdoZXJlIGlzIHRoaXMgZG9uZT8NCklEUEF1dGggLT4gSURQQXV0aDogZ2VuZXJhdGVDb2RlKCkNCklEUEF1dGggLSAtPiBhdXRoQ2xpZW50IDogc2VuZCAzMDIgcmVkaXJlY3QgdG8gdG9rZW4gZW5kIHBvaW50IHdpdGggY29kZSBhcyBxdWVyeSBwYXJhbQ0KDQpAZW5kdW1sDQoKQHN0YXJ0dW1sDQoNCnRpdGxlDQo8aW1nOmltYWdlcy9JRFBMb2dvLTY0LnBuZz4gPHU+SURQIFNlcnZlciB3b3JrZmxvdyAtIEF1dGhlbnRpY2F0aW9uIGVuZCBwb2ludDwvdT4NCmVuZCB0aXRsZQ0KDQpza2lucGFyYW0gc2VxdWVuY2VBcnJvd1RoaWNrbmVzcyAyDQpza2lucGFyYW0gcm91bmRjb3JuZXIgMjANCnNraW5wYXJhbSBzZXF1ZW5jZVBhcnRpY2lwYW50IHVuZGVybGluZQ0Kc2tpbnBhcmFtIG1heE1lc3NhZ2VTaXplIDQwMA0Kc2tpbnBhcmFtIFBhcnRpY2lwYW50UGFkZGluZyAyMA0KDQphY3RvciBWZXJzaWNoZXJ0ZVIgYXMgVg0KcGFydGljaXBhbnQgQW53ZW5kdW5nc0Zyb250ZW5kIGFzIEFud0ZFDQpib3ggI3NreWJsdWUNCnBhcnRpY2lwYW50IEF1dGhlbnRpY2F0b3JDbGllbnQgYXMgYXV0aENsaWVudA0KcGFydGljaXBhbnQgSURQX0F1dGhvcml6YXRpb24gYXMgSURQQXV0aA0KZW5kYm94DQoNCg0KViAtPiBBbndGRSA6IHN0YXJ0IGFwcA0KViAtPiBBbndGRSA6IHJlcXVlc3QgZGF0YSBmcm9tIEZEDQpBbndGRSAtPiBhdXRoQ2xpZW50ICsrIDogZ2V0Q29kZUNoYWxsZW5nZQ0KYXV0aENsaWVudCAtPiBJRFBBdXRoICsrIDogUGVyZm9ybSBhdXRob3JpemF0aW9uOlxuR0VUIC9hdXRob3JpemF0aW9uIGNsaWVudF9pZCwgc3RhdGUsIHJlZGlyZWN0dXJsLCBjb2RlX2NoYWxsZW5nZSwgc2NvcGUsIC4uLg0KSURQQXV0aCAtPiBJRFBBdXRoIDogY3JlYXRlU2Vzc2lvbg0KSURQQXV0aCAtPiBJRFBBdXRoIDogY3JlYXRlQ2hhbGxlbmdlDQpJRFBBdXRoIC0+IElEUEF1dGggOiBnZXRVc2VyQ29uc2VudFRleHQNCnJldHVybiBBdXRoZW50aWNhdGlvbkNoYWxsZW5nZQ0KYXV0aENsaWVudCAtPiBWIC0gLSA6IGRpc3BsYXlVc2VyQ29uc2VudA0KViAtPiBhdXRoQ2xpZW50ICsrIDogY29uZmlybUNvbnNlbnQNCmF1dGhDbGllbnQgLT4gYXV0aENsaWVudCA6IHNpZ25DaGFsbGVuZ2UNCmF1dGhDbGllbnQgLT4gSURQQXV0aCArKyA6IFBlcmZvcm0gQXV0aGVudGljYXRpb246XG4gUE9TVCAvYXV0aGVudGljYXRpb24gc2lnbmVkX2NoYWxsZW5nZQ0KSURQQXV0aCAtPiBJRFBBdXRoIDogQXV0aGVudGljYXRpb25DaGFsbGVuZ2VWZXJpZmllcg0KSURQQXV0aCAtPiBJRFBBdXRoOiBhZGRJZGVudGl0eSgpDQpJRFBBdXRoIC0+IElEUEF1dGg6IGdlbmVyYXRlQ29kZSgpDQpJRFBBdXRoIC0gLT4gYXV0aENsaWVudCA6IHNlbmQgMzAyIHJlZGlyZWN0IHRvIHRva2VuIGVuZCBwb2ludCB3aXRoIGNvZGUgYXMgcXVlcnkgcGFyYW0NCg0KQGVuZHVtbA0KClBsYW50VU1MIHZlcnNpb24gMS4yMDIwLjE5KE1vbiBPY3QgMTIgMTc6MTA6MDEgQ0VTVCAyMDIwKQooR1BMIHNvdXJjZSBkaXN0cmlidXRpb24pCkphdmEgUnVudGltZTogT3BlbkpESyBSdW50aW1lIEVudmlyb25tZW50CkpWTTogT3BlbkpESyA2NC1CaXQgU2VydmVyIFZNCkRlZmF1bHQgRW5jb2Rpbmc6IFVURi04Ckxhbmd1YWdlOiBlbgpDb3VudHJ5OiBVUwotLT48L2c+PC9zdmc+" alt="workflowAuthentication">
+</div>
+<div class="title">Abbildung 2. Ablauf Authentifizierung</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_paths"><a class="anchor" href="#_paths"></a><a class="link" href="#_paths">3. Ressourcen</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_idp-dienst_resource"><a class="anchor" href="#_idp-dienst_resource"></a><a class="link" href="#_idp-dienst_resource">3.1. Idp-Dienst</a></h3>
+<div class="paragraph">
+<p>Idp Controller</p>
+</div>
+<div class="sect3">
+<h4 id="_authenticationendpointusingpost"><a class="anchor" href="#_authenticationendpointusingpost"></a><a class="link" href="#_authenticationendpointusingpost">3.1.1. authenticationEndpoint</a></h4>
+<div class="literalblock">
+<div class="content">
+<pre>POST /authentication</pre>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_parameter"><a class="anchor" href="#_parameter"></a><a class="link" href="#_parameter">Parameter</a></h5>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 11.1111%;">
+<col style="width: 16.6666%;">
+<col style="width: 50%;">
+<col style="width: 22.2223%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-middle">Typ</th>
+<th class="tableblock halign-left valign-middle">Name</th>
+<th class="tableblock halign-left valign-middle">Beschreibung</th>
+<th class="tableblock halign-left valign-middle">Typ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>Query</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>signed_challenge</strong><br>
+<em>verpflichtend</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>signed_challenge</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>string</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect4">
+<h5 id="_antworten"><a class="anchor" href="#_antworten"></a><a class="link" href="#_antworten">Antworten</a></h5>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 10%;">
+<col style="width: 70%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-middle">HTTP Code</th>
+<th class="tableblock halign-left valign-middle">Beschreibung</th>
+<th class="tableblock halign-left valign-middle">Typ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>200</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>OK</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>201</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Created</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>401</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Unauthorized</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>403</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Forbidden</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>404</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Not Found</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect4">
+<h5 id="_verarbeitet"><a class="anchor" href="#_verarbeitet"></a><a class="link" href="#_verarbeitet">Verarbeitet</a></h5>
+<div class="ulist">
+<ul>
+<li>
+<p><code>application/json</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_erzeugt"><a class="anchor" href="#_erzeugt"></a><a class="link" href="#_erzeugt">Erzeugt</a></h5>
+<div class="ulist">
+<ul>
+<li>
+<p><code>*/*</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_authorizationendpointusingget"><a class="anchor" href="#_authorizationendpointusingget"></a><a class="link" href="#_authorizationendpointusingget">3.1.2. authorizationEndpoint</a></h4>
+<div class="literalblock">
+<div class="content">
+<pre>GET /authorization</pre>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_parameter_2"><a class="anchor" href="#_parameter_2"></a><a class="link" href="#_parameter_2">Parameter</a></h5>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 11.1111%;">
+<col style="width: 16.6666%;">
+<col style="width: 50%;">
+<col style="width: 22.2223%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-middle">Typ</th>
+<th class="tableblock halign-left valign-middle">Name</th>
+<th class="tableblock halign-left valign-middle">Beschreibung</th>
+<th class="tableblock halign-left valign-middle">Typ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>Query</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>client_id</strong><br>
+<em>verpflichtend</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>client_id</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>string</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>Query</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>code_challenge</strong><br>
+<em>verpflichtend</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>code_challenge</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>string</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>Query</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>redirect_uri</strong><br>
+<em>verpflichtend</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>redirect_uri</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>string</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>Query</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>state</strong><br>
+<em>verpflichtend</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>state</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>string</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect4">
+<h5 id="_antworten_2"><a class="anchor" href="#_antworten_2"></a><a class="link" href="#_antworten_2">Antworten</a></h5>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 10%;">
+<col style="width: 70%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-middle">HTTP Code</th>
+<th class="tableblock halign-left valign-middle">Beschreibung</th>
+<th class="tableblock halign-left valign-middle">Typ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>200</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>OK</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><a href="#_authenticationchallenge">AuthenticationChallenge</a></p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>401</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Unauthorized</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>403</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Forbidden</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>404</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Not Found</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect4">
+<h5 id="_erzeugt_2"><a class="anchor" href="#_erzeugt_2"></a><a class="link" href="#_erzeugt_2">Erzeugt</a></h5>
+<div class="ulist">
+<ul>
+<li>
+<p><code>*/*</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_tokenendpointusingpost"><a class="anchor" href="#_tokenendpointusingpost"></a><a class="link" href="#_tokenendpointusingpost">3.1.3. Frage nach einem Token</a></h4>
+<div class="literalblock">
+<div class="content">
+<pre>POST /token</pre>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_beschreibung"><a class="anchor" href="#_beschreibung"></a><a class="link" href="#_beschreibung">Beschreibung</a></h5>
+<div class="paragraph">
+<p>Tokenanfrage mittels AUTHORIZATION_CODE</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_parameter_3"><a class="anchor" href="#_parameter_3"></a><a class="link" href="#_parameter_3">Parameter</a></h5>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 11.1111%;">
+<col style="width: 16.6666%;">
+<col style="width: 50%;">
+<col style="width: 22.2223%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-middle">Typ</th>
+<th class="tableblock halign-left valign-middle">Name</th>
+<th class="tableblock halign-left valign-middle">Beschreibung</th>
+<th class="tableblock halign-left valign-middle">Typ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>Query</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>code</strong><br>
+<em>verpflichtend</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Toke response code</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>string</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect4">
+<h5 id="_antworten_3"><a class="anchor" href="#_antworten_3"></a><a class="link" href="#_antworten_3">Antworten</a></h5>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 10%;">
+<col style="width: 70%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-middle">HTTP Code</th>
+<th class="tableblock halign-left valign-middle">Beschreibung</th>
+<th class="tableblock halign-left valign-middle">Typ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>200</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Successfully retrieved list</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><a href="#_tokenresponse">TokenResponse</a></p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>201</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Created</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>401</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>You are not authorized to view the resource</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>403</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Accessing the resource you were trying to reach is forbidden</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>404</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>The resource you were trying to reach is not found</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect4">
+<h5 id="_verarbeitet_2"><a class="anchor" href="#_verarbeitet_2"></a><a class="link" href="#_verarbeitet_2">Verarbeitet</a></h5>
+<div class="ulist">
+<ul>
+<li>
+<p><code>application/json</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_erzeugt_3"><a class="anchor" href="#_erzeugt_3"></a><a class="link" href="#_erzeugt_3">Erzeugt</a></h5>
+<div class="ulist">
+<ul>
+<li>
+<p><code>*/*</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_discovery-document-controller_resource"><a class="anchor" href="#_discovery-document-controller_resource"></a><a class="link" href="#_discovery-document-controller_resource">3.2. Discovery-document-controller</a></h3>
+<div class="paragraph">
+<p>REST Endpunkt für das Abfragen der öffentlichen Informationen des IDP Rest Services</p>
+</div>
+<div class="sect3">
+<h4 id="_getdiscoverydocumentusingget"><a class="anchor" href="#_getdiscoverydocumentusingget"></a><a class="link" href="#_getdiscoverydocumentusingget">3.2.1. Liefere alle öffentlich verfügbaren Informationen zum IDP Server</a></h4>
+<div class="literalblock">
+<div class="content">
+<pre>GET /auth/realms/idp/.well-known/openid-configuration</pre>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_beschreibung_2"><a class="anchor" href="#_beschreibung_2"></a><a class="link" href="#_beschreibung_2">Beschreibung</a></h5>
+<div class="paragraph">
+<p>Diese Daten sind mit dem privaten Schlüssel des IDP Servers verschlüsselt(?)</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_antworten_4"><a class="anchor" href="#_antworten_4"></a><a class="link" href="#_antworten_4">Antworten</a></h5>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 10%;">
+<col style="width: 70%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-middle">HTTP Code</th>
+<th class="tableblock halign-left valign-middle">Beschreibung</th>
+<th class="tableblock halign-left valign-middle">Typ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>200</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>OK</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>string</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>401</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Unauthorized</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>403</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Forbidden</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>404</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Not Found</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect4">
+<h5 id="_erzeugt_4"><a class="anchor" href="#_erzeugt_4"></a><a class="link" href="#_erzeugt_4">Erzeugt</a></h5>
+<div class="ulist">
+<ul>
+<li>
+<p><code>application/json</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_getdiscoverydocumentusingget_1"><a class="anchor" href="#_getdiscoverydocumentusingget_1"></a><a class="link" href="#_getdiscoverydocumentusingget_1">3.2.2. Liefere alle öffentlich verfügbaren Informationen zum IDP Server</a></h4>
+<div class="literalblock">
+<div class="content">
+<pre>GET /discoveryDocument</pre>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_beschreibung_3"><a class="anchor" href="#_beschreibung_3"></a><a class="link" href="#_beschreibung_3">Beschreibung</a></h5>
+<div class="paragraph">
+<p>Diese Daten sind mit dem privaten Schlüssel des IDP Servers verschlüsselt(?)</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_antworten_5"><a class="anchor" href="#_antworten_5"></a><a class="link" href="#_antworten_5">Antworten</a></h5>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 10%;">
+<col style="width: 70%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-middle">HTTP Code</th>
+<th class="tableblock halign-left valign-middle">Beschreibung</th>
+<th class="tableblock halign-left valign-middle">Typ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>200</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>OK</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>string</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>401</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Unauthorized</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>403</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Forbidden</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>404</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Not Found</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect4">
+<h5 id="_erzeugt_5"><a class="anchor" href="#_erzeugt_5"></a><a class="link" href="#_erzeugt_5">Erzeugt</a></h5>
+<div class="ulist">
+<ul>
+<li>
+<p><code>application/json</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_getjwksusingget"><a class="anchor" href="#_getjwksusingget"></a><a class="link" href="#_getjwksusingget">3.2.3. Liefere das Jwks Dokument(?)</a></h4>
+<div class="literalblock">
+<div class="content">
+<pre>GET /jwks</pre>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_beschreibung_4"><a class="anchor" href="#_beschreibung_4"></a><a class="link" href="#_beschreibung_4">Beschreibung</a></h5>
+<div class="paragraph">
+<p>(?)</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_antworten_6"><a class="anchor" href="#_antworten_6"></a><a class="link" href="#_antworten_6">Antworten</a></h5>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 10%;">
+<col style="width: 70%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-middle">HTTP Code</th>
+<th class="tableblock halign-left valign-middle">Beschreibung</th>
+<th class="tableblock halign-left valign-middle">Typ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>200</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>OK</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><a href="#_idpjwksdocument">IdpJwksDocument</a></p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>401</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Unauthorized</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>403</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Forbidden</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>404</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Not Found</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect4">
+<h5 id="_erzeugt_6"><a class="anchor" href="#_erzeugt_6"></a><a class="link" href="#_erzeugt_6">Erzeugt</a></h5>
+<div class="ulist">
+<ul>
+<li>
+<p><code>*/*</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_key-information-controller_resource"><a class="anchor" href="#_key-information-controller_resource"></a><a class="link" href="#_key-information-controller_resource">3.3. Key-information-controller</a></h3>
+<div class="paragraph">
+<p>Key Information Controller</p>
+</div>
+<div class="sect3">
+<h4 id="_getauthjwksusingget"><a class="anchor" href="#_getauthjwksusingget"></a><a class="link" href="#_getauthjwksusingget">3.3.1. getAuthJwks</a></h4>
+<div class="literalblock">
+<div class="content">
+<pre>GET /authKey/jwks.json</pre>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_antworten_7"><a class="anchor" href="#_antworten_7"></a><a class="link" href="#_antworten_7">Antworten</a></h5>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 10%;">
+<col style="width: 70%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-middle">HTTP Code</th>
+<th class="tableblock halign-left valign-middle">Beschreibung</th>
+<th class="tableblock halign-left valign-middle">Typ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>200</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>OK</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><a href="#_idpjwksdocument">IdpJwksDocument</a></p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>401</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Unauthorized</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>403</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Forbidden</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>404</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Not Found</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect4">
+<h5 id="_erzeugt_7"><a class="anchor" href="#_erzeugt_7"></a><a class="link" href="#_erzeugt_7">Erzeugt</a></h5>
+<div class="ulist">
+<ul>
+<li>
+<p><code>*/*</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_getdiscjwksusingget"><a class="anchor" href="#_getdiscjwksusingget"></a><a class="link" href="#_getdiscjwksusingget">3.3.2. getDiscJwks</a></h4>
+<div class="literalblock">
+<div class="content">
+<pre>GET /discKey/jwks.json</pre>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_antworten_8"><a class="anchor" href="#_antworten_8"></a><a class="link" href="#_antworten_8">Antworten</a></h5>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 10%;">
+<col style="width: 70%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-middle">HTTP Code</th>
+<th class="tableblock halign-left valign-middle">Beschreibung</th>
+<th class="tableblock halign-left valign-middle">Typ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>200</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>OK</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><a href="#_idpjwksdocument">IdpJwksDocument</a></p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>401</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Unauthorized</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>403</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Forbidden</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>404</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Not Found</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect4">
+<h5 id="_erzeugt_8"><a class="anchor" href="#_erzeugt_8"></a><a class="link" href="#_erzeugt_8">Erzeugt</a></h5>
+<div class="ulist">
+<ul>
+<li>
+<p><code>*/*</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_gettokenjwksusingget"><a class="anchor" href="#_gettokenjwksusingget"></a><a class="link" href="#_gettokenjwksusingget">3.3.3. getTokenJwks</a></h4>
+<div class="literalblock">
+<div class="content">
+<pre>GET /tokenKey/jwks.json</pre>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_antworten_9"><a class="anchor" href="#_antworten_9"></a><a class="link" href="#_antworten_9">Antworten</a></h5>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 10%;">
+<col style="width: 70%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-middle">HTTP Code</th>
+<th class="tableblock halign-left valign-middle">Beschreibung</th>
+<th class="tableblock halign-left valign-middle">Typ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>200</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>OK</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><a href="#_idpjwksdocument">IdpJwksDocument</a></p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>401</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Unauthorized</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>403</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Forbidden</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>404</strong></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Not Found</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>Kein Inhalt</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect4">
+<h5 id="_erzeugt_9"><a class="anchor" href="#_erzeugt_9"></a><a class="link" href="#_erzeugt_9">Erzeugt</a></h5>
+<div class="ulist">
+<ul>
+<li>
+<p><code>*/*</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_definitions"><a class="anchor" href="#_definitions"></a><a class="link" href="#_definitions">4. Definitionen</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_authenticationchallenge"><a class="anchor" href="#_authenticationchallenge"></a><a class="link" href="#_authenticationchallenge">4.1. AuthenticationChallenge</a></h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 42.8571%;">
+<col style="width: 57.1429%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-middle">Name</th>
+<th class="tableblock halign-left valign-middle">Typ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>challenge</strong><br>
+<em>optional</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>string</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>show_once</strong><br>
+<em>optional</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>boolean</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>user_consent</strong><br>
+<em>optional</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><a href="#_userconsent">UserConsent</a></p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_idpjwksdocument"><a class="anchor" href="#_idpjwksdocument"></a><a class="link" href="#_idpjwksdocument">4.2. IdpJwksDocument</a></h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 42.8571%;">
+<col style="width: 57.1429%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-middle">Name</th>
+<th class="tableblock halign-left valign-middle">Typ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>keys</strong><br>
+<em>optional</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>&lt; <a href="#_idpkeydescriptor">IdpKeyDescriptor</a> &gt; array</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_idpkeydescriptor"><a class="anchor" href="#_idpkeydescriptor"></a><a class="link" href="#_idpkeydescriptor">4.3. IdpKeyDescriptor</a></h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 42.8571%;">
+<col style="width: 57.1429%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-middle">Name</th>
+<th class="tableblock halign-left valign-middle">Typ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>crv</strong><br>
+<em>optional</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>string</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>e</strong><br>
+<em>optional</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>string</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>kid</strong><br>
+<em>optional</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>string</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>kty</strong><br>
+<em>optional</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>string</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>n</strong><br>
+<em>optional</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>string</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>x</strong><br>
+<em>optional</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>string</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>x5c</strong><br>
+<em>optional</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>&lt; string &gt; array</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>y</strong><br>
+<em>optional</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>string</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_tokenresponse"><a class="anchor" href="#_tokenresponse"></a><a class="link" href="#_tokenresponse">4.4. TokenResponse</a></h3>
+<div class="paragraph">
+<p>Antwort des Gematik IDP Servers auf Tokenanfragen</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 16.6666%;">
+<col style="width: 61.1111%;">
+<col style="width: 22.2223%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-middle">Name</th>
+<th class="tableblock halign-left valign-middle">Beschreibung</th>
+<th class="tableblock halign-left valign-middle">Typ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>access_token</strong><br>
+<em>optional</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>string</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>id_token</strong><br>
+<em>optional</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>ID Token</p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>string</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_userconsent"><a class="anchor" href="#_userconsent"></a><a class="link" href="#_userconsent">4.5. UserConsent</a></h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 42.8571%;">
+<col style="width: 57.1429%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-middle">Name</th>
+<th class="tableblock halign-left valign-middle">Typ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>client_name</strong><br>
+<em>optional</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>string</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p><strong>url</strong><br>
+<em>optional</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-middle"><div class="content"><div class="paragraph">
+<p>string</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Version 0.1-SNAPSHOT<br>
+Zuletzt aktualisiert 2020-10-31 23:13:47 +0100
+</div>
+</div>
+</body>
+</html>

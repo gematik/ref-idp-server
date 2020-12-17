@@ -1,0 +1,12 @@
+[#introduction]
+== Einführung
+
+image::../../../../../doc/images/IDPLogo-64.png[Logo]
+Der manual_content.adoc Gematik IDP Server dient zur Identifizierung von Versicherten und Leistungserbringenden Organisationen.
+
+[.maxfullwidth]
+image::../../../../target/asciidoc/swagger.svg[title=Klassenübersicht]
+
+
+[.maxfullwidth]
+image::../../../../target/asciidoc/workflowAuthentication.svg[title=Ablauf Authentifizierung]

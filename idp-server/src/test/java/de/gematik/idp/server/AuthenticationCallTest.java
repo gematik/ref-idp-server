@@ -1,0 +1,144 @@
+/*
+ * Copyright (c) 2020 gematik GmbH
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package de.gematik.idp.server;
+
+import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
+import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
+import de.gematik.idp.authentication.UriUtils;
+import de.gematik.idp.client.IdpClient;
+import de.gematik.idp.crypto.model.PkiIdentity;
+import de.gematik.idp.server.configuration.IdpConfiguration;
+import de.gematik.idp.server.controllers.IdpController;
+import de.gematik.idp.tests.PkiKeyResolver;
+import de.gematik.idp.token.JsonWebToken;
+import kong.unirest.MultipartBody;
+import kong.unirest.UnirestException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+
+@ExtendWith(SpringExtension.class)
+@ExtendWith(PkiKeyResolver.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public class AuthenticationCallTest {
+
+    private IdpClient idpClient;
+    private PkiIdentity egkUserIdentity;
+
+    @LocalServerPort
+    private int localServerPort;
+    @Autowired
+    private AuthenticationChallengeBuilder authenticationChallengeBuilder;
+    @Autowired
+    private IdpController idpController;
+    private AuthenticationChallengeBuilder authenticationChallengeBuilderSpy;
+    private AuthenticationChallengeVerifier authenticationChallengeVerifier;
+    @Autowired
+    private IdpConfiguration idpConfiguration;
+
+    @BeforeEach
+    public void startup(@PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity) {
+        idpClient = IdpClient.builder()
+                .clientId("foo")
+                .clientSecret("bar")
+                .discoveryDocumentUrl("http://localhost:" + localServerPort + "/discoveryDocument")
+                .redirectUrl(idpConfiguration.getRedirectUri())
+                .build();
+
+        idpClient.initialize();
+
+        egkUserIdentity = PkiIdentity.builder()
+                .certificate(egkIdentity.getCertificate())
+                .privateKey(egkIdentity.getPrivateKey())
+                .build();
+
+        authenticationChallengeVerifier = AuthenticationChallengeVerifier.builder()
+                .serverIdentity(egkUserIdentity)
+                .build();
+
+        authenticationChallengeBuilderSpy = spy(authenticationChallengeBuilder);
+        ReflectionTestUtils
+                .setField(idpController, "authenticationChallengeBuilder", authenticationChallengeBuilderSpy);
+    }
+
+    @Test
+    public void verifyTokenAlgorithm() throws UnirestException {
+        idpClient.login(egkUserIdentity);
+        verify(authenticationChallengeBuilderSpy)
+                .buildAuthenticationChallenge(eq("foo"), anyString(), eq(idpConfiguration.getRedirectUri()), anyString());
+    }
+
+    @Test
+    public void verifyResponseStatusCode() {
+        idpClient.setBeforeAuthenticationCallback(request ->
+                assertThat(request.asJson().getStatus()).isEqualTo(HttpStatus.FOUND.value()));
+        idpClient.login(egkUserIdentity);
+    }
+
+    @Test
+    public void verifyResponseAttribute_code() {
+        idpClient.setAfterAuthenticationCallback(response -> assertThat(UriUtils.extractParameterValue(
+                response.getHeaders().get("Location").get(0), "code")).isNotEmpty());
+        idpClient.login(egkUserIdentity);
+    }
+
+    @Test
+    public void verifyResponseAttribute_sso_token() {
+        idpClient.setAfterAuthenticationCallback(response -> assertThat(UriUtils.extractParameterValue(
+                response.getHeaders().get("Location").get(0), "sso_token")).isNotEmpty());
+        idpClient.login(egkUserIdentity);
+    }
+
+    @Test
+    public void verifyAttribute_content_type() {
+        idpClient.setBeforeAuthenticationCallback(
+                request -> assertThat(request.getHeaders().containsKey("Content-Type")).isTrue());
+        idpClient.login(egkUserIdentity);
+    }
+
+    @Test
+    public void verifyAttribute_signed_challenge() {
+        idpClient.setBeforeAuthenticationCallback(request -> assertThat(
+                request.getBody().get().multiParts().stream().findFirst().get().getName())
+                .isEqualTo("signed_challenge"));
+        idpClient.login(egkUserIdentity);
+    }
+
+    @Test
+    public void verifySignedChallengeBodyAttribute_njwt() {
+        idpClient.setBeforeAuthenticationCallback(request -> assertThat(new JsonWebToken(getTokenOfRequest(request))
+                .getBodyClaims()).containsKey("njwt"));
+        idpClient.login(egkUserIdentity);
+    }
+
+
+    private String getTokenOfRequest(final MultipartBody request) {
+        return (String) request.getBody().get().multiParts().stream().findFirst().get().getValue();
+    }
+}

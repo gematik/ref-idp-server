@@ -1,0 +1,32 @@
+#parse("/array.java.vm")
+#if ($packageName)
+package $packageName;
+
+#end##
+
+
+import org.junit.runner.RunWith;
+import org.junit.BeforeClass;
+
+import cucumber.api.CucumberOptions;
+import net.serenitybdd.cucumber.CucumberWithSerenity;
+
+import de.gematik.idp.test.steps.helpers.TestEnvironmentConfigurator;
+
+@RunWith(CucumberWithSerenity.class)
+@CucumberOptions(
+strict = $strict,
+features = {"$featureFile"},
+plugin = #stringArray($plugins),
+monochrome = $monochrome,
+#if(!$featureFile.contains(".feature:") && $mytags)
+tags = #stringArray($mytags),
+#end
+glue = #stringArray($glue))
+public class $className {
+
+@BeforeClass
+public static void setupClass() {
+TestEnvironmentConfigurator.initializeTestEnvironment();
+}
+}

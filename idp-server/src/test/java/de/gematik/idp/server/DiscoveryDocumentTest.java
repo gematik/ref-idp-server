@@ -1,0 +1,285 @@
+/*
+ * Copyright (c) 2020 gematik GmbH
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package de.gematik.idp.server;
+
+import static de.gematik.idp.IdpConstants.AUTHORIZATION_ENDPOINT;
+import static de.gematik.idp.IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT;
+import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+
+import de.gematik.idp.authentication.IdpJwtProcessor;
+import de.gematik.idp.field.ClaimName;
+import de.gematik.idp.server.controllers.IdpKey;
+import de.gematik.idp.tests.Afo;
+import de.gematik.idp.tests.Remark;
+import de.gematik.idp.tests.Rfc;
+import de.gematik.idp.token.JsonWebToken;
+import de.gematik.idp.token.TokenClaimExtraction;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import kong.unirest.HttpResponse;
+import kong.unirest.Unirest;
+import kong.unirest.UnirestException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+@ExtendWith(SpringExtension.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public class DiscoveryDocumentTest {
+
+    private static final String CONFIGURED_SERVER_URL = "foobarschmar";
+    @LocalServerPort
+    private int localServerPort;
+    private String testHostUrl;
+    @Autowired
+    private IdpKey discKey;
+    @MockBean
+    private ServerUrlService serverUrlService;
+    private IdpJwtProcessor discoveryDocumentJwtProcessor;
+
+    @BeforeEach
+    public void setUpLocalHostUrl() {
+        testHostUrl = "http://localhost:" + localServerPort;
+        discoveryDocumentJwtProcessor = new IdpJwtProcessor(discKey.getIdentity());
+        doReturn(CONFIGURED_SERVER_URL)
+            .when(serverUrlService).determineServerUrl(any());
+    }
+
+    @Test
+    public void testLogin() throws UnirestException {
+        final HttpResponse httpResponse = retrieveDiscoveryDocument();
+
+        assertThat(httpResponse.isSuccess()).isTrue();
+    }
+
+    @Test
+    public void testHTTPCacheHeader() throws UnirestException {
+        final HttpResponse httpResponse = retrieveDiscoveryDocument();
+        assertThat(httpResponse.getHeaders().get("Cache-Control")).isEqualTo(Arrays.asList("max-age=300"));
+    }
+
+    @Afo("A_20458")
+    @Remark("Die Afo gibt keine vollstaendige Liste der zu verwendenden Attribute. Das ergibt sich mit dem Rfc und anderen Abschnitten der Spec")
+    @Rfc("https://openid.net/specs/openid-connect-discovery-1_0.html")
+    @Test
+    public void testContainsMandatoryAttributes() throws UnirestException {
+        final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
+
+        assertThat(extractClaimMapFromResponse(httpResponse))
+            .containsOnlyKeys("issuer",
+                "authorization_endpoint",
+                "token_endpoint",
+                "jwks_uri",
+                "subject_types_supported",
+                "id_token_signing_alg_values_supported",
+                "response_types_supported",
+                "scopes_supported",
+                "response_modes_supported",
+                "grant_types_supported",
+                "acr_values_supported",
+                "token_endpoint_auth_methods_supported",
+                "exp",
+                "nbf",
+                "iat",
+                "puk_uri_auth",
+                "puk_uri_token",
+                "puk_uri_disc");
+    }
+
+    @Remark("Ruecksprache mit Tommy in IDP-123, wir verwenden pairwise")
+    @Rfc("https://openid.net/specs/openid-connect-discovery-1_0.html")
+    @Test
+    public void testValueForSubjectTypesSupported() throws UnirestException {
+        final List<String> subjectTypesSupported = (List) extractClaimMapFromResponse(retrieveDiscoveryDocument())
+            .get("subject_types_supported");
+        assertThat(subjectTypesSupported)
+            .containsExactlyInAnyOrder("pairwise");
+    }
+
+    @Test
+    @Rfc("rfc 6749 section 3.1.1 and https://openid.net/specs/openid-connect-discovery-1_0.html")
+    @Remark("wir machen den authorizationCodeFlow, daher hier der Wert code")
+    public void testValueForResponseTypesSupported() throws UnirestException {
+        final List<String> responseTypesSupported = (List) extractClaimMapFromResponse(retrieveDiscoveryDocument())
+            .get("response_types_supported");
+        assertThat(responseTypesSupported).containsExactlyInAnyOrder("code");
+    }
+
+    @Test
+    @Rfc("https://openid.net/specs/openid-connect-discovery-1_0.html")
+    @Remark("OIDC verlangt den scope openid, e-rezept ergibt sich aus Beispielen in der Spec")
+    public void testValueForScopesSupported() throws UnirestException {
+        final List<String> scopesSupported = (List) extractClaimMapFromResponse(retrieveDiscoveryDocument())
+            .get("scopes_supported");
+        assertThat(scopesSupported).containsExactlyInAnyOrder("openid", "e-rezept");
+    }
+
+    @Test
+    @Remark("Ruecksprache mit der Spec hat zu BP256R1 gefuehrt, weil es zuvor keinen Bezeichner fuer ECDSA mit brainpool256r1 bei JWS gab")
+    public void testValueForIdTokenSigningAlgValuesSupported() throws UnirestException {
+        final List<String> responseTypesSupported = (List) extractClaimMapFromResponse(retrieveDiscoveryDocument())
+            .get("id_token_signing_alg_values_supported");
+        assertThat(responseTypesSupported).containsExactlyInAnyOrder("BP256R1");
+    }
+
+    @Test
+    @Rfc("https://openid.net/specs/openid-connect-discovery-1_0.html")
+    @Remark("wir haben nur den authorization_code grant type")
+    public void testValueForGrantTypesSupported() throws UnirestException {
+        final List<String> grantTypesSupported = (List) extractClaimMapFromResponse(retrieveDiscoveryDocument())
+            .get("grant_types_supported");
+        assertThat(grantTypesSupported).containsExactlyInAnyOrder("authorization_code");
+    }
+
+    @Test
+    @Rfc("https://openid.net/specs/oauth-v2-multiple-response-types-1_0.html")
+    public void testValueForResponseModesSupported() throws UnirestException {
+        final List<String> responseModesSupported = (List) extractClaimMapFromResponse(retrieveDiscoveryDocument())
+            .get("response_modes_supported");
+        assertThat(responseModesSupported).containsExactlyInAnyOrder("query");
+    }
+
+    @Test
+    @Remark("Ruecksprache mit Tommy in IDP-123, keine Ahnung, woher man das sonst wissen kann")
+    public void testValueForAcrValuesSupported() throws UnirestException {
+        final List<String> acrValuesSupported = (List) extractClaimMapFromResponse(retrieveDiscoveryDocument())
+            .get("acr_values_supported");
+        assertThat(acrValuesSupported).containsExactlyInAnyOrder("urn:eidas:loa:high");
+    }
+
+    @Test
+    @Rfc("https://openid.net/specs/openid-connect-discovery-1_0.html")
+    @Remark("bei uns findet keine Auth am Token Endpoint statt, daher none, Parameter vorhanden weil Defaultwert HTTP-Basic-Auth wäre")
+    public void testValueForTokenEndpointAuthMethodsValuesSupported() throws UnirestException {
+        final List<String> tokenEndpointAuthMethodsSupported = (List) extractClaimMapFromResponse(
+            retrieveDiscoveryDocument())
+            .get("token_endpoint_auth_methods_supported");
+        assertThat(tokenEndpointAuthMethodsSupported).containsExactlyInAnyOrder("none");
+    }
+
+    @Test
+    @Afo("A_20458")
+    @Rfc("rfc8414 section 2")
+    public void testValueForIssuer() throws UnirestException {
+        final String issuer = (String) extractClaimMapFromResponse(retrieveDiscoveryDocument())
+            .get("issuer");
+        assertThat(issuer).isEqualTo(CONFIGURED_SERVER_URL + "/auth/realms/idp");
+    }
+
+    @Test
+    @Afo("A_20458")
+    @Remark("nach ruecksprache mit Tommy wird nicht die Bezeichnung aus der afo, sondern die von oidc vorgesehene verwendet")
+    public void testValueForAuthorizationEndpoint() throws UnirestException {
+        final String authorizationEndpointValue = extractClaimMapFromResponse(retrieveDiscoveryDocument())
+            .get("authorization_endpoint").toString();
+        assertThat(authorizationEndpointValue)
+            .isEqualTo(CONFIGURED_SERVER_URL + AUTHORIZATION_ENDPOINT);
+    }
+
+    @Test
+    @Afo("A_20458")
+    @Remark("nach ruecksprache mit Tommy wird nicht die Bezeichnung aus der afo, sondern die von oidc vorgesehene verwendet")
+    public void testValueForTokenEndpoint() throws UnirestException {
+        final String tokenEndpointValue = extractClaimMapFromResponse(retrieveDiscoveryDocument())
+            .get("token_endpoint").toString();
+        assertThat(tokenEndpointValue)
+            .isEqualTo(CONFIGURED_SERVER_URL + TOKEN_ENDPOINT);
+    }
+
+    @Test
+    @Afo("A_20458")
+    public void testValueForJwksUri() throws UnirestException {
+        final String jwksUriValue = extractClaimMapFromResponse(retrieveDiscoveryDocument())
+            .get("jwks_uri").toString();
+        assertThat(jwksUriValue)
+            .startsWith(CONFIGURED_SERVER_URL);
+    }
+
+    @Test
+    @Afo("A_20591")
+    @Remark("Laut Aussage von Gerriet muss das DiscoveryDocument als JWS signiert werden.")
+    public void testDiscoveryDocumentSignature() throws UnirestException {
+        final String body = retrieveDiscoveryDocument().getBody();
+        discoveryDocumentJwtProcessor.verifyAndThrowExceptionIfFail(new JsonWebToken(body));
+    }
+
+    @Test
+    @Afo("A_20691")
+    public void testValueExpiration() throws UnirestException {
+        final long expirationValue = (long) extractClaimMapFromResponse(retrieveDiscoveryDocument())
+            .get(ClaimName.EXPIRES_AT.getJoseName());
+        assertThat(expirationValue)
+            .isLessThanOrEqualTo(ZonedDateTime.now().plusHours(24).toEpochSecond());
+        assertThat(expirationValue)
+            .isGreaterThanOrEqualTo(ZonedDateTime.now().minusMinutes(1).plusHours(24).toEpochSecond());
+    }
+
+    @Test
+    public void testValueNotBefore() throws UnirestException {
+        final long noteBeforeValue = (long) extractClaimMapFromResponse(retrieveDiscoveryDocument())
+            .get(ClaimName.NOT_BEFORE.getJoseName());
+        assertThat(noteBeforeValue)
+            .isLessThanOrEqualTo(ZonedDateTime.now().toEpochSecond());
+        assertThat(noteBeforeValue)
+            .isGreaterThanOrEqualTo(ZonedDateTime.now().minusMinutes(1).toEpochSecond());
+    }
+
+    @Test
+    public void testValueIssuedAt() throws UnirestException {
+        final long issuedAtValue = (long) extractClaimMapFromResponse(retrieveDiscoveryDocument())
+            .get(ClaimName.ISSUED_AT.getJoseName());
+        assertThat(issuedAtValue)
+            .isLessThanOrEqualTo(ZonedDateTime.now().toEpochSecond());
+        assertThat(issuedAtValue)
+            .isGreaterThanOrEqualTo(ZonedDateTime.now().minusMinutes(1).toEpochSecond());
+    }
+
+    @Test
+    @Afo("A_20591")
+    @Remark("Nach IDP-181 soll das Einbetten von Zertifikat als Header ergänzt werden.")
+    public void testDiscoveryDocumentSigningCertificateReference() throws UnirestException {
+        final ArrayList<String> headerCertChain = (ArrayList) extractHeaderClaimMapFromResponse(
+            retrieveDiscoveryDocument())
+            .get(ClaimName.X509_Certificate_Chain.getJoseName());
+
+        assertThat(headerCertChain.toArray()[0]).isEqualTo(discKey.getCertArray()[0]);
+    }
+
+    private Map<String, Object> extractClaimMapFromResponse(final HttpResponse<String> httpResponse) {
+        return TokenClaimExtraction.extractClaimsFromTokenBody(httpResponse.getBody());
+    }
+
+    private Map<String, Object> extractHeaderClaimMapFromResponse(final HttpResponse<String> httpResponse) {
+        return TokenClaimExtraction.extractClaimsFromTokenHeader(httpResponse.getBody());
+    }
+
+    private HttpResponse<String> retrieveDiscoveryDocument() {
+        return Unirest.get(testHostUrl + DISCOVERY_DOCUMENT_ENDPOINT)
+            .asString();
+    }
+}
