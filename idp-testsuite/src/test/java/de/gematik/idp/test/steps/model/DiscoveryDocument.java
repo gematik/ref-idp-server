@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,16 +24,6 @@ import org.json.JSONObject;
 @Getter
 public class DiscoveryDocument {
 
-    public DiscoveryDocument(final JSONObject jso) throws JSONException {
-        pukUriToken = new JSONObject(SerenityRest.get(jso.getString("puk_uri_token")).getBody().asString());
-        pukUriAuth = new JSONObject(SerenityRest.get(jso.getString("puk_uri_auth")).getBody().asString());
-        pukUriDisc = new JSONObject(SerenityRest.get(jso.getString("puk_uri_disc")).getBody().asString());
-        authorizationEndpoint = jso.getString("authorization_endpoint");
-        tokenEndpoint = jso.getString("token_endpoint");
-        jwksUri = jso.getString("jwks_uri");
-    }
-
-
     private final JSONObject pukUriToken;
     // puk_uri_token
     private final JSONObject pukUriAuth;
@@ -45,5 +35,14 @@ public class DiscoveryDocument {
     private final String tokenEndpoint;
     // token_endpoint
     private final String jwksUri;
+
+    public DiscoveryDocument(final JSONObject jso) throws JSONException {
+        pukUriToken = new JSONObject(SerenityRest.get(jso.getString("puk_uri_token")).getBody().asString());
+        pukUriAuth = new JSONObject(SerenityRest.get(jso.getString("puk_uri_auth")).getBody().asString());
+        pukUriDisc = new JSONObject(SerenityRest.get(jso.getString("puk_uri_disc")).getBody().asString());
+        authorizationEndpoint = jso.getString("authorization_endpoint");
+        tokenEndpoint = jso.getString("token_endpoint");
+        jwksUri = jso.getString("jwks_uri");
+    }
     // jwks_uri
 }

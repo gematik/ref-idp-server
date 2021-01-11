@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,18 @@
 
 package de.gematik.idp.client.data;
 
+import java.security.cert.X509Certificate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.security.cert.X509Certificate;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Data
 public class DiscoveryDocumentResponse {
+
     private String authorizationEndpoint;
     private String tokenEndpoint;
     private String keyId;

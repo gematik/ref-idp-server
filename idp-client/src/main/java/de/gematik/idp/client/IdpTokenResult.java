@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package de.gematik.idp.client;
 
 import de.gematik.idp.token.JsonWebToken;
 import java.time.LocalDateTime;
-import kong.unirest.Cookies;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -36,5 +35,4 @@ public class IdpTokenResult {
     private String tokenType;
     private JsonWebToken ssoToken;
     private LocalDateTime validUntil;
-    private Cookies sessionCookies;
 }

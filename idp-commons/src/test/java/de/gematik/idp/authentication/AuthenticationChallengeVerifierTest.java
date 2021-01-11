@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,13 @@ package de.gematik.idp.authentication;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.tests.PkiKeyResolver;
+import de.gematik.idp.token.JsonWebToken;
 import de.gematik.idp.token.TokenClaimExtraction;
+import java.time.ZonedDateTime;
 import java.util.Map;
-import org.jose4j.jws.JsonWebSignature;
-import org.jose4j.jwt.JwtClaims;
-import org.jose4j.lang.JoseException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,12 +38,14 @@ public class AuthenticationChallengeVerifierTest {
     private AuthenticationResponseBuilder authenticationResponseBuilder;
     private AuthenticationChallengeVerifier authenticationChallengeVerifier;
     private PkiIdentity clientIdentity;
+    private PkiIdentity serverIdentity;
 
     @BeforeEach
     public void init(
-        @PkiKeyResolver.Filename("hsm_ecc") final PkiIdentity serverIdentity,
-        @PkiKeyResolver.Filename("aut-ecc") final PkiIdentity clientIdentity) {
+        @PkiKeyResolver.Filename("1_C.SGD-HSM.AUT_oid_sgd1_hsm_ecc.p12") final PkiIdentity serverIdentity,
+        @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc.p12") final PkiIdentity clientIdentity) {
         this.clientIdentity = clientIdentity;
+        this.serverIdentity = serverIdentity;
 
         authenticationChallengeBuilder = AuthenticationChallengeBuilder.builder()
             .authenticationIdentity(serverIdentity)
@@ -56,7 +56,8 @@ public class AuthenticationChallengeVerifierTest {
             .serverIdentity(serverIdentity)
             .build();
         authenticationChallenge = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid");
+
     }
 
     @Test
@@ -81,7 +82,7 @@ public class AuthenticationChallengeVerifierTest {
                 clientIdentity);
 
         final Map<String, Object> nestedClaims = TokenClaimExtraction.extractClaimsFromTokenBody(
-            authenticationResponse.getSignedChallenge().getStringBodyClaim(ClaimName.NESTED_JWT.getJoseName()).get());
+            authenticationResponse.getSignedChallenge().getStringBodyClaim(ClaimName.NESTED_JWT).get());
         assertThat(nestedClaims)
             .containsEntry("client_id", "goo")
             .containsEntry("state", "foo")
@@ -89,23 +90,53 @@ public class AuthenticationChallengeVerifierTest {
             .containsEntry("code_challenge", "schmar");
     }
 
-    private String rebuildChallengeResponseString(final Object njwt, final PkiIdentity signerIdentity) {
-        final JwtClaims claims = new JwtClaims();
-        claims.setClaim("njwt", njwt);
-        final JsonWebSignature jsonWebSignature = new JsonWebSignature();
-        jsonWebSignature.setPayload(claims.toJson());
-        jsonWebSignature.setAlgorithmHeaderValue(BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256);
-        jsonWebSignature.setKey(signerIdentity.getPrivateKey());
+    @Test
+    public void checkSignatureNjwt_certMismatch(
+        @PkiKeyResolver.Filename("833621999741600_c.hci.aut-apo-ecc.p12") final PkiIdentity otherServerIdentity) {
+        authenticationChallengeBuilder = AuthenticationChallengeBuilder.builder()
+            .authenticationIdentity(otherServerIdentity)
+            .build();
+        authenticationChallenge = authenticationChallengeBuilder
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid");
 
-        jsonWebSignature.setHeader("typ", "jwt");
-        jsonWebSignature.setHeader("cty", "njwt");
-        jsonWebSignature.setCertificateChainHeaderValue(signerIdentity.getCertificate());
+        final AuthenticationResponse authenticationResponse =
+            authenticationResponseBuilder.buildResponseForChallenge(authenticationChallenge,
+                clientIdentity);
 
-        try {
-            return jsonWebSignature.getCompactSerialization();
-        } catch (final JoseException e) {
-            throw new RuntimeException(e);
-        }
+        assertThatThrownBy(() -> authenticationChallengeVerifier
+            .verifyResponseAndThrowExceptionIfFail(authenticationResponse.getSignedChallenge()))
+            .isInstanceOf(RuntimeException.class);
+    }
 
+    @Test
+    public void checkSignatureNjwt_invalidChallenge() {
+        final AuthenticationChallenge ch = AuthenticationChallenge.builder()
+            .challenge("SicherNichtDerRichtigeChallengeCode")
+            .build();
+        final AuthenticationResponse authenticationResponse =
+            authenticationResponseBuilder.buildResponseForChallenge(ch,
+                clientIdentity);
+        assertThatThrownBy(() -> authenticationChallengeVerifier
+            .verifyResponseAndThrowExceptionIfFail(authenticationResponse.getSignedChallenge()))
+            .isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
+    public void checkSignatureNjwt_challengeOutdated() {
+        authenticationChallenge = authenticationChallengeBuilder
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid");
+        final JsonWebToken jsonWebToken = new JsonWebToken(authenticationChallenge.getChallenge());
+        final IdpJwtProcessor reSignerProcessor = new IdpJwtProcessor(serverIdentity);
+        final JwtDescription jwtDescription = jsonWebToken.toJwtDescription();
+        jwtDescription.setExpiresAt(ZonedDateTime.now().minusSeconds(1));
+        authenticationChallenge.setChallenge(reSignerProcessor.buildJwt(jwtDescription).getJwtRawString());
+
+        final AuthenticationResponse authenticationResponse =
+            authenticationResponseBuilder.buildResponseForChallenge(authenticationChallenge,
+                clientIdentity);
+
+        assertThatThrownBy(() -> authenticationChallengeVerifier
+            .verifyResponseAndThrowExceptionIfFail(authenticationResponse.getSignedChallenge()))
+            .isInstanceOf(RuntimeException.class);
     }
 }

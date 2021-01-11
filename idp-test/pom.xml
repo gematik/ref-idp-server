@@ -1,41 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
-    <parent>
-        <groupId>de.gematik.idp</groupId>
-        <artifactId>idp-global</artifactId>
-        <version>4.0.0</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
-
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <artifactId>idp-test</artifactId>
-    <version>4.0.0</version>
+
     <dependencies>
         <dependency>
             <!--version depends on spring-boot-->
-            <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
+            <groupId>org.junit.jupiter</groupId>
             <version>5.6.2</version>
         </dependency>
         <dependency>
-            <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
+            <groupId>commons-io</groupId>
             <version>2.7</version>
         </dependency>
         <dependency>
-            <groupId>de.gematik.idp</groupId>
             <artifactId>idp-crypto</artifactId>
-            <version>${project.version}</version>
+            <groupId>de.gematik.idp</groupId>
             <scope>compile</scope>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.11.2</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
             <scope>compile</scope>
+            <version>2.11.2</version>
         </dependency>
     </dependencies>
+
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>idp-global</artifactId>
+        <groupId>de.gematik.idp</groupId>
+        <relativePath>../pom.xml</relativePath>
+        <version>5.0.0</version>
+    </parent>
+    <version>5.0.0</version>
 </project>

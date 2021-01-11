@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,6 @@ package de.gematik.idp.crypto;
 
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import de.gematik.idp.crypto.model.PkiIdentity;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,9 +26,13 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class CryptoLoader {
+
     private static final BouncyCastleProvider BOUNCY_CASTLE_PROVIDER = new BouncyCastleProvider();
 
     public static X509Certificate getCertificateFromP12(final byte[] crt, final String p12Password) {
@@ -76,7 +76,7 @@ public class CryptoLoader {
                 return new PkiIdentity(certificate, privateKey);
             }
         } catch (final IOException | KeyStoreException | NoSuchAlgorithmException
-                | UnrecoverableKeyException | CertificateException e) {
+            | UnrecoverableKeyException | CertificateException e) {
             throw new IdpCryptoException(e);
         }
         throw new IdpCryptoException("Could not find certificate in P12-File");

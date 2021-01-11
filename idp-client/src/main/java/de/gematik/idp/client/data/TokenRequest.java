@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,9 @@ import lombok.Data;
 @Data
 @Builder
 public class TokenRequest {
+
     private final String tokenUrl;
     private final String clientId;
-    private final String clientSecret;
     private final String code;
     private final String codeVerifier;
     private final String redirectUrl;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,18 +18,16 @@ package de.gematik.idp.authentication;
 
 import static de.gematik.idp.field.ClaimName.*;
 
+import de.gematik.idp.IdpConstants;
 import de.gematik.idp.crypto.CryptoLoader;
+import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.crypto.X509ClaimExtraction;
 import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.token.JsonWebToken;
 import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -60,9 +58,16 @@ public class AuthenticationTokenBuilder {
         claimsMap.put(NOT_BEFORE.getJoseName(), issueingTime.toEpochSecond());
         claimsMap.putAll(serverChallengeClaims);
         claimsMap.put(AUTH_TIME.getJoseName(), issueingTime.toEpochSecond());
+
+        final Map<String, Object> headerMap = new HashMap<>();
+        headerMap.put(TYPE.getJoseName(), "JWT");
+        headerMap.put(CONTENT_TYPE.getJoseName(), "NJWT");
+        headerMap.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
+
         return jwtProcessor.buildJwt(JwtDescription.builder()
             .claims(claimsMap)
-            .expiresAt(ZonedDateTime.now().plusHours(1))
+            .expiresAt(issueingTime.plusHours(1))
+            .headers(headerMap)
             .build());
     }
 
@@ -80,12 +85,17 @@ public class AuthenticationTokenBuilder {
         claimsMap.put(CLIENT_ID.getJoseName(), extractClaimFromChallengeToken(challengeToken, CLIENT_ID));
         claimsMap.put(REDIRECT_URI.getJoseName(), extractClaimFromChallengeToken(challengeToken, REDIRECT_URI));
         claimsMap.put(SCOPE.getJoseName(), extractClaimFromChallengeToken(challengeToken, SCOPE));
-
+        claimsMap.put(SUBJECT.getJoseName(), extractClaimFromChallengeToken(challengeToken, SUBJECT));
+        claimsMap.put(STATE.getJoseName(), extractClaimFromChallengeToken(challengeToken, STATE));
+        claimsMap.put(RESPONSE_TYPE.getJoseName(), extractClaimFromChallengeToken(challengeToken, RESPONSE_TYPE));
         claimsMap.put(AUTHENTICATION_CONTEXT_CLASS.getJoseName(), EIDAS_LOA_HIGH);
         claimsMap.put(AUTH_TIME.getJoseName(), ZonedDateTime.now().toEpochSecond());
 
+        final HashMap headerClaims = new HashMap(ssoToken.getHeaderClaims());
+        headerClaims.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
+
         return jwtProcessor.buildJwt(JwtDescription.builder()
-            .headers(ssoToken.getHeaderClaims())
+            .headers(headerClaims)
             .claims(claimsMap)
             .expiresAt(ZonedDateTime.now().plusHours(1))
             .build());
@@ -98,15 +108,6 @@ public class AuthenticationTokenBuilder {
 
     private X509Certificate extractConfirmationCertificate(final JsonWebToken ssoToken) {
         final String certString = ssoToken.getBodyClaim(ClaimName.CONFIRMATION)
-
-            .filter(Map.class::isInstance)
-            .map(Map.class::cast)
-            .map(map -> map.get("keys"))
-
-            .filter(List.class::isInstance)
-            .map(List.class::cast)
-            .filter(list -> !list.isEmpty())
-            .map(list -> list.get(0))
 
             .filter(Map.class::isInstance)
             .map(Map.class::cast)

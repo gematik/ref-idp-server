@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,14 @@
 
 package de.gematik.idp.client;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import de.gematik.idp.tests.Remark;
 import de.gematik.idp.tests.Rfc;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class PkceClientTest {
+
     @Test
     @Rfc("https://tools.ietf.org/html/rfc7636#section-4.1")
     public void checkAlphabetforCodeVerifier() {
@@ -50,7 +51,7 @@ public class PkceClientTest {
     @Remark("This example is in rfc7636 Appendix B")
     public void checkTransformationS256() {
         assertThat(ClientUtilities.generateCodeChallenge("dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"))
-                .isEqualTo("E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM");
+            .isEqualTo("E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM");
     }
 
     @Test

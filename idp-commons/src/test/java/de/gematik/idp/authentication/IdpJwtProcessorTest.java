@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,8 @@ package de.gematik.idp.authentication;
 
 import static de.gematik.idp.field.ClaimName.*;
 import static java.util.Map.entry;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers;
 import de.gematik.idp.crypto.model.PkiIdentity;
@@ -41,7 +42,9 @@ public class IdpJwtProcessorTest {
     JwtDescription jwtDescription = JwtDescription.builder()
         .expiresAt(ZonedDateTime.now().plusMinutes(10))
         .claims(new HashMap<>(Map.ofEntries(
-            entry(ISSUER.getJoseName(), "sender"),
+            entry(ISSUED_AT.getJoseName(), ZonedDateTime.now().toEpochSecond()),
+            entry(NOT_BEFORE.getJoseName(), ZonedDateTime.now().toEpochSecond()),
+            entry(ISSUER.getJoseName(), "https://idp.zentral.idp.splitdns.ti-dienste.de"),
             entry(RESPONSE_TYPE.getJoseName(), "code"),
             entry(SCOPE.getJoseName(), "openid e-rezept"),
             entry(CLIENT_ID.getJoseName(), "ZXJlemVwdC1hcHA"),
@@ -55,8 +58,6 @@ public class IdpJwtProcessorTest {
             // two parts of header are written by library: ("typ", "JWT"),("alg", "ES256")
             entry(JWT_ID.getJoseName(), "c3a8f9c8-aa62-11ea-ac15-6b7a3355d0f6"),
             entry(NONCE.getJoseName(), "sLlxlkskAyuzdDOwe8nZeeQVFBWgscNkRcpgHmKidFc"),
-            entry(ISSUED_AT.getJoseName(), LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)),
-            entry(NOT_BEFORE.getJoseName(), LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)),
             entry(EXPIRES_AT.getJoseName(),
                 LocalDateTime.now().plusMinutes(TOKEN_VALIDITY_MINUTES).toEpochSecond(ZoneOffset.UTC))
         )))

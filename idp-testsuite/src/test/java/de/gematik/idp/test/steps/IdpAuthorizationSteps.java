@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,15 @@
 
 package de.gematik.idp.test.steps;
 
-import de.gematik.idp.test.steps.model.*;
-import io.restassured.response.Response;
-import net.thucydides.core.annotations.Step;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URIBuilder;
-import org.jose4j.jws.AlgorithmIdentifiers;
-import org.jose4j.jws.JsonWebSignature;
-import org.jose4j.jwt.JwtClaims;
-import org.jose4j.lang.JoseException;
+import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import de.gematik.idp.test.steps.model.CodeAuthType;
+import de.gematik.idp.test.steps.model.Context;
+import de.gematik.idp.test.steps.model.ContextKey;
+import de.gematik.idp.test.steps.model.HttpMethods;
+import de.gematik.idp.test.steps.model.HttpStatus;
+import io.restassured.response.Response;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.Key;
@@ -37,20 +36,24 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
-
-import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
-import static org.assertj.core.api.Assertions.assertThat;
+import net.thucydides.core.annotations.Step;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URIBuilder;
+import org.jose4j.jws.AlgorithmIdentifiers;
+import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.jwt.JwtClaims;
+import org.jose4j.lang.JoseException;
 
 public class IdpAuthorizationSteps extends IdpStepsBase {
 
     @Step
     public void signChallenge(final String keyfile)
-            throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, UnrecoverableKeyException, JoseException {
+        throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, UnrecoverableKeyException, JoseException {
         final Map<ContextKey, Object> ctxt = Context.getThreadContext();
         final String challenge = (String) ctxt.get(ContextKey.CHALLENGE);
 
-        final Key pkey = readPrivateKeyFrom(getClass().getResourceAsStream(keyfile));
-        final Certificate cert = readCertFrom(getClass().getResourceAsStream(keyfile));
+        final Key pkey = readPrivateKeyFrom(keyfile);
+        final Certificate cert = readCertFrom(keyfile);
 
         final String signedChallenge = devGetSignedChallenge(challenge, pkey, cert);
 
@@ -58,12 +61,10 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
     }
 
     private String devGetSignedChallenge(final String challenge, final Key pkey, final Certificate cert)
-            throws JoseException {
+        throws JoseException {
         // TODO this is taken from dev code, REVIEW and check with SPEC/REF
         final JwtClaims claims = new JwtClaims();
         claims.setClaim("njwt", challenge);
-        //TODO: Hash des NJWT, der mit der Signatur des Certificates der Smartcard signiert wird
-        claims.setClaim("csig", "signed_hash_of_njwt");
         final JsonWebSignature jsonWebSignature = new JsonWebSignature();
         jsonWebSignature.setPayload(claims.toJson());
         jsonWebSignature.setKey(pkey);
@@ -72,8 +73,8 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
         } else {
             jsonWebSignature.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_PSS_USING_SHA256);
         }
-        jsonWebSignature.setHeader("typ", "jwt");
-        jsonWebSignature.setHeader("cty", "njwt");
+        jsonWebSignature.setHeader("typ", "JWT");
+        jsonWebSignature.setHeader("cty", "NJWT");
         jsonWebSignature.setCertificateChainHeaderValue((X509Certificate) cert);
         return jsonWebSignature.getCompactSerialization();
     }
@@ -83,52 +84,64 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
         final Map<String, String> params = new HashMap<>();
         switch (authType) {
             case SIGNED_CHALLENGE:
-                assertThat(ctxt).containsKey(ContextKey.SIGNED_CHALLENGE)
-                        .doesNotContainEntry(ContextKey.SIGNED_CHALLENGE, null);
-                params.put("signed_challenge", String.valueOf(ctxt.get(ContextKey.SIGNED_CHALLENGE)));
+                checkContextAddToParams(ContextKey.SIGNED_CHALLENGE, "signed_challenge", params);
                 break;
             case SSO_TOKEN:
-                assertThat(ctxt).containsKey(ContextKey.SSO_TOKEN)
-                        .doesNotContainEntry(ContextKey.SSO_TOKEN, null);
-                params.put("sso_token", String.valueOf(ctxt.get(ContextKey.SSO_TOKEN)));
+                checkContextAddToParams(ContextKey.CHALLENGE, "challenge_token", params);
+                checkContextAddToParams(ContextKey.SSO_TOKEN, "sso_token", params);
+                break;
+            case SSO_TOKEN_NO_CHALLENGE:
+                checkContextAddToParams(ContextKey.SSO_TOKEN, "sso_token", params);
+                break;
         }
         final Response r = requestResponseAndAssertStatus(
-                Context.getDiscoveryDocument().getAuthorizationEndpoint(), null, HttpMethods.POST,
-                params, expectedStatus);
+            Context.getDiscoveryDocument().getAuthorizationEndpoint(), null, HttpMethods.POST,
+            params, expectedStatus);
 
         ctxt.put(ContextKey.RESPONSE, r);
-        if (expectedStatus.equals(HttpStatus.SUCCESS)) {
-            storeReponseContentInContext(authType, ctxt, r);
-        } else {
-            ctxt.put(ContextKey.REDIRECT_URL, null);
+        final HttpStatus responseStatus = new HttpStatus(r.getStatusCode());
+        if (responseStatus.isError()) {
+            ctxt.put(ContextKey.TOKEN_REDIRECT_URL, null);
             ctxt.put(ContextKey.TOKEN_CODE, null);
+            ctxt.put(ContextKey.STATE, null);
             if (authType == CodeAuthType.SSO_TOKEN) {
                 ctxt.put(ContextKey.SSO_TOKEN, null);
             }
+        } else {
+            storeReponseContentInContext(authType, ctxt, r);
         }
     }
 
+    private void checkContextAddToParams(final ContextKey key, final String paramName,
+        final Map<String, String> params) {
+        final Map<ContextKey, Object> ctxt = Context.getThreadContext();
+        assertThat(ctxt).containsKey(key).doesNotContainEntry(key, null);
+        params.put(paramName, String.valueOf(ctxt.get(key)));
+    }
+
     private void storeReponseContentInContext(
-            final CodeAuthType authType, final Map<ContextKey, Object> ctxt, final Response r)
-            throws URISyntaxException {
+        final CodeAuthType authType, final Map<ContextKey, Object> ctxt, final Response r)
+        throws URISyntaxException {
         final String reloc = r.getHeader("Location");
         assertThat(reloc).withFailMessage("No Location header in response", r.getHeaders()).isNotBlank();
-        ctxt.put(ContextKey.REDIRECT_URL, reloc);
-        final String code = new URIBuilder(reloc).getQueryParams().stream()
-                .filter(param -> param.getName().equalsIgnoreCase("code"))
-                .map(NameValuePair::getValue)
-                .findFirst()
-                .orElse(null);
-        assertThat(code).isNotBlank();
-        ctxt.put(ContextKey.TOKEN_CODE, code);
+        ctxt.put(ContextKey.TOKEN_REDIRECT_URL, reloc);
+        storeParamOfReloc(reloc, "code", ContextKey.TOKEN_CODE);
+        storeParamOfReloc(reloc, "state", ContextKey.STATE);
         if (authType == CodeAuthType.SIGNED_CHALLENGE) {
-            final String ssotoken = new URIBuilder(reloc).getQueryParams().stream()
-                    .filter(param -> param.getName().equalsIgnoreCase("sso_token"))
-                    .map(NameValuePair::getValue)
-                    .findFirst()
-                    .orElse(null);
-            assertThat(ssotoken).isNotBlank();
-            ctxt.put(ContextKey.SSO_TOKEN, ssotoken);
+            storeParamOfReloc(reloc, "sso_token", ContextKey.SSO_TOKEN);
+        } else {
+            ctxt.put(ContextKey.SSO_TOKEN, null);
         }
+    }
+
+    private void storeParamOfReloc(final String reloc, final String paramName, final ContextKey key)
+        throws URISyntaxException {
+        final String value = new URIBuilder(reloc).getQueryParams().stream()
+            .filter(param -> param.getName().equalsIgnoreCase(paramName))
+            .map(NameValuePair::getValue)
+            .findFirst()
+            .orElse(null);
+        assertThat(value).isNotBlank();
+        Context.getThreadContext().put(key, value);
     }
 }

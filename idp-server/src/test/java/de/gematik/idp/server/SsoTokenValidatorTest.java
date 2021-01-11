@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,19 @@
 
 package de.gematik.idp.server;
 
-import static de.gematik.idp.field.ClaimName.*;
-import static org.assertj.core.api.AssertionsForClassTypes.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static de.gematik.idp.field.ClaimName.ALGORITHM;
+import static de.gematik.idp.field.ClaimName.ISSUED_AT;
+import static de.gematik.idp.field.ClaimName.NOT_BEFORE;
+import static de.gematik.idp.field.ClaimName.TYPE;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtDescription;
 import de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers;
-import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.IdpJoseException;
+import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.exceptions.IdpServerException;
 import de.gematik.idp.server.services.SsoTokenValidator;
@@ -47,6 +50,7 @@ public class SsoTokenValidatorTest {
     private PkiIdentity egkUserIdentity;
     private IdpJwtProcessor serverTokenProzessor;
     private SsoTokenBuilder ssoTokenBuilder;
+    private final ServerUrlService urlService = new ServerUrlService(new IdpConfiguration());
 
     @BeforeEach
     public void init(
@@ -56,7 +60,7 @@ public class SsoTokenValidatorTest {
         rsaUserIdentity = rsaIdentity;
         final IdpKey serverKey = new IdpKey(egkUserIdentity);
         serverTokenProzessor = new IdpJwtProcessor(egkUserIdentity);
-        ssoTokenBuilder = new SsoTokenBuilder(serverTokenProzessor);
+        ssoTokenBuilder = new SsoTokenBuilder(serverTokenProzessor, urlService.determineServerUrl());
         ssoTokenValidator = new SsoTokenValidator(serverKey);
     }
 
@@ -97,8 +101,7 @@ public class SsoTokenValidatorTest {
     private Map<String, Object> generateHeaderClaims() {
         final Map<String, Object> headerClaims = new HashMap<>();
         headerClaims.put(ALGORITHM.getJoseName(), BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256);
-        headerClaims.put(TYPE.getJoseName(), "application/jwt");
-        headerClaims.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(16));
+        headerClaims.put(TYPE.getJoseName(), "JWT");
         return headerClaims;
     }
 

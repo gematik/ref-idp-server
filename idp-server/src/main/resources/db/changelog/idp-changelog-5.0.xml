@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet author="idpServer" id="changelog-5.0">
+        <createTable tableName="pairing" schemaName="IDP">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" unique="true"/>
+            </column>
+            <column name="kvnr" type="VARCHAR(45)">
+                <constraints nullable="false" primaryKey="false" unique="false"/>
+            </column>
+            <column name="serial" type="VARCHAR(255)">
+                <constraints nullable="false" primaryKey="false" unique="false"/>
+            </column>
+            <column name="device_manufacturer" type="VARCHAR(45)">
+                <constraints nullable="false" primaryKey="false" unique="false"/>
+            </column>
+            <column name="device_model" type="VARCHAR(45)">
+                <constraints nullable="false" primaryKey="false" unique="false"/>
+            </column>
+            <column name="device_os" type="VARCHAR(45)">
+                <constraints nullable="false" primaryKey="false" unique="false"/>
+            </column>
+            <column name="device_version" type="VARCHAR(45)">
+                <constraints nullable="false" primaryKey="false" unique="false"/>
+            </column>
+            <column name="device_name" type="VARCHAR(45)">
+                <constraints nullable="false" primaryKey="false" unique="false"/>
+            </column>
+            <column name="device_biometry" type="VARCHAR(45)">
+                <constraints nullable="false" primaryKey="false" unique="false"/>
+            </column>
+            <column name="puk_se_sig" type="VARCHAR(255)">
+                <constraints nullable="false" primaryKey="false" unique="false"/>
+            </column>
+            <column name="timestamp_pairing" type="TIMESTAMP">
+                <constraints nullable="false" primaryKey="false" unique="false"/>
+            </column>
+            <column name="timestamp_smartcard_auth" type="TIMESTAMP">
+                <constraints nullable="false" primaryKey="false" unique="false"/>
+            </column>
+        </createTable>
+        <addAutoIncrement columnDataType="BIGINT" schemaName="IDP" columnName="id"
+            incrementBy="1" startWith="100" tableName="pairing"/>
+        <createIndex indexName="ix_kvnr" schemaName="IDP" tableName="pairing" unique="false">
+            <column name="kvnr"/>
+        </createIndex>
+        <createIndex indexName="ix_id" schemaName="IDP" tableName="pairing" unique="true">
+            <column name="id"/>
+        </createIndex>
+        <createIndex indexName="ix_kvnr_id" schemaName="IDP" tableName="pairing" unique="true">
+            <column name="kvnr"/>
+            <column name="id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 
-import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.tests.Afo;
@@ -32,7 +31,6 @@ import de.gematik.idp.tests.Rfc;
 import de.gematik.idp.token.JsonWebToken;
 import de.gematik.idp.token.TokenClaimExtraction;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -60,12 +58,10 @@ public class DiscoveryDocumentTest {
     private IdpKey discKey;
     @MockBean
     private ServerUrlService serverUrlService;
-    private IdpJwtProcessor discoveryDocumentJwtProcessor;
 
     @BeforeEach
     public void setUpLocalHostUrl() {
         testHostUrl = "http://localhost:" + localServerPort;
-        discoveryDocumentJwtProcessor = new IdpJwtProcessor(discKey.getIdentity());
         doReturn(CONFIGURED_SERVER_URL)
             .when(serverUrlService).determineServerUrl(any());
     }
@@ -161,14 +157,16 @@ public class DiscoveryDocumentTest {
     public void testValueForResponseModesSupported() throws UnirestException {
         final List<String> responseModesSupported = (List) extractClaimMapFromResponse(retrieveDiscoveryDocument())
             .get("response_modes_supported");
+
         assertThat(responseModesSupported).containsExactlyInAnyOrder("query");
     }
 
     @Test
     @Remark("Ruecksprache mit Tommy in IDP-123, keine Ahnung, woher man das sonst wissen kann")
     public void testValueForAcrValuesSupported() throws UnirestException {
-        final List<String> acrValuesSupported = (List) extractClaimMapFromResponse(retrieveDiscoveryDocument())
-            .get("acr_values_supported");
+        final List<String> acrValuesSupported = (List<String>) retrieveAndParseDiscoveryDocument()
+            .getBodyClaim(ClaimName.ACR_VALUES_SUPPORTED).get();
+
         assertThat(acrValuesSupported).containsExactlyInAnyOrder("urn:eidas:loa:high");
     }
 
@@ -214,9 +212,9 @@ public class DiscoveryDocumentTest {
     @Test
     @Afo("A_20458")
     public void testValueForJwksUri() throws UnirestException {
-        final String jwksUriValue = extractClaimMapFromResponse(retrieveDiscoveryDocument())
-            .get("jwks_uri").toString();
-        assertThat(jwksUriValue)
+        assertThat(retrieveAndParseDiscoveryDocument()
+            .getStringBodyClaim(ClaimName.JWKS_URI)
+            .get())
             .startsWith(CONFIGURED_SERVER_URL);
     }
 
@@ -224,58 +222,44 @@ public class DiscoveryDocumentTest {
     @Afo("A_20591")
     @Remark("Laut Aussage von Gerriet muss das DiscoveryDocument als JWS signiert werden.")
     public void testDiscoveryDocumentSignature() throws UnirestException {
-        final String body = retrieveDiscoveryDocument().getBody();
-        discoveryDocumentJwtProcessor.verifyAndThrowExceptionIfFail(new JsonWebToken(body));
+        retrieveAndParseDiscoveryDocument()
+            .verify(discKey.getIdentity().getCertificate().getPublicKey());
     }
 
     @Test
     @Afo("A_20691")
     public void testValueExpiration() throws UnirestException {
-        final long expirationValue = (long) extractClaimMapFromResponse(retrieveDiscoveryDocument())
-            .get(ClaimName.EXPIRES_AT.getJoseName());
-        assertThat(expirationValue)
-            .isLessThanOrEqualTo(ZonedDateTime.now().plusHours(24).toEpochSecond());
-        assertThat(expirationValue)
-            .isGreaterThanOrEqualTo(ZonedDateTime.now().minusMinutes(1).plusHours(24).toEpochSecond());
+        assertThat(retrieveAndParseDiscoveryDocument().getExpiresAtBody())
+            .isBetween(ZonedDateTime.now().minusMinutes(1).plusHours(24),
+                ZonedDateTime.now().plusHours(24));
     }
 
     @Test
     public void testValueNotBefore() throws UnirestException {
-        final long noteBeforeValue = (long) extractClaimMapFromResponse(retrieveDiscoveryDocument())
-            .get(ClaimName.NOT_BEFORE.getJoseName());
-        assertThat(noteBeforeValue)
-            .isLessThanOrEqualTo(ZonedDateTime.now().toEpochSecond());
-        assertThat(noteBeforeValue)
-            .isGreaterThanOrEqualTo(ZonedDateTime.now().minusMinutes(1).toEpochSecond());
+        assertThat(retrieveAndParseDiscoveryDocument().getNotBefore())
+            .isBetween(ZonedDateTime.now().minusMinutes(1), ZonedDateTime.now());
     }
 
     @Test
     public void testValueIssuedAt() throws UnirestException {
-        final long issuedAtValue = (long) extractClaimMapFromResponse(retrieveDiscoveryDocument())
-            .get(ClaimName.ISSUED_AT.getJoseName());
-        assertThat(issuedAtValue)
-            .isLessThanOrEqualTo(ZonedDateTime.now().toEpochSecond());
-        assertThat(issuedAtValue)
-            .isGreaterThanOrEqualTo(ZonedDateTime.now().minusMinutes(1).toEpochSecond());
+        assertThat(retrieveAndParseDiscoveryDocument().getIssuedAt())
+            .isBetween(ZonedDateTime.now().minusMinutes(1), ZonedDateTime.now());
     }
 
     @Test
     @Afo("A_20591")
-    @Remark("Nach IDP-181 soll das Einbetten von Zertifikat als Header ergänzt werden.")
+    @Remark("Nach IDP-336 soll das Header-Zertifikat nicht mehr verwendet werden (IDP-181 hatte das noch gefordert)")
     public void testDiscoveryDocumentSigningCertificateReference() throws UnirestException {
-        final ArrayList<String> headerCertChain = (ArrayList) extractHeaderClaimMapFromResponse(
-            retrieveDiscoveryDocument())
-            .get(ClaimName.X509_Certificate_Chain.getJoseName());
-
-        assertThat(headerCertChain.toArray()[0]).isEqualTo(discKey.getCertArray()[0]);
+        assertThat(retrieveAndParseDiscoveryDocument()
+            .getHeaderClaim(ClaimName.X509_Certificate_Chain)).isEmpty();
     }
 
     private Map<String, Object> extractClaimMapFromResponse(final HttpResponse<String> httpResponse) {
         return TokenClaimExtraction.extractClaimsFromTokenBody(httpResponse.getBody());
     }
 
-    private Map<String, Object> extractHeaderClaimMapFromResponse(final HttpResponse<String> httpResponse) {
-        return TokenClaimExtraction.extractClaimsFromTokenHeader(httpResponse.getBody());
+    private JsonWebToken retrieveAndParseDiscoveryDocument() {
+        return new JsonWebToken(retrieveDiscoveryDocument().getBody());
     }
 
     private HttpResponse<String> retrieveDiscoveryDocument() {

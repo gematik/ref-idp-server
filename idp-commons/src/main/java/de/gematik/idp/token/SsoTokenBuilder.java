@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,8 @@ import static de.gematik.idp.field.ClaimName.*;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtDescription;
 import de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers;
-import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.crypto.X509ClaimExtraction;
-import de.gematik.idp.data.IdpJwksDocument;
+import de.gematik.idp.data.IdpKeyDescriptor;
 import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
@@ -34,16 +33,15 @@ import lombok.Data;
 public class SsoTokenBuilder {
 
     private final IdpJwtProcessor jwtProcessor;
-    private static final int JTI_LENGTH = 16;
+    private final String uriIdpServer;
 
     public JsonWebToken buildSsoToken(final X509Certificate certificate, final ZonedDateTime issuingTime) {
         final Map<String, Object> bodyClaimsMap = new HashMap<>();
         final Map<String, Object> headerClaimsMap = new HashMap<>();
         headerClaimsMap.put(ALGORITHM.getJoseName(), BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256);
-        headerClaimsMap.put(TYPE.getJoseName(), "application/jwt");
-        headerClaimsMap.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(JTI_LENGTH));
-        bodyClaimsMap.put(CONFIRMATION.getJoseName(), IdpJwksDocument.constructFromX509Certificate(certificate));
-        bodyClaimsMap.put(ISSUER.getJoseName(), certificate.getIssuerX500Principal().getName());
+        bodyClaimsMap.put(CONFIRMATION.getJoseName(), IdpKeyDescriptor.constructFromX509Certificate(certificate));
+        headerClaimsMap.put(TYPE.getJoseName(), "JWT");
+        bodyClaimsMap.put(ISSUER.getJoseName(), uriIdpServer);
         bodyClaimsMap.put(ISSUED_AT.getJoseName(), issuingTime.toEpochSecond());
         bodyClaimsMap.put(NOT_BEFORE.getJoseName(), issuingTime.toEpochSecond());
         bodyClaimsMap.put(AUTH_TIME.getJoseName(), issuingTime.toEpochSecond());

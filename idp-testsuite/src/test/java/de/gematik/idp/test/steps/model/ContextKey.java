@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,5 +21,6 @@ public enum ContextKey {
     DISC_DOC,
     CHALLENGE, USER_CONSENT,
     SIGNED_CHALLENGE, SSO_TOKEN,
-    REDIRECT_URL, CODE_VERIFIER, CLIENT_ID, CLIENT_SECRET, TOKEN_CODE
+    TOKEN_REDIRECT_URL, CODE_VERIFIER, CLIENT_ID, STATE, TOKEN_CODE,
+    REDIRECT_URI
 }

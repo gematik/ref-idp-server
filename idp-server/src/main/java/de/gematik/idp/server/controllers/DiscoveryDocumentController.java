@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,11 @@ import de.gematik.idp.data.IdpJwksDocument;
 import de.gematik.idp.discoveryDocument.DiscoveryDocumentBuilder;
 import de.gematik.idp.server.ServerUrlService;
 import de.gematik.idp.server.exceptions.IdpServerException;
+import de.gematik.idp.server.validation.ValidateClientSystem;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -48,9 +49,15 @@ public class DiscoveryDocumentController {
     private final ObjectMapper objectMapper;
     private final ServerUrlService serverUrlService;
     private final DiscoveryDocumentBuilder discoveryDocumentBuilder;
+    private IdpJwtProcessor jwtProcessor;
+
+    @PostConstruct
+    public void setUp() {
+        jwtProcessor = new IdpJwtProcessor(discKey.getIdentity());
+    }
 
     @GetMapping("/jwks")
-    @ApiOperation(value = "Endpunkt für Schlüsselinformationen für die Tokenabfrage", notes = "Verbaut Schlüsselinformationen in ein JwksDocument und liefert dieses zurück.")
+    @ApiOperation(value = "Endpunkt für Schlüsselinformationen für die Tokenabfrage", notes = "Verbaut Schlüsselinformationen in ein JWK und liefert dieses zurück.")
     public IdpJwksDocument getJwks() {
         return tokenKey.buildJwks();
     }
@@ -58,6 +65,7 @@ public class DiscoveryDocumentController {
     @GetMapping(value = {DISCOVERY_DOCUMENT_ENDPOINT,
         "/auth/realms/idp/.well-known/openid-configuration"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Endpunkt für Abfrage aller öffentlich verfügbaren Informationen zum IDP Server", notes = "Diese Daten sind mit dem privaten Schlüssel des IDP Servers verschlüsselt.")
+    @ValidateClientSystem
     public String getDiscoveryDocument(final HttpServletRequest request, final HttpServletResponse response) {
         final String serverUrl = serverUrlService.determineServerUrl(request);
         setCacheHeader(response);
@@ -66,11 +74,9 @@ public class DiscoveryDocumentController {
     }
 
     private String signDiscoveryDocument(final IdpDiscoveryDocument discoveryDocument) {
-        final IdpJwtProcessor jwtProcessor = new IdpJwtProcessor(discKey.getIdentity());
-        final Map<String, Object> header = new HashMap<>();
         try {
             return jwtProcessor
-                .buildJws(objectMapper.writeValueAsString(discoveryDocument), header, true)
+                .buildJws(objectMapper.writeValueAsString(discoveryDocument), Collections.emptyMap(), false)
                 .getJwtRawString();
         } catch (final JsonProcessingException e) {
             throw new IdpServerException("Error during discovery-document serialization", e);
@@ -80,5 +86,4 @@ public class DiscoveryDocumentController {
     private void setCacheHeader(final HttpServletResponse response) {
         response.setHeader("Cache-Control", "max-age=300");
     }
-
 }

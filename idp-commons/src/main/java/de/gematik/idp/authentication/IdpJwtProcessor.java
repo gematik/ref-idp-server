@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifie
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.IdpJoseException;
+import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.token.JsonWebToken;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
@@ -71,6 +72,9 @@ public class IdpJwtProcessor {
             claims.setExpirationTime(
                 NumericDate.fromSeconds(
                     jwtDescription.getExpiresAt().toEpochSecond()));
+            jwtDescription.getHeaders().remove(ClaimName.EXPIRES_AT.getJoseName());
+            jwtDescription.getHeaders().put(ClaimName.EXPIRES_AT.getJoseName(),
+                jwtDescription.getExpiresAt().toEpochSecond());
         }
 
         return buildJws(claims.toJson(), jwtDescription.getHeaders(),

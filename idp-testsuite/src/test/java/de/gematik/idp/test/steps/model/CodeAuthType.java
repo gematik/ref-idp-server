@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,14 @@
 package de.gematik.idp.test.steps.model;
 
 public enum CodeAuthType {
-    SIGNED_CHALLENGE("signed_challenge"), SSO_TOKEN("sso_token"), NO_PARAMS("no_params");
+    SIGNED_CHALLENGE("signed_challenge"), SSO_TOKEN("sso_token"), SSO_TOKEN_NO_CHALLENGE(
+        "sso_token_no_challenge"), NO_PARAMS("no_params");
+
+    private final String value;
 
     CodeAuthType(final String value) {
         this.value = value.toUpperCase();
     }
-
-    private final String value;
 
     @Override
     public String toString() {

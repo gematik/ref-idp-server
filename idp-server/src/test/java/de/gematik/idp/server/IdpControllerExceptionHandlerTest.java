@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,14 @@ import static org.mockito.Mockito.when;
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
+import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpController;
 import de.gematik.idp.server.exceptions.handler.IdpServerExceptionHandler;
 import de.gematik.idp.server.exceptions.oauth2spec.IdpServerInvalidRequestException;
 import de.gematik.idp.server.services.IdpAuthenticator;
 import de.gematik.idp.server.services.PkceChecker;
+import de.gematik.idp.server.validation.parameterConstraints.ClientIdValidator;
+import de.gematik.idp.server.validation.parameterConstraints.ScopeValidator;
 import de.gematik.idp.token.AccessTokenBuilder;
 import de.gematik.idp.token.IdTokenBuilder;
 import org.junit.jupiter.api.BeforeEach;
@@ -66,6 +69,12 @@ public class IdpControllerExceptionHandlerTest {
     private IdTokenBuilder idTokenBuilder;
     @MockBean
     private PkceChecker pkceChecker;
+    @MockBean
+    private ScopeValidator scopeValidator;
+    @MockBean
+    private IdpConfiguration idpConfiguration;
+    @MockBean
+    private ClientIdValidator clientIdValidator;
 
     @Autowired
     private IdpController idpController;
@@ -79,15 +88,7 @@ public class IdpControllerExceptionHandlerTest {
 
     @Test
     public void testIdpServerInvalidRequestException() throws Exception {
-        verifyIdpServerException(new IdpServerInvalidRequestException(EXCEPTION_TEXT), "invalid_request",
-            HttpStatus.BAD_REQUEST);
-    }
-
-    //TODO: mögliche, weitere Testmethoden, wenn HTTPStatus zu error_code von OAUTH2 / OICD abgestimmt ist
-
-    private void verifyIdpServerException(
-        final RuntimeException exc, final String expectedErrorCode,
-        final HttpStatus httpStatus) throws Exception {
+        final RuntimeException exc = new IdpServerInvalidRequestException(EXCEPTION_TEXT);
         when(idpAuthenticator.getTokenLocation(any(), any(), any(), any())).thenThrow(exc);
         mockMvc.perform(MockMvcRequestBuilders
             .post(IdpConstants.AUTHORIZATION_ENDPOINT)
@@ -95,8 +96,8 @@ public class IdpControllerExceptionHandlerTest {
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(result -> assertThat(result.getResolvedException()).isEqualTo(exc))
             .andExpect(result -> assertThat(result.getResolvedException().getMessage()).isEqualTo(EXCEPTION_TEXT))
-            .andExpect(result -> assertThat(result.getResponse().getStatus()).isEqualTo(httpStatus.value()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.error_code").value(expectedErrorCode))
+            .andExpect(result -> assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value()))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.error_code").value("invalid_request"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.error_uuid").exists())
             .andExpect(MockMvcResultMatchers.jsonPath("$.timestamp").exists());
     }

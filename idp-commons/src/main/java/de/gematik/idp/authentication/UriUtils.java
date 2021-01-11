@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package de.gematik.idp.authentication;
 
 import de.gematik.idp.exceptions.IdpRuntimeException;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
@@ -28,9 +27,9 @@ public class UriUtils {
     public static Optional<String> extractParameterValueOptional(final String uri, final String parameterName) {
         try {
             return Stream.of(new URI(uri).getQuery().split("&"))
-                    .filter(str -> str.startsWith(parameterName + "="))
-                    .map(str -> str.replace(parameterName + "=", ""))
-                    .findAny();
+                .filter(str -> str.startsWith(parameterName + "="))
+                .map(str -> str.replace(parameterName + "=", ""))
+                .findAny();
         } catch (final URISyntaxException e) {
             throw new IdpRuntimeException(e);
         }
@@ -38,7 +37,7 @@ public class UriUtils {
 
     public static String extractParameterValue(final String uri, final String param) {
         return extractParameterValueOptional(uri, param)
-                .orElseThrow(() -> new RuntimeException("Could not find '" + param + "' parameter in '" + uri + "'"));
+            .orElseThrow(() -> new RuntimeException("Could not find '" + param + "' parameter in '" + uri + "'"));
     }
 
 }

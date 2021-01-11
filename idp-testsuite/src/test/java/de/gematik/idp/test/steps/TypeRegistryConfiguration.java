@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,20 @@
 
 package de.gematik.idp.test.steps;
 
+import static java.util.Locale.ENGLISH;
+
+import de.gematik.idp.test.steps.model.ClaimLocation;
 import de.gematik.idp.test.steps.model.CodeAuthType;
+import de.gematik.idp.test.steps.model.ContextKey;
+import de.gematik.idp.test.steps.model.DateCompareMode;
 import de.gematik.idp.test.steps.model.HttpMethods;
 import de.gematik.idp.test.steps.model.HttpStatus;
 import io.cucumber.core.api.TypeRegistry;
 import io.cucumber.core.api.TypeRegistryConfigurer;
 import io.cucumber.cucumberexpressions.ParameterType;
 import io.cucumber.cucumberexpressions.Transformer;
-
+import java.time.Duration;
 import java.util.Locale;
-
-import static java.util.Locale.ENGLISH;
 
 public class TypeRegistryConfiguration implements TypeRegistryConfigurer {
 
@@ -38,12 +41,21 @@ public class TypeRegistryConfiguration implements TypeRegistryConfigurer {
     @Override
     public void configureTypeRegistry(final TypeRegistry typeRegistry) {
         typeRegistry.defineParameterType(new ParameterType<>(
-                "HttpStatus",
-                "successfully|unsuccessfully|[1-5][0-9]{2}",
-                HttpStatus.class,
-                (Transformer<HttpStatus>) HttpStatus::new)
+            "HttpStatus",
+            "failed state|successfully|unsuccessfully|[1-5][0-9]{2}",
+            HttpStatus.class,
+            (Transformer<HttpStatus>) HttpStatus::new)
         );
         typeRegistry.defineParameterType(ParameterType.fromEnum(CodeAuthType.class));
         typeRegistry.defineParameterType(ParameterType.fromEnum(HttpMethods.class));
+        typeRegistry.defineParameterType(ParameterType.fromEnum(ContextKey.class));
+        typeRegistry.defineParameterType(ParameterType.fromEnum(ClaimLocation.class));
+        typeRegistry.defineParameterType(ParameterType.fromEnum(DateCompareMode.class));
+        typeRegistry.defineParameterType(new ParameterType<>(
+            "Duration",
+            "P[-\\d\\.DTHMS]*",
+            Duration.class,
+            (Transformer<Duration>) Duration::parse)
+        );
     }
 }

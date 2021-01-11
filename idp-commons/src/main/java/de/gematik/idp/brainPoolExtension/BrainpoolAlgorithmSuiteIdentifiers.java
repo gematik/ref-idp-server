@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package de.gematik.idp.brainPoolExtension;
 
 public class BrainpoolAlgorithmSuiteIdentifiers {
+
     public static final String BRAINPOOL256_USING_SHA256 = getValueAndExecuteInitialisation("BP256R1");
     public static final String BRAINPOOL384_USING_SHA384 = getValueAndExecuteInitialisation("BP384R1");
     public static final String BRAINPOOL512_USING_SHA512 = getValueAndExecuteInitialisation("BP512R1");

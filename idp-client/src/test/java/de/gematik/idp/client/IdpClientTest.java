@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,25 @@
 
 package de.gematik.idp.client;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+
 import de.gematik.idp.client.data.DiscoveryDocumentResponse;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.PkiKeyResolver;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(PkiKeyResolver.class)
 public class IdpClientTest {
+
     private IdpClient idpClient;
     private AuthenticatorClient authenticatorClient;
 
@@ -39,23 +42,23 @@ public class IdpClientTest {
     public void init(final PkiIdentity ecc) {
         authenticatorClient = mock(AuthenticatorClient.class);
         doReturn(DiscoveryDocumentResponse.builder()
-                .keyId("foo")
-                .verificationCertificate("bar")
-                .authorizationEndpoint("fdsa")
-                .serverTokenCertificate(ecc.getCertificate())
-                .tokenEndpoint("fdsafds")
-                .build())
-                .when(authenticatorClient)
-                .retrieveDiscoveryDocument(anyString());
+            .keyId("foo")
+            .verificationCertificate("bar")
+            .authorizationEndpoint("fdsa")
+            .serverTokenCertificate(ecc.getCertificate())
+            .tokenEndpoint("fdsafds")
+            .build())
+            .when(authenticatorClient)
+            .retrieveDiscoveryDocument(anyString());
 
         doAnswer(call -> ((Function) call.getArguments()[1]).apply(null))
-                .when(authenticatorClient)
-                .doAuthorizationRequest(any(), any(), any());
+            .when(authenticatorClient)
+            .doAuthorizationRequest(any(), any(), any());
 
         idpClient = IdpClient.builder()
-                .discoveryDocumentUrl("fjnkdslaö")
-                .authenticatorClient(authenticatorClient)
-                .build();
+            .discoveryDocumentUrl("fjnkdslaö")
+            .authenticatorClient(authenticatorClient)
+            .build();
 
         idpClient.initialize();
     }
@@ -72,7 +75,7 @@ public class IdpClientTest {
         }
 
         assertThat(callCounter.get())
-                .isOne();
+            .isOne();
     }
 
     @Test
@@ -90,6 +93,6 @@ public class IdpClientTest {
         }
 
         assertThat(callCounter.get())
-                .isOne();
+            .isOne();
     }
 }

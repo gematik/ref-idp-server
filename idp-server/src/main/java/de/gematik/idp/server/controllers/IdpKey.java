@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,26 +18,18 @@ package de.gematik.idp.server.controllers;
 
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.data.IdpJwksDocument;
-import de.gematik.idp.server.exceptions.IdpServerException;
+import de.gematik.idp.data.IdpKeyDescriptor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
-import java.security.cert.CertificateEncodingException;
-import java.util.Base64;
 
 @RequiredArgsConstructor
 @Getter
 public class IdpKey {
+
     private final PkiIdentity identity;
 
-    public String[] getCertArray() {
-        try {
-            return new String[] {
-                    Base64.getEncoder().encodeToString(
-                            identity.getCertificate().getEncoded()) };
-        } catch (final CertificateEncodingException e) {
-            throw new IdpServerException("Error while retrieving key information", e);
-        }
+    public IdpKeyDescriptor buildJwk() {
+        return IdpKeyDescriptor.constructFromX509Certificate(identity.getCertificate());
     }
 
     public IdpJwksDocument buildJwks() {

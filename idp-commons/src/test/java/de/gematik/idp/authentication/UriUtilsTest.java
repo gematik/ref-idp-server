@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
 
 package de.gematik.idp.authentication;
 
-import org.junit.jupiter.api.Test;
-
 import static de.gematik.idp.authentication.UriUtils.extractParameterValue;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.jupiter.api.Test;
+
 class UriUtilsTest {
+
     @Test
     public void extractParameterValueSingle() {
         final String uri = "https://example.org/?a=1";

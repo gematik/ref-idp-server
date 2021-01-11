@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,13 @@ package de.gematik.idp.client;
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.authentication.AuthenticationResponseBuilder;
 import de.gematik.idp.authentication.UriUtils;
-import de.gematik.idp.client.data.AuthenticationRequest;
-import de.gematik.idp.client.data.AuthenticationResponse;
-import de.gematik.idp.client.data.AuthorizationRequest;
-import de.gematik.idp.client.data.AuthorizationResponse;
-import de.gematik.idp.client.data.DiscoveryDocumentResponse;
-import de.gematik.idp.client.data.TokenRequest;
+import de.gematik.idp.client.data.*;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.field.CodeChallengeMethod;
+import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.token.JsonWebToken;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import kong.unirest.GetRequest;
@@ -55,10 +52,11 @@ public class IdpClient implements IIdpClient {
     };
 
     private final String clientId;
-    private final String clientSecret;
     private final String redirectUrl;
     private final String discoveryDocumentUrl;
     private final boolean shouldVerifyState;
+    @Builder.Default
+    private Set<IdpScope> scopes = Set.of(IdpScope.OPENID, IdpScope.EREZEPT);
     @Builder.Default
     private Function<GetRequest, GetRequest> beforeAuthorizationMapper = Function.identity();
     @Builder.Default
@@ -96,6 +94,7 @@ public class IdpClient implements IIdpClient {
                     .codeChallengeMethod(codeChallengeMethod)
                     .redirectUri(redirectUrl)
                     .state(state)
+                    .scopes(scopes)
                     .build(),
                 beforeAuthorizationMapper,
                 afterAuthorizationCallback);
@@ -126,7 +125,6 @@ public class IdpClient implements IIdpClient {
         return authenticatorClient.retrieveAcessToken(TokenRequest.builder()
                 .tokenUrl(discoveryDocumentResponse.getTokenEndpoint())
                 .clientId(clientId)
-                .clientSecret(clientSecret)
                 .code(authenticationResponse.getCode())
                 .ssoToken(authenticationResponse.getSsoToken())
                 .redirectUrl(redirectUrl)
@@ -153,6 +151,7 @@ public class IdpClient implements IIdpClient {
                     .codeChallengeMethod(codeChallengeMethod)
                     .redirectUri(redirectUrl)
                     .state(state)
+                    .scopes(scopes)
                     .build(),
                 beforeAuthorizationMapper,
                 afterAuthorizationCallback);
@@ -181,7 +180,6 @@ public class IdpClient implements IIdpClient {
         return authenticatorClient.retrieveAcessToken(TokenRequest.builder()
                 .tokenUrl(discoveryDocumentResponse.getTokenEndpoint())
                 .clientId(clientId)
-                .clientSecret(clientSecret)
                 .code(authenticationResponse.getCode())
                 .ssoToken(ssoToken.getJwtRawString())
                 .redirectUrl(redirectUrl)

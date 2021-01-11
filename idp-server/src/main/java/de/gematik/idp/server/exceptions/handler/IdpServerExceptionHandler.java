@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import de.gematik.idp.server.exceptions.IdpServerException;
 import de.gematik.idp.server.exceptions.data.IdpErrorTypeResponse;
 import java.time.ZonedDateTime;
 import java.util.UUID;
+import javax.validation.ConstraintViolationException;
+import javax.validation.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -44,18 +46,32 @@ public class IdpServerExceptionHandler {
             body.setDetailMessage(exc.getMessage());
         }
         logEntry(body, exc);
-        return new ResponseEntity<>(body, getHeader(), exc.getResponseCode());
+        return new ResponseEntity<>(body, getHeader(), exc.getStatus());
     }
 
     @ExceptionHandler(IdpJoseException.class)
     public ResponseEntity<IdpErrorTypeResponse> handleIdpJoseException(final IdpJoseException exc) {
         return handleIdpServerException(
-                new IdpServerException(exc.getMessage(), exc, IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST));
+            new IdpServerException(exc.getMessage(), exc, IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST));
+    }
+
+    @ExceptionHandler({ConstraintViolationException.class, ValidationException.class})
+    public ResponseEntity<IdpErrorTypeResponse> handleValidationException(final ValidationException exc) {
+        return handleIdpServerException(
+            new IdpServerException(exc.getMessage(), exc, IdpErrorType.INVALID_REQUEST,
+                HttpStatus.BAD_REQUEST));
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<IdpErrorTypeResponse> handleRuntimeException(final RuntimeException exc) {
+        return handleIdpServerException(
+            new IdpServerException(exc.getMessage(), exc, IdpErrorType.INTERNAL_SERVER_ERROR,
+                HttpStatus.INTERNAL_SERVER_ERROR));
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<IdpErrorTypeResponse> handleMissingServletRequestParameter(
-            final MissingServletRequestParameterException ex) {
+        final MissingServletRequestParameterException ex) {
         final IdpErrorTypeResponse body = getBody(IdpErrorType.MISSING_PARAMETERS);
         body.setDetailMessage(ex.getMessage());
         logEntry(body, ex);
@@ -77,10 +93,10 @@ public class IdpServerExceptionHandler {
 
     private IdpErrorTypeResponse getBody(final IdpErrorType error) {
         return IdpErrorTypeResponse.builder()
-                .errorCode(error.name().toLowerCase())
-                .errorUuid(UUID.randomUUID().toString())
-                .timestamp(ZonedDateTime.now().toString())
-                .detailMessage(error.getDescription())
-                .build();
+            .errorCode(error.name().toLowerCase())
+            .errorUuid(UUID.randomUUID().toString())
+            .timestamp(ZonedDateTime.now().toString())
+            .detailMessage(error.getDescription())
+            .build();
     }
 }

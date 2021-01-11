@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.Rfc;
 import de.gematik.idp.token.TokenClaimExtraction;
 import kong.unirest.HttpResponse;
+import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
 import org.jose4j.jwk.JsonWebKeySet;
@@ -48,33 +49,61 @@ public class KeyRetrievalTest {
     }
 
     @Afo("A_20458")
-    @Rfc({"https://openid.net/specs/openid-connect-discovery-1_0.html",
-        "https://connect2id.com/products/server/docs/api/jwk-set"})
     @Test
-    public void retrieveTokenKeyStore_ShouldBeAvailable() throws UnirestException, JoseException {
+    public void retrieveTokenKey_ShouldBeAvailable() throws UnirestException, JoseException {
         final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
         final String pukUriToken = TokenClaimExtraction.extractClaimsFromTokenBody(httpResponse.getBody())
             .get("puk_uri_token").toString();
-        final HttpResponse<String> jwks = Unirest.get(pukUriToken).asString();
-        final JsonWebKeySet keySet = new JsonWebKeySet(jwks.getBody());
+        final HttpResponse<String> jwk = Unirest.get(pukUriToken).asString();
+        final JsonWebKeySet keySet = constructKeySetFromJwkBody(jwk);
         assertThat(keySet.getJsonWebKeys())
             .extracting(k -> k.getKey())
             .isNotEmpty();
     }
 
     @Afo("A_20458")
-    @Rfc({"https://openid.net/specs/openid-connect-discovery-1_0.html",
-        "https://connect2id.com/products/server/docs/api/jwk-set"})
     @Test
-    public void retrieveAuthKeyStore_ShouldBeAvailable() throws UnirestException, JoseException {
+    public void retrieveAuthKey_ShouldBeAvailable() throws UnirestException, JoseException {
         final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
         final String pukUriAuth = TokenClaimExtraction.extractClaimsFromTokenBody(httpResponse.getBody())
             .get("puk_uri_auth").toString();
-        final HttpResponse<String> jwks = Unirest.get(pukUriAuth).asString();
+        final HttpResponse<String> jwk = Unirest.get(pukUriAuth).asString();
+        final JsonWebKeySet keySet = constructKeySetFromJwkBody(jwk);
+        assertThat(keySet.getJsonWebKeys())
+            .extracting(k -> k.getKey())
+            .isNotEmpty();
+    }
+
+    @Afo("A_20458")
+    @Test
+    public void retrieveAuthKey_noRsaFieldShouldBePresent() throws UnirestException {
+        final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
+        final String pukUriAuth = TokenClaimExtraction.extractClaimsFromTokenBody(httpResponse.getBody())
+            .get("puk_uri_auth").toString();
+        final JsonNode jwk = Unirest.get(pukUriAuth).asJson().getBody();
+        assertThat(jwk.getObject().has("n")).isFalse();
+        assertThat(jwk.getObject().has("e")).isFalse();
+    }
+
+    @Afo("A_20458")
+    @Rfc({"https://openid.net/specs/openid-connect-discovery-1_0.html",
+        "https://connect2id.com/products/server/docs/api/jwk-set",
+        "RFC7517"})
+    @Test
+    public void retrieveJwksKeyStore_ShouldBeAvailable() throws UnirestException, JoseException {
+        final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
+        final String jwksUri = TokenClaimExtraction.extractClaimsFromTokenBody(httpResponse.getBody())
+            .get("jwks_uri").toString();
+        final HttpResponse<String> jwks = Unirest.get(jwksUri).asString();
         final JsonWebKeySet keySet = new JsonWebKeySet(jwks.getBody());
         assertThat(keySet.getJsonWebKeys())
             .extracting(k -> k.getKey())
             .isNotEmpty();
+    }
+
+    private JsonWebKeySet constructKeySetFromJwkBody(final HttpResponse<String> jwks) throws JoseException {
+        final JsonWebKeySet keySet = new JsonWebKeySet("{\"keys\" : [" + jwks.getBody() + "]}");
+        return keySet;
     }
 
     private HttpResponse<String> retrieveDiscoveryDocument() {

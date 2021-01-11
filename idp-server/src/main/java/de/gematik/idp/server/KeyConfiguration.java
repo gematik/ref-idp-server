@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.exceptions.IdpServerStartupException;
+import java.io.IOException;
+import java.io.InputStream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,12 +30,10 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.StreamUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 @Configuration
 @RequiredArgsConstructor
 public class KeyConfiguration {
+
     private final ResourceLoader resourceLoader;
     private final IdpConfiguration idpConfiguration;
 
@@ -56,7 +56,7 @@ public class KeyConfiguration {
         final Resource resource = resourceLoader.getResource(tokenKeyFile);
         try (final InputStream inputStream = resource.getInputStream()) {
             final PkiIdentity pkiIdentity = CryptoLoader.getIdentityFromP12(
-                    StreamUtils.copyToByteArray(inputStream), "00");
+                StreamUtils.copyToByteArray(inputStream), "00");
 
             return new IdpKey(pkiIdentity);
         } catch (final IOException e) {

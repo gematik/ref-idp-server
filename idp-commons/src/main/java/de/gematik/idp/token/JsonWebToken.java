@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,23 @@
 
 package de.gematik.idp.token;
 
+import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
+import static de.gematik.idp.field.ClaimName.ISSUED_AT;
+import static de.gematik.idp.field.ClaimName.NOT_BEFORE;
+import static de.gematik.idp.field.ClaimName.X509_Certificate_Chain;
+
+import de.gematik.idp.authentication.JwtDescription;
+import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.field.ClaimName;
+import de.gematik.idp.field.IdpScope;
 import java.security.PublicKey;
+import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -71,24 +81,57 @@ public class JsonWebToken {
     }
 
     public ZonedDateTime getExpiresAt() {
-        return getBodyClaims().entrySet().stream()
-            .filter(entry -> "exp".equals(entry.getKey()))
-            .map(Map.Entry::getValue)
-            .map(TokenClaimExtraction::claimToDateTime)
-            .findAny()
+        return getDateTimeClaim(EXPIRES_AT, () -> getHeaderClaims())
             .orElseThrow();
     }
 
-    public Optional<String> getStringBodyClaim(final String claimName) {
+    public ZonedDateTime getExpiresAtBody() {
+        return getBodyClaimAsZonedDateTime(EXPIRES_AT)
+            .orElseThrow();
+    }
+
+    public ZonedDateTime getIssuedAt() {
+        return getBodyClaimAsZonedDateTime(ISSUED_AT)
+            .orElseThrow();
+    }
+
+    public ZonedDateTime getNotBefore() {
+        return getBodyClaimAsZonedDateTime(NOT_BEFORE)
+            .orElseThrow();
+    }
+
+    private Optional<ZonedDateTime> getBodyClaimAsZonedDateTime(final ClaimName claimName) {
+        return getBodyClaims().entrySet().stream()
+            .filter(entry -> claimName.getJoseName().equals(entry.getKey()))
+            .map(Map.Entry::getValue)
+            .map(TokenClaimExtraction::claimToDateTime)
+            .findAny();
+    }
+
+    public Set<IdpScope> getScopesBodyClaim(final ClaimName claimName) {
         return Optional
-            .ofNullable(getBodyClaims().get(claimName))
+            .ofNullable(getBodyClaims().get(claimName.getJoseName()))
+            .filter(String.class::isInstance)
+            .map(String.class::cast)
+            .stream()
+            .flatMap(value -> Stream.of(value.split(" ")))
+            .map(IdpScope::fromJwtValue)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toSet());
+    }
+
+    public Optional<String> getStringBodyClaim(final ClaimName claimName) {
+        return Optional
+            .ofNullable(getBodyClaims().get(claimName.getJoseName()))
             .filter(String.class::isInstance)
             .map(String.class::cast);
     }
 
-    public Optional<ZonedDateTime> getDateTimeBodyClaim(final String claimName) {
+    public Optional<ZonedDateTime> getDateTimeClaim(final ClaimName claimName,
+        final Supplier<Map<String, Object>> claims) {
         return Optional
-            .ofNullable(getBodyClaims().get(claimName))
+            .ofNullable(claims.get().get(claimName.getJoseName()))
             .filter(Long.class::isInstance)
             .map(Long.class::cast)
             .map(TokenClaimExtraction::claimToDateTime);
@@ -113,7 +156,32 @@ public class JsonWebToken {
     }
 
     public Optional<Object> getBodyClaim(final ClaimName claimName) {
-        return Optional.ofNullable(getBodyClaims().get(claimName.getJoseName()))
+        return Optional.ofNullable(getBodyClaims()
+            .get(claimName.getJoseName()))
             .filter(Objects::nonNull);
+    }
+
+    public Optional<Object> getHeaderClaim(final ClaimName claimName) {
+        return Optional.ofNullable(getHeaderClaims()
+            .get(claimName.getJoseName()))
+            .filter(Objects::nonNull);
+    }
+
+    public JwtDescription toJwtDescription() {
+        return JwtDescription.builder()
+            .claims(getBodyClaims())
+            .headers(getHeaderClaims())
+            .build();
+    }
+
+    public Optional<X509Certificate> getClientCertificateFromHeader() {
+        return Optional.ofNullable(getHeaderClaims().get(X509_Certificate_Chain.getJoseName()))
+            .filter(List.class::isInstance)
+            .map(List.class::cast)
+            .filter(list -> !list.isEmpty())
+            .map(list -> list.get(0))
+            .map(Object::toString)
+            .map(java.util.Base64.getDecoder()::decode)
+            .map(CryptoLoader::getCertificateFromPem);
     }
 }

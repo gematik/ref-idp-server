@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,14 @@
 
 package de.gematik.idp.crypto;
 
+import java.security.PublicKey;
+import java.security.interfaces.ECPublicKey;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
-import java.security.PublicKey;
-import java.security.interfaces.ECPublicKey;
-
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class KeyAnalysis {
+
     public static boolean isEcKey(final PublicKey publicKey) {
         return publicKey instanceof ECPublicKey;
     }

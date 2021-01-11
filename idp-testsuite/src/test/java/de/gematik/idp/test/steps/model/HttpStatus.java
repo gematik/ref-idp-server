@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 
 package de.gematik.idp.test.steps.model;
 
+import static org.assertj.core.api.Fail.fail;
+
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
-import static org.assertj.core.api.Fail.fail;
 
 @Getter
 @Slf4j
@@ -32,6 +32,7 @@ public class HttpStatus {
     public final static HttpStatus SUCCESS = new HttpStatus(-2);
 
     public final static HttpStatus FAIL = new HttpStatus(-3);
+    private int value;
 
     public HttpStatus(final String statusStr) {
         try {
@@ -42,6 +43,7 @@ public class HttpStatus {
                     value = -2;
                     break;
                 case "unsuccessfully":
+                case "failed state":
                     value = -3;
                     break;
                 default:
@@ -83,8 +85,6 @@ public class HttpStatus {
                 return "HTTP STATUS CODE " + value;
         }
     }
-
-    private int value;
 
     public boolean is1xxInformational() {
         return value / 100 == 1;

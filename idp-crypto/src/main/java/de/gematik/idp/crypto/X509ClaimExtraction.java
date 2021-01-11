@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,15 @@ package de.gematik.idp.crypto;
 import static de.gematik.idp.crypto.CertificateAnalysis.determineCertificateType;
 import static de.gematik.idp.crypto.model.CertificateExtractedFieldEnum.*;
 
+import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import javax.security.auth.x500.X500Principal;
-
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERPrintableString;
@@ -37,20 +38,16 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.RFC4519Style;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 
-import de.gematik.idp.crypto.exceptions.IdpCryptoException;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-
 /**
  * Implements the extraction of claims from certificates according to A_20524
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class X509ClaimExtraction {
+
     private static final int KVNR_LENGTH = 10; // gemSpec_PKI, 4.2
 
     /**
-     * Detects the certificate-type and returns a key/value store for claims and the corresponding
-     * values.
+     * Detects the certificate-type and returns a key/value store for claims and the corresponding values.
      *
      * @param certificateData
      * @return
@@ -62,55 +59,60 @@ public class X509ClaimExtraction {
     public static Map<String, Object> extractClaimsFromCertificate(final X509Certificate certificate) {
         final HashMap<String, Object> claimMap = new HashMap<>();
         final TiCertificateType certificateType = determineCertificateType(certificate);
-        claimMap.put(GIVEN_NAME.getFieldname(), getValueFromDn(certificate.getSubjectX500Principal(), RFC4519Style.givenName)
+        claimMap.put(GIVEN_NAME.getFieldname(),
+            getValueFromDn(certificate.getSubjectX500Principal(), RFC4519Style.givenName)
                 .orElse(null));
         claimMap.put(FAMILY_NAME.getFieldname(), getValueFromDn(certificate.getSubjectX500Principal(), RFC4519Style.sn)
-                .orElse(null));
+            .orElse(null));
 
         if (certificateType == TiCertificateType.HBA) {
             claimMap.put(ORGANIZATION_NAME.getFieldname(), null);
         } else if (certificateType == TiCertificateType.SMCB) {
-            claimMap.put(ORGANIZATION_NAME.getFieldname(), getValueFromDn(certificate.getSubjectX500Principal(), RFC4519Style.o)
+            claimMap.put(ORGANIZATION_NAME.getFieldname(),
+                getValueFromDn(certificate.getSubjectX500Principal(), RFC4519Style.o)
                     .orElse(null));
         } else if (certificateType == TiCertificateType.EGK) {
-            claimMap.put(ORGANIZATION_NAME.getFieldname(), getValueFromDn(certificate.getIssuerX500Principal(), RFC4519Style.o)
+            claimMap.put(ORGANIZATION_NAME.getFieldname(),
+                getValueFromDn(certificate.getIssuerX500Principal(), RFC4519Style.o)
                     .orElse(null));
         }
 
         claimMap.put(PROFESSION_OID.getFieldname(), getProfessionOid(certificate)
-                .map(ASN1ObjectIdentifier::toString)
-                .orElse(null));
+            .map(ASN1ObjectIdentifier::toString)
+            .orElse(null));
 
         if (certificateType == TiCertificateType.HBA) {
             claimMap.put(ID_NUMMER.getFieldname(), getRegistrationNumber(certificate)
-                    .orElse(null));
+                .orElse(null));
         } else if (certificateType == TiCertificateType.SMCB) {
             claimMap.put(ID_NUMMER.getFieldname(), getRegistrationNumber(certificate)
-                    .orElse(null));
+                .orElse(null));
         } else if (certificateType == TiCertificateType.EGK) {
-            claimMap.put(ID_NUMMER.getFieldname(), getAllValuesFromDn(certificate.getSubjectX500Principal(), RFC4519Style.ou)
+            claimMap.put(ID_NUMMER.getFieldname(),
+                getAllValuesFromDn(certificate.getSubjectX500Principal(), RFC4519Style.ou)
                     .stream()
                     .filter(ou -> ou.length() == KVNR_LENGTH)
                     .findFirst()
-                    .orElseThrow(() -> new IdpCryptoException("Could not find OU in EGK Subject-DN: '" + certificate.getSubjectDN().toString())));
+                    .orElseThrow(() -> new IdpCryptoException(
+                        "Could not find OU in EGK Subject-DN: '" + certificate.getSubjectDN().toString())));
         }
         return claimMap;
     }
 
     private static Optional<String> getValueFromDn(final X500Principal principal, final ASN1ObjectIdentifier field) {
         return getAllValuesFromDn(principal, field)
-                .stream()
-                .findFirst();
+            .stream()
+            .findFirst();
     }
 
     private static List<String> getAllValuesFromDn(final X500Principal principal, final ASN1ObjectIdentifier field) {
         return Stream.of(X500Name.getInstance(principal.getEncoded())
-                .getRDNs(field))
-                .flatMap(rdn -> Stream.of(rdn.getTypesAndValues()))
-                .filter(attributeTypeAndValue -> attributeTypeAndValue.getType().equals(field))
-                .map(AttributeTypeAndValue::getValue)
-                .map(Objects::toString)
-                .collect(Collectors.toList());
+            .getRDNs(field))
+            .flatMap(rdn -> Stream.of(rdn.getTypesAndValues()))
+            .filter(attributeTypeAndValue -> attributeTypeAndValue.getType().equals(field))
+            .map(AttributeTypeAndValue::getValue)
+            .map(Objects::toString)
+            .collect(Collectors.toList());
     }
 
     private static Optional<ASN1ObjectIdentifier> getProfessionOid(final X509Certificate certificate) {
@@ -145,7 +147,7 @@ public class X509ClaimExtraction {
     private static Optional<DLSequence> getAdmissionEntry(final X509Certificate certificate) {
         try {
             final ASN1Encodable parsedValue = JcaX509ExtensionUtils.parseExtensionValue(
-                    certificate.getExtensionValue(ISISMTTObjectIdentifiers.id_isismtt_at_admission.getId()));
+                certificate.getExtensionValue(ISISMTTObjectIdentifiers.id_isismtt_at_admission.getId()));
 
             final DLSequence a = (DLSequence) parsedValue;
             DLSequence b = null;

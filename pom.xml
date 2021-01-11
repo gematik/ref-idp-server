@@ -1,24 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
-    <groupId>de.gematik.idp</groupId>
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <artifactId>idp-global</artifactId>
-    <version>4.0.0</version>
-    <packaging>pom</packaging>
+
+    <build>
+        <plugins>
+            <!-- remove only needed for mvn site runs -->
+            <plugin>
+                <artifactId>maven-site-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <version>3.9.1</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <version>3.1.1</version>
+            </plugin>
+
+
+            <!-- to remove docker images call mvn docker:remove -Ddocker.removeNamePattern=idp-* -->
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>${surefireArgLine}</argLine>
+                    <skipTests>${skip.unittests}</skipTests>
+                </configuration>
+                <groupId>org.apache.maven.plugins</groupId>
+                <version>3.0.0-M3</version>
+            </plugin>
+            <plugin>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <configuration>
+                            <append>true</append>
+                            <destFile>${project.basedir}/target/jacoco.exec</destFile>
+                            <excludes>
+                                <exclude>de.gematik.idp.tests.*</exclude>
+                            </excludes>
+                            <propertyName>surefireArgLine</propertyName>
+                        </configuration>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <id>default-prepare-agent</id>
+                    </execution>
+                </executions>
+                <groupId>org.jacoco</groupId>
+                <version>0.8.5</version>
+            </plugin>
+
+            <!-- to upload jacoco results to sonar server via mvn sonar:sonar-->
+            <plugin>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <version>3.7.0.1746</version>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <artifactId>bcprov-jdk16</artifactId>
+                <groupId>org.bouncycastle</groupId>
+                <version>${version.bouncycastle.bcprov}</version>
+            </dependency>
+            <dependency>
+                <artifactId>bcpkix-jdk15on</artifactId>
+                <groupId>org.bouncycastle</groupId>
+                <version>${version.bouncycastle.bcpkix}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <description>IDP</description>
-
-    <organization>
-        <name>gematik GmbH</name>
-        <url>http://www.gematik.de</url>
-    </organization>
-
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.3.4.RELEASE</version>
-    </parent>
+    <groupId>de.gematik.idp</groupId>
+    <modelVersion>4.0.0</modelVersion>
 
     <modules>
         <module>idp-crypto</module>
@@ -30,105 +86,50 @@
         <module>idp-report</module>
     </modules>
 
+    <organization>
+        <name>gematik GmbH</name>
+        <url>http://www.gematik.de</url>
+    </organization>
+
+    <packaging>pom</packaging>
+
+    <parent>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <groupId>org.springframework.boot</groupId>
+        <version>2.3.4.RELEASE</version>
+    </parent>
+
     <properties>
+        <docker.image.name>idp-server</docker.image.name>
         <java.version>11</java.version>
+        <mpir.skip>true</mpir.skip>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <version.spring-boot>2.3.4.RELEASE</version.spring-boot>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/../idp-report/target/site/jacoco-aggregate/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+        <sonar.language>java</sonar.language>
+        <version.bouncycastle.bcpkix>1.66</version.bouncycastle.bcpkix>
+        <version.bouncycastle.prov>1.46</version.bouncycastle.prov>
+        <version.build-helper-maven-plugin>3.2.0</version.build-helper-maven-plugin>
+        <version.jsoniter>0.9.16</version.jsoniter>
+        <version.lombok>1.18.16</version.lombok>
         <version.maven-clean-plugin>3.1.0</version.maven-clean-plugin>
         <version.maven-compiler-plugin>3.8.1</version.maven-compiler-plugin>
         <version.maven-jar-plugin>3.2.0</version.maven-jar-plugin>
         <version.maven-javadoc-plugin>3.0.1</version.maven-javadoc-plugin>
-        <version.maven-resources-plugin>3.0.2</version.maven-resources-plugin>
-        <version.maven-source-plugin>3.0.1</version.maven-source-plugin>
-        <version.maven-surefire-plugin>2.22.2</version.maven-surefire-plugin>
-        <version.build-helper-maven-plugin>3.2.0</version.build-helper-maven-plugin>
-        <version.test.regex>none</version.test.regex>
-        <version.jsoniter>0.9.16</version.jsoniter>
-        <version.lombok>1.18.12</version.lombok>
-        <version.bouncycastle.prov>1.46</version.bouncycastle.prov>
-        <version.bouncycastle.bcpkix>1.66</version.bouncycastle.bcpkix>
-        <version.springfox>3.0.0</version.springfox>
 
         <!-- only needed for mvn site to avoid stack traces flooding the console -->
-        <mpir.skip>true</mpir.skip>
+        <version.maven-resources-plugin>3.0.2</version.maven-resources-plugin>
 
         <!-- settings for upload to sonar server -->
-        <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/../idp-report/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
-        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
-        <sonar.language>java</sonar.language>
-        <docker.image.name>idp-server</docker.image.name>
+        <version.maven-source-plugin>3.0.1</version.maven-source-plugin>
+        <version.maven-surefire-plugin>2.22.2</version.maven-surefire-plugin>
+        <version.spring-boot>2.3.4.RELEASE</version.spring-boot>
+        <version.springfox>3.0.0</version.springfox>
+        <version.test.regex>none</version.test.regex>
     </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.bouncycastle</groupId>
-                <artifactId>bcprov-jdk16</artifactId>
-                <version>${version.bouncycastle.bcprov}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.bouncycastle</groupId>
-                <artifactId>bcpkix-jdk15on</artifactId>
-                <version>${version.bouncycastle.bcpkix}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-    <build>
-        <plugins>
-            <!-- remove only needed for mvn site runs -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-site-plugin</artifactId>
-                <version>3.9.1</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>3.1.1</version>
-            </plugin>
-
-
-            <!-- to remove docker images call mvn docker:remove -Ddocker.removeNamePattern=idp-* -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M3</version>
-                <configuration>
-                    <argLine>${surefireArgLine}</argLine>
-                    <skipTests>${skip.unittests}</skipTests>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.5</version>
-                <executions>
-                    <execution>
-                        <id>default-prepare-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                        <configuration>
-                            <excludes>
-                                <exclude>de.gematik.idp.tests.*</exclude>
-                            </excludes>
-                            <append>true</append>
-                            <destFile>${project.basedir}/target/jacoco.exec</destFile>
-                            <propertyName>surefireArgLine</propertyName>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- to upload jacoco results to sonar server via mvn sonar:sonar-->
-            <plugin>
-                <groupId>org.sonarsource.scanner.maven</groupId>
-                <artifactId>sonar-maven-plugin</artifactId>
-                <version>3.7.0.1746</version>
-            </plugin>
-        </plugins>
-    </build>
+    <version>5.0.0</version>
 </project>

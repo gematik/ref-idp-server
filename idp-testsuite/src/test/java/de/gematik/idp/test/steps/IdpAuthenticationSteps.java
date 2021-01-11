@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,9 @@ import de.gematik.idp.test.steps.model.ContextKey;
 import de.gematik.idp.test.steps.model.HttpMethods;
 import de.gematik.idp.test.steps.model.HttpStatus;
 import io.cucumber.datatable.DataTable;
+import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.Map;
 
 public class IdpAuthenticationSteps extends IdpStepsBase {
 
@@ -35,22 +34,19 @@ public class IdpAuthenticationSteps extends IdpStepsBase {
         if (mapParsedParams.containsKey("client_id")) {
             final String cid = mapParsedParams.get("client_id");
             ctxt.put(ContextKey.CLIENT_ID, cid);
-            // TODO where do we get the secrets from? Currently not used or?
-            if ("oidc_client".equals(cid)) {
-                ctxt.put(ContextKey.CLIENT_SECRET, "c4000d38-6d02-46d4-ba28-bce8e57ede9e");
-            }
         }
         ctxt.put(ContextKey.RESPONSE, requestResponseAndAssertStatus(
-                Context.getDiscoveryDocument().getAuthorizationEndpoint(), null, HttpMethods.GET, mapParsedParams, status));
+            Context.getDiscoveryDocument().getAuthorizationEndpoint(), null, HttpMethods.GET, mapParsedParams, status));
 
-        if (status.equals(HttpStatus.FAIL)) {
+        final HttpStatus responseStatus = new HttpStatus(Context.getCurrentResponse().getStatusCode());
+        if (responseStatus.isError()) {
             ctxt.put(ContextKey.CHALLENGE, null);
             ctxt.put(ContextKey.USER_CONSENT, null);
         } else {
-            final JSONObject jso = new JSONObject(Context.getCurrentResponse().getBody().asString());
-            ctxt.put(ContextKey.CHALLENGE, jso.getString("challenge"));
-            ctxt.put(ContextKey.USER_CONSENT, jso.getString("user_consent")); // TODO user consent is string or an JSO?
-            //TODO add data to report ? or is REST query info enough
+            final JSONObject json = new JSONObject(Context.getCurrentResponse().getBody().asString());
+            ctxt.put(ContextKey.CHALLENGE, json.getString("challenge"));
+            ctxt.put(ContextKey.USER_CONSENT, json.getString("user_consent"));
+            //TODO user consent is string but will be changed to JSON
         }
     }
 }

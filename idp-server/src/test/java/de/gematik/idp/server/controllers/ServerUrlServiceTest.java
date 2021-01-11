@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,22 @@
 
 package de.gematik.idp.server.controllers;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+
 import de.gematik.idp.server.ServerUrlService;
 import de.gematik.idp.server.configuration.IdpConfiguration;
+import javax.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import javax.servlet.http.HttpServletRequest;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-
 @ExtendWith(MockitoExtension.class)
 public class ServerUrlServiceTest {
+
     @InjectMocks
     private ServerUrlService serverUrlService;
     @Mock
@@ -40,39 +40,39 @@ public class ServerUrlServiceTest {
     @Test
     public void serverUrlSetInYaml_shouldReturnValueForHttpRequestRetrieval() {
         doReturn("FooBar")
-                .when(idpConfiguration).getServerUrl();
+            .when(idpConfiguration).getServerUrl();
 
         assertThat(serverUrlService.determineServerUrl(mock(HttpServletRequest.class)))
-                .isEqualTo("FooBar");
+            .isEqualTo("FooBar");
     }
 
     @Test
     public void serverUrlNotSetInYaml_shouldReturnRequestValueForHttpRequestRetrieval() {
         doReturn(null)
-                .when(idpConfiguration).getServerUrl();
+            .when(idpConfiguration).getServerUrl();
 
         final HttpServletRequest servletRequest = mock(HttpServletRequest.class);
         doReturn("server").when(servletRequest).getServerName();
         doReturn(666).when(servletRequest).getServerPort();
         assertThat(serverUrlService.determineServerUrl(servletRequest))
-                .isEqualTo("http://server:666");
+            .isEqualTo("http://server:666");
     }
 
     @Test
     public void serverUrlSetInYaml_shouldReturnValueForNoParameterRetrieval() {
         doReturn("FooBar")
-                .when(idpConfiguration).getServerUrl();
+            .when(idpConfiguration).getServerUrl();
 
         assertThat(serverUrlService.determineServerUrl())
-                .isEqualTo("FooBar");
+            .isEqualTo("FooBar");
     }
 
     @Test
     public void serverUrlNotSetInYaml_shouldReturnPlaceholderForNoParameterRetrieval() {
         doReturn(null)
-                .when(idpConfiguration).getServerUrl();
+            .when(idpConfiguration).getServerUrl();
 
         assertThat(serverUrlService.determineServerUrl())
-                .matches("http[s]?:\\/\\/[\\w-.]*[\\:[\\d]*]?");
+            .matches("http[s]?:\\/\\/[\\w-.]*[\\:[\\d]*]?");
     }
 }

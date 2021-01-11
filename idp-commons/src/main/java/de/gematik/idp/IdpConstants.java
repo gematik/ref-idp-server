@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,11 @@ public final class IdpConstants {
     public static final String DISCOVERY_DOCUMENT_ENDPOINT = "/discoveryDocument";
     public static final String AUTHORIZATION_ENDPOINT = "/authorization";
     public static final String TOKEN_ENDPOINT = "/token";
+    public static final String PAIRING_ENDPOINT = "/pairing";
     public static final String PUK_URI_AUTH = "/authKey/jwks.json";
     public static final String PUK_URI_TOKEN = "/tokenKey/jwks.json";
     public static final String PUK_URI_DISC = "/discKey/jwks.json";
     public static final String CLIENT_ID = "eRezeptApp";
+    public static final String AUDIENCE = "https://erp.zentral.erp.splitdns.ti-dienste.de";
+    public static final int JTI_LENGTH = 16;
 }

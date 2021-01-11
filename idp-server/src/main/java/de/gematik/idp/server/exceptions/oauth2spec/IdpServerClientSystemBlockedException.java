@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,17 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.test.steps.model;
+package de.gematik.idp.server.exceptions.oauth2spec;
 
-public enum ClaimType {
-    body, header
+import de.gematik.idp.error.IdpErrorType;
+import de.gematik.idp.server.exceptions.IdpServerException;
+import org.springframework.http.HttpStatus;
+
+public class IdpServerClientSystemBlockedException extends IdpServerException {
+
+    private static final long serialVersionUID = -3422049477567171420L;
+
+    public IdpServerClientSystemBlockedException() {
+        super("Given Client-System is blocked", IdpErrorType.ACCESS_DENIED, HttpStatus.FORBIDDEN);
+    }
 }

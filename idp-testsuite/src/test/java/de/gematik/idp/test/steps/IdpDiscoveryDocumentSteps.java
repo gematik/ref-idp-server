@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,9 +31,9 @@ public class IdpDiscoveryDocumentSteps extends IdpStepsBase {
     public void iRequestTheInternalDiscoveryDocument(final HttpStatus desiredStatus) {
         log.info("DiscoveryURL is " + TestEnvironmentConfigurator.getDiscoveryDocumentURL());
         Context.getThreadContext().put(ContextKey.RESPONSE,
-                requestResponseAndAssertStatus(TestEnvironmentConfigurator.getDiscoveryDocumentURL(), null, HttpMethods.GET,
-                        null,
-                        desiredStatus));
+            requestResponseAndAssertStatus(TestEnvironmentConfigurator.getDiscoveryDocumentURL(), null, HttpMethods.GET,
+                null,
+                desiredStatus));
         if (log.isDebugEnabled()) {
             log.debug("Response:" + Context.getCurrentResponse().getBody().prettyPrint());
         }

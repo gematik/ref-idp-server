@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package de.gematik.idp.client;
 
 public class IdpClientRuntimeException extends RuntimeException {
+
     private static final long serialVersionUID = -3280232274428362763L;
 
     public IdpClientRuntimeException(final Exception e) {

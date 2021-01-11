@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,18 +18,17 @@ package de.gematik.idp.authentication;
 
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.IdpJoseException;
+import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.token.JsonWebToken;
+import java.security.cert.X509Certificate;
+import java.util.Map;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
-import org.jose4j.jwt.consumer.JwtContext;
-import org.jose4j.lang.JoseException;
-
-import java.security.cert.X509Certificate;
-import java.util.Map;
 
 @Data
 @Builder
@@ -39,16 +38,19 @@ public class AuthenticationChallengeVerifier {
     private PkiIdentity serverIdentity;
 
     public void verifyResponseAndThrowExceptionIfFail(final JsonWebToken authenticationResponse) {
-        final JwtContext jwtContext = processChallenge(authenticationResponse);
-        final X509Certificate clientCertificate = extractClientCertificateFromChallenge(jwtContext);
-        performSignatureValidation(clientCertificate, authenticationResponse.getJwtRawString());
+        final X509Certificate clientCertificate = extractClientCertificateFromChallenge(authenticationResponse)
+            .orElseThrow(
+                () -> new IdpJoseException("Could not extract client certificate from challenge response header"));
+
+        performClientSignatureValidation(clientCertificate, authenticationResponse.getJwtRawString());
+        performServerSignatureValidationOfNjwt(authenticationResponse);
     }
 
-    private void performSignatureValidation(final X509Certificate clientCertificate,
-                                            final String authResponse) {
+    private void performClientSignatureValidation(final X509Certificate clientCertificate,
+        final String authResponse) {
         final JwtConsumer serverJwtConsumer = new JwtConsumerBuilder()
-                .setVerificationKey(clientCertificate.getPublicKey())
-                .build();
+            .setVerificationKey(clientCertificate.getPublicKey())
+            .build();
         try {
             serverJwtConsumer.process(authResponse);
         } catch (final InvalidJwtException e) {
@@ -56,31 +58,21 @@ public class AuthenticationChallengeVerifier {
         }
     }
 
-    public X509Certificate extractClientCertificateFromChallenge(final JwtContext jwtContext) {
-        try {
-            return jwtContext.getJoseObjects().get(0).getCertificateChainHeaderValue()
-                    .stream()
-                    .findFirst()
-                    .orElseThrow(() -> new IdpJoseException("Failure to get PublicKey"));
-        } catch (final JoseException e) {
-            throw new IdpJoseException("Structure of given JWT is unexpected", e);
-        }
+    private void performServerSignatureValidationOfNjwt(final JsonWebToken authenticationResponse) {
+        authenticationResponse.getBodyClaim(ClaimName.NESTED_JWT)
+            .map(njwt -> new JsonWebToken(njwt.toString()))
+            .ifPresentOrElse(jsonWebToken -> jsonWebToken.verify(serverIdentity.getCertificate().getPublicKey()),
+                () -> {
+                    throw new IdpJoseException("Server certificate mismatch");
+                }
+            );
     }
 
-    private JwtContext processChallenge(final JsonWebToken signedChallenge) {
-        final JwtConsumer serverJwtConsumer = new JwtConsumerBuilder()
-                .setSkipSignatureVerification()
-                .setSkipDefaultAudienceValidation()
-                .build();
-        try {
-            return serverJwtConsumer.process(signedChallenge.getJwtRawString());
-        } catch (final InvalidJwtException e) {
-            throw new IdpJoseException(e);
-        }
+    public Optional<X509Certificate> extractClientCertificateFromChallenge(final JsonWebToken authenticationResponse) {
+        return authenticationResponse.getClientCertificateFromHeader();
     }
 
     public Map<String, Object> extractClaimsFromSignedChallenge(final AuthenticationResponse authenticationResponse) {
-        return processChallenge(authenticationResponse.getSignedChallenge())
-                .getJwtClaims().getClaimsMap();
+        return authenticationResponse.getSignedChallenge().getBodyClaims();
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,30 +16,75 @@
 
 package de.gematik.idp.data;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import static de.gematik.idp.crypto.KeyAnalysis.isEcKey;
 
-@Data
-@Builder
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
+import de.gematik.idp.crypto.exceptions.IdpCryptoException;
+import de.gematik.idp.exceptions.IdpJoseException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.Base64;
+import lombok.*;
+import org.jose4j.json.internal.json_simple.JSONAware;
+import org.jose4j.jwk.EllipticCurveJsonWebKey;
+import org.jose4j.jwk.RsaJsonWebKey;
+
+@Getter
+@Setter
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-public class IdpKeyDescriptor {
+public class IdpKeyDescriptor implements JSONAware {
+
+    {
+        BrainpoolCurves.init();
+    }
+
     private String[] x5c;
     @JsonProperty("kid")
     private String keyId;
     @JsonProperty("kty")
     private String keyType;
-    @JsonProperty("crv")
-    private String eccCurveName;
-    @JsonProperty("x")
-    private String eccPointXValue;
-    @JsonProperty("y")
-    private String eccPointYValue;
-    @JsonProperty("n")
-    private String rsaModulusValue;
-    @JsonProperty("e")
-    private String rsaExponentValue;
+
+    public static String[] getCertArray(final X509Certificate certificate) {
+        try {
+            return new String[]{
+                Base64.getEncoder().encodeToString(
+                    certificate.getEncoded())};
+        } catch (final CertificateEncodingException e) {
+            throw new IdpCryptoException("Error while retrieving key information", e);
+        }
+    }
+
+    public static IdpKeyDescriptor constructFromX509Certificate(final X509Certificate certificate) {
+        if (isEcKey(certificate.getPublicKey())) {
+            return IdpEccKeyDescriptor.constructFromX509Certificate(certificate);
+        } else {
+            return IdpRsaKeyDescriptor.constructFromX509Certificate(certificate);
+        }
+    }
+
+    public static String getKeyType(final X509Certificate certificate) {
+        if (isEcKey(certificate.getPublicKey())) {
+            return EllipticCurveJsonWebKey.KEY_TYPE;
+        } else {
+            return RsaJsonWebKey.KEY_TYPE;
+        }
+    }
+
+    @Override
+    public String toJSONString() {
+        try {
+            final ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.setSerializationInclusion(Include.NON_NULL);
+            return objectMapper
+                .writeValueAsString(this);
+        } catch (final JsonProcessingException e) {
+            throw new IdpJoseException("Error during Claim serialization", e);
+        }
+    }
 }

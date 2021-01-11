@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,24 @@
 
 package de.gematik.idp.client;
 
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.jupiter.api.Test;
+
 public class ClientUtilitiesTest {
+
     private static final String BASE64_URL_REGEX = "^[0-9a-zA-Z\\-\\.~_]+$";
     private static final int SHA256_AS_B64_LENGTH = 43;
 
     @Test
     public void generateCodeChallengeFromVerifier() {
-        String codeVerifier = ClientUtilities.generateCodeVerifier();
+        final String codeVerifier = ClientUtilities.generateCodeVerifier();
 
-        String codeChallenge = ClientUtilities.generateCodeChallenge(codeVerifier);
+        final String codeChallenge = ClientUtilities.generateCodeChallenge(codeVerifier);
 
         assertThat(codeChallenge)
-                .matches(BASE64_URL_REGEX)
-                .isEqualTo(ClientUtilities.generateCodeChallenge(codeVerifier))
-                .hasSize(SHA256_AS_B64_LENGTH);
+            .matches(BASE64_URL_REGEX)
+            .isEqualTo(ClientUtilities.generateCodeChallenge(codeVerifier))
+            .hasSize(SHA256_AS_B64_LENGTH);
     }
 }

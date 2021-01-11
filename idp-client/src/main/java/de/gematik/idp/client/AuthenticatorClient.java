@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,33 +16,24 @@
 
 package de.gematik.idp.client;
 
-import static de.gematik.idp.authentication.UriUtils.*;
-import static de.gematik.idp.crypto.CryptoLoader.*;
+import static de.gematik.idp.authentication.UriUtils.extractParameterValue;
+import static de.gematik.idp.crypto.CryptoLoader.getCertificateFromPem;
 import static de.gematik.idp.field.ClaimName.*;
-import static org.apache.http.HttpHeaders.*;
+import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 
 import de.gematik.idp.authentication.AuthenticationChallenge;
-import de.gematik.idp.client.data.AuthenticationRequest;
-import de.gematik.idp.client.data.AuthenticationResponse;
-import de.gematik.idp.client.data.AuthorizationRequest;
-import de.gematik.idp.client.data.AuthorizationResponse;
-import de.gematik.idp.client.data.DiscoveryDocumentResponse;
-import de.gematik.idp.client.data.TokenRequest;
+import de.gematik.idp.client.data.*;
+import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.token.JsonWebToken;
 import de.gematik.idp.token.TokenClaimExtraction;
 import java.util.Base64;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import kong.unirest.BodyPart;
-import kong.unirest.GetRequest;
-import kong.unirest.Header;
-import kong.unirest.HttpRequest;
-import kong.unirest.HttpResponse;
-import kong.unirest.JsonNode;
-import kong.unirest.MultipartBody;
-import kong.unirest.Unirest;
+import javax.ws.rs.core.HttpHeaders;
+import kong.unirest.*;
 import kong.unirest.json.JSONObject;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
@@ -52,6 +43,7 @@ import org.springframework.http.MediaType;
 public class AuthenticatorClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticatorClient.class);
+    private static final String USER_AGENT = "IdP-Client";
 
     public static Map<String, String> getAllHeaderElementsAsMap(final HttpRequest request) {
         return request.getHeaders().all().stream()
@@ -68,6 +60,10 @@ public class AuthenticatorClient {
         final Function<GetRequest, GetRequest> beforeCallback,
         final Consumer<HttpResponse<AuthenticationChallenge>> afterCallback
     ) {
+        final String scope = authorizationRequest.getScopes().stream()
+            .map(IdpScope::getJwtValue)
+            .collect(Collectors.joining(" "));
+
         final GetRequest request = Unirest.get(authorizationRequest.getLink())
             .queryString(CLIENT_ID.getJoseName(), authorizationRequest.getClientId())
             .queryString(RESPONSE_TYPE.getJoseName(), "code")
@@ -76,7 +72,8 @@ public class AuthenticatorClient {
             .queryString(CODE_CHALLENGE.getJoseName(), authorizationRequest.getCodeChallenge())
             .queryString(CODE_CHALLENGE_METHOD.getJoseName(),
                 authorizationRequest.getCodeChallengeMethod())
-            .queryString(SCOPE.getJoseName(), "openid");
+            .queryString(SCOPE.getJoseName(), scope)
+            .header(HttpHeaders.USER_AGENT, USER_AGENT);
 
         final HttpResponse<AuthenticationChallenge> authorizationResponse = beforeCallback
             .apply(request)
@@ -99,7 +96,8 @@ public class AuthenticatorClient {
         final MultipartBody request = Unirest
             .post(authenticationRequest.getAuthenticationEndpointUrl())
             .field("signed_challenge", authenticationRequest.getSignedChallenge())
-            .header("Content-Type", "application/x-www-form-urlencoded");
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .header(HttpHeaders.USER_AGENT, USER_AGENT);
 
         final HttpResponse<String> loginResponse = beforeAuthenticationCallback.apply(request).asString();
         afterAuthenticationCallback.accept(loginResponse);
@@ -120,7 +118,8 @@ public class AuthenticatorClient {
         final MultipartBody request = Unirest.post(authenticationRequest.getAuthenticationEndpointUrl())
             .field("sso_token", authenticationRequest.getSsoToken())
             .field("challenge_token", authenticationRequest.getChallengeToken())
-            .header(CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+            .header(CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+            .header(HttpHeaders.USER_AGENT, USER_AGENT);
         final HttpResponse<String> loginResponse = beforeAuthenticationCallback.apply(request).asString();
         afterAuthenticationCallback.accept(loginResponse);
         final String location = retrieveLocationFromResponse(loginResponse);
@@ -146,10 +145,10 @@ public class AuthenticatorClient {
             .header(CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .field("grant_type", "authorization_code")
             .field("client_id", tokenRequest.getClientId())
-            .field("client_secret", tokenRequest.getClientSecret())
             .field("code", tokenRequest.getCode())
             .field("code_verifier", tokenRequest.getCodeVerifier())
-            .field("redirect_uri", tokenRequest.getRedirectUrl());
+            .field("redirect_uri", tokenRequest.getRedirectUrl())
+            .header(HttpHeaders.USER_AGENT, USER_AGENT);
 
         final HttpResponse<JsonNode> tokenResponse = beforeTokenCallback.apply(request)
             .asJson();
@@ -160,7 +159,11 @@ public class AuthenticatorClient {
         }
         final JSONObject jsonObject = tokenResponse.getBody().getObject();
 
-        final String accessTokenRawString = jsonObject.get("access_token").toString();
+        final JsonWebToken accessToken = Optional.ofNullable(jsonObject.get("access_token"))
+            .filter(String.class::isInstance)
+            .map(String.class::cast)
+            .map(JsonWebToken::new)
+            .orElse(null);
 
         final String idTokenRawString = jsonObject.get("id_token").toString();
 
@@ -170,7 +173,7 @@ public class AuthenticatorClient {
         return IdpTokenResult.builder()
             .tokenType(tokenType)
             .expiresIn(expiresIn)
-            .accessToken(new JsonWebToken(accessTokenRawString))
+            .accessToken(accessToken)
             .idToken(new JsonWebToken(idTokenRawString))
             .ssoToken(new JsonWebToken(tokenRequest.getSsoToken()))
             .build();
@@ -179,15 +182,16 @@ public class AuthenticatorClient {
     public DiscoveryDocumentResponse retrieveDiscoveryDocument(final String discoveryDocumentUrl) {
         //TODO aufräumen, checks hinzufügen...
         final HttpResponse<String> discoveryDocumentResponse = Unirest.get(discoveryDocumentUrl)
+            .header(HttpHeaders.USER_AGENT, USER_AGENT)
             .asString();
         final Map<String, Object> discoveryClaims = TokenClaimExtraction
             .extractClaimsFromTokenBody(discoveryDocumentResponse.getBody());
 
         final HttpResponse<JsonNode> pukAuthResponse = Unirest
             .get(discoveryClaims.get("puk_uri_auth").toString())
+            .header(HttpHeaders.USER_AGENT, USER_AGENT)
             .asJson();
-        final JSONObject keyObject = pukAuthResponse.getBody().getObject().getJSONArray("keys")
-            .getJSONObject(0);
+        final JSONObject keyObject = pukAuthResponse.getBody().getObject();
 
         final String verificationCertificate = keyObject.getJSONArray(X509_Certificate_Chain.getJoseName())
             .getString(0);

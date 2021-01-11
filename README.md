@@ -1,4 +1,5 @@
-# ![Logo](./doc/images/IDPLogo-64.png) IDP-Server 
+# ![Logo](./doc/images/IDPLogo-64.png) IDP-Server
+
 <div>Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
 
 ## Build
@@ -11,7 +12,6 @@ Dies ist vor allem für den Server relevant (konstante, saubere Umgebung). Im id
 docker-compose build --build-args mode=[un]tested
 ```
 
-
 ### Docker Container über Maven bauen
 
 ```
@@ -19,8 +19,8 @@ mvn clean compile
 mvn install # builds docker image and runs integration test suite
 ```
 
-Sollte **kein** Docker auf dem Buildrechner installiert sein, so kann über -Ddocker.skip dieser Teil deaktiviert werden. 
-Naturgemäß wird aber dann auch kein Docker image gebaut. 
+Sollte **kein** Docker auf dem Buildrechner installiert sein, so kann über -Ddocker.skip dieser Teil deaktiviert werden.
+Naturgemäß wird aber dann auch kein Docker image gebaut.
 
 ## Tests
 
@@ -40,10 +40,8 @@ Integrationstests gestartet.
 Ein Beispiel für die lokale Instanz wäre:
 
 ```
-http://localhost:$PORT/auth/realms/idp/.well-known/openid-configuration
+http://localhost:8080/auth/realms/idp/.well-known/openid-configuration
 ```
-
-Wobei $PORT für den port auf dem der Server läuft, steht.
 
 Integrationstests können mit dem property `-Dskip.inttests=true` disabled werden.
 
@@ -67,6 +65,11 @@ export CONTAINERIP=`docker inspect $CONTAINERID | grep -v \"\" | grep \"IPAddres
 export IDP_SERVER=http://$CONTAINERIP:8080/auth/realms/idp/.well-known/openid-configuration
 mvn verify -Dskip.unittests=true
 ```
+
+### Zulassungstests
+
+Basierend auf der Integrationstestsuite können auch Zulassungstests durchgeführt werden. Mehr Informationen hierzu
+finden sich im [README im submodule idp-testsuite](idp-testsuite/README.md)
 
 ## Cheatsheet
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,21 @@
 package de.gematik.idp.client.data;
 
 import de.gematik.idp.field.CodeChallengeMethod;
+import de.gematik.idp.field.IdpScope;
+import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
 public class AuthorizationRequest {
+
     private final String link;
     private final String clientId;
     private final String codeChallenge;
     private final CodeChallengeMethod codeChallengeMethod;
     private final String redirectUri;
     private final String state;
+    private final Set<IdpScope> scopes;
 }
 

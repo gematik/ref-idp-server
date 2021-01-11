@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ public class IdpAuthenticator {
         final JsonWebToken signedChallenge,
         final URIBuilder locationBuilder) {
         final Map<String, Object> serverChallengeClaims = signedChallenge
-            .getStringBodyClaim(ClaimName.NESTED_JWT.getJoseName())
+            .getStringBodyClaim(ClaimName.NESTED_JWT)
             .map(TokenClaimExtraction::extractClaimsFromTokenBody)
             .orElseThrow(() -> new IdpServerInvalidRequestException(
                 "Expected signed_challenge to contain String-Claim 'njwt'."));
@@ -96,7 +96,8 @@ public class IdpAuthenticator {
         locationBuilder
             .addParameter("state", Optional.ofNullable(serverChallengeClaims.get(ClaimName.STATE.getJoseName()))
                 .map(Object::toString)
-                .orElseThrow(() -> new IdpServerException("Unable to find 'state' parameter in Nested Challenge")));
+                .orElseThrow(() ->
+                    new IdpServerException(IdpErrorType.STATE_MISSING_IN_NESTED_CHALLENGE, HttpStatus.BAD_REQUEST)));
     }
 
     private void buildSsoTokenLocation(final JsonWebToken ssoToken, final JsonWebToken challengeToken,
@@ -110,11 +111,19 @@ public class IdpAuthenticator {
         locationBuilder.addParameter("code", authenticationTokenBuilder
             .buildAuthenticationTokenFromSsoToken(ssoToken, challengeToken)
             .getJwtRawString());
+
+        locationBuilder
+            .addParameter("state",
+                Optional.ofNullable(challengeToken.getBodyClaims().get(ClaimName.STATE.getJoseName()))
+                    .map(Object::toString)
+                    .orElseThrow(() ->
+                        new IdpServerException(IdpErrorType.STATE_MISSING_IN_NESTED_CHALLENGE,
+                            HttpStatus.BAD_REQUEST)));
     }
 
     public void validateRedirectUri(final String redirectUri) {
         if (Objects.isNull(redirectUri) || !idpConfiguration.getRedirectUri().equals(redirectUri)) {
-            throw new IdpServerException(IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+            throw new IdpServerException(IdpErrorType.REDIRECT_URI_DEFUNCT, HttpStatus.BAD_REQUEST);
         }
     }
 }

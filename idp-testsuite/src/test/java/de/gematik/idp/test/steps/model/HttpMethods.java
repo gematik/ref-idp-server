@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@ package de.gematik.idp.test.steps.model;
 public enum HttpMethods {
     GET("GET"), POST("POST"), PUT("PUT"), DELETE("DELETE"), HEAD("HEAD");
 
+    private final String value;
+
     HttpMethods(final String value) {
         this.value = value;
     }
-
-    private final String value;
 
     @Override
     public String toString() {

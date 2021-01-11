@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,12 @@
 
 package de.gematik.idp.test.steps.utils;
 
-import lombok.extern.slf4j.Slf4j;
-import net.serenitybdd.core.Serenity;
-import net.thucydides.core.steps.StepEventBus;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
+import net.serenitybdd.core.Serenity;
+import net.thucydides.core.steps.StepEventBus;
 
 @Slf4j
 public class SerenityReportUtils {
@@ -37,13 +36,13 @@ public class SerenityReportUtils {
     public static void addCurlCommand(final String rALogDetails) {
         final String[] lines = rALogDetails.split("\\n");
         final String uri = Stream.of(lines)
-                .filter(l -> l.trim().startsWith("Request URI:"))
-                .map(SerenityReportUtils::getValueFromLogLine)
-                .findFirst().orElse(null);
+            .filter(l -> l.trim().startsWith("Request URI:"))
+            .map(SerenityReportUtils::getValueFromLogLine)
+            .findFirst().orElse(null);
         final String method = Stream.of(lines)
-                .filter(l -> l.trim().startsWith("Request method:"))
-                .map(SerenityReportUtils::getValueFromLogLine)
-                .findFirst().orElse(null);
+            .filter(l -> l.trim().startsWith("Request method:"))
+            .map(SerenityReportUtils::getValueFromLogLine)
+            .findFirst().orElse(null);
 
         final StringBuilder curlCmd = new StringBuilder("curl ");
         if (uri != null && method != null) {
@@ -52,7 +51,7 @@ public class SerenityReportUtils {
             for (final String header : headers) {
                 final int equal = header.indexOf("=");
                 curlCmd.append("-H \"").append(header, 0, equal)
-                        .append(": ").append(header.substring(equal + 1)).append("\" ");
+                    .append(": ").append(header.substring(equal + 1)).append("\" ");
             }
 
             switch (method) {
@@ -93,7 +92,7 @@ public class SerenityReportUtils {
                 paramsStr.append(param).append("=");
             } else {
                 paramsStr.append(param, 0, equal)
-                        .append("=").append(param.substring(equal + 1));
+                    .append("=").append(param.substring(equal + 1));
             }
         }
         return !first;

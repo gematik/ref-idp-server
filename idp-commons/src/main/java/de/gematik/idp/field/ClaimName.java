@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ public enum ClaimName {
     STATE("state"),
     REDIRECT_URI("redirect_uri"),
     TYPE("typ"),
+    CONTENT_TYPE("cty"),
     JWT_ID("jti"),
     NOT_BEFORE("nbf"),
     CLIENT_SIGNATURE("csig"),
@@ -51,7 +52,9 @@ public enum ClaimName {
     SUBJECT("sub"),
     X509_Certificate_Chain("x5c"),
     NONCE("snc"),
-    AUDIENCE("aud");
+    AUDIENCE("aud"),
+    JWKS_URI("jwks_uri"),
+    ACR_VALUES_SUPPORTED("acr_values_supported");
 
     @JsonValue
     private final String joseName;

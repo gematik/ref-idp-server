@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,10 @@ package de.gematik.idp.test.steps.model;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.restassured.response.Response;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import net.thucydides.core.annotations.Step;
 import org.json.JSONObject;
 
 public class Context {
@@ -33,10 +35,12 @@ public class Context {
     }
 
     public static Response getCurrentResponse() {
+        assertThat(getThreadContext().get(ContextKey.RESPONSE)).withFailMessage("No Response in context!").isNotNull();
         return (Response) getThreadContext().get(ContextKey.RESPONSE);
     }
 
     public static JSONObject getCurrentClaims() {
+        assertThat(getThreadContext().get(ContextKey.CLAIMS)).withFailMessage("No Claims in context!").isNotNull();
         return (JSONObject) getThreadContext().get(ContextKey.CLAIMS);
     }
 
@@ -46,16 +50,62 @@ public class Context {
         getThreadContext().remove(key);
     }
 
-    // TODO implement steps to modify context string objects
-    @SuppressWarnings("unused")
-    void setContext(final ContextKey key, final String value) {
-        assertThat(key)
-            .withFailMessage("Only String context values can be set!")
-            .isNotIn(ContextKey.CLAIMS, ContextKey.RESPONSE, ContextKey.DISC_DOC, ContextKey.USER_CONSENT);
+    public static DiscoveryDocument getDiscoveryDocument() {
+        assertThat(getThreadContext().get(ContextKey.DISC_DOC)).withFailMessage("No Discovery Document in context!")
+            .isNotNull();
+        return (DiscoveryDocument) (getThreadContext().get(ContextKey.DISC_DOC));
+    }
+
+    public void setValue(final ContextKey key, final String value) {
+        assertThat(key).isNotIn(ContextKey.USER_CONSENT, ContextKey.RESPONSE, ContextKey.DISC_DOC,
+            ContextKey.HEADER_CLAIMS, ContextKey.CLAIMS);
         getThreadContext().put(key, value);
     }
 
-    public static DiscoveryDocument getDiscoveryDocument() {
-        return (DiscoveryDocument) (getThreadContext().get(ContextKey.DISC_DOC));
+    public void deleteKey(final ContextKey key) {
+        getThreadContext().remove(key);
+    }
+
+    public void assertRegexMatches(final ContextKey key, final String regex) {
+        assertThat(key).isNotIn(ContextKey.USER_CONSENT, ContextKey.RESPONSE, ContextKey.DISC_DOC,
+            ContextKey.HEADER_CLAIMS, ContextKey.CLAIMS);
+
+        final Map<ContextKey, Object> ctxt = getThreadContext();
+        if ("$NULL".equals(regex)) {
+            assertThat(ctxt).containsEntry(key, null);
+        } else if ("$DOESNOTEXIST".equals(regex)) {
+            assertThat(ctxt).doesNotContainKey(key);
+        } else {
+            assertThat(ctxt).doesNotContainEntry(key, null);
+            assertThat((String) ctxt.get(key)).matches(regex);
+        }
+    }
+
+    @Step
+    public void iStartNewInteractionKeepingOnly(final ContextKey key) {
+        final Map<ContextKey, Object> ctxt = Context.getThreadContext();
+        assertThat(ctxt).containsKey(key);
+        final Object o = ctxt.get(key);
+        ctxt.clear();
+        ctxt.put(key, o);
+    }
+
+    public void flipBit(final int bitidx, final ContextKey key) {
+        assertThat(getThreadContext().get(key)).withFailMessage("No " + key + " in context!").isNotNull();
+        final String value = Context.getThreadContext().get(key).toString();
+        final byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
+        final int idx;
+        final int shift;
+        if (bitidx < 0) {
+            idx = bytes.length - 1 + bitidx / 8;
+            shift = -bitidx % 8;
+        } else {
+            idx = bitidx / 8;
+            shift = 8 - (bitidx % 8);
+        }
+        bytes[idx] ^= (byte) (0b00000001 << shift);
+        final String flippedValue = new String(bytes);
+        assertThat(flippedValue).isNotEqualTo(value);
+        Context.getThreadContext().put(key, flippedValue);
     }
 }

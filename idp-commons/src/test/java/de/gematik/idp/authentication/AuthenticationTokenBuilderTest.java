@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 package de.gematik.idp.authentication;
 
 import static de.gematik.idp.field.ClaimName.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.Afo;
@@ -58,6 +58,17 @@ public class AuthenticationTokenBuilderTest {
             .containsEntry(FAMILY_NAME.getJoseName(), "Fuchs");
     }
 
+    @Afo("A_20526")
+    @Test
+    public void testAuthenticationTokenHeaderHasType() {
+        final JsonWebToken authenticationToken = authenticationTokenBuilder
+            .buildAuthenticationToken(clientIdentity.getCertificate(), Collections.emptyMap(), ZonedDateTime.now());
+
+        assertThat(authenticationToken.getHeaderClaims())
+            .containsEntry(TYPE.getJoseName(), "JWT");
+    }
+
+
     @Afo("A_20731")
     @Test
     public void testAuthenticationTokenHasAuthTime() {
@@ -72,20 +83,33 @@ public class AuthenticationTokenBuilderTest {
     }
 
     @Test
-    public void verifyThatAuthenticationTokenCarriesExpIatNbfClaimOnlyInBody() {
+    public void verifyThatAuthenticationTokenCarriesIatNbfClaimOnlyInBody() {
         final ZonedDateTime now = ZonedDateTime.now();
         final JsonWebToken authenticationToken = authenticationTokenBuilder
             .buildAuthenticationToken(clientIdentity.getCertificate(), Collections.emptyMap(), now);
 
         assertThat(authenticationToken.getHeaderClaims())
             .as("Authentication-Token Header-Claims")
-            .doesNotContainKey(EXPIRES_AT.getJoseName())
             .doesNotContainKey(NOT_BEFORE.getJoseName())
             .doesNotContainKey(ISSUED_AT.getJoseName());
         assertThat(authenticationToken.getBodyClaims())
             .as("Authentication-Token Body-Claims")
             .containsKey(ISSUED_AT.getJoseName())
-            .containsKey(NOT_BEFORE.getJoseName())
+            .containsKey(NOT_BEFORE.getJoseName());
+    }
+
+    @Test
+    public void verifyThatAuthenticationTokenCarriesExpClaimInBodyAndHeader() {
+        final ZonedDateTime now = ZonedDateTime.now();
+        final JsonWebToken authenticationToken = authenticationTokenBuilder
+            .buildAuthenticationToken(clientIdentity.getCertificate(), Collections.emptyMap(), now);
+
+        assertThat(authenticationToken.getHeaderClaims())
+            .as("Authentication-Token exp in Header-Claims")
+            .containsKey(EXPIRES_AT.getJoseName());
+        assertThat(authenticationToken.getBodyClaims())
+            .as("Authentication-Token exp in Body-Claims")
             .containsKey(EXPIRES_AT.getJoseName());
     }
+
 }

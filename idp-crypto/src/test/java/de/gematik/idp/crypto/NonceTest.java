@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,45 +16,44 @@
 
 package de.gematik.idp.crypto;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
+import java.util.HashSet;
+import java.util.Set;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
 import org.junit.jupiter.api.Test;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class NonceTest {
 
     @Test
     public void checkInvalidLowerLimit() {
         assertThatThrownBy(() -> new Nonce().getNonceAsBase64(0)).
-                isInstanceOf(IdpCryptoException.class).
-                hasMessageContaining("Amount of random bytes");
+            isInstanceOf(IdpCryptoException.class).
+            hasMessageContaining("Amount of random bytes");
 
         assertThatThrownBy(() -> new Nonce().getNonceAsHex(1)).
-                isInstanceOf(IdpCryptoException.class).
-                hasMessageContaining("string length");
+            isInstanceOf(IdpCryptoException.class).
+            hasMessageContaining("string length");
     }
 
     @Test
     public void checkInvalidUpperLimit() {
         assertThatThrownBy(() -> new Nonce().getNonceAsBase64(513)).
-                isInstanceOf(IdpCryptoException.class).
-                hasMessageContaining("Amount of random bytes");
+            isInstanceOf(IdpCryptoException.class).
+            hasMessageContaining("Amount of random bytes");
 
         assertThatThrownBy(() -> new Nonce().getNonceAsHex(513)).
-                isInstanceOf(IdpCryptoException.class).
-                hasMessageContaining("string length is expected to be between");
+            isInstanceOf(IdpCryptoException.class).
+            hasMessageContaining("string length is expected to be between");
     }
 
     @Test
     public void checkExactNonceLength() {
         final int BYTE_AMOUNT = 256;
-        String nonce = new Nonce().getNonceAsBase64(BYTE_AMOUNT);
+        final String nonce = new Nonce().getNonceAsBase64(BYTE_AMOUNT);
         assertThat(Base64.decode(nonce).length).isEqualTo(BYTE_AMOUNT);
 
         final int HEXSTR_LEN = 10;
@@ -66,7 +65,7 @@ class NonceTest {
     public void checkNonceUnique() {
         final int NONCES_REQUEST_AMOUNT = 1000;
         final Nonce nonce = new Nonce();
-        Set<String> nonces = new HashSet<String>();
+        final Set<String> nonces = new HashSet<>();
         for (int i = 0; i < NONCES_REQUEST_AMOUNT; i++) {
             nonces.add(nonce.getNonceAsBase64(32));
             nonces.add(nonce.getNonceAsHex(8));
@@ -83,8 +82,8 @@ class NonceTest {
     @Test
     public void checkHexRequestedStrLenIsEven() {
         assertThatThrownBy(() -> new Nonce().getNonceAsHex(13)).
-                isInstanceOf(IdpCryptoException.class).
-                hasMessageContaining("string length is expected to be even");
+            isInstanceOf(IdpCryptoException.class).
+            hasMessageContaining("string length is expected to be even");
     }
 
 }

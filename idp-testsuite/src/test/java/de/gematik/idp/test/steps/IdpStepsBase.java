@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,53 @@
 
 package de.gematik.idp.test.steps;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+
 import de.gematik.idp.test.steps.helpers.TestEnvironmentConfigurator;
-import de.gematik.idp.test.steps.model.*;
+import de.gematik.idp.test.steps.model.ClaimLocation;
+import de.gematik.idp.test.steps.model.Context;
+import de.gematik.idp.test.steps.model.ContextKey;
+import de.gematik.idp.test.steps.model.DateCompareMode;
+import de.gematik.idp.test.steps.model.DiscoveryDocument;
+import de.gematik.idp.test.steps.model.HttpMethods;
+import de.gematik.idp.test.steps.model.HttpStatus;
 import de.gematik.idp.test.steps.utils.SerenityReportUtils;
 import io.cucumber.datatable.DataTable;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.http.ContentType;
+import io.restassured.http.Header;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import net.serenitybdd.rest.SerenityRest;
 import net.thucydides.core.annotations.Step;
+import org.apache.commons.collections.IteratorUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jose4j.json.JsonUtil;
@@ -38,18 +73,8 @@ import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.jose4j.lang.JoseException;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.security.*;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 public class IdpStepsBase {
@@ -58,8 +83,8 @@ public class IdpStepsBase {
 
     @Step
     Response requestResponseAndAssertStatus(final String uri,
-                                            final Map<String, String> headers, final HttpMethods method,
-                                            final Map<String, String> params, final HttpStatus status) {
+        final Map<String, String> headers, final HttpMethods method,
+        final Map<String, String> params, final HttpStatus status) {
         final RequestSpecification reqSpec = SerenityRest.rest();
         if (params != null) {
             if (method == HttpMethods.GET) {
@@ -74,8 +99,8 @@ public class IdpStepsBase {
 
         final ByteArrayOutputStream reqDetails = new ByteArrayOutputStream();
         reqSpec.filter(
-                new RequestLoggingFilter(
-                        LogDetail.ALL, true, new PrintStream(reqDetails), true));
+            new RequestLoggingFilter(
+                LogDetail.ALL, true, new PrintStream(reqDetails), true));
         final Response r = reqSpec.request(method.toString(), uri).thenReturn();
         SerenityReportUtils.addCurlCommand(new String(reqDetails.toByteArray(), StandardCharsets.UTF_8));
 
@@ -87,12 +112,14 @@ public class IdpStepsBase {
         final HttpStatus resSt = new HttpStatus(resStatus);
         if (status.equals(HttpStatus.SUCCESS)) {
             assertThat(!resSt.isError() || resSt.is3xxRedirection())
-                    .withFailMessage("Expected status code to be successful, got " + resStatus)
-                    .isTrue();
+                .withFailMessage("Expected status code to be successful, got " + resStatus)
+                .isTrue();
         } else if (status.equals(HttpStatus.FAIL)) {
             assertThat(resSt.isError() && !resSt.is3xxRedirection())
-                    .withFailMessage("Expected status code to be indicating an error, got " + resStatus)
-                    .isTrue();
+                .withFailMessage("Expected status code to be indicating an error, got " + resStatus)
+                .isTrue();
+        } else if (status.equals(HttpStatus.NOCHECK)) {
+            // DO NOTHING
         } else {
             assertThat(resStatus).isEqualTo(status.getValue());
         }
@@ -100,25 +127,34 @@ public class IdpStepsBase {
     }
 
     protected JSONObject getClaims(final String jwt) throws InvalidJwtException {
-        // TODO what is audience validation and do we enforce / validate this?
         final JwtConsumerBuilder jwtConsBuilder = new JwtConsumerBuilder()
-                .setSkipDefaultAudienceValidation()
-                .setSkipSignatureVerification();
+            .setSkipDefaultAudienceValidation()
+            .setSkipSignatureVerification();
         return new JSONObject(jwtConsBuilder.build().process(jwt).getJwtClaims().getClaimsMap());
     }
 
-    public JSONObject extractHeaderClaimsFromResponse() throws JoseException {
+    public JSONObject extractHeaderClaimsFromString(final String token) throws JoseException {
         final JsonWebSignature jsonWebSignature = new JsonWebSignature();
-        jsonWebSignature.setCompactSerialization(Context.getCurrentResponse().getBody().asString());
+        jsonWebSignature.setCompactSerialization(token);
         return new JSONObject(JsonUtil.parseJson(jsonWebSignature.getHeaders().getFullHeaderAsJsonString()));
+    }
+
+    public JSONObject extractHeaderClaimsFromResponse() throws JoseException {
+        return extractHeaderClaimsFromString(Context.getCurrentResponse().getBody().asString());
+    }
+
+    public JSONObject extractHeaderClaimsFromResponseJsonField(final String jsonName)
+        throws JoseException, JSONException {
+        final JSONObject json = new JSONObject(Context.getCurrentResponse().getBody().asString());
+        return extractHeaderClaimsFromString(json.getString(jsonName));
     }
 
     @NotNull
     protected Map<String, String> getMapFromDatatable(final DataTable params) {
         final List<Map<String, String>> rows = params.asMaps(String.class, String.class);
         assertThat(rows.size())
-                .withFailMessage("Expected one data row, check your feature file")
-                .isEqualTo(1);
+            .withFailMessage("Expected one data row, check your feature file")
+            .isEqualTo(1);
 
         final Map<String, String> mapParsedParams = new HashMap<>();
         for (final Map.Entry<String, String> entry : rows.get(0).entrySet()) {
@@ -136,8 +172,10 @@ public class IdpStepsBase {
     // =================================================================================================================
     //    K E Y / C E R T   R E L A T E D   M E T H O D S
     // =================================================================================================================
-    Certificate readCertFrom(final InputStream is)
-            throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException {
+    Certificate readCertFrom(final String certFile)
+        throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException {
+        final InputStream is = getClass().getResourceAsStream(certFile);
+        assertThat(is).withFailMessage("Unable to locate cert resource '" + certFile + "'").isNotNull();
         final KeyStore keyStore = KeyStore.getInstance("pkcs12", new BouncyCastleProvider());
         try (final ByteArrayInputStream bis = new ByteArrayInputStream(is.readAllBytes())) {
             keyStore.load(bis, "00".toCharArray());
@@ -145,8 +183,10 @@ public class IdpStepsBase {
         return keyStore.getCertificate(keyStore.aliases().nextElement());
     }
 
-    Key readPrivateKeyFrom(final InputStream is)
-            throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException {
+    Key readPrivateKeyFrom(final String keyFile)
+        throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException {
+        final InputStream is = getClass().getResourceAsStream(keyFile);
+        assertThat(is).withFailMessage("Unable to locate key resource '" + keyFile + "'").isNotNull();
         final KeyStore keyStore = KeyStore.getInstance("pkcs12", new BouncyCastleProvider());
         keyStore.load(new ByteArrayInputStream(is.readAllBytes()), "00".toCharArray());
         return keyStore.getKey(keyStore.aliases().nextElement(), "00".toCharArray());
@@ -155,16 +195,15 @@ public class IdpStepsBase {
     void assertJWTIsSignedByCertificate(final String jwt, final Certificate cert) {
         final PublicKey publicKey = cert.getPublicKey();
         final JwtConsumer jwtConsumer = new JwtConsumerBuilder()
-                .setVerificationKey(publicKey)
-                .setSkipDefaultAudienceValidation()
-                .build();
+            .setVerificationKey(publicKey)
+            .setSkipDefaultAudienceValidation()
+            .build();
         try {
             jwtConsumer.process(jwt).getJwtClaims().getClaimsMap();
         } catch (final InvalidJwtException ije) {
             fail("Checking signature failed", ije);
         }
     }
-
 
     // =================================================================================================================
     //
@@ -188,7 +227,6 @@ public class IdpStepsBase {
     //
     // =================================================================================================================
 
-
     public void assertResponseStatusIs(final HttpStatus status) {
         log.debug("STATUS " + Context.getCurrentResponse().statusCode());
         checkHTTPStatus(Context.getCurrentResponse().getStatusCode(), status);
@@ -196,7 +234,7 @@ public class IdpStepsBase {
 
     @Step
     public void assertResponseIsSignedWithCert(final String filename) throws Throwable {
-        final Certificate cert = readCertFrom(getClass().getResourceAsStream(filename));
+        final Certificate cert = readCertFrom(filename);
         assertJWTIsSignedByCertificate(Context.getCurrentResponse().getBody().asString(), cert);
     }
 
@@ -207,46 +245,120 @@ public class IdpStepsBase {
 
     // =================================================================================================================
     //
-    //    C L A I M   R E L A T E D   S T E P S
+    // C L A I M R E L A T E D S T E P S
     //
     // =================================================================================================================
     @Step
-    public void iExtractTheClaims(final ClaimType type) throws Throwable {
-        if (type == ClaimType.body) {
-            Context.getThreadContext().put(ContextKey.CLAIMS,
-                    getClaims(Context.getCurrentResponse().getBody().asString()));
+    public void iExtractTheClaims(final ClaimLocation type) throws Throwable {
+        extractClaimsFromString(type, Context.getCurrentResponse().getBody().asString());
+    }
+
+    @Step
+    public void iExtractTheClaimsFromResponseJsonField(final String jsonName, final ClaimLocation type)
+        throws Throwable {
+        final String jsoValue = new JSONObject(Context.getCurrentResponse().getBody().asString())
+            .getString(jsonName);
+        extractClaimsFromString(type, jsoValue);
+    }
+
+    @Step
+    public void extractClaimsFromToken(final ClaimLocation cType, final ContextKey token)
+        throws JoseException, InvalidJwtException, JSONException {
+        assertThat(token).isIn(ContextKey.TOKEN_CODE, ContextKey.SIGNED_CHALLENGE);
+        extractClaimsFromString(cType, Context.getThreadContext().get(token).toString());
+    }
+
+    private void extractClaimsFromString(final ClaimLocation cType, final String str)
+        throws InvalidJwtException, JSONException, JoseException {
+        if (cType == ClaimLocation.body) {
+            Context.getThreadContext().put(ContextKey.CLAIMS, getClaims(str));
             SerenityReportUtils.addCustomData("Claims", Context.getCurrentClaims().toString(2));
         } else {
-            final JSONObject jso = extractHeaderClaimsFromResponse();
-            Context.getThreadContext().put(ContextKey.HEADER_CLAIMS, jso);
-            SerenityReportUtils.addCustomData("Header Claims", jso.toString(2));
+            final JSONObject json = extractHeaderClaimsFromString(str);
+            Context.getThreadContext().put(ContextKey.HEADER_CLAIMS, json);
+            SerenityReportUtils.addCustomData("Header Claims", json.toString(2));
         }
     }
 
+
     @Step
     public void iRequestTheUriFromClaim(final String claim, final HttpMethods method, final HttpStatus result)
-            throws JSONException {
+        throws JSONException {
         Context.getThreadContext().put(ContextKey.RESPONSE,
-                requestResponseAndAssertStatus(Context.getCurrentClaims().getString(claim), null, method, null, result));
+            requestResponseAndAssertStatus(Context.getCurrentClaims().getString(claim), null, method, null, result));
     }
-
 
     @Step
     public void assertUriInClaimExistsWithMethodAndStatus(final String claim, final HttpMethods method,
-                                                          final HttpStatus status)
-            throws JSONException {
+        final HttpStatus status)
+        throws JSONException {
         assertThat(Context.getCurrentClaims().has(claim))
-                .withFailMessage("Current claims do not contain key " + claim)
-                .isTrue();
+            .withFailMessage("Current claims do not contain key " + claim)
+            .isTrue();
         requestResponseAndAssertStatus(Context.getCurrentClaims().getString(claim), null, method, null, status);
     }
 
-    @Step
-    public void iStartNewInteractionKeepingOnly(final ContextKey key) {
+    public void assertDateFromClaimMatches(final ClaimLocation claimLocation, final String claimName,
+        final DateCompareMode compareMode,
+        final Duration duration) throws JSONException {
+        final JSONObject claims;
         final Map<ContextKey, Object> ctxt = Context.getThreadContext();
-        assertThat(ctxt).containsKey(key);
-        final Object o = ctxt.get(key);
-        ctxt.clear();
-        ctxt.put(key, o);
+        if (claimLocation == ClaimLocation.body) {
+            assertThat(ctxt).containsKey(ContextKey.CLAIMS).doesNotContainEntry(ContextKey.CLAIMS, null);
+            claims = (JSONObject) ctxt.get(ContextKey.CLAIMS);
+        } else {
+            assertThat(ctxt).containsKey(ContextKey.HEADER_CLAIMS).doesNotContainEntry(ContextKey.HEADER_CLAIMS, null);
+            claims = (JSONObject) ctxt.get(ContextKey.HEADER_CLAIMS);
+        }
+        assertThat((Object[]) IteratorUtils.toArray(claims.keys())).contains(claimName);
+
+        final ZonedDateTime d = ZonedDateTime
+            .ofInstant(Instant.ofEpochSecond(Long.parseLong(claims.getString(claimName))),
+                ZoneId.of("UTC"));
+
+        final ZonedDateTime expectedDate = ZonedDateTime
+            .ofInstant(Instant.ofEpochMilli(System.currentTimeMillis()), ZoneId.of("UTC")).plus(duration);
+        switch (compareMode) {
+            case NOT_BEFORE:
+                assertThat(d).isAfterOrEqualTo(expectedDate);
+                break;
+            case AFTER:
+                assertThat(d).isAfter(expectedDate);
+                break;
+            case BEFORE:
+                assertThat(d).isBefore(expectedDate);
+                break;
+            case NOT_AFTER:
+                assertThat(d).isBeforeOrEqualTo(expectedDate);
+                break;
+        }
+        log.info(d + " " + compareMode.mathSign() + " " + expectedDate);
+    }
+
+    @Step
+    public void assertThatHttpResponseHeadersMatch(final String kvps) {
+        final Properties props = new Properties();
+        try (final StringReader sr = new StringReader(kvps)) {
+            props.load(sr);
+        } catch (final IOException e) {
+            fail("Invalid KeyValuePairs in DocString", e);
+        }
+        final Map<String, String> stringProps = new HashMap<String, String>((Map) props);
+        final Map<String, String> responseHeaders = Context.getCurrentResponse().getHeaders().asList().stream()
+            .collect(Collectors.toMap(Header::getName, Header::getValue));
+        stringProps.entrySet().stream().forEach(entry -> {
+            assertThat(responseHeaders).containsKey(entry.getKey());
+            assertThat(responseHeaders.get(entry.getKey())).matches(entry.getValue());
+        });
+    }
+
+    public void assertThatHttpResponseUriParameterContains(final String parameter, final String value) {
+        final Map<String, String> responseHeaders = Context.getCurrentResponse().getHeaders().asList().stream()
+            .collect(Collectors.toMap(Header::getName, Header::getValue));
+        final String location = responseHeaders.get("Location");
+        final MultiValueMap<String, String> parameters =
+            UriComponentsBuilder.fromUriString(location).build().getQueryParams();
+        assertThat(parameters).containsKey(parameter);
+        assertThat(parameters.get(parameter)).contains(value);
     }
 }

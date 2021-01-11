@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,13 @@
 
 package de.gematik.idp.server;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+
+import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
 import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
 import de.gematik.idp.authentication.UriUtils;
@@ -36,12 +43,6 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(SpringExtension.class)
 @ExtendWith(PkiKeyResolver.class)
@@ -65,75 +66,76 @@ public class AuthenticationCallTest {
     @BeforeEach
     public void startup(@PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity) {
         idpClient = IdpClient.builder()
-                .clientId("foo")
-                .clientSecret("bar")
-                .discoveryDocumentUrl("http://localhost:" + localServerPort + "/discoveryDocument")
-                .redirectUrl(idpConfiguration.getRedirectUri())
-                .build();
+            .clientId(IdpConstants.CLIENT_ID)
+            .discoveryDocumentUrl("http://localhost:" + localServerPort + "/discoveryDocument")
+            .redirectUrl(idpConfiguration.getRedirectUri())
+            .build();
 
         idpClient.initialize();
 
         egkUserIdentity = PkiIdentity.builder()
-                .certificate(egkIdentity.getCertificate())
-                .privateKey(egkIdentity.getPrivateKey())
-                .build();
+            .certificate(egkIdentity.getCertificate())
+            .privateKey(egkIdentity.getPrivateKey())
+            .build();
 
         authenticationChallengeVerifier = AuthenticationChallengeVerifier.builder()
-                .serverIdentity(egkUserIdentity)
-                .build();
+            .serverIdentity(egkUserIdentity)
+            .build();
 
         authenticationChallengeBuilderSpy = spy(authenticationChallengeBuilder);
         ReflectionTestUtils
-                .setField(idpController, "authenticationChallengeBuilder", authenticationChallengeBuilderSpy);
+            .setField(idpController, "authenticationChallengeBuilder", authenticationChallengeBuilderSpy);
     }
 
     @Test
     public void verifyTokenAlgorithm() throws UnirestException {
         idpClient.login(egkUserIdentity);
         verify(authenticationChallengeBuilderSpy)
-                .buildAuthenticationChallenge(eq("foo"), anyString(), eq(idpConfiguration.getRedirectUri()), anyString());
+            .buildAuthenticationChallenge(eq(IdpConstants.CLIENT_ID), anyString(),
+                eq(idpConfiguration.getRedirectUri()),
+                anyString(), anyString());
     }
 
     @Test
     public void verifyResponseStatusCode() {
         idpClient.setBeforeAuthenticationCallback(request ->
-                assertThat(request.asJson().getStatus()).isEqualTo(HttpStatus.FOUND.value()));
+            assertThat(request.asJson().getStatus()).isEqualTo(HttpStatus.FOUND.value()));
         idpClient.login(egkUserIdentity);
     }
 
     @Test
     public void verifyResponseAttribute_code() {
         idpClient.setAfterAuthenticationCallback(response -> assertThat(UriUtils.extractParameterValue(
-                response.getHeaders().get("Location").get(0), "code")).isNotEmpty());
+            response.getHeaders().get("Location").get(0), "code")).isNotEmpty());
         idpClient.login(egkUserIdentity);
     }
 
     @Test
     public void verifyResponseAttribute_sso_token() {
         idpClient.setAfterAuthenticationCallback(response -> assertThat(UriUtils.extractParameterValue(
-                response.getHeaders().get("Location").get(0), "sso_token")).isNotEmpty());
+            response.getHeaders().get("Location").get(0), "sso_token")).isNotEmpty());
         idpClient.login(egkUserIdentity);
     }
 
     @Test
     public void verifyAttribute_content_type() {
         idpClient.setBeforeAuthenticationCallback(
-                request -> assertThat(request.getHeaders().containsKey("Content-Type")).isTrue());
+            request -> assertThat(request.getHeaders().containsKey("Content-Type")).isTrue());
         idpClient.login(egkUserIdentity);
     }
 
     @Test
     public void verifyAttribute_signed_challenge() {
         idpClient.setBeforeAuthenticationCallback(request -> assertThat(
-                request.getBody().get().multiParts().stream().findFirst().get().getName())
-                .isEqualTo("signed_challenge"));
+            request.getBody().get().multiParts().stream().findFirst().get().getName())
+            .isEqualTo("signed_challenge"));
         idpClient.login(egkUserIdentity);
     }
 
     @Test
     public void verifySignedChallengeBodyAttribute_njwt() {
         idpClient.setBeforeAuthenticationCallback(request -> assertThat(new JsonWebToken(getTokenOfRequest(request))
-                .getBodyClaims()).containsKey("njwt"));
+            .getBodyClaims()).containsKey("njwt"));
         idpClient.login(egkUserIdentity);
     }
 

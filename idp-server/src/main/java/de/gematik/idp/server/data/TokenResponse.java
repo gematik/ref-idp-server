@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package de.gematik.idp.server.data;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -33,6 +32,7 @@ import lombok.NoArgsConstructor;
 @ApiModel(description = "Antwort des Gematik IDP Servers auf Tokenanfragen via getTokens().")
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class TokenResponse {
+
     @ApiModelProperty(notes = "Ablaufzeit der Gültigkeit der Tokens in Sekunden(?) TODO")
     private int expiresIn;
     // TODO what do we need this for?

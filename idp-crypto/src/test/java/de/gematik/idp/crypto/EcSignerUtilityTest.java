@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,9 +34,9 @@ public class EcSignerUtilityTest {
     @BeforeAll
     public static void init() throws IOException {
         identity = certificateDataFrom(
-                "src/test/resources/109500969_X114428530_c.ch.aut-ecc.p12");
+            "src/test/resources/109500969_X114428530_c.ch.aut-ecc.p12");
         otherIdentity = certificateDataFrom(
-                "src/test/resources/833621999741600_c.hci.aut-apo-ecc.p12");
+            "src/test/resources/833621999741600_c.hci.aut-apo-ecc.p12");
     }
 
     private static PkiIdentity certificateDataFrom(final String filename) throws IOException {
@@ -47,23 +47,23 @@ public class EcSignerUtilityTest {
     public void createSignatureAndVerifyWithSameKey() {
         final byte[] ecSignature = EcSignerUtility.createEcSignature("foobar".getBytes(), identity.getPrivateKey());
         EcSignerUtility.verifyEcSignatureAndThrowExceptionWhenFail("foobar".getBytes(),
-                identity.getCertificate().getPublicKey(),
-                ecSignature);
+            identity.getCertificate().getPublicKey(),
+            ecSignature);
     }
 
     @Test
     public void createSignatureAndVerifyWithOtherKey_shouldFail() {
         final byte[] ecSignature = EcSignerUtility.createEcSignature("foobar".getBytes(), identity.getPrivateKey());
         assertThatThrownBy(() -> EcSignerUtility.verifyEcSignatureAndThrowExceptionWhenFail("foobar".getBytes(),
-                otherIdentity.getCertificate().getPublicKey(), ecSignature))
-                .isInstanceOf(IdpCryptoException.class);
+            otherIdentity.getCertificate().getPublicKey(), ecSignature))
+            .isInstanceOf(IdpCryptoException.class);
     }
 
     @Test
     public void createSignatureAndVerifyWithDifferentContent_shouldFail() {
         final byte[] ecSignature = EcSignerUtility.createEcSignature("foobar".getBytes(), identity.getPrivateKey());
         assertThatThrownBy(() -> EcSignerUtility.verifyEcSignatureAndThrowExceptionWhenFail("barfoo".getBytes(),
-                identity.getCertificate().getPublicKey(), ecSignature))
-                .isInstanceOf(IdpCryptoException.class);
+            identity.getCertificate().getPublicKey(), ecSignature))
+            .isInstanceOf(IdpCryptoException.class);
     }
 }

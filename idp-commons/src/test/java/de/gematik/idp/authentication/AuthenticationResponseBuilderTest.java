@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,10 @@
 
 package de.gematik.idp.authentication;
 
-import static de.gematik.idp.field.ClaimName.*;
-import static org.assertj.core.api.Assertions.*;
+import static de.gematik.idp.field.ClaimName.NESTED_JWT;
+import static de.gematik.idp.field.ClaimName.X509_Certificate_Chain;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.IdpJoseException;
@@ -72,7 +74,7 @@ public class AuthenticationResponseBuilderTest {
             .serverIdentity(serverIdentity)
             .build();
         challenge = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid");
     }
 
     @Test
@@ -140,10 +142,10 @@ public class AuthenticationResponseBuilderTest {
             .map(a -> a.get(NESTED_JWT.getJoseName()))
             .map(String.class::cast)
             .findFirst()
-            .map(a -> TokenClaimExtraction.extractClaimsFromTokenHeader(a))
+            .map(TokenClaimExtraction::extractClaimsFromTokenHeader)
             .map(a -> assertThat(a)
                 .as("Authentication-Response Header-Claims")
-                .doesNotContainKey(ClaimName.EXPIRES_AT.getJoseName())
+                .containsKey(ClaimName.EXPIRES_AT.getJoseName())
             );
 
 

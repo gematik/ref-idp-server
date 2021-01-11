@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,16 @@
 
 package de.gematik.idp.server.services;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.exceptions.IdpServerException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -40,18 +39,19 @@ class IdpAuthenticatorTest {
     @Test
     public void validateRedirectUriWithNullValue_ExpectCorrectError() {
         assertThatThrownBy(() -> idpAuthenticator.validateRedirectUri(null))
-                .isInstanceOf(IdpServerException.class).hasMessage(IdpErrorType.INVALID_REQUEST.getDescription());
+            .isInstanceOf(IdpServerException.class)
+            .hasMessage(IdpErrorType.REDIRECT_URI_DEFUNCT.getDescription());
     }
 
     @Test
     public void validateRedirectUriWithInvalidValue_ExpectCorrectError() {
         assertThatThrownBy(() -> idpAuthenticator.validateRedirectUri("test"))
-                .isInstanceOf(IdpServerException.class).hasMessage(IdpErrorType.INVALID_REQUEST.getDescription());
+            .isInstanceOf(IdpServerException.class)
+            .hasMessage(IdpErrorType.REDIRECT_URI_DEFUNCT.getDescription());
     }
 
     @Test
     public void validateRedirectUriIsEqualToConfigurationValue() {
-        Assertions.assertDoesNotThrow(() -> idpAuthenticator.validateRedirectUri(idpConfiguration.getRedirectUri()));
+        idpAuthenticator.validateRedirectUri(idpConfiguration.getRedirectUri());
     }
-
 }

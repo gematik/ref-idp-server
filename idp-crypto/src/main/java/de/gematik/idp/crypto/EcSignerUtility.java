@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,7 @@
 package de.gematik.idp.crypto;
 
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.Signature;
-import java.security.SignatureException;
+import java.security.*;
 
 public class EcSignerUtility {
 
@@ -38,8 +33,8 @@ public class EcSignerUtility {
     }
 
     public static void verifyEcSignatureAndThrowExceptionWhenFail(final byte[] toBeSignedData,
-            final PublicKey publicKey,
-            final byte[] signature) {
+        final PublicKey publicKey,
+        final byte[] signature) {
         try {
             final Signature signer = Signature.getInstance("SHA256withECDSA");
             signer.initVerify(publicKey);

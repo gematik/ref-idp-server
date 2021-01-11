@@ -1,69 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>idp-global</artifactId>
-        <groupId>de.gematik.idp</groupId>
-        <version>4.0.0</version>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
-
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <artifactId>idp-report</artifactId>
-
-    <dependencies>
-        <dependency>
-            <groupId>de.gematik.idp</groupId>
-            <artifactId>idp-testsuite</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>de.gematik.idp</groupId>
-            <artifactId>idp-test</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>de.gematik.idp</groupId>
-            <artifactId>idp-server</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>de.gematik.idp</groupId>
-            <artifactId>idp-crypto</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>de.gematik.idp</groupId>
-            <artifactId>idp-commons</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>de.gematik.idp</groupId>
-            <artifactId>idp-client</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
     <build>
         <plugins>
             <plugin>
-                <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.5</version>
                 <executions>
                     <execution>
-                        <id>report-aggregate</id>
-                        <goals>
-                            <goal>report-aggregate</goal>
-                        </goals>
                         <configuration>
                             <excludes>
                                 <exclude>de.gematik.idp.tests.*</exclude>
                             </excludes>
                         </configuration>
+                        <goals>
+                            <goal>report-aggregate</goal>
+                        </goals>
+                        <id>report-aggregate</id>
                     </execution>
                 </executions>
+                <groupId>org.jacoco</groupId>
+                <version>0.8.5</version>
             </plugin>
         </plugins>
     </build>
+
+    <dependencies>
+        <dependency>
+            <artifactId>idp-testsuite</artifactId>
+            <groupId>de.gematik.idp</groupId>
+            <scope>test</scope>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <artifactId>idp-test</artifactId>
+            <groupId>de.gematik.idp</groupId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <artifactId>idp-server</artifactId>
+            <groupId>de.gematik.idp</groupId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <artifactId>idp-crypto</artifactId>
+            <groupId>de.gematik.idp</groupId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <artifactId>idp-commons</artifactId>
+            <groupId>de.gematik.idp</groupId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <artifactId>idp-client</artifactId>
+            <groupId>de.gematik.idp</groupId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>idp-global</artifactId>
+        <groupId>de.gematik.idp</groupId>
+        <version>5.0.0</version>
+    </parent>
 </project>

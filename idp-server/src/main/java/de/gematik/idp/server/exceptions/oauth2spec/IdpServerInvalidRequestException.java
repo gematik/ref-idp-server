@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,6 @@ import de.gematik.idp.server.exceptions.IdpServerException;
 import org.springframework.http.HttpStatus;
 
 public class IdpServerInvalidRequestException extends IdpServerException {
-
-    private static final long serialVersionUID = -2106337522135489943L;
 
     public IdpServerInvalidRequestException(final String message, final Exception e) {
         super(message, e, IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);

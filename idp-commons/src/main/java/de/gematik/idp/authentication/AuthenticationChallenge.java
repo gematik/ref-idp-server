@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.gematik.idp.field.ClaimName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Builder
 @Data
@@ -33,12 +32,10 @@ import java.util.List;
 @AllArgsConstructor
 @ApiModel("Antwort des Gematik IDP Servers auf Anfragen via getAuthenticationChallenge().")
 public class AuthenticationChallenge {
+
     @ApiModelProperty(value = "Am IDP Server erzeugte Challenge")
     private String challenge;
     @JsonProperty(value = "user_consent")
     @ApiModelProperty(value = "Die vom Benutzer einzuholende Zustimmung.")
     private List<ClaimName> userConsent;
-    @JsonProperty(value = "show_once")
-    @ApiModelProperty(value = "TODO show Flag")
-    private boolean showOnce;
 }

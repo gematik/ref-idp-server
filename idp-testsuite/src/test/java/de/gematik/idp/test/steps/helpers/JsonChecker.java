@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,8 @@ import static org.assertj.core.api.Assertions.fail;
 
 import de.gematik.idp.test.steps.model.Context;
 import java.util.Iterator;
-import net.javacrumbs.jsonunit.core.Option;
 import net.thucydides.core.annotations.Step;
+import org.apache.commons.collections.IteratorUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -37,38 +37,39 @@ public class JsonChecker {
     }
 
     @Step
-    public void assertJsonShouldMatchInAnyOrder(final JSONObject jso, final String toMatchJSON) throws JSONException {
-        final JSONObject oracle = new JSONObject(toMatchJSON);
+    public void assertJsonShouldMatchInAnyOrder(final SerenityJSONObject json, final SerenityJSONObject oracle)
+        throws JSONException {
         try {
-            assertThatJson(jso.keys()).when(Option.IGNORING_ARRAY_ORDER)
-                .isEqualTo(oracle.keys());
+            assertThat(IteratorUtils.toArray(json.keys()))
+                .containsExactlyInAnyOrder(IteratorUtils.toArray(oracle.keys()));
+
             @SuppressWarnings("unchecked") final Iterator<String> keyIt = oracle.keys();
             while (keyIt.hasNext()) {
                 final String key = keyIt.next();
-                if (oracle.get(key) instanceof String) {
-                    final String oracleValue = oracle.getString(key);
-                    if (!"${json-unit.ignore}".equals(oracleValue)) {
-                        assertThat(oracleValue)
-                            .withFailMessage(
-                                String.format("JSON object does not match at key %s\n Expected:\n<%s>\n Got:\n<%s>\n",
-                                    key, oracleValue, jso.getString(key)))
-                            .isEqualTo(jso.getString(key));
-                    }
-                } else {
-                    fail(String.format("JSON does not match!\nExpected:\n%s\n\n--------\n\nReceived:\n%s",
-                        toMatchJSON, jso.toString(2)));
+                final String oracleValue = oracle.getString(key);
+                if ("${json-unit.ignore}".equals(oracleValue)) {
+                    continue;
+                }
+                final String jsoValue = json.get(key).toString();
+                if (!jsoValue.equals(oracleValue)) {
+                    assertThat(jsoValue)
+                        .withFailMessage(
+                            String.format(
+                                "JSON object does not match at key '%s'\nExpected:\n%s\n\n--------\n\nReceived:\n%s",
+                                key, oracleValue, jsoValue))
+                        .matches(oracleValue);
                 }
             }
         } catch (final NoSuchMethodError nsme) {
             fail(String.format("JSON does not match!\nExpected:\n%s\n\n--------\n\nReceived:\n%s",
-                toMatchJSON, jso.toString(2)), nsme);
+                oracle.toString(2), json.toString(2)), nsme);
         }
     }
 
     @Step
     public void assertJsonResponseHasExactlyOneNodeAt(final String node, final String path) throws JSONException {
-        final JSONObject jso = new JSONObject(Context.getCurrentResponse().getBody().asString());
-        assertThatJson(inPath(jso, path))
+        final JSONObject json = new JSONObject(Context.getCurrentResponse().getBody().asString());
+        assertThatJson(inPath(json, path))
             .withFailMessage("JSON did not contain only the node '" + node + "' at path '" + path + "'")
             .isEqualTo(json("{\"" + node + "\": \"${json-unit.ignore}\"}"));
     }

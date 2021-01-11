@@ -3,9 +3,11 @@ idp:
   authKeyFile: classpath:authenticatorModule_idpServer.p12
   tokenKeyFile: classpath:authenticatorModule_idpServer.p12
   discoveryKeyFile: classpath:authenticatorModule_idpServer.p12
-  redirectUri: http://www.eRezeptFd.de
+  redirectUri: http://redirect.gematik.de/erezept
   debug:
     requestLogging: true
+  blockedClientSystems:
+    - "blocked_user_agent"
 logging:
   level:
     org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
@@ -17,4 +19,21 @@ management:
         include: "*"
   endpoint:
     httptrace:
+      enabled: true
+spring:
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/idp-changelog-master.xml
+  datasource:
+    url: jdbc:h2:mem:idp;INIT=CREATE SCHEMA IF NOT EXISTS IDP;
+    driver-class-name: org.h2.Driver
+    username: root
+    password: idp
+    liquibaseSchemaName: IDP
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: validate
+  h2:
+    console:
       enabled: true

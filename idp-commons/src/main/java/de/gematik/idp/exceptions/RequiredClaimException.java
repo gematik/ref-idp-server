@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package de.gematik.idp.exceptions;
 
 public class RequiredClaimException extends IdpJoseException {
+
     private static final long serialVersionUID = 6444996291760355447L;
 
     public RequiredClaimException(final String message) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,10 @@ package de.gematik.idp.token;
 
 import static de.gematik.idp.field.ClaimName.*;
 
+import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtDescription;
+import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.exceptions.RequiredClaimException;
 import de.gematik.idp.field.ClaimName;
 import java.time.ZonedDateTime;
@@ -33,9 +35,9 @@ import org.apache.commons.lang3.ObjectUtils;
 @Data
 public class AccessTokenBuilder {
 
+    private static final List<ClaimName> requiredClaims = Arrays.asList(PROFESSION_OID, ID_NUMBER);
     private final IdpJwtProcessor jwtProcessor;
     private final String uriIdpServer;
-    private static final List<ClaimName> requiredClaims = Arrays.asList(PROFESSION_OID, ID_NUMBER);
 
     public JsonWebToken buildAccessToken(final JsonWebToken authenticationToken) {
         final ZonedDateTime now = ZonedDateTime.now();
@@ -46,6 +48,7 @@ public class AccessTokenBuilder {
         claimsMap.put(NOT_BEFORE.getJoseName(), now.toEpochSecond());
         claimsMap.put(AUTH_TIME.getJoseName(), now.toEpochSecond());
         claimsMap.put(ISSUER.getJoseName(), uriIdpServer);
+        claimsMap.put(AUDIENCE.getJoseName(), IdpConstants.AUDIENCE);
 
         for (final ClaimName requiredClaim : requiredClaims) {
             final Object claim = claimsMap.get(requiredClaim.getJoseName());
@@ -55,8 +58,13 @@ public class AccessTokenBuilder {
             }
         }
 
+        final Map<String, Object> headerClaimsMap = new HashMap<>();
+        headerClaimsMap.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
+        headerClaimsMap.put(TYPE.getJoseName(), "at+JWT");
+
         return jwtProcessor.buildJwt(JwtDescription.builder()
             .claims(claimsMap)
+            .headers(headerClaimsMap)
             .expiresAt(now.plusMinutes(5))
             .build());
     }

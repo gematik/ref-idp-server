@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,8 @@
 
 package de.gematik.idp.tests;
 
-import org.junit.jupiter.api.Tag;
-
 import java.lang.annotation.*;
+import org.junit.jupiter.api.Tag;
 
 @Tag("IdpServerRequired")
 @Target({ElementType.TYPE, ElementType.METHOD})

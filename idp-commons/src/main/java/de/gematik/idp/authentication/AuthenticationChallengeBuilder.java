@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,26 @@
 
 package de.gematik.idp.authentication;
 
-import de.gematik.idp.crypto.Nonce;
-import de.gematik.idp.crypto.model.PkiIdentity;
-import de.gematik.idp.exceptions.IdpJoseException;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import org.jose4j.jws.JsonWebSignature;
-import org.jose4j.jwt.JwtClaims;
-import org.jose4j.lang.JoseException;
-
-import java.time.ZonedDateTime;
-import java.util.Arrays;
-
 import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
 import static de.gematik.idp.crypto.KeyAnalysis.isEcKey;
 import static de.gematik.idp.field.ClaimName.*;
 import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
+
+import de.gematik.idp.IdpConstants;
+import de.gematik.idp.crypto.Nonce;
+import de.gematik.idp.crypto.model.PkiIdentity;
+import de.gematik.idp.exceptions.IdpJoseException;
+import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NonNull;
+import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.jwt.JwtClaims;
+import org.jose4j.lang.JoseException;
 
 @Data
 @AllArgsConstructor
@@ -40,40 +43,50 @@ import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
 public class AuthenticationChallengeBuilder {
 
     private static final long CHALLENGE_TOKEN_VALIDITY_IN_MINUTES = 5;
-    private final PkiIdentity authenticationIdentity;
     private static final int NONCE_BYTE_AMOUNT = 32;
-    private static final int JTI_LENGTH = 16;
+    private final PkiIdentity authenticationIdentity;
+    private final String uriIdpServer;
 
     public AuthenticationChallenge buildAuthenticationChallenge(
-            final String clientId,
-            final String state,
-            final String redirect,
-            final String code) {
+        final String clientId,
+        final String state,
+        final String redirect,
+        final String code, final String scope) {
         //TODO die folgenden claims sind Platzhalter. Hier müssen die tatsächlichen Parameter eingebaut werden
         final JwtClaims claims = new JwtClaims();
-        claims.setIssuer("sender");
-        claims.setAudience("erp.zentral.erp.ti-dienste.de");
-        claims.setClaim(EXPIRES_AT.getJoseName(),
-                ZonedDateTime.now().plusMinutes(CHALLENGE_TOKEN_VALIDITY_IN_MINUTES).toEpochSecond());
-        claims.setClaim(ISSUED_AT.getJoseName(), ZonedDateTime.now().toEpochSecond());
-        claims.setClaim(NOT_BEFORE.getJoseName(), ZonedDateTime.now().toEpochSecond());
+        claims.setIssuer(uriIdpServer);
+        claims.setAudience(IdpConstants.AUDIENCE);
+
+        final ZonedDateTime now = ZonedDateTime.now();
+        claims.setClaim(EXPIRES_AT.getJoseName(), now.plusMinutes(CHALLENGE_TOKEN_VALIDITY_IN_MINUTES).toEpochSecond());
+        claims.setClaim(ISSUED_AT.getJoseName(), now.toEpochSecond());
+        claims.setClaim(NOT_BEFORE.getJoseName(), now.toEpochSecond());
         claims.setSubject("subject");
         claims.setClaim(RESPONSE_TYPE.getJoseName(), "code");
-        claims.setClaim(SCOPE.getJoseName(), "openid e-rezept");
+        claims.setClaim(SCOPE.getJoseName(), scope);
         claims.setClaim(CLIENT_ID.getJoseName(), clientId);
         claims.setClaim(STATE.getJoseName(), state);
         claims.setClaim(REDIRECT_URI.getJoseName(), redirect);
         claims.setClaim(CODE_CHALLENGE_METHOD.getJoseName(), "S256");
         claims.setClaim(CODE_CHALLENGE.getJoseName(), code);
+
+        final Map<String, Object> headerClaims = new HashMap<>();
+        headerClaims.put(NONCE.getJoseName(), new Nonce().getNonceAsBase64(NONCE_BYTE_AMOUNT));
+        headerClaims.put(TYPE.getJoseName(), "JWT");
+        headerClaims
+            .put(EXPIRES_AT.getJoseName(), now.plusMinutes(CHALLENGE_TOKEN_VALIDITY_IN_MINUTES).toEpochSecond());
+        headerClaims.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
+
         return AuthenticationChallenge.builder()
-                .challenge(buildJwt(claims.toJson()))
-                .userConsent(Arrays.asList(GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME
-                        , PROFESSION_OID, ID_NUMBER))
-                .build();
+            .challenge(buildJwt(claims.toJson(), headerClaims))
+            .userConsent(Arrays.asList(GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME
+                , PROFESSION_OID, ID_NUMBER))
+            .build();
     }
 
-    private String buildJwt(final String payload) {
+    private String buildJwt(final String payload, @NonNull final Map<String, Object> headerClaims) {
         final JsonWebSignature jws = new JsonWebSignature();
+
         jws.setPayload(payload);
         jws.setKey(authenticationIdentity.getPrivateKey());
         if (isEcKey(authenticationIdentity.getCertificate().getPublicKey())) {
@@ -81,10 +94,7 @@ public class AuthenticationChallengeBuilder {
         } else {
             jws.setAlgorithmHeaderValue(RSA_PSS_USING_SHA256);
         }
-        jws.setHeader(NONCE.getJoseName(), new Nonce().getNonceAsBase64(NONCE_BYTE_AMOUNT));
-        jws.setHeader(TYPE.getJoseName(), "JWT");
-        final ZonedDateTime zdtNow = ZonedDateTime.now();
-        jws.setHeader(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(JTI_LENGTH));
+        headerClaims.keySet().forEach(key -> jws.setHeader(key, headerClaims.get(key)));
 
         try {
             return jws.getCompactSerialization();

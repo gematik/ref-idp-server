@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 gematik GmbH
+ * Copyright (c) 2021 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import static de.gematik.idp.client.AuthenticatorClient.getAllHeaderElementsAsMa
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.UriUtils;
 import de.gematik.idp.client.IdpClient;
@@ -28,6 +29,7 @@ import de.gematik.idp.client.IdpClientRuntimeException;
 import de.gematik.idp.client.IdpTokenResult;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.field.ClaimName;
+import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
@@ -39,6 +41,7 @@ import de.gematik.idp.token.JsonWebToken;
 import de.gematik.idp.token.TokenClaimExtraction;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
@@ -55,10 +58,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class TokenRetrievalTest {
 
-    private final String clientId = "oidc_client";
-    private final String clientSecret = "c4000d38-6d02-46d4-ba28-bce8e57ede9e";
     @Autowired
     private IdpConfiguration idpConfiguration;
+    @Autowired
+    private ServerUrlService urlService;
     private IdpClient idpClient;
     private PkiIdentity egkUserIdentity;
     @LocalServerPort
@@ -68,8 +71,7 @@ public class TokenRetrievalTest {
     public void startup(
         @Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity) {
         idpClient = IdpClient.builder()
-            .clientId(clientId)
-            .clientSecret(clientSecret)
+            .clientId(IdpConstants.CLIENT_ID)
             .discoveryDocumentUrl("http://localhost:" + localServerPort + "/discoveryDocument")
             .redirectUrl(idpConfiguration.getRedirectUri())
             .build();
@@ -87,8 +89,9 @@ public class TokenRetrievalTest {
     @Test
     public void verifyIdTokenClaims() throws UnirestException {
         final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
-        final JsonWebToken idToken = new IdTokenBuilder(new IdpJwtProcessor(egkUserIdentity))
-            .buildIdToken("oidc_client");
+        final JsonWebToken idToken = new IdTokenBuilder(new IdpJwtProcessor(egkUserIdentity),
+            urlService.determineServerUrl())
+            .buildIdToken(IdpConstants.CLIENT_ID, tokenResponse.getAccessToken());
         assertThat(tokenResponse.getIdToken().getBodyClaims())
             .containsAllEntriesOf(idToken.getBodyClaims());
     }
@@ -111,6 +114,16 @@ public class TokenRetrievalTest {
     @Test
     public void verifyTokenType() throws UnirestException {
         final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
+
+        assertThat(tokenResponse.getTokenType())
+            .as("TokenType")
+            .isEqualTo("Bearer");
+    }
+
+    @Test
+    public void getAccessTokenWithRsa(
+        @Filename("833621999741600_c.hci.aut-apo-rsa") final PkiIdentity rsaEgkIdentity) throws UnirestException {
+        final IdpTokenResult tokenResponse = idpClient.login(rsaEgkIdentity);
 
         assertThat(tokenResponse.getTokenType())
             .as("TokenType")
@@ -355,6 +368,36 @@ public class TokenRetrievalTest {
                 .isNotBlank());
 
         idpClient.login(egkUserIdentity);
+    }
+
+    @Rfc("RFC6749, 4.1.3")
+    @Test
+    public void missmatchedRedirectUri_shouldGiveErrorOnTokenRetrieval() throws UnirestException {
+        idpClient.setBeforeTokenCallback(body -> body.field("redirect_uri", "wrongValue"));
+
+        assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
+            .isInstanceOf(IdpClientRuntimeException.class)
+            .hasMessageContaining("Server-Response");
+    }
+
+    @Test
+    public void scopeWithoutErezept_shouldGiveNoAccessToken() throws UnirestException {
+        idpClient.setScopes(Set.of(IdpScope.OPENID));
+
+        final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
+
+        assertThat(tokenResponse.getAccessToken()).isNull();
+        assertThat(tokenResponse.getIdToken()).isNotNull();
+        assertThat(tokenResponse.getSsoToken()).isNotNull();
+    }
+
+    @Test
+    public void scopeWithoutOpenid_shouldGiveNoAccessToken() throws UnirestException {
+        idpClient.setScopes(Set.of(IdpScope.EREZEPT));
+
+        assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
+            .isInstanceOf(IdpClientRuntimeException.class)
+            .hasMessageContaining("Server-Response");
     }
 
     private JsonWebToken extractAuthenticationTokenFromResponse(final kong.unirest.HttpResponse<String> response,
