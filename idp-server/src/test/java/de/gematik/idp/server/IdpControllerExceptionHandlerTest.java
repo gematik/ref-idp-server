@@ -23,12 +23,14 @@ import static org.mockito.Mockito.when;
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
+import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpController;
 import de.gematik.idp.server.exceptions.handler.IdpServerExceptionHandler;
 import de.gematik.idp.server.exceptions.oauth2spec.IdpServerInvalidRequestException;
 import de.gematik.idp.server.services.IdpAuthenticator;
 import de.gematik.idp.server.services.PkceChecker;
+import de.gematik.idp.server.services.TokenService;
 import de.gematik.idp.server.validation.parameterConstraints.ClientIdValidator;
 import de.gematik.idp.server.validation.parameterConstraints.ScopeValidator;
 import de.gematik.idp.token.AccessTokenBuilder;
@@ -75,6 +77,12 @@ public class IdpControllerExceptionHandlerTest {
     private IdpConfiguration idpConfiguration;
     @MockBean
     private ClientIdValidator clientIdValidator;
+    @MockBean
+    private TokenService tokenService;
+    @MockBean
+    private IdpJwtProcessor jwtProcessor;
+    @MockBean
+    private RequestAccessToken requestAccessToken;
 
     @Autowired
     private IdpController idpController;

@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.server.validation;
+package de.gematik.idp.server;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import de.gematik.idp.token.JsonWebToken;
+import lombok.Data;
+import org.springframework.stereotype.Service;
+import org.springframework.web.context.annotation.RequestScope;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface ValidateClientSystem {
+@Service
+@RequestScope
+@Data
+public class RequestAccessToken {
 
+    /**
+     * Hält das Access-Token des aktuellen Requests. Wird null sein wenn es keinen Access-Token gibt.
+     */
+    private JsonWebToken accessToken;
 }

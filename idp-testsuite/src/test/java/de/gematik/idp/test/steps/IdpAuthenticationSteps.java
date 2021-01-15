@@ -16,18 +16,22 @@
 
 package de.gematik.idp.test.steps;
 
+import de.gematik.idp.test.steps.helpers.TestEnvironmentConfigurator;
 import de.gematik.idp.test.steps.model.Context;
 import de.gematik.idp.test.steps.model.ContextKey;
 import de.gematik.idp.test.steps.model.HttpMethods;
 import de.gematik.idp.test.steps.model.HttpStatus;
 import io.cucumber.datatable.DataTable;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class IdpAuthenticationSteps extends IdpStepsBase {
 
-    public void getChallenge(final DataTable params, final HttpStatus status) throws JSONException {
+    public void getChallenge(final DataTable params, final HttpStatus status)
+        throws JSONException, URISyntaxException, IOException {
         final Map<String, String> mapParsedParams = getMapFromDatatable(params);
 
         final Map<ContextKey, Object> ctxt = Context.getThreadContext();
@@ -36,7 +40,8 @@ public class IdpAuthenticationSteps extends IdpStepsBase {
             ctxt.put(ContextKey.CLIENT_ID, cid);
         }
         ctxt.put(ContextKey.RESPONSE, requestResponseAndAssertStatus(
-            Context.getDiscoveryDocument().getAuthorizationEndpoint(), null, HttpMethods.GET, mapParsedParams, status));
+            Context.getDiscoveryDocument().getAuthorizationEndpoint() + TestEnvironmentConfigurator
+                .getGetChallengeUrl(), null, HttpMethods.GET, mapParsedParams, status));
 
         final HttpStatus responseStatus = new HttpStatus(Context.getCurrentResponse().getStatusCode());
         if (responseStatus.isError()) {

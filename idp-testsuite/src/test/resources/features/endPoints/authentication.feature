@@ -21,6 +21,7 @@ Feature: Authentifiziere Anwendung am IDP Server
 
     Background: Initialisiere Testkontext durch Abfrage des Discovery Dokuments
         Given I initialize scenario from discovery document endpoint
+        And I retrieve public keys from URIs
 
     @Afo:A_20601
     @Afo:A_20740
@@ -43,6 +44,7 @@ Feature: Authentifiziere Anwendung am IDP Server
         When I request a challenge with
             | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state       |
             | eRezeptApp | e-rezept openid | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx |
+        # TODO RISE fordert response_type=code, nonce
         Then the response status is 200
         And the response http headers match
             """
@@ -90,6 +92,25 @@ Feature: Authentifiziere Anwendung am IDP Server
                 "iat": "[\\d]*"
             }
             """
+        # TODO RISE liefern token_type=challenge aus, im LG003 ist die Verteilung auf Body/Header unklar
+
+    @Afo:A_19908_01
+    @Afo:A_20604
+    @Signature
+    Scenario: Auth - Validiere Signatur der Challenge
+
+    ```
+    Wir wählen einen gültigen Code verifier und fordern einen Challenge Token an.
+
+    Die Challenge muss mit dem PUK_AUTH signiert sein.
+
+
+        Given I choose code verifier 'zdrfcvz3iw47fgderuzbq834werb3q84wgrb3zercb8q3wbd834wefb348ch3rq9e8fd9sac'
+        # REM code_challenge for given verifier can be obtained from https://tonyxu-io.github.io/pkce-generator/
+        When I request a challenge with
+            | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state       |
+            | eRezeptApp | e-rezept openid | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx |
+        Then the context CHALLENGE must be signed with cert PUK_AUTH
 
     @Afo:A_20601
         @Afo:A_20740

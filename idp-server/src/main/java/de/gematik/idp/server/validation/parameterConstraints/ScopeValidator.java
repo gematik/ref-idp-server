@@ -18,6 +18,8 @@ package de.gematik.idp.server.validation.parameterConstraints;
 
 import de.gematik.idp.field.IdpScope;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
@@ -34,3 +36,4 @@ public class ScopeValidator implements ConstraintValidator<CheckScope, String> {
         return onlyValidScopes && rawScopes.contains(IdpScope.OPENID.getJwtValue());
     }
 }
+

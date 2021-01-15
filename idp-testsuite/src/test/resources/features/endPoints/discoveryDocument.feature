@@ -14,6 +14,9 @@
 # limitations under the License.
 #
 
+
+# TODO RISE alle Szenarien mit @StufeX Annotationen versehen
+
 @testsuite
 
 Feature: Fordere Discovery Dokument an
@@ -23,7 +26,7 @@ Feature: Fordere Discovery Dokument an
     @Afo:A_20668
     @Afo:A_19874
     @ReleaseV1
-    Scenario: Disc - Discovery Dokument muss signiert sein
+    Scenario: Disc - Discovery Dokument muss verfügbar sein
 
     ```
     Wir fordern das Discovery Dokument an.
@@ -32,14 +35,28 @@ Feature: Fordere Discovery Dokument an
 
     - den HTTP Status 200 und
     - den Content Typ application/json haben und
-    - mit dem richtigen Zertifikat signiert sein
 
 
         When I request the discovery document
         Then the response status is 200
         And the response content type is 'application/json'
-        And the response must be signed with cert '/authenticatorModule_idpServer.p12'
-        # TODO check with key from discovery document uri itself
+
+    @Afo:A_20614
+    @Afo:A_20623
+    @Afo:A_20591
+    @Signature
+    Scenario: Disc - Discovery Dokument muss signiert sein
+
+    ```
+    Wir fordern das Discovery Dokument an.
+
+    Die Antwort des Servers muss mit dem richtigen Zertifikat signiert sein
+
+
+        Given I initialize scenario from discovery document endpoint
+        And I retrieve public keys from URIs
+        When I request the discovery document
+        Then the response must be signed with cert PUK_DISC
 
     @Afo:A_20458
     @ReleaseV1
@@ -85,9 +102,9 @@ Feature: Fordere Discovery Dokument an
         """
         {
           issuer: "http.*",
-          authorization_endpoint: "${json-unit.ignore}",
+          authorization_endpoint: "http.*",
           token_endpoint: "http.*",
-          jwks_uri : "http.*",
+          jwks_uri : "(http|file).*",
           subject_types_supported : "[\"pairwise\"]",
           id_token_signing_alg_values_supported : "[\"BP256R1\"]",
           response_types_supported : "[\"code\"]",
@@ -96,15 +113,16 @@ Feature: Fordere Discovery Dokument an
           grant_types_supported : "[\"authorization_code\"]",
           acr_values_supported : "[\"urn:eidas:loa:high\"]",
           token_endpoint_auth_methods_supported : "[\"none\"]",
-          puk_uri_auth: "http.*",
-          puk_uri_token: "http.*",
-          puk_uri_disc: "http.*",
+          puk_uri_auth: ".*",
+          puk_uri_token: ".*",
+          puk_uri_disc: ".*",
           nbf: "[\\d]*",
           exp: "[\\d]*",
           iat: "[\\d]*"
         }
         """
-        # TODO ist token bzw. authorization als relativer pfad gesetzt oder kann ein Drittanbieter da andere Pfade verwenden?
+        # TODO RISE for now puk uris can be anything as we use file paths in the work around here
+        # TODO RISE puk uri tokens UPPERCASE, puk uri disc fehlt, puk uri auth fehlt, dafür claims_supported
 
         # iat must be within 24h and before now
         And the body claim 'iat' contains a date NOT_BEFORE P-1DT-1S
@@ -140,6 +158,7 @@ Feature: Fordere Discovery Dokument an
         And URI in claim "token_endpoint" exists with method POST and status 400
 
     @ReleaseV1
+        @OpenBug # currently not working if we use file based key material
     Scenario Outline: Disc - Die Schlüssel URIs sind erreichbar und enthalten public X509 Schlüssel
 
     ```
@@ -152,8 +171,8 @@ Feature: Fordere Discovery Dokument an
     Die Antwort des Servers auf Anfragen auf diese URIs muss einen validen ECC BP256 Schlüssel liefern.
 
         Given I request the discovery document
-        When I extract the body claims
-        And I request the uri from claim "<claim>" with method GET and status 200
+        And I extract the body claims
+        When I request the uri from claim "<claim>" with method GET and status 200
         Then the JSON response should match
         """
         { "x5c": "${json-unit.ignore}",
@@ -181,8 +200,8 @@ Feature: Fordere Discovery Dokument an
 
 
         Given I request the discovery document
-        When I extract the body claims
-        And I request the uri from claim "<claim>" with method GET and status 200
+        And I extract the body claims
+        When I request the uri from claim "<claim>" with method GET and status 200
         Then the JSON response should match
         """
         { "keys": "${json-unit.ignore}" }

@@ -73,6 +73,10 @@ public class IdpClient implements IIdpClient {
     private AuthenticatorClient authenticatorClient = new AuthenticatorClient();
     @Builder.Default
     private CodeChallengeMethod codeChallengeMethod = CodeChallengeMethod.S256;
+    @Builder.Default
+    private Function<AuthorizationResponse, AuthorizationResponse> authorizationResponseMapper = Function.identity();
+    @Builder.Default
+    private Function<AuthenticationResponse, AuthenticationResponse> authenticationResponseMapper = Function.identity();
     private DiscoveryDocumentResponse discoveryDocumentResponse;
 
     @Override
@@ -86,32 +90,34 @@ public class IdpClient implements IIdpClient {
         final String state = RandomStringUtils.randomAlphanumeric(20);
         LOGGER.debug("Performing Authorization with remote-URL '{}'",
             discoveryDocumentResponse.getAuthorizationEndpoint());
-        final AuthorizationResponse authorizationResponse = authenticatorClient
-            .doAuthorizationRequest(AuthorizationRequest.builder()
-                    .clientId(clientId)
-                    .link(discoveryDocumentResponse.getAuthorizationEndpoint())
-                    .codeChallenge(ClientUtilities.generateCodeChallenge(codeVerifier))
-                    .codeChallengeMethod(codeChallengeMethod)
-                    .redirectUri(redirectUrl)
-                    .state(state)
-                    .scopes(scopes)
-                    .build(),
-                beforeAuthorizationMapper,
-                afterAuthorizationCallback);
+        final AuthorizationResponse authorizationResponse = authorizationResponseMapper.apply(
+            authenticatorClient
+                .doAuthorizationRequest(AuthorizationRequest.builder()
+                        .clientId(clientId)
+                        .link(discoveryDocumentResponse.getAuthorizationEndpoint())
+                        .codeChallenge(ClientUtilities.generateCodeChallenge(codeVerifier))
+                        .codeChallengeMethod(codeChallengeMethod)
+                        .redirectUri(redirectUrl)
+                        .state(state)
+                        .scopes(scopes)
+                        .build(),
+                    beforeAuthorizationMapper,
+                    afterAuthorizationCallback));
 
         // Authentication
         LOGGER.debug("Performing Authentication with remote-URL '{}'",
             discoveryDocumentResponse.getAuthorizationEndpoint());
-        final AuthenticationResponse authenticationResponse = authenticatorClient
-            .performAuthentication(AuthenticationRequest.builder()
-                    .authenticationEndpointUrl(
-                        discoveryDocumentResponse.getAuthorizationEndpoint())
-                    .signedChallenge(
-                        signChallenge(authorizationResponse.getAuthenticationChallenge(),
-                            idpIdentity))
-                    .build(),
-                beforeAuthenticationMapper,
-                afterAuthenticationCallback);
+        final AuthenticationResponse authenticationResponse = authenticationResponseMapper.apply(
+            authenticatorClient
+                .performAuthentication(AuthenticationRequest.builder()
+                        .authenticationEndpointUrl(
+                            discoveryDocumentResponse.getAuthorizationEndpoint())
+                        .signedChallenge(
+                            signChallenge(authorizationResponse.getAuthenticationChallenge(),
+                                idpIdentity))
+                        .build(),
+                    beforeAuthenticationMapper,
+                    afterAuthenticationCallback));
         if (shouldVerifyState) {
             final String stringInTokenUrl = UriUtils
                 .extractParameterValue(authenticationResponse.getLocation(), "state");
@@ -143,30 +149,32 @@ public class IdpClient implements IIdpClient {
         final String state = RandomStringUtils.randomAlphanumeric(20);
         LOGGER.debug("Performing Authorization with remote-URL '{}'",
             discoveryDocumentResponse.getAuthorizationEndpoint());
-        final AuthorizationResponse authorizationResponse = authenticatorClient
-            .doAuthorizationRequest(AuthorizationRequest.builder()
-                    .clientId(clientId)
-                    .link(discoveryDocumentResponse.getAuthorizationEndpoint())
-                    .codeChallenge(ClientUtilities.generateCodeChallenge(codeVerifier))
-                    .codeChallengeMethod(codeChallengeMethod)
-                    .redirectUri(redirectUrl)
-                    .state(state)
-                    .scopes(scopes)
-                    .build(),
-                beforeAuthorizationMapper,
-                afterAuthorizationCallback);
+        final AuthorizationResponse authorizationResponse = authorizationResponseMapper.apply(
+            authenticatorClient
+                .doAuthorizationRequest(AuthorizationRequest.builder()
+                        .clientId(clientId)
+                        .link(discoveryDocumentResponse.getAuthorizationEndpoint())
+                        .codeChallenge(ClientUtilities.generateCodeChallenge(codeVerifier))
+                        .codeChallengeMethod(codeChallengeMethod)
+                        .redirectUri(redirectUrl)
+                        .state(state)
+                        .scopes(scopes)
+                        .build(),
+                    beforeAuthorizationMapper,
+                    afterAuthorizationCallback));
 
         // Authentication
         LOGGER.debug("Performing Sso-Authentication with remote-URL '{}'",
             discoveryDocumentResponse.getAuthorizationEndpoint());
-        final AuthenticationResponse authenticationResponse = authenticatorClient
-            .performAuthenticationWithSsoToken(AuthenticationRequest.builder()
-                    .authenticationEndpointUrl(discoveryDocumentResponse.getAuthorizationEndpoint())
-                    .ssoToken(ssoToken.getJwtRawString())
-                    .challengeToken(authorizationResponse.getAuthenticationChallenge().getChallenge())
-                    .build(),
-                beforeAuthenticationMapper,
-                afterAuthenticationCallback);
+        final AuthenticationResponse authenticationResponse = authenticationResponseMapper.apply(
+            authenticatorClient
+                .performAuthenticationWithSsoToken(AuthenticationRequest.builder()
+                        .authenticationEndpointUrl(discoveryDocumentResponse.getAuthorizationEndpoint())
+                        .ssoToken(ssoToken.getJwtRawString())
+                        .challengeToken(authorizationResponse.getAuthenticationChallenge().getChallenge())
+                        .build(),
+                    beforeAuthenticationMapper,
+                    afterAuthenticationCallback));
         if (shouldVerifyState) {
             final String stringInTokenUrl = UriUtils
                 .extractParameterValue(authenticationResponse.getLocation(), "state");

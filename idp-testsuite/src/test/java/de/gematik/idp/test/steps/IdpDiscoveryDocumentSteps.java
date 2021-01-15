@@ -19,23 +19,39 @@ package de.gematik.idp.test.steps;
 import de.gematik.idp.test.steps.helpers.TestEnvironmentConfigurator;
 import de.gematik.idp.test.steps.model.Context;
 import de.gematik.idp.test.steps.model.ContextKey;
+import de.gematik.idp.test.steps.model.DiscoveryDocumentResponse;
 import de.gematik.idp.test.steps.model.HttpMethods;
 import de.gematik.idp.test.steps.model.HttpStatus;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.security.cert.CertificateException;
 import lombok.extern.slf4j.Slf4j;
 import net.thucydides.core.annotations.Step;
+import org.json.JSONException;
 
 @Slf4j
 public class IdpDiscoveryDocumentSteps extends IdpStepsBase {
 
     @Step
-    public void iRequestTheInternalDiscoveryDocument(final HttpStatus desiredStatus) {
+    public void iRequestTheInternalDiscoveryDocument(final HttpStatus desiredStatus)
+        throws IOException, URISyntaxException, JSONException, CertificateException {
         log.info("DiscoveryURL is " + TestEnvironmentConfigurator.getDiscoveryDocumentURL());
-        Context.getThreadContext().put(ContextKey.RESPONSE,
-            requestResponseAndAssertStatus(TestEnvironmentConfigurator.getDiscoveryDocumentURL(), null, HttpMethods.GET,
-                null,
-                desiredStatus));
-        if (log.isDebugEnabled()) {
-            log.debug("Response:" + Context.getCurrentResponse().getBody().prettyPrint());
+
+        final String idpLocalDiscdoc = System.getenv("IDP_LOCAL_DISCDOC");
+        if (idpLocalDiscdoc != null) {
+            final DiscoveryDocumentResponse r = new DiscoveryDocumentResponse(new File(idpLocalDiscdoc),
+                "authenticatorModule_idpServer.p12");
+            Context.getThreadContext().put(ContextKey.RESPONSE, r);
+        } else {
+            Context.getThreadContext().put(ContextKey.RESPONSE,
+                requestResponseAndAssertStatus(TestEnvironmentConfigurator.getDiscoveryDocumentURL(), null,
+                    HttpMethods.GET,
+                    null,
+                    desiredStatus));
+            if (log.isDebugEnabled()) {
+                log.debug("Response:" + Context.getCurrentResponse().getBody().prettyPrint());
+            }
         }
     }
 

@@ -242,6 +242,46 @@ Für Stacktrace Informationen gibt es rechts in den Details auch den **"More Det
 
 ![Serenity07](doc/images/SerenityReport007.png)
 
+## Anpassung der Testsuite an Drittanbieter
+
+### Lokales Discovery Dokument
+
+Zur Anpassung an Abweichungen von Drittanbietern im Vergleich zur Referenzimplementierung gibt es die Möglichkeit ein
+angepasstes Discovery Dokument aus dem Dateisystem der Testsuite zur Verfügung zu stellen und unter Umgehung der
+PUK_URIS öffentliche Schlüssel direkt aus dem Dateisystem in die Testumgebung zu laden. Diese Daten müssen natürlich mit
+den Einstellungen des Servers korrelieren, um einen erfolgreichen Lauf der Testsuite sicherzustellen.
+
+Hierfür muss die Umgebungsvariable IDP_LOCAL_DISCDOC auf die JSON Datei, welche den Inhalt des Discovery Dokuments
+enthält verweisen. Für relative Pfade ist als Ausgangsordner idp-testsuite anzusetzen.
+
+Die Header und zeitlichen Validierungs-Claims (exp, iat, nbf) werden von der Testsuite dynamisch ergänzt.
+
+Im idp-testsuite Ordner gibt es für den Referenzserver ein Beispiel `discover_document.json`, welches die Schlüssel
+lokal vom Dateisystem lädt.
+
+Das Testszenario "Disc - Die Schlüssel URIs sind erreichbar und enthalten public X509 Schlüssel" scheitert naturgemäß
+bei der Verwendung von dateibasierten Referenzen. Deswegen ist dieses Szenario derzeit mit einer @OpenBug Annotation
+versehen.
+
+Bei der Verwendung der IDP_LOCAL_DISCDOC Funktionalität, ist trotzdem eine IDP_SERVER Umgebungsvariable zu setzen (dummy
+Wert) um ein Hochfahren des Referenzservers beim Lauf der Testsuite zu unterbinden.
+
+```
+export IDP_SERVER=1
+```
+
+### Abweichende Pfade an den Endpunkten
+
+Sollten die Pfade zu den Anfragen an die Endpunkte vom Standardwert ("") abweichen so können diese in der
+`testsuite_config.properties` Datei im idp-testsuite Ordner angepasst werden.
+
+Zum Aktivieren der entsprechenden Settings ist die Umgebungsvariable IDP_SERVER_TYPE zu setzen. Der Wert entspricht dem
+ersten Teil der Properties Gruppe in der property Datei.
+
+```
+export IDP_SERVER_TYPE=rise
+```
+
 ## Remarks
 
 * Die verwendeten Icons stammen von Freepik(www.flaticon.com) und vom Ubuntu Gnome icon set

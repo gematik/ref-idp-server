@@ -22,11 +22,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import de.gematik.idp.IdpConstants;
+import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.UriUtils;
 import de.gematik.idp.client.IdpClient;
 import de.gematik.idp.client.IdpClientRuntimeException;
 import de.gematik.idp.client.IdpTokenResult;
+import de.gematik.idp.client.data.AuthenticationResponse;
+import de.gematik.idp.client.data.AuthorizationResponse;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.field.IdpScope;
@@ -392,12 +395,70 @@ public class TokenRetrievalTest {
     }
 
     @Test
+    public void resignedChallengeTokenWithDifferentIdentity_ShouldGiveServerError(
+        @Filename("80276883110000129084-C_HP_AUT_E256.p12") final PkiIdentity notTheServerIdentity)
+        throws UnirestException {
+        final IdpJwtProcessor differentSigner = new IdpJwtProcessor(notTheServerIdentity);
+        idpClient.setAuthorizationResponseMapper(response -> {
+            final JsonWebToken originalChallenge = new JsonWebToken(
+                response.getAuthenticationChallenge().getChallenge());
+            final JsonWebToken resignedChallenge = differentSigner.buildJwt(originalChallenge.toJwtDescription());
+            return AuthorizationResponse.builder()
+                .authenticationChallenge(AuthenticationChallenge.builder()
+                    .userConsent(response.getAuthenticationChallenge().getUserConsent())
+                    .challenge(resignedChallenge.getJwtRawString())
+                    .build())
+                .build();
+        });
+
+        assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
+            .isInstanceOf(IdpClientRuntimeException.class);
+    }
+
+    @Test
+    public void resignedAuthenticationTokenWithDifferentIdentity_ShouldGiveServerError(
+        @Filename("80276883110000129084-C_HP_AUT_E256.p12") final PkiIdentity notTheServerIdentity)
+        throws UnirestException {
+        final IdpJwtProcessor differentSigner = new IdpJwtProcessor(notTheServerIdentity);
+        idpClient.setAuthenticationResponseMapper(response -> {
+            final JsonWebToken originalChallenge = new JsonWebToken(response.getCode());
+            final JsonWebToken resignedChallenge = differentSigner.buildJwt(originalChallenge.toJwtDescription());
+            return AuthenticationResponse.builder()
+                .ssoToken(response.getSsoToken())
+                .location(response.getLocation())
+                .code(resignedChallenge.getJwtRawString())
+                .build();
+        });
+
+        assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
+            .isInstanceOf(IdpClientRuntimeException.class);
+    }
+
+    @Test
     public void scopeWithoutOpenid_shouldGiveNoAccessToken() throws UnirestException {
         idpClient.setScopes(Set.of(IdpScope.EREZEPT));
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
             .isInstanceOf(IdpClientRuntimeException.class)
             .hasMessageContaining("Server-Response");
+    }
+
+    @Test
+    public void scopeOpenIdAndPairing_shouldGiveAccessToken() throws UnirestException {
+        idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
+        final IdpTokenResult loginResult = idpClient.login(egkUserIdentity);
+
+        assertThat(loginResult.getAccessToken().getScopesBodyClaim())
+            .containsExactlyInAnyOrder(IdpScope.OPENID, IdpScope.PAIRING);
+    }
+
+    @Test
+    public void scopeOpenIdErezeptAndPairing_shouldGiveAccessToken() throws UnirestException {
+        idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING, IdpScope.EREZEPT));
+        final IdpTokenResult loginResult = idpClient.login(egkUserIdentity);
+
+        assertThat(loginResult.getAccessToken().getScopesBodyClaim())
+            .containsExactlyInAnyOrder(IdpScope.OPENID, IdpScope.PAIRING, IdpScope.EREZEPT);
     }
 
     private JsonWebToken extractAuthenticationTokenFromResponse(final kong.unirest.HttpResponse<String> response,

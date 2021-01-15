@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.test.steps.model;
+package de.gematik.idp.server.validation.clientSystem;
 
-public enum ContextKey {
-    RESPONSE, CLAIMS, HEADER_CLAIMS,
-    DISC_DOC,
-    CHALLENGE, USER_CONSENT,
-    SIGNED_CHALLENGE, SSO_TOKEN,
-    TOKEN_REDIRECT_URL, CODE_VERIFIER, CLIENT_ID, STATE, TOKEN_CODE,
-    REDIRECT_URI,
-    PUK_DISC, PUK_AUTH, PUK_TOKEN,
-    ACCESS_TOKEN, ID_TOKEN
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface ValidateClientSystem {
+
 }

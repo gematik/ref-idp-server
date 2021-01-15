@@ -52,7 +52,6 @@ public class AuthenticationChallengeBuilder {
         final String state,
         final String redirect,
         final String code, final String scope) {
-        //TODO die folgenden claims sind Platzhalter. Hier müssen die tatsächlichen Parameter eingebaut werden
         final JwtClaims claims = new JwtClaims();
         claims.setIssuer(uriIdpServer);
         claims.setAudience(IdpConstants.AUDIENCE);

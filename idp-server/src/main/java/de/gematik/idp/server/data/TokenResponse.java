@@ -39,7 +39,7 @@ public class TokenResponse {
     private String tokenType;
     @ApiModelProperty(notes = "ID Token TODO Abzuklären ob wir in unserer Umgebung ID Tokens verwenden.")
     private String idToken;
-    @ApiModelProperty(notes = "Zugangstoken für den Zugriff auf Fachdienstdaten")
+    @ApiModelProperty(notes = "Zugangstoken")
     private String accessToken;
     @ApiModelProperty(notes = "SingleSignOn Token für wiederholte Anfragen für einen Zugangstoken")
     private String ssoToken;

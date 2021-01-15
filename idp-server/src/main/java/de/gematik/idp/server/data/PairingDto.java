@@ -1,6 +1,8 @@
 package de.gematik.idp.server.data;
 
+import de.gematik.idp.server.validation.accessToken.ValidateKvnrWithAccessToken;
 import java.time.ZonedDateTime;
+import javax.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +15,8 @@ import lombok.NoArgsConstructor;
 public class PairingDto {
 
     private Long id;
+    @NotEmpty
+    @ValidateKvnrWithAccessToken
     private String kvnr;
     private String serial;
     private String deviceManufacturer;

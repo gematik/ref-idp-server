@@ -26,7 +26,7 @@ import de.gematik.idp.data.IdpJwksDocument;
 import de.gematik.idp.discoveryDocument.DiscoveryDocumentBuilder;
 import de.gematik.idp.server.ServerUrlService;
 import de.gematik.idp.server.exceptions.IdpServerException;
-import de.gematik.idp.server.validation.ValidateClientSystem;
+import de.gematik.idp.server.validation.clientSystem.ValidateClientSystem;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.util.Collections;

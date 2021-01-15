@@ -18,25 +18,18 @@ package de.gematik.idp.server.controllers;
 
 import static de.gematik.idp.IdpConstants.AUTHORIZATION_ENDPOINT;
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
-import static de.gematik.idp.field.ClaimName.CODE_CHALLENGE;
-import static de.gematik.idp.field.ClaimName.REDIRECT_URI;
-import static de.gematik.idp.field.ClaimName.SCOPE;
 
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
 import de.gematik.idp.field.CodeChallengeMethod;
-import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.server.ServerUrlService;
 import de.gematik.idp.server.data.TokenResponse;
-import de.gematik.idp.server.exceptions.oauth2spec.IdpServerInvalidRedirectUriException;
 import de.gematik.idp.server.services.IdpAuthenticator;
-import de.gematik.idp.server.services.PkceChecker;
-import de.gematik.idp.server.validation.ValidateClientSystem;
+import de.gematik.idp.server.services.TokenService;
+import de.gematik.idp.server.validation.clientSystem.ValidateClientSystem;
 import de.gematik.idp.server.validation.parameterConstraints.CheckClientId;
 import de.gematik.idp.server.validation.parameterConstraints.CheckCodeChallengeMethod;
 import de.gematik.idp.server.validation.parameterConstraints.CheckScope;
-import de.gematik.idp.token.AccessTokenBuilder;
-import de.gematik.idp.token.IdTokenBuilder;
 import de.gematik.idp.token.JsonWebToken;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -68,12 +61,12 @@ public class IdpController {
     private final ServerUrlService serverUrlService;
     private final AuthenticationChallengeBuilder authenticationChallengeBuilder;
     private final IdpAuthenticator idpAuthenticator;
-    private final AccessTokenBuilder accessTokenBuilder;
-    private final IdTokenBuilder idTokenBuilder;
-    private final PkceChecker pkceChecker;
+    private final TokenService tokenService;
 
     @GetMapping(AUTHORIZATION_ENDPOINT)
-    @ApiOperation(httpMethod = "GET", value = "Endpunkt für Authentifizierung", notes = "Die übergebenen Parameter werden zu einer Liste von JWTClaims zusammengefasst und daraus dann die zurückgelieferte AuthenticationChallenge gebaut.", response = AuthenticationChallenge.class)
+    @ApiOperation(httpMethod = "GET", value = "Endpunkt für Authentifizierung", notes = "Die übergebenen Parameter"
+        + " werden zu einer Liste von JWTClaims zusammengefasst und daraus dann die zurückgelieferte "
+        + "AuthenticationChallenge gebaut.", response = AuthenticationChallenge.class)
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Erfolgreich Daten für Autorisierung erhalten"),
         @ApiResponse(responseCode = "400", description = "Ungültige Anfrage (Parameter fehlen/ungültig)"),
@@ -88,24 +81,26 @@ public class IdpController {
         @RequestParam(name = "redirect_uri") @ApiParam(value = "TODO redirect_uri") final String redirectUri,
         @RequestParam(name = "code_challenge") @Pattern(regexp = SHA256_AS_BASE64_REGEX, message = "invalid code_challenge") @ApiParam(value = "Authentifizierungscode") final String codeChallenge,
         @RequestParam(name = "code_challenge_method") @CheckCodeChallengeMethod @ApiParam(value = "Hash Methode für die Code challenge, derzeit wird nur 'S256' unterstützt") final CodeChallengeMethod codeChallengeMethod,
-        @RequestParam(name = "scope") @CheckScope @ApiParam(value = "Scope der Anfrage, derzeit wird nur 'openid e-rezept' unterstützt") final String scope,
+        @RequestParam(name = "scope") @CheckScope @ApiParam(value = "Scope der Anfrage, derzeit werden 'openid e-rezept', 'openid', 'openid pairing' und 'openid e-rezept pairing' unterstützt") final String scope,
         final HttpServletResponse response) {
         idpAuthenticator.validateRedirectUri(redirectUri);
         // TODO NONCE parameter missing
         setNoCacheHeader(response);
-        // TODO store scope for further processing down the flow (for openid do NOT return an access token but only the id token)
         return authenticationChallengeBuilder
             .buildAuthenticationChallenge(clientId, state, redirectUri, codeChallenge, scope);
     }
 
     @PostMapping(AUTHORIZATION_ENDPOINT)
     @ApiOperation(httpMethod = "POST", value = "Endpunkt für Authorisierung", notes =
-        "Der Endpunkt kann 2 Parameter entgegennehmen, wird aber nur einen Parameter verarbeiten." +
-            "\nWird ein SsoToken übergeben, so wird aus diesem der Code für die Tokenabfrage generiert. Der Code wird dann als Query parameter mit der URL zum Token Endpunkt zurückgeliefert."
-            +
-            "\nWird kein SsoToken und nur eine signierte Challenge an den Endpunkt übergeben, wird diese validiert, das Client-Zertifikat extrahiert und daraus der Code für die Tokenabfrage und ein SSO Token generiert. Der Code und der SsoToken werden dann zusammen als Query parameter mit der URL zum Token Endpunkt zurückgeliefert."
-            +
-            "\nWird kein Parameter an den Endpunkt übergeben, wird eine Exception zurückgegeben und der HttpStatusCode 400")
+        "Der Endpunkt kann 2 Parameter entgegennehmen, wird aber nur einen Parameter verarbeiten."
+            + "\nWird ein SSO-Token übergeben, so wird aus diesem der Code für die Tokenabfrage generiert. "
+            + "Der Code wird dann als Query parameter mit der URL zum Token Endpunkt zurückgeliefert."
+            + "\nWird kein SSO-Token und nur eine signierte Challenge an den Endpunkt übergeben, wird diese validiert, "
+            + "das Client-Zertifikat extrahiert und daraus der Code für die Tokenabfrage und ein SSO Token generiert. "
+            + "Der Code und der SsoToken werden dann zusammen als Query parameter mit der URL zum Token Endpunkt "
+            + "zurückgeliefert."
+            + "\nWird kein Parameter an den Endpunkt übergeben, wird eine Exception "
+            + "und der HttpStatusCode 400 zurückgegeben")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "302", description = "Erfolgreich Daten für Token-Abfrage erhalten"),
         @ApiResponse(responseCode = "401", description = "Nicht autorisierter Zugriff"),
@@ -132,7 +127,9 @@ public class IdpController {
     }
 
     @PostMapping(TOKEN_ENDPOINT)
-    @ApiOperation(httpMethod = "POST", value = "Endpunkt für Tokenabfrage", notes = "Es wird der Token Code mit dem Code Verifier geprüft, entwertet und bei Erfolg daraus ein Zugangstoken erstellt. Der Zugangstoken wird gemeinsam mit einem ID Token zurückgeliefert.", response = TokenResponse.class)
+    @ApiOperation(httpMethod = "POST", value = "Endpunkt für Tokenabfrage", notes = "Es wird der Token Code mit "
+        + "dem Code Verifier geprüft, entwertet und bei Erfolg daraus ein Zugangstoken erstellt. Der Zugangstoken "
+        + "wird gemeinsam mit einem ID Token zurückgeliefert.", response = TokenResponse.class)
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Erfolgreich Token-Response erhalten"),
         @ApiResponse(responseCode = "401", description = "Nicht autorisierter Zugriff"),
@@ -148,31 +145,9 @@ public class IdpController {
         @RequestParam("client_id") @NotEmpty @ApiParam(value = "Client-ID") final String clientId,
         final HttpServletResponse response) {
 
-        final String codeChallenge = (String) authenticationToken.getBodyClaims().get(CODE_CHALLENGE.getJoseName());
-        pkceChecker.checkCodeVerifier(codeVerifier, codeChallenge);
-
-        if (authenticationToken.getBodyClaim(REDIRECT_URI)
-            .filter(originalRedirectUri -> originalRedirectUri.equals(redirectUri))
-            .isEmpty()) {
-            throw new IdpServerInvalidRedirectUriException("Expected redirect_uri to match the original value");
-        }
-
         setNoCacheHeader(response);
-        return TokenResponse.builder()
-            .tokenType("Bearer")
-            .expiresIn(300)
-            .accessToken(getAccessToken(authenticationToken))
-            .idToken(idTokenBuilder.buildIdToken(clientId, authenticationToken).getJwtRawString())
-            .build();
-    }
 
-    private String getAccessToken(final JsonWebToken authenticationToken) {
-        final String accessToken = null;
-        if (authenticationToken.getScopesBodyClaim(SCOPE).contains(IdpScope.EREZEPT)) {
-            return accessTokenBuilder.buildAccessToken(authenticationToken).getJwtRawString();
-        } else {
-            return null;
-        }
+        return tokenService.getTokenResponse(authenticationToken, codeVerifier, redirectUri, clientId);
     }
 
     private void setNoCacheHeader(final HttpServletResponse response) {

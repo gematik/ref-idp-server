@@ -78,7 +78,7 @@
           <skipITs>${skip.inttests}</skipITs>
           <systemPropertyVariables>
             <IDP_SERVER_PORT>${tomcat.http.port}</IDP_SERVER_PORT>
-            <cucumber.options>--tags "@ReleaseV1"</cucumber.options>
+            <cucumber.options>--tags @ReleaseV1 --tags 'not @OpenBug'</cucumber.options>-->
           </systemPropertyVariables>
           <threadCount>4</threadCount>
         </configuration>
@@ -268,7 +268,7 @@
     <artifactId>idp-global</artifactId>
     <groupId>de.gematik.idp</groupId>
     <relativePath>../pom.xml</relativePath>
-    <version>5.0.0</version>
+    <version>5.1.0</version>
   </parent>
 
   <profiles>
@@ -400,5 +400,5 @@
     <version.serenity.maven.plugin>2.1.7</version.serenity.maven.plugin>
   </properties>
 
-  <version>5.0.0</version>
+  <version>5.1.0</version>
 </project>

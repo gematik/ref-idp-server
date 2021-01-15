@@ -17,7 +17,7 @@
 package de.gematik.idp.server.controllers;
 
 import de.gematik.idp.data.IdpKeyDescriptor;
-import de.gematik.idp.server.validation.ValidateClientSystem;
+import de.gematik.idp.server.validation.clientSystem.ValidateClientSystem;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;

@@ -31,22 +31,22 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class SsoTokenValidator {
+public class AuthenticationTokenValidator {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(SsoTokenValidator.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationTokenValidator.class);
     private final IdpKey authKey;
 
-    public void validateSsoToken(final JsonWebToken ssoToken) {
-        validateExpiration(ssoToken.getDateTimeClaim(EXPIRES_AT, () -> ssoToken.getHeaderClaims())
-            .orElseThrow(() -> new IdpServerInvalidRequestException("Invalid SSO-Token given")));
+    public void validateAuthenticationToken(final JsonWebToken authenticationToken) {
+        validateExpiration(authenticationToken.getDateTimeClaim(EXPIRES_AT, () -> authenticationToken.getHeaderClaims())
+            .orElseThrow(() -> new IdpServerInvalidRequestException("Invalid Authentication-Token given")));
         final IdpJwtProcessor idpJwtProcessor = new IdpJwtProcessor(authKey.getIdentity());
-        idpJwtProcessor.verifyAndThrowExceptionIfFail(ssoToken);
-        LOGGER.debug("SsoToken validation successful");
+        idpJwtProcessor.verifyAndThrowExceptionIfFail(authenticationToken);
+        LOGGER.debug("AuthenticationToken validation successful");
     }
 
     private void validateExpiration(final ZonedDateTime exp) {
         if (exp.isBefore(ZonedDateTime.now())) {
-            throw new IdpServerException("SsoToken expired");
+            throw new IdpServerException("AuthenticationToken expired");
         }
     }
 }

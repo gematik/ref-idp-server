@@ -4,6 +4,7 @@ package $packageName;
 
 #end##
 
+import java.io.IOException;
 
 import org.junit.runner.RunWith;
 import org.junit.BeforeClass;
@@ -26,7 +27,7 @@ glue = #stringArray($glue))
 public class $className {
 
 @BeforeClass
-public static void setupClass() {
+public static void setupClass() throws IOException  {
 TestEnvironmentConfigurator.initializeTestEnvironment();
 }
 }

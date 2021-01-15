@@ -34,27 +34,28 @@ import org.springframework.context.annotation.Configuration;
 @RequiredArgsConstructor
 public class FlowBeanCreation {
 
+    private final IdpJwtProcessor idpJwtProcessor;
     private final IdpKey authKey;
     private final ServerUrlService serverUrlService;
 
     @Bean
     public AuthenticationTokenBuilder authenticationTokenBuilder() {
-        return new AuthenticationTokenBuilder(idpJwtProcessor(), authenticationChallengeVerifier());
+        return new AuthenticationTokenBuilder(idpJwtProcessor, authenticationChallengeVerifier());
     }
 
     @Bean
     public AccessTokenBuilder accessTokenBuilder() {
-        return new AccessTokenBuilder(idpJwtProcessor(), serverUrlService.determineServerUrl());
+        return new AccessTokenBuilder(idpJwtProcessor, serverUrlService.determineServerUrl());
     }
 
     @Bean
     public IdTokenBuilder idTokenBuilder() {
-        return new IdTokenBuilder(idpJwtProcessor(), serverUrlService.determineServerUrl());
+        return new IdTokenBuilder(idpJwtProcessor, serverUrlService.determineServerUrl());
     }
 
     @Bean
     public SsoTokenBuilder ssoTokenBuilder() {
-        return new SsoTokenBuilder(idpJwtProcessor(), serverUrlService.determineServerUrl());
+        return new SsoTokenBuilder(idpJwtProcessor, serverUrlService.determineServerUrl());
     }
 
     @Bean
@@ -80,9 +81,5 @@ public class FlowBeanCreation {
     @Bean
     public ModelMapper modelMapper() {
         return new ModelMapper();
-    }
-
-    public IdpJwtProcessor idpJwtProcessor() {
-        return new IdpJwtProcessor(authKey.getIdentity());
     }
 }

@@ -2,6 +2,7 @@ package de.gematik.idp.test.ide;
 
 import cucumber.api.CucumberOptions;
 import de.gematik.idp.test.steps.helpers.TestEnvironmentConfigurator;
+import java.io.IOException;
 import net.serenitybdd.cucumber.CucumberWithSerenity;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -15,7 +16,7 @@ import org.junit.runner.RunWith;
 public class JUnitHookForIde {
 
     @BeforeClass
-    public static void setupClass() {
+    public static void setupClass() throws IOException {
         TestEnvironmentConfigurator.initializeTestEnvironment();
     }
 }

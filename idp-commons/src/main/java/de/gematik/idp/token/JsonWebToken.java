@@ -16,10 +16,7 @@
 
 package de.gematik.idp.token;
 
-import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
-import static de.gematik.idp.field.ClaimName.ISSUED_AT;
-import static de.gematik.idp.field.ClaimName.NOT_BEFORE;
-import static de.gematik.idp.field.ClaimName.X509_Certificate_Chain;
+import static de.gematik.idp.field.ClaimName.*;
 
 import de.gematik.idp.authentication.JwtDescription;
 import de.gematik.idp.crypto.CryptoLoader;
@@ -108,9 +105,9 @@ public class JsonWebToken {
             .findAny();
     }
 
-    public Set<IdpScope> getScopesBodyClaim(final ClaimName claimName) {
+    public Set<IdpScope> getScopesBodyClaim() {
         return Optional
-            .ofNullable(getBodyClaims().get(claimName.getJoseName()))
+            .ofNullable(getBodyClaims().get(SCOPE.getJoseName()))
             .filter(String.class::isInstance)
             .map(String.class::cast)
             .stream()

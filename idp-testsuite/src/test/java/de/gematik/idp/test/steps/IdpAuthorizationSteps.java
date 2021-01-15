@@ -19,6 +19,7 @@ package de.gematik.idp.test.steps;
 import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import de.gematik.idp.test.steps.helpers.TestEnvironmentConfigurator;
 import de.gematik.idp.test.steps.model.CodeAuthType;
 import de.gematik.idp.test.steps.model.Context;
 import de.gematik.idp.test.steps.model.ContextKey;
@@ -79,23 +80,13 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
         return jsonWebSignature.getCompactSerialization();
     }
 
-    public void getCode(final CodeAuthType authType, final HttpStatus expectedStatus) throws URISyntaxException {
+    public void getCode(final CodeAuthType authType, final HttpStatus expectedStatus)
+        throws URISyntaxException, IOException {
         final Map<ContextKey, Object> ctxt = Context.getThreadContext();
         final Map<String, String> params = new HashMap<>();
-        switch (authType) {
-            case SIGNED_CHALLENGE:
-                checkContextAddToParams(ContextKey.SIGNED_CHALLENGE, "signed_challenge", params);
-                break;
-            case SSO_TOKEN:
-                checkContextAddToParams(ContextKey.CHALLENGE, "challenge_token", params);
-                checkContextAddToParams(ContextKey.SSO_TOKEN, "sso_token", params);
-                break;
-            case SSO_TOKEN_NO_CHALLENGE:
-                checkContextAddToParams(ContextKey.SSO_TOKEN, "sso_token", params);
-                break;
-        }
+        final String path = checkParamsNGetPath(authType, params);
         final Response r = requestResponseAndAssertStatus(
-            Context.getDiscoveryDocument().getAuthorizationEndpoint(), null, HttpMethods.POST,
+            Context.getDiscoveryDocument().getAuthorizationEndpoint() + path, null, HttpMethods.POST,
             params, expectedStatus);
 
         ctxt.put(ContextKey.RESPONSE, r);
@@ -110,6 +101,25 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
         } else {
             storeReponseContentInContext(authType, ctxt, r);
         }
+    }
+
+    private String checkParamsNGetPath(final CodeAuthType authType, final Map<String, String> params)
+        throws IOException {
+        switch (authType) {
+            case SIGNED_CHALLENGE:
+                checkContextAddToParams(ContextKey.SIGNED_CHALLENGE, "signed_challenge", params);
+                break;
+            case SSO_TOKEN:
+                checkContextAddToParams(ContextKey.CHALLENGE, "challenge_token", params);
+                checkContextAddToParams(ContextKey.SSO_TOKEN, "sso_token", params);
+                break;
+            case SSO_TOKEN_NO_CHALLENGE:
+                checkContextAddToParams(ContextKey.SSO_TOKEN, "sso_token", params);
+                break;
+        }
+        return authType == CodeAuthType.SIGNED_CHALLENGE || authType == CodeAuthType.NO_PARAMS ?
+            TestEnvironmentConfigurator.getPostSignedChallengeUrl() :
+            TestEnvironmentConfigurator.getPostSSOTokenUrl();
     }
 
     private void checkContextAddToParams(final ContextKey key, final String paramName,

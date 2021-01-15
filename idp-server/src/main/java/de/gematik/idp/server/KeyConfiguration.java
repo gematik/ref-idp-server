@@ -16,6 +16,7 @@
 
 package de.gematik.idp.server;
 
+import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.server.configuration.IdpConfiguration;
@@ -50,6 +51,11 @@ public class KeyConfiguration {
     @Bean
     public IdpKey discKey() {
         return getIdpKey(idpConfiguration.getDiscoveryKeyFile());
+    }
+
+    @Bean
+    public IdpJwtProcessor idpJwtProcessor() {
+        return new IdpJwtProcessor(authKey().getIdentity());
     }
 
     private IdpKey getIdpKey(final String tokenKeyFile) {

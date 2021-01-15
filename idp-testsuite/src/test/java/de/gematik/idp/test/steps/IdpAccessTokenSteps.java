@@ -25,13 +25,17 @@ import de.gematik.idp.test.steps.model.HttpMethods;
 import de.gematik.idp.test.steps.model.HttpStatus;
 import io.cucumber.datatable.DataTable;
 import io.restassured.response.Response;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.http.MediaType;
 
 public class IdpAccessTokenSteps extends IdpStepsBase {
 
-    public void getToken(final HttpStatus result, final DataTable paramsTable) {
+    public void getToken(final HttpStatus result, final DataTable paramsTable)
+        throws URISyntaxException, JSONException {
         final Map<ContextKey, Object> ctxt = Context.getThreadContext();
         assertThat(ctxt)
             .containsKey(ContextKey.TOKEN_CODE)
@@ -73,6 +77,14 @@ public class IdpAccessTokenSteps extends IdpStepsBase {
             params,
             result);
         ctxt.put(ContextKey.RESPONSE, r);
-        // TODO store response content
+
+        if (r.getStatusCode() == 200) {
+            final JSONObject json = new JSONObject(r.getBody().asString());
+            ctxt.put(ContextKey.ACCESS_TOKEN, json.getString("access_token"));
+            ctxt.put(ContextKey.ID_TOKEN, json.getString("id_token"));
+        } else {
+            ctxt.put(ContextKey.ACCESS_TOKEN, null);
+            ctxt.put(ContextKey.ID_TOKEN, null);
+        }
     }
 }

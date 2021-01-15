@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public enum IdpScope {
-    OPENID("openid"), EREZEPT("e-rezept");
+    OPENID("openid"), EREZEPT("e-rezept"), PAIRING("pairing");
 
     private final String jwtValue;
 

@@ -37,10 +37,12 @@ import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.StringReader;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.KeyStore;
@@ -96,13 +98,12 @@ public class IdpStepsBase {
         if (headers != null) {
             reqSpec.headers(headers);
         }
-
         final ByteArrayOutputStream reqDetails = new ByteArrayOutputStream();
         reqSpec.filter(
             new RequestLoggingFilter(
                 LogDetail.ALL, true, new PrintStream(reqDetails), true));
         final Response r = reqSpec.request(method.toString(), uri).thenReturn();
-        SerenityReportUtils.addCurlCommand(new String(reqDetails.toByteArray(), StandardCharsets.UTF_8));
+        SerenityReportUtils.addCurlCommand(reqDetails.toString(StandardCharsets.UTF_8));
 
         checkHTTPStatus(r.statusCode(), status);
         return r;
@@ -118,11 +119,12 @@ public class IdpStepsBase {
             assertThat(resSt.isError() && !resSt.is3xxRedirection())
                 .withFailMessage("Expected status code to be indicating an error, got " + resStatus)
                 .isTrue();
-        } else if (status.equals(HttpStatus.NOCHECK)) {
-            // DO NOTHING
-        } else {
-            assertThat(resStatus).isEqualTo(status.getValue());
-        }
+        } else //noinspection StatementWithEmptyBody
+            if (status.equals(HttpStatus.NOCHECK)) {
+                // DO NOTHING
+            } else {
+                assertThat(resStatus).isEqualTo(status.getValue());
+            }
 
     }
 
@@ -137,16 +139,6 @@ public class IdpStepsBase {
         final JsonWebSignature jsonWebSignature = new JsonWebSignature();
         jsonWebSignature.setCompactSerialization(token);
         return new JSONObject(JsonUtil.parseJson(jsonWebSignature.getHeaders().getFullHeaderAsJsonString()));
-    }
-
-    public JSONObject extractHeaderClaimsFromResponse() throws JoseException {
-        return extractHeaderClaimsFromString(Context.getCurrentResponse().getBody().asString());
-    }
-
-    public JSONObject extractHeaderClaimsFromResponseJsonField(final String jsonName)
-        throws JoseException, JSONException {
-        final JSONObject json = new JSONObject(Context.getCurrentResponse().getBody().asString());
-        return extractHeaderClaimsFromString(json.getString(jsonName));
     }
 
     @NotNull
@@ -211,9 +203,17 @@ public class IdpStepsBase {
     //
     // =================================================================================================================
     @Step
-    public void initializeFromDiscoveryDocument() throws JSONException, InvalidJwtException {
-        final Response r = SerenityRest.get(TestEnvironmentConfigurator.getDiscoveryDocumentURL()).thenReturn();
-        Context.getThreadContext().put(ContextKey.DISC_DOC, new DiscoveryDocument(getClaims(r.getBody().asString())));
+    public void initializeFromDiscoveryDocument()
+        throws JSONException, InvalidJwtException, IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, URISyntaxException {
+        final String idpLocalDiscdoc = System.getenv("IDP_LOCAL_DISCDOC");
+        if (idpLocalDiscdoc == null || idpLocalDiscdoc.isBlank()) {
+            final Response r = SerenityRest.get(TestEnvironmentConfigurator.getDiscoveryDocumentURL()).thenReturn();
+            Context.getThreadContext()
+                .put(ContextKey.DISC_DOC, new DiscoveryDocument(getClaims(r.getBody().asString())));
+        } else {
+            Context.getThreadContext()
+                .put(ContextKey.DISC_DOC, new DiscoveryDocument(new File(idpLocalDiscdoc)));
+        }
     }
 
     @Step
@@ -233,8 +233,9 @@ public class IdpStepsBase {
     }
 
     @Step
-    public void assertResponseIsSignedWithCert(final String filename) throws Throwable {
-        final Certificate cert = readCertFrom(filename);
+    public void assertResponseIsSignedWithCert(final ContextKey pukKey) throws Throwable {
+        final Certificate cert = Context.getDiscoveryDocument()
+            .getCertificateFromJWKS((JSONObject) Context.getThreadContext().get(pukKey));
         assertJWTIsSignedByCertificate(Context.getCurrentResponse().getBody().asString(), cert);
     }
 
@@ -285,7 +286,8 @@ public class IdpStepsBase {
     public void iRequestTheUriFromClaim(final String claim, final HttpMethods method, final HttpStatus result)
         throws JSONException {
         Context.getThreadContext().put(ContextKey.RESPONSE,
-            requestResponseAndAssertStatus(Context.getCurrentClaims().getString(claim), null, method, null, result));
+            requestResponseAndAssertStatus(Context.getCurrentClaims().getString(claim), null, method, null,
+                result));
     }
 
     @Step
@@ -310,7 +312,7 @@ public class IdpStepsBase {
             assertThat(ctxt).containsKey(ContextKey.HEADER_CLAIMS).doesNotContainEntry(ContextKey.HEADER_CLAIMS, null);
             claims = (JSONObject) ctxt.get(ContextKey.HEADER_CLAIMS);
         }
-        assertThat((Object[]) IteratorUtils.toArray(claims.keys())).contains(claimName);
+        assertThat(IteratorUtils.toArray(claims.keys())).contains(claimName);
 
         final ZonedDateTime d = ZonedDateTime
             .ofInstant(Instant.ofEpochSecond(Long.parseLong(claims.getString(claimName))),
@@ -343,12 +345,13 @@ public class IdpStepsBase {
         } catch (final IOException e) {
             fail("Invalid KeyValuePairs in DocString", e);
         }
-        final Map<String, String> stringProps = new HashMap<String, String>((Map) props);
         final Map<String, String> responseHeaders = Context.getCurrentResponse().getHeaders().asList().stream()
             .collect(Collectors.toMap(Header::getName, Header::getValue));
-        stringProps.entrySet().stream().forEach(entry -> {
-            assertThat(responseHeaders).containsKey(entry.getKey());
-            assertThat(responseHeaders.get(entry.getKey())).matches(entry.getValue());
+        final Map<String, String> stringProps = props.entrySet().stream()
+            .collect(Collectors.toMap(e -> e.getKey().toString(), e -> e.getValue().toString()));
+        stringProps.forEach((key, value) -> {
+            assertThat(responseHeaders).containsKey(key);
+            assertThat(responseHeaders.get(key)).matches(value);
         });
     }
 
@@ -360,5 +363,12 @@ public class IdpStepsBase {
             UriComponentsBuilder.fromUriString(location).build().getQueryParams();
         assertThat(parameters).containsKey(parameter);
         assertThat(parameters.get(parameter)).contains(value);
+    }
+
+    public void assertContextIsSignedWithCert(final ContextKey key, final ContextKey certName)
+        throws CertificateException, JSONException {
+        final Certificate cert = Context.getDiscoveryDocument()
+            .getCertificateFromJWKS((JSONObject) Context.getThreadContext().get(certName));
+        assertJWTIsSignedByCertificate(Context.getThreadContext().get(key).toString(), cert);
     }
 }

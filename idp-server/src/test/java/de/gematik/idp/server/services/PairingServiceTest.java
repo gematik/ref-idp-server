@@ -3,6 +3,7 @@ package de.gematik.idp.server.services;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import de.gematik.idp.server.data.PairingDto;
+import de.gematik.idp.server.pairing.PairingData;
 import de.gematik.idp.server.pairing.PairingRepository;
 import java.time.ZonedDateTime;
 import org.junit.jupiter.api.Test;
@@ -22,12 +23,6 @@ public class PairingServiceTest {
     private PairingService pairingService;
     @Autowired
     private PairingRepository pairingRepository;
-
-    @Test
-    void injectedComponentsAreNotNull() {
-        assertThat(pairingService).isNotNull();
-        assertThat(pairingRepository).isNotNull();
-    }
 
     @Test
     public void insertPairing_ValidateEntry() {
@@ -51,4 +46,17 @@ public class PairingServiceTest {
             .build();
     }
 
+    @Test
+    public void searchPairing_ValidateEntry() {
+        PairingDto pairingDto = createPairingData();
+        pairingService.insertPairing(pairingDto);
+        PairingDto pairingData = searchPairingData(test_kvnr);
+        assertThat(pairingData).isNotNull();
+        //FIXME: Wegen unterschiedlichen Timestamps beim Write/Read wird vorerst kein Equals gebaut,
+        //      was aber nach Bugfix nachgebaut wird.
+    }
+
+    private PairingDto searchPairingData( String kvnr) {
+        return pairingService.getPairingList(kvnr).stream().findAny().orElseThrow();
+    }
 }

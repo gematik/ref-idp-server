@@ -72,7 +72,8 @@ public class StepsGlue {
     // =================================================================================================================
 
     @Given("I request the discovery document")
-    public void iRequestTheInternalDiscoveryDocument() {
+    public void iRequestTheInternalDiscoveryDocument()
+        throws IOException, URISyntaxException, JSONException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
         disc.iRequestTheInternalDiscoveryDocument(HttpStatus.NOCHECK);
     }
 
@@ -83,8 +84,15 @@ public class StepsGlue {
     // =================================================================================================================
 
     @Given("I initialize scenario from discovery document endpoint")
-    public void iInitializeScenarioFromDiscoveryDocumentEndpoint() throws JSONException, InvalidJwtException {
+    public void iInitializeScenarioFromDiscoveryDocumentEndpoint()
+        throws JSONException, InvalidJwtException, IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, URISyntaxException {
         auth.initializeFromDiscoveryDocument();
+    }
+
+    @Given("I retrieve public keys from URIs")
+    public void iRetrievePublicKeysFromURIs()
+        throws CertificateException, NoSuchAlgorithmException, KeyStoreException, JSONException, URISyntaxException, IOException {
+        Context.getDiscoveryDocument().readPublicKeysFromURIs();
     }
 
     @Given("I choose code verifier {string}")
@@ -93,7 +101,7 @@ public class StepsGlue {
     }
 
     @When("I request a challenge with")
-    public void iRequestAChallengeWith(final DataTable params) throws JSONException {
+    public void iRequestAChallengeWith(final DataTable params) throws JSONException, URISyntaxException, IOException {
         auth.getChallenge(params, HttpStatus.NOCHECK);
     }
 
@@ -104,7 +112,7 @@ public class StepsGlue {
     // =================================================================================================================
 
     @When("I request a code token with {CodeAuthType}")
-    public void iRequestACodeTokenWith(final CodeAuthType authType) throws URISyntaxException {
+    public void iRequestACodeTokenWith(final CodeAuthType authType) throws URISyntaxException, IOException {
         author.getCode(authType, HttpStatus.NOCHECK);
     }
 
@@ -121,12 +129,12 @@ public class StepsGlue {
     // =================================================================================================================
 
     @And("I request an access token with")
-    public void iRequestAnAccessTokenWith(final DataTable params) {
+    public void iRequestAnAccessTokenWith(final DataTable params) throws URISyntaxException, JSONException {
         access.getToken(HttpStatus.NOCHECK, params);
     }
 
     @And("I request an access token")
-    public void iRequestAnAccessToken() {
+    public void iRequestAnAccessToken() throws URISyntaxException, JSONException {
         access.getToken(HttpStatus.NOCHECK, null);
     }
 
@@ -149,7 +157,7 @@ public class StepsGlue {
 
     @Given("I request the uri from claim {string} with method {HttpMethods} and status {HttpStatus}")
     public void iRequestTheUri(final String claimName, final HttpMethods method, final HttpStatus result)
-        throws JSONException {
+        throws JSONException, URISyntaxException {
         disc.iRequestTheUriFromClaim(claimName, method, result);
     }
 
@@ -173,14 +181,19 @@ public class StepsGlue {
         disc.assertThatHttpResponseUriParameterContains(param, value);
     }
 
-    @And("the response must be signed with cert {string}")
-    public void theResponseMustBeSignedWithCert(final String filename) throws Throwable {
-        disc.assertResponseIsSignedWithCert(filename);
+    @And("the response must be signed with cert {ContextKey}")
+    public void theResponseMustBeSignedWithCert(final ContextKey pukKey) throws Throwable {
+        disc.assertResponseIsSignedWithCert(pukKey);
+    }
+
+    @And("the context {ContextKey} must be signed with cert {ContextKey}")
+    public void theContextMustBeSignedWithCert(final ContextKey tokenKey, final ContextKey pukKey) throws Throwable {
+        disc.assertContextIsSignedWithCert(tokenKey, pukKey);
     }
 
     @Then("URI in claim {string} exists with method {HttpMethods} and status {HttpStatus}")
     public void uriInClaimExistsWithMethod(final String claimName, final HttpMethods method, final HttpStatus status)
-        throws JSONException {
+        throws JSONException, URISyntaxException {
         disc.assertUriInClaimExistsWithMethodAndStatus(claimName, method, status);
     }
 

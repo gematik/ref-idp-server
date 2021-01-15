@@ -27,8 +27,7 @@ public enum IdpErrorType {
     INVALID_CLIENT("Client authentication failed"),
     INVALID_GRANT("The provided authorization grant or refresh token is invalid, expired, revoked, "
         + "does not match the redirection URI used in the authorization request, or was issued to another client."),
-    UNAUTHORIZED_CLIENT("The authenticated client is not authorized to use this " +
-        "authorization grant type."),
+    UNAUTHORIZED_CLIENT("The authenticated client is not authorized to use this authorization grant type."),
     UNSUPPORTED_GRANT_TYPE("The authorization grant type is not supported by the authorization server."),
     INVALID_SCOPE("The requested scope is invalid, unknown, malformed, or exceeds the scope granted by the "
         + "resource owner."),
@@ -37,9 +36,8 @@ public enum IdpErrorType {
         + "using this method."),
     SERVER_ERROR("The authorization server encountered an unexpected condition that prevented it from "
         + "fulfilling the request. "),
-    TEMPORARILY_UNAVAILABLE("The authorization server is currently unable to handle " +
-        "the request due to a temporary overloading or maintenance " +
-        "of the server."),
+    TEMPORARILY_UNAVAILABLE("The authorization server is currently unable to handle the request due to a "
+        + "temporary overloading or maintenance of the server."),
     UNSUPPORTED_TRANSFORM_ALGORITHM("The given PKCE transform algorithm is not supported"),
     MISSING_PARAMETERS("Parameters are missing"),
     INVALID_PARAMETER_VALUE("Parameter value is invalid"),

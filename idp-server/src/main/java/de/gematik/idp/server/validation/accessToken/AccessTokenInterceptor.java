@@ -14,30 +14,33 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.server.validation;
+package de.gematik.idp.server.validation.accessToken;
 
-import de.gematik.idp.server.configuration.IdpConfiguration;
-import de.gematik.idp.server.exceptions.oauth2spec.IdpServerClientSystemBlockedException;
-import de.gematik.idp.server.exceptions.oauth2spec.IdpServerClientSystemMissingException;
+import de.gematik.idp.authentication.IdpJwtProcessor;
+import de.gematik.idp.field.IdpScope;
+import de.gematik.idp.server.RequestAccessToken;
+import de.gematik.idp.server.exceptions.oauth2spec.IdpServerAccessDeniedException;
+import de.gematik.idp.token.JsonWebToken;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-@Configuration
+@Service
 @RequiredArgsConstructor
 @Slf4j
-public class ClientSystemInterceptor implements HandlerInterceptor, WebMvcConfigurer {
+public class AccessTokenInterceptor implements HandlerInterceptor, WebMvcConfigurer {
 
-    private final IdpConfiguration idpConfiguration;
+    private final IdpJwtProcessor jwtProcessor;
+    private final RequestAccessToken requestAccessToken;
 
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
@@ -51,15 +54,24 @@ public class ClientSystemInterceptor implements HandlerInterceptor, WebMvcConfig
             return true;
         }
 
-        final String clientSystem = request.getHeader(HttpHeaders.USER_AGENT);
+        final JsonWebToken accessToken = Optional.ofNullable(request.getHeader(HttpHeaders.AUTHORIZATION))
+            .filter(StringUtils::isNotEmpty)
+            .filter(authorizationHeader -> authorizationHeader.startsWith("Bearer "))
+            .map(authorizationHeader -> authorizationHeader.split("Bearer ")[1])
+            .map(token -> new JsonWebToken(token))
+            .orElseThrow(() -> new IdpServerAccessDeniedException("No authorization-Header with Bearer-Token given"));
 
-        if (StringUtils.isEmpty(clientSystem)) {
-            throw new IdpServerClientSystemMissingException();
+        try {
+            jwtProcessor.verifyAndThrowExceptionIfFail(accessToken);
+        } catch (final RuntimeException e) {
+            throw new IdpServerAccessDeniedException("Error while verifying Access-Token");
         }
 
-        if (idpConfiguration.getBlockedClientSystems().contains(clientSystem)) {
-            throw new IdpServerClientSystemBlockedException();
+        if (!accessToken.getScopesBodyClaim().contains(IdpScope.PAIRING)) {
+            throw new IdpServerAccessDeniedException("Scope missing :" + IdpScope.PAIRING);
         }
+
+        requestAccessToken.setAccessToken(accessToken);
 
         return true;
     }
@@ -68,8 +80,8 @@ public class ClientSystemInterceptor implements HandlerInterceptor, WebMvcConfig
         return Optional.ofNullable(handler)
             .filter(HandlerMethod.class::isInstance)
             .map(HandlerMethod.class::cast)
-            .filter(handlerMethod -> handlerMethod.hasMethodAnnotation(ValidateClientSystem.class))
-            .map(handlerMethod -> handlerMethod.getMethodAnnotation(ValidateClientSystem.class))
+            .filter(handlerMethod -> handlerMethod.hasMethodAnnotation(ValidateAccessToken.class))
+            .map(handlerMethod -> handlerMethod.getMethodAnnotation(ValidateAccessToken.class))
             .isPresent();
     }
 }

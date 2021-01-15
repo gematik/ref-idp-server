@@ -22,7 +22,7 @@ Feature: Fordere Access Token an
         Given I initialize scenario from discovery document endpoint
 
     @Ready
-    Scenario: GetToken - Gutfall ohne SSO Token
+    Scenario: GetToken - Gutfall ohne SSO Token - Check Access Token
         Given I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
         And I request a challenge with
             | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state       |
@@ -81,6 +81,7 @@ Feature: Fordere Access Token an
                 "state": "xxxstatexxx"
             }
         """
+        # TODO RISE liefert zusätzlich azp, amr, dafür nicht nbf, sub, aud, code_challenge
         # TODO state ist nicht in den body claims des Access Tokens!
         # TODO when eGK verwendet wird, darf keine professionOID claim vorhanden sein
         # TODO organizationName bei HBA nicht gesetzt
@@ -89,6 +90,28 @@ Feature: Fordere Access Token an
         # 1\\.2\\.276\\.0\\.76\\.4\\.(3\\d|4\\d|178|23[2-0]|240|241)
 
         # TODO acr separator format either ":" or "-" ?
+
+    @Ready
+    Scenario: GetToken - Gutfall ohne SSO Token - Check ID Token
+        Given I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+        And I request a challenge with
+            | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state       |
+            | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx |
+        And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+        And I request a code token with SIGNED_CHALLENGE
+        And I set the context with key REDIRECT_URI to 'http://redirect.gematik.de/erezept'
+        When I request an access token
+        Then the response status is 200
+        And the JSON response should match
+        """
+          {
+              "expires_in": 300,
+              "token_type": "Bearer",
+              "id_token": "ey.*",
+              "access_token": "ey.*",
+              "sso_token": null
+           }
+        """
 
         When I extract the header claims from response field id_token
         Then the header claims should match in any order
@@ -117,9 +140,11 @@ Feature: Fordere Access Token an
                 "aud": "https://erp.zentral.erp.splitdns.ti-dienste.de"
             }
         """
+        # TODO RISE liefert zusätzlich azp, amr, nonce, at_hash, auth_time, acr, dafür nicht nbf
+
 
     @Ready
-    Scenario: GetToken - Gutfall mit SSO Token
+    Scenario: GetToken - Gutfall mit SSO Token - Check Access Token
         Given I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
         # code_challenge for given verifier can be obtained from https://tonyxu-io.github.io/pkce-generator/
         And I request a challenge with
@@ -159,7 +184,6 @@ Feature: Fordere Access Token an
                 "exp": "[\\d]*"
             }
         """
-        #  TODO   "cty": "NJWT",
 
         When I extract the body claims from response field access_token
         Then the body claims should match in any order
@@ -186,6 +210,38 @@ Feature: Fordere Access Token an
                 "aud": "https://erp.zentral.erp.splitdns.ti-dienste.de",
                 "state": "xxxstatexxx2a"
             }
+        """
+
+
+    @Ready
+    Scenario: GetToken - Gutfall mit SSO Token - Check ID Token
+        Given I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+        # code_challenge for given verifier can be obtained from https://tonyxu-io.github.io/pkce-generator/
+        And I request a challenge with
+            | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state         |
+            | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx1a |
+        And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+        And I request a code token with SIGNED_CHALLENGE
+        And I request an access token
+        And I start new interaction keeping only SSO_TOKEN
+        And I initialize scenario from discovery document endpoint
+        And I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+        And I request a challenge with
+            | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state         |
+            | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx2a |
+        And I request a code token with SSO_TOKEN
+        And I set the context with key REDIRECT_URI to 'http://redirect.gematik.de/erezept'
+        When I request an access token
+        Then the response status is 200
+        And the JSON response should match
+        """
+          {
+              "expires_in": 300,
+              "token_type": "Bearer",
+              "id_token": "ey.*",
+              "access_token": "ey.*",
+              "sso_token": null
+           }
         """
 
         When I extract the header claims from response field id_token
@@ -216,6 +272,49 @@ Feature: Fordere Access Token an
             }
         """
 
+
+    @Afo:A_20625
+    @Afo:A_20327
+    @Ready
+    @Signature
+    Scenario: GetToken - Validiere Signatur ID Token mit signierter Challenge
+        Given I retrieve public keys from URIs
+        And I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+        And I request a challenge with
+            | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state       |
+            | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx |
+        And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+        And I request a code token with SIGNED_CHALLENGE
+        And I set the context with key REDIRECT_URI to 'http://redirect.gematik.de/erezept'
+        When I request an access token
+        Then the context ID_TOKEN must be signed with cert PUK_TOKEN
+
+
+    @Afo:A_20625
+    @Afo:A_20327
+    @Ready
+    @Signature
+    Scenario: GetToken - Validiere Signatur ID Token mit SSO Token
+        Given I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+        And I request a challenge with
+            | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state         |
+            | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx1a |
+        And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+        And I request a code token with SIGNED_CHALLENGE
+        And I request an access token
+        And I start new interaction keeping only SSO_TOKEN
+        And I initialize scenario from discovery document endpoint
+        And I retrieve public keys from URIs
+        And I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+        And I request a challenge with
+            | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state         |
+            | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx2a |
+        And I request a code token with SSO_TOKEN
+        And I set the context with key REDIRECT_URI to 'http://redirect.gematik.de/erezept'
+        When I request an access token
+        Then the context ID_TOKEN must be signed with cert PUK_TOKEN
+
+
     # TODO negative cases
     # TODO card specific cases
 
@@ -232,6 +331,7 @@ Feature: Fordere Access Token an
             | grant_type   | redirect_uri   | code   | code_verifier   | client_id   |
             | <grant_type> | <redirect_uri> | <code> | <code_verifier> | <client_id> |
         Then the response status is 400
+
         Examples: GetToken - Null Parameter Beispiele
             | grant_type         | redirect_uri                       | code                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | code_verifier                                                                      | client_id |
             | $NULL              | http://redirect.gematik.de/erezept | eyJhbGciOiJCUDI1NlIxIn0.eyJzdWIiOiJzdWJqZWN0Iiwib3JnYW5pemF0aW9uTmFtZSI6ImdlbWF0aWsgR21iSCBOT1QtVkFMSUQiLCJwcm9mZXNzaW9uT0lEIjoiMS4yLjI3Ni4wLjc2LjQuNDkiLCJpZE51bW1lciI6IlgxMTA0MTE2NzUiLCJpc3MiOiJzZW5kZXIiLCJyZXNwb25zZV90eXBlIjoiY29kZSIsImNvZGVfY2hhbGxlbmdlX21ldGhvZCI6IlMyNTYiLCJnaXZlbl9uYW1lIjoiRGFyaXVzIE1pY2hhZWwgQnJpYW4gVWJibyIsImNsaWVudF9pZCI6Im9pZGNfY2xpZW50IiwiYWNyIjoiZWlkYXMtbG9hLWhpZ2giLCJhdWQiOiJlcnAuemVudHJhbC5lcnAudGktZGllbnN0ZS5kZSIsInNjb3BlIjoib3BlbmlkIGUtcmV6ZXB0IiwiYXV0aF90aW1lIjoxNjA3MzQ5MjExLCJyZWRpcmVjdF91cmkiOiJodHRwOmxvY2FsaG9zdDo4MDgwIiwic3RhdGUiOiJ4eHhzdGF0ZXh4eCIsImV4cCI6MTYwNzM1MjgxMSwiZmFtaWx5X25hbWUiOiJCw7ZkZWZlbGQiLCJjb2RlX2NoYWxsZW5nZSI6IkNhM1ZlOGpTc0JRT0JGVnFRdkxzMUUtZEdWMUJYZzJGVHZyZC1UZzE5VmcifQ.RsR3JFqMCFV9I7m8l5SlyTMNGOCF8GeInDEtj9zvBDRCIjjPSYjjHlwiCxYsimYhrcFzr77bpXUjd1BbprzI_Q | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj | erezept   |
