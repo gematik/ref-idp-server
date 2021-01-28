@@ -30,8 +30,9 @@ import de.gematik.idp.client.IdpClient;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpController;
+import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.tests.PkiKeyResolver;
-import de.gematik.idp.token.JsonWebToken;
+import de.gematik.idp.token.IdpJwe;
 import kong.unirest.MultipartBody;
 import kong.unirest.UnirestException;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,6 +59,8 @@ public class AuthenticationCallTest {
     private AuthenticationChallengeBuilder authenticationChallengeBuilder;
     @Autowired
     private IdpController idpController;
+    @Autowired
+    private IdpKey authKey;
     private AuthenticationChallengeBuilder authenticationChallengeBuilderSpy;
     private AuthenticationChallengeVerifier authenticationChallengeVerifier;
     @Autowired
@@ -93,7 +96,7 @@ public class AuthenticationCallTest {
         verify(authenticationChallengeBuilderSpy)
             .buildAuthenticationChallenge(eq(IdpConstants.CLIENT_ID), anyString(),
                 eq(idpConfiguration.getRedirectUri()),
-                anyString(), anyString());
+                anyString(), anyString(), anyString());
     }
 
     @Test
@@ -134,7 +137,8 @@ public class AuthenticationCallTest {
 
     @Test
     public void verifySignedChallengeBodyAttribute_njwt() {
-        idpClient.setBeforeAuthenticationCallback(request -> assertThat(new JsonWebToken(getTokenOfRequest(request))
+        idpClient.setBeforeAuthenticationCallback(request -> assertThat(new IdpJwe(getTokenOfRequest(request))
+            .decrypt(authKey.getIdentity().getPrivateKey())
             .getBodyClaims()).containsKey("njwt"));
         idpClient.login(egkUserIdentity);
     }

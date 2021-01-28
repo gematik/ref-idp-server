@@ -22,6 +22,7 @@ import static de.gematik.idp.field.ClaimName.*;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 
 import de.gematik.idp.authentication.AuthenticationChallenge;
+import de.gematik.idp.authentication.UriUtils;
 import de.gematik.idp.client.data.*;
 import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.token.JsonWebToken;
@@ -34,15 +35,17 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.ws.rs.core.HttpHeaders;
 import kong.unirest.*;
+import kong.unirest.jackson.JacksonObjectMapper;
 import kong.unirest.json.JSONObject;
 import org.apache.http.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 
 public class AuthenticatorClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticatorClient.class);
+    {
+        Unirest.config().setObjectMapper(new JacksonObjectMapper());
+    }
+
     private static final String USER_AGENT = "IdP-Client";
 
     public static Map<String, String> getAllHeaderElementsAsMap(final HttpRequest request) {
@@ -73,6 +76,7 @@ public class AuthenticatorClient {
             .queryString(CODE_CHALLENGE_METHOD.getJoseName(),
                 authorizationRequest.getCodeChallengeMethod())
             .queryString(SCOPE.getJoseName(), scope)
+            .queryString("nonce", authorizationRequest.getNonce())
             .header(HttpHeaders.USER_AGENT, USER_AGENT);
 
         final HttpResponse<AuthenticationChallenge> authorizationResponse = beforeCallback
@@ -95,19 +99,30 @@ public class AuthenticatorClient {
 
         final MultipartBody request = Unirest
             .post(authenticationRequest.getAuthenticationEndpointUrl())
-            .field("signed_challenge", authenticationRequest.getSignedChallenge())
+            .field("signed_challenge", authenticationRequest.getSignedChallenge().getRawValue())
             .header("Content-Type", "application/x-www-form-urlencoded")
             .header(HttpHeaders.USER_AGENT, USER_AGENT);
 
         final HttpResponse<String> loginResponse = beforeAuthenticationCallback.apply(request).asString();
         afterAuthenticationCallback.accept(loginResponse);
         final String location = retrieveLocationFromResponse(loginResponse);
-        LOGGER.debug("Location header value aus authentication response: {}", location);
+
+        checkForForwardingExceptionAndThrowIfPresent(location);
+
         return AuthenticationResponse.builder()
             .code(extractParameterValue(location, "code"))
             .location(location)
             .ssoToken(extractParameterValue(location, "sso_token"))
             .build();
+    }
+
+    private void checkForForwardingExceptionAndThrowIfPresent(final String location) {
+        UriUtils.extractParameterValueOptional(location, "error")
+            .ifPresent(errorCode -> {
+                throw new IdpClientRuntimeException("Server-Error with message: " +
+                    UriUtils.extractParameterValueOptional(location, "error_description")
+                        .orElse(errorCode));
+            });
     }
 
     public AuthenticationResponse performAuthenticationWithSsoToken(
@@ -117,13 +132,13 @@ public class AuthenticatorClient {
 
         final MultipartBody request = Unirest.post(authenticationRequest.getAuthenticationEndpointUrl())
             .field("sso_token", authenticationRequest.getSsoToken())
-            .field("challenge_token", authenticationRequest.getChallengeToken())
+            .field("unsigned_challenge", authenticationRequest.getChallengeToken().getJwtRawString())
             .header(CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .header(HttpHeaders.USER_AGENT, USER_AGENT);
         final HttpResponse<String> loginResponse = beforeAuthenticationCallback.apply(request).asString();
         afterAuthenticationCallback.accept(loginResponse);
         final String location = retrieveLocationFromResponse(loginResponse);
-        LOGGER.debug("Location header value aus Sso authentication response: {}", location);
+        checkForForwardingExceptionAndThrowIfPresent(location);
         return AuthenticationResponse.builder()
             .code(extractParameterValue(location, "code"))
             .location(location)
@@ -163,7 +178,7 @@ public class AuthenticatorClient {
             .filter(String.class::isInstance)
             .map(String.class::cast)
             .map(JsonWebToken::new)
-            .orElse(null);
+            .orElseThrow(() -> new IdpClientRuntimeException("Unable to extract Access-Token from response!"));
 
         final String idTokenRawString = jsonObject.get("id_token").toString();
 
@@ -193,7 +208,7 @@ public class AuthenticatorClient {
             .asJson();
         final JSONObject keyObject = pukAuthResponse.getBody().getObject();
 
-        final String verificationCertificate = keyObject.getJSONArray(X509_Certificate_Chain.getJoseName())
+        final String verificationCertificate = keyObject.getJSONArray(X509_CERTIFICATE_CHAIN.getJoseName())
             .getString(0);
 
         return DiscoveryDocumentResponse.builder()

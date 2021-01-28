@@ -18,14 +18,12 @@ package de.gematik.idp.test.steps;
 
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
-
 import de.gematik.idp.test.steps.model.Context;
 import de.gematik.idp.test.steps.model.ContextKey;
 import de.gematik.idp.test.steps.model.HttpMethods;
 import de.gematik.idp.test.steps.model.HttpStatus;
 import io.cucumber.datatable.DataTable;
 import io.restassured.response.Response;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import org.json.JSONException;
@@ -35,7 +33,7 @@ import org.springframework.http.MediaType;
 public class IdpAccessTokenSteps extends IdpStepsBase {
 
     public void getToken(final HttpStatus result, final DataTable paramsTable)
-        throws URISyntaxException, JSONException {
+        throws JSONException {
         final Map<ContextKey, Object> ctxt = Context.getThreadContext();
         assertThat(ctxt)
             .containsKey(ContextKey.TOKEN_CODE)

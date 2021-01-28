@@ -17,16 +17,10 @@
 package de.gematik.idp.test.steps;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
-
 import de.gematik.idp.test.steps.helpers.TestEnvironmentConfigurator;
-import de.gematik.idp.test.steps.model.ClaimLocation;
-import de.gematik.idp.test.steps.model.Context;
-import de.gematik.idp.test.steps.model.ContextKey;
-import de.gematik.idp.test.steps.model.DateCompareMode;
-import de.gematik.idp.test.steps.model.DiscoveryDocument;
-import de.gematik.idp.test.steps.model.HttpMethods;
-import de.gematik.idp.test.steps.model.HttpStatus;
+import de.gematik.idp.test.steps.model.*;
 import de.gematik.idp.test.steps.utils.SerenityReportUtils;
 import io.cucumber.datatable.DataTable;
 import io.restassured.filter.log.LogDetail;
@@ -35,32 +29,19 @@ import io.restassured.http.ContentType;
 import io.restassured.http.Header;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.io.StringReader;
-import java.net.URISyntaxException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
-import java.security.UnrecoverableKeyException;
+import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.serenitybdd.rest.SerenityRest;
 import net.thucydides.core.annotations.Step;
@@ -73,6 +54,7 @@ import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.jose4j.lang.JoseException;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.util.MultiValueMap;
@@ -204,10 +186,11 @@ public class IdpStepsBase {
     // =================================================================================================================
     @Step
     public void initializeFromDiscoveryDocument()
-        throws JSONException, InvalidJwtException, IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, URISyntaxException {
+        throws JSONException, InvalidJwtException, IOException {
         final String idpLocalDiscdoc = System.getenv("IDP_LOCAL_DISCDOC");
         if (idpLocalDiscdoc == null || idpLocalDiscdoc.isBlank()) {
-            final Response r = SerenityRest.get(TestEnvironmentConfigurator.getDiscoveryDocumentURL()).thenReturn();
+            final Response r = SerenityRest.given().get(TestEnvironmentConfigurator.getDiscoveryDocumentURL())
+                .thenReturn();
             Context.getThreadContext()
                 .put(ContextKey.DISC_DOC, new DiscoveryDocument(getClaims(r.getBody().asString())));
         } else {
@@ -234,8 +217,8 @@ public class IdpStepsBase {
 
     @Step
     public void assertResponseIsSignedWithCert(final ContextKey pukKey) throws Throwable {
-        final Certificate cert = Context.getDiscoveryDocument()
-            .getCertificateFromJWKS((JSONObject) Context.getThreadContext().get(pukKey));
+        final Certificate cert = DiscoveryDocument
+            .getCertificateFromJWK((JSONObject) Context.getThreadContext().get(pukKey));
         assertJWTIsSignedByCertificate(Context.getCurrentResponse().getBody().asString(), cert);
     }
 
@@ -265,7 +248,7 @@ public class IdpStepsBase {
     @Step
     public void extractClaimsFromToken(final ClaimLocation cType, final ContextKey token)
         throws JoseException, InvalidJwtException, JSONException {
-        assertThat(token).isIn(ContextKey.TOKEN_CODE, ContextKey.SIGNED_CHALLENGE);
+        assertThat(token).isIn(ContextKey.TOKEN_CODE, ContextKey.SIGNED_CHALLENGE, ContextKey.ACCESS_TOKEN);
         extractClaimsFromString(cType, Context.getThreadContext().get(token).toString());
     }
 
@@ -367,8 +350,33 @@ public class IdpStepsBase {
 
     public void assertContextIsSignedWithCert(final ContextKey key, final ContextKey certName)
         throws CertificateException, JSONException {
-        final Certificate cert = Context.getDiscoveryDocument()
-            .getCertificateFromJWKS((JSONObject) Context.getThreadContext().get(certName));
+        final Certificate cert = DiscoveryDocument.getCertificateFromJWK(
+            (JSONObject) Context.getThreadContext().get(certName));
         assertJWTIsSignedByCertificate(Context.getThreadContext().get(key).toString(), cert);
+    }
+
+    @SneakyThrows
+    public void jsonObjectShouldBeValidCertificate(final JSONObject jsonObject) {
+        final X509Certificate cert = DiscoveryDocument.getCertificateFromJWK(jsonObject);
+
+        // check for self signed
+        assertThatThrownBy(() -> cert.verify(cert.getPublicKey())).isInstanceOf(SignatureException.class);
+        assertThat(cert.getSubjectDN().getName()).isNotEqualTo(cert.getIssuerDN().getName());
+
+        // TODO pkilib check revocation of cert once pkilib is able to do it
+
+        // check for outdated
+        cert.checkValidity(new Date());
+    }
+
+    @SneakyThrows
+    public void jsonArrayPathShouldContainValidCertificates(final String arrStr) {
+        final JSONObject json = new JSONObject(Context.getCurrentResponse().getBody().asString());
+        assertThat(IteratorUtils.toArray(json.keys())).contains(arrStr);
+        assertThat(json.get(arrStr)).isInstanceOf(JSONArray.class);
+        final JSONArray jarr = json.getJSONArray(arrStr);
+        for (int i = 0; i < jarr.length(); i++) {
+            jsonObjectShouldBeValidCertificate(jarr.getJSONObject(i));
+        }
     }
 }

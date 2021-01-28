@@ -19,7 +19,7 @@ package de.gematik.idp.token;
 import static de.gematik.idp.field.ClaimName.*;
 
 import de.gematik.idp.authentication.IdpJwtProcessor;
-import de.gematik.idp.authentication.JwtDescription;
+import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers;
 import de.gematik.idp.crypto.X509ClaimExtraction;
 import de.gematik.idp.data.IdpKeyDescriptor;
@@ -47,10 +47,9 @@ public class SsoTokenBuilder {
         bodyClaimsMap.put(AUTH_TIME.getJoseName(), issuingTime.toEpochSecond());
 
         bodyClaimsMap.putAll(X509ClaimExtraction.extractClaimsFromCertificate(certificate));
-        return jwtProcessor.buildJwt(JwtDescription.builder()
-            .headers(headerClaimsMap)
-            .claims(bodyClaimsMap)
-            .expiresAt(issuingTime.plusMinutes(5))
-            .build());
+        return jwtProcessor.buildJwt(new JwtBuilder()
+            .addAllHeaderClaims(headerClaimsMap)
+            .addAllBodyClaims(bodyClaimsMap)
+            .expiresAt(issuingTime.plusMinutes(5)));
     }
 }

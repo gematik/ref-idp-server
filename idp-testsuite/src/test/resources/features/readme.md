@@ -1,4 +1,4 @@
-# Gematik IDP Zulassungstestsuite
+# Gematik IDP Zulassungstestsuite v6.0.0
 
 Die Gematik IDP Zulassungstestsuite dient zur Pr&uuml;fung externer IDP Dienst Drittanbieter. Sie ist derzeit in
 Entwicklung und noch **NICHT** fertiggestellt. Ziel der Suite ist es sowohl externe IDP Dienste, als auch die Gematik

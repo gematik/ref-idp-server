@@ -56,7 +56,7 @@ public class AuthenticationChallengeVerifierTest {
             .serverIdentity(serverIdentity)
             .build();
         authenticationChallenge = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
 
     }
 
@@ -97,7 +97,7 @@ public class AuthenticationChallengeVerifierTest {
             .authenticationIdentity(otherServerIdentity)
             .build();
         authenticationChallenge = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
 
         final AuthenticationResponse authenticationResponse =
             authenticationResponseBuilder.buildResponseForChallenge(authenticationChallenge,
@@ -111,7 +111,7 @@ public class AuthenticationChallengeVerifierTest {
     @Test
     public void checkSignatureNjwt_invalidChallenge() {
         final AuthenticationChallenge ch = AuthenticationChallenge.builder()
-            .challenge("SicherNichtDerRichtigeChallengeCode")
+            .challenge(new JsonWebToken("SicherNichtDerRichtigeChallengeCode"))
             .build();
         final AuthenticationResponse authenticationResponse =
             authenticationResponseBuilder.buildResponseForChallenge(ch,
@@ -124,12 +124,12 @@ public class AuthenticationChallengeVerifierTest {
     @Test
     public void checkSignatureNjwt_challengeOutdated() {
         authenticationChallenge = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid");
-        final JsonWebToken jsonWebToken = new JsonWebToken(authenticationChallenge.getChallenge());
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
+        final JsonWebToken jsonWebToken = authenticationChallenge.getChallenge();
         final IdpJwtProcessor reSignerProcessor = new IdpJwtProcessor(serverIdentity);
-        final JwtDescription jwtDescription = jsonWebToken.toJwtDescription();
-        jwtDescription.setExpiresAt(ZonedDateTime.now().minusSeconds(1));
-        authenticationChallenge.setChallenge(reSignerProcessor.buildJwt(jwtDescription).getJwtRawString());
+        final JwtBuilder jwtDescription = jsonWebToken.toJwtDescription();
+        jwtDescription.expiresAt(ZonedDateTime.now().minusSeconds(1));
+        authenticationChallenge.setChallenge(reSignerProcessor.buildJwt(jwtDescription));
 
         final AuthenticationResponse authenticationResponse =
             authenticationResponseBuilder.buildResponseForChallenge(authenticationChallenge,

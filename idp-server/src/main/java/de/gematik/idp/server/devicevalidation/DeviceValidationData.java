@@ -14,29 +14,39 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.authentication;
+package de.gematik.idp.server.devicevalidation;
 
-import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import javax.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Entity
+@Table(name = "device_validation", schema = "IDP")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class JwtDescription {
+public class DeviceValidationData {
 
-    @Builder.Default
-    private final Map<String, Object> headers = new HashMap<>();
-    @Builder.Default
-    private final Map<String, Object> claims = new HashMap<>();
-    private ZonedDateTime expiresAt;
-    private String codeChallenge;
-    private String codeChallengeMethod;
-    private boolean includeSignerCertificateInHeader = false;
-
+    @Id
+    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name = "manufacturer")
+    private String manufacturer;
+    @Column(name = "product")
+    private String product;
+    @Column(name = "model")
+    private String model;
+    @Column(name = "os")
+    private String os;
+    @Column(name = "os_version")
+    private String osVersion;
+    @Column(name = "name")
+    private String name;
+    @Column(name = "state")
+    @Enumerated(EnumType.STRING)
+    private DeviceValidationState state;
 }

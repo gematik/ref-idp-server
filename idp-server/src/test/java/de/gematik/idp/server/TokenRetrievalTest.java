@@ -20,7 +20,6 @@ import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifie
 import static de.gematik.idp.client.AuthenticatorClient.getAllHeaderElementsAsMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.authentication.IdpJwtProcessor;
@@ -34,14 +33,15 @@ import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.server.configuration.IdpConfiguration;
+import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.tests.PkiKeyResolver.Filename;
 import de.gematik.idp.tests.Remark;
 import de.gematik.idp.tests.Rfc;
-import de.gematik.idp.token.IdTokenBuilder;
 import de.gematik.idp.token.JsonWebToken;
 import de.gematik.idp.token.TokenClaimExtraction;
+import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -64,7 +64,7 @@ public class TokenRetrievalTest {
     @Autowired
     private IdpConfiguration idpConfiguration;
     @Autowired
-    private ServerUrlService urlService;
+    private IdpKey authKey;
     private IdpClient idpClient;
     private PkiIdentity egkUserIdentity;
     @LocalServerPort
@@ -85,18 +85,6 @@ public class TokenRetrievalTest {
             .certificate(egkIdentity.getCertificate())
             .privateKey(egkIdentity.getPrivateKey())
             .build();
-    }
-
-    @Rfc("OpenID Connect Core 1.0 incorporating errata set 1 - 2 ID Token")
-    @Afo("A_20313")
-    @Test
-    public void verifyIdTokenClaims() throws UnirestException {
-        final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
-        final JsonWebToken idToken = new IdTokenBuilder(new IdpJwtProcessor(egkUserIdentity),
-            urlService.determineServerUrl())
-            .buildIdToken(IdpConstants.CLIENT_ID, tokenResponse.getAccessToken());
-        assertThat(tokenResponse.getIdToken().getBodyClaims())
-            .containsAllEntriesOf(idToken.getBodyClaims());
     }
 
     @Rfc({"OpenID Connect Core 1.0 incorporating errata set 1 - 3.1.3.3.  Successful Token Response",
@@ -384,14 +372,11 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void scopeWithoutErezept_shouldGiveNoAccessToken() throws UnirestException {
+    public void scopeWithoutErezept_shouldGiveServerError() throws UnirestException {
         idpClient.setScopes(Set.of(IdpScope.OPENID));
 
-        final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
-
-        assertThat(tokenResponse.getAccessToken()).isNull();
-        assertThat(tokenResponse.getIdToken()).isNotNull();
-        assertThat(tokenResponse.getSsoToken()).isNotNull();
+        assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
+            .isInstanceOf(IdpClientRuntimeException.class);
     }
 
     @Test
@@ -400,13 +385,12 @@ public class TokenRetrievalTest {
         throws UnirestException {
         final IdpJwtProcessor differentSigner = new IdpJwtProcessor(notTheServerIdentity);
         idpClient.setAuthorizationResponseMapper(response -> {
-            final JsonWebToken originalChallenge = new JsonWebToken(
-                response.getAuthenticationChallenge().getChallenge());
+            final JsonWebToken originalChallenge = response.getAuthenticationChallenge().getChallenge();
             final JsonWebToken resignedChallenge = differentSigner.buildJwt(originalChallenge.toJwtDescription());
             return AuthorizationResponse.builder()
                 .authenticationChallenge(AuthenticationChallenge.builder()
                     .userConsent(response.getAuthenticationChallenge().getUserConsent())
-                    .challenge(resignedChallenge.getJwtRawString())
+                    .challenge(resignedChallenge)
                     .build())
                 .build();
         });
@@ -444,6 +428,45 @@ public class TokenRetrievalTest {
     }
 
     @Test
+    public void requestChallenge_testServerChallengeClaims() throws UnirestException {
+        idpClient.setAfterAuthorizationCallback(response ->
+            assertThat(response.getBody().getChallenge().getBodyClaims())
+                .containsEntry(ClaimName.TOKEN_TYPE.getJoseName(), "challenge"));
+
+        idpClient.login(egkUserIdentity);
+    }
+
+    @Test
+    public void getAuthorizationToken_testBodyClaims() throws UnirestException {
+        idpClient.setAuthenticationResponseMapper(response -> {
+            assertThat(new JsonWebToken(response.getCode()).getBodyClaims())
+                .containsEntry(ClaimName.CLIENT_ID.getJoseName(), IdpConstants.CLIENT_ID)
+                .containsEntry(ClaimName.TOKEN_TYPE.getJoseName(), "code")
+                .containsKeys(ClaimName.SERVER_NONCE.getJoseName(),
+                    ClaimName.NONCE.getJoseName())
+                .doesNotContainKeys(ClaimName.AUTHENTICATION_CLASS_REFERENCE.getJoseName(),
+                    ClaimName.SUBJECT.getJoseName(),
+                    ClaimName.AUDIENCE.getJoseName());
+            return response;
+        });
+
+        idpClient.login(egkUserIdentity);
+    }
+
+    @Test
+    public void requestChallenge_shouldContainOriginalNonce() throws UnirestException {
+        final AtomicReference<String> nonceValue = new AtomicReference();
+        idpClient.setBeforeAuthorizationCallback(
+            getRequest -> nonceValue.set(UriUtils.extractParameterValue(getRequest.getUrl(), "nonce")));
+        idpClient.setAfterAuthorizationCallback(response ->
+            assertThat(response.getBody().getChallenge().getBodyClaim(ClaimName.NONCE))
+                .get().asString()
+                .isEqualTo(nonceValue.get()));
+
+        idpClient.login(egkUserIdentity);
+    }
+
+    @Test
     public void scopeOpenIdAndPairing_shouldGiveAccessToken() throws UnirestException {
         idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
         final IdpTokenResult loginResult = idpClient.login(egkUserIdentity);
@@ -459,6 +482,49 @@ public class TokenRetrievalTest {
 
         assertThat(loginResult.getAccessToken().getScopesBodyClaim())
             .containsExactlyInAnyOrder(IdpScope.OPENID, IdpScope.PAIRING, IdpScope.EREZEPT);
+    }
+
+    @Test
+    public void authentication_expiredChallenge_shouldGiveFoundAndCorrectState() throws UnirestException {
+        final AtomicReference<String> stateReference = new AtomicReference<>();
+
+        idpClient.setAuthorizationResponseMapper(response -> {
+            stateReference
+                .set(response.getAuthenticationChallenge().getChallenge().getStringBodyClaim(ClaimName.STATE).get());
+            return AuthorizationResponse.builder()
+                .authenticationChallenge(AuthenticationChallenge.builder()
+                    .userConsent(response.getAuthenticationChallenge().getUserConsent())
+                    .challenge(response.getAuthenticationChallenge().getChallenge().toJwtDescription()
+                        .expiresAt(ZonedDateTime.now().minusMinutes(1))
+                        .setIdentity(authKey.getIdentity())
+                        .buildJwt())
+                    .build())
+                .build();
+        });
+        idpClient.setAfterAuthenticationCallback(response -> {
+            assertThat(response.getStatus())
+                .isEqualTo(302);
+            assertThat(UriUtils.extractParameterValue(response.getHeaders().getFirst("Location"), "state"))
+                .isEqualTo(stateReference.get());
+        });
+
+        assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
+            .isInstanceOf(IdpClientRuntimeException.class);
+    }
+
+    @Test
+    public void authenticationWithSso_missingParameter_shouldGiveFound() throws UnirestException {
+        final JsonWebToken ssoToken = idpClient.login(egkUserIdentity).getSsoToken();
+        idpClient.setBeforeAuthenticationMapper(request -> Unirest.post(request.getUrl())
+            .multiPartContent().field("sso_token", request.multiParts().stream()
+                .filter(part -> part.getName().equals("sso_token"))
+                .findAny().get().getValue().toString())
+        );
+        idpClient.setAfterAuthenticationCallback(response -> assertThat(response.getStatus())
+            .isEqualTo(302));
+
+        assertThatThrownBy(() -> idpClient.loginWithSsoToken(ssoToken))
+            .isInstanceOf(IdpClientRuntimeException.class);
     }
 
     private JsonWebToken extractAuthenticationTokenFromResponse(final kong.unirest.HttpResponse<String> response,

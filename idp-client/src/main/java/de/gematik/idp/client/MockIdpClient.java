@@ -61,7 +61,7 @@ public class MockIdpClient implements IIdpClient {
     private JsonWebToken buildAccessToken(final PkiIdentity clientIdentity) {
         final AuthenticationChallenge challenge = authenticationChallengeBuilder
             .buildAuthenticationChallenge(clientId, "placeholderValue", "foo", "foo",
-                IdpScope.EREZEPT.getJwtValue() + " " + IdpScope.OPENID.getJwtValue());
+                IdpScope.EREZEPT.getJwtValue() + " " + IdpScope.OPENID.getJwtValue(), "nonceValue");
         final AuthenticationResponse authenticationResponse = authenticationResponseBuilder
             .buildResponseForChallenge(challenge, clientIdentity);
         final JsonWebToken authenticationToken = authenticationTokenBuilder
@@ -91,11 +91,10 @@ public class MockIdpClient implements IIdpClient {
         final Map<String, Object> bodyClaims,
         final ZonedDateTime expiresAt) {
         Objects.requireNonNull(jwtProcessor, "jwtProcessor is null. Did you call initialize()?");
-        return jwtProcessor.buildJwt(JwtDescription.builder()
-            .claims(bodyClaims)
-            .headers(headerClaims)
-            .expiresAt(expiresAt)
-            .build());
+        return jwtProcessor.buildJwt(new JwtBuilder()
+            .addAllBodyClaims(bodyClaims)
+            .addAllHeaderClaims(headerClaims)
+            .expiresAt(expiresAt));
     }
 
     @Override

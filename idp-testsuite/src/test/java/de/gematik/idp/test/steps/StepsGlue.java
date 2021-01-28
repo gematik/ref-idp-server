@@ -18,14 +18,9 @@ package de.gematik.idp.test.steps;
 
 import de.gematik.idp.test.steps.helpers.JsonChecker;
 import de.gematik.idp.test.steps.helpers.SerenityJSONObject;
-import de.gematik.idp.test.steps.model.ClaimLocation;
-import de.gematik.idp.test.steps.model.CodeAuthType;
-import de.gematik.idp.test.steps.model.Context;
-import de.gematik.idp.test.steps.model.ContextKey;
-import de.gematik.idp.test.steps.model.DateCompareMode;
-import de.gematik.idp.test.steps.model.HttpMethods;
-import de.gematik.idp.test.steps.model.HttpStatus;
+import de.gematik.idp.test.steps.model.*;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.ParameterType;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -37,6 +32,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.time.Duration;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.thucydides.core.annotations.Steps;
 import org.jose4j.jwt.consumer.InvalidJwtException;
@@ -72,8 +68,7 @@ public class StepsGlue {
     // =================================================================================================================
 
     @Given("I request the discovery document")
-    public void iRequestTheInternalDiscoveryDocument()
-        throws IOException, URISyntaxException, JSONException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
+    public void iRequestTheInternalDiscoveryDocument() {
         disc.iRequestTheInternalDiscoveryDocument(HttpStatus.NOCHECK);
     }
 
@@ -101,7 +96,7 @@ public class StepsGlue {
     }
 
     @When("I request a challenge with")
-    public void iRequestAChallengeWith(final DataTable params) throws JSONException, URISyntaxException, IOException {
+    public void iRequestAChallengeWith(final DataTable params) throws JSONException, IOException {
         auth.getChallenge(params, HttpStatus.NOCHECK);
     }
 
@@ -129,12 +124,12 @@ public class StepsGlue {
     // =================================================================================================================
 
     @And("I request an access token with")
-    public void iRequestAnAccessTokenWith(final DataTable params) throws URISyntaxException, JSONException {
+    public void iRequestAnAccessTokenWith(final DataTable params) throws JSONException {
         access.getToken(HttpStatus.NOCHECK, params);
     }
 
     @And("I request an access token")
-    public void iRequestAnAccessToken() throws URISyntaxException, JSONException {
+    public void iRequestAnAccessToken() throws JSONException {
         access.getToken(HttpStatus.NOCHECK, null);
     }
 
@@ -157,7 +152,7 @@ public class StepsGlue {
 
     @Given("I request the uri from claim {string} with method {HttpMethods} and status {HttpStatus}")
     public void iRequestTheUri(final String claimName, final HttpMethods method, final HttpStatus result)
-        throws JSONException, URISyntaxException {
+        throws JSONException {
         disc.iRequestTheUriFromClaim(claimName, method, result);
     }
 
@@ -193,7 +188,7 @@ public class StepsGlue {
 
     @Then("URI in claim {string} exists with method {HttpMethods} and status {HttpStatus}")
     public void uriInClaimExistsWithMethod(final String claimName, final HttpMethods method, final HttpStatus status)
-        throws JSONException, URISyntaxException {
+        throws JSONException {
         disc.assertUriInClaimExistsWithMethodAndStatus(claimName, method, status);
     }
 
@@ -205,7 +200,8 @@ public class StepsGlue {
     @Then("the JSON response should match")
     public void theJSONResponseShouldMatch(final String toMatchJSON) throws JSONException {
         final JSONObject json = new JSONObject(Context.getCurrentResponse().getBody().asString());
-        jsoncheck.assertJsonShouldMatchInAnyOrder(new SerenityJSONObject(json), new SerenityJSONObject(toMatchJSON));
+        jsoncheck
+            .assertJsonShouldMatchInAnyOrder(new SerenityJSONObject(json), new SerenityJSONObject(toMatchJSON));
     }
 
     @Then("JSON response has exactly one node {string} at {string}")
@@ -222,7 +218,8 @@ public class StepsGlue {
         } else {
             json = (JSONObject) Context.getThreadContext().get(ContextKey.HEADER_CLAIMS);
         }
-        jsoncheck.assertJsonShouldMatchInAnyOrder(new SerenityJSONObject(json), new SerenityJSONObject(toMatchJSON));
+        jsoncheck
+            .assertJsonShouldMatchInAnyOrder(new SerenityJSONObject(json), new SerenityJSONObject(toMatchJSON));
     }
 
     @When("I start new interaction keeping only {ContextKey}")
@@ -257,5 +254,82 @@ public class StepsGlue {
     public void iExtractTheClaimsFromToken(final ClaimLocation cType, final ContextKey token)
         throws JoseException, InvalidJwtException, JSONException {
         author.extractClaimsFromToken(cType, token);
+    }
+
+    @And("the JSON response should be a valid certificate")
+    @SneakyThrows
+    public void theJSONResponseShouldBeAValidCertificate() {
+        disc.jsonObjectShouldBeValidCertificate(new JSONObject(Context.getCurrentResponse().getBody().asString()));
+    }
+
+    @And("the JSON array {string} of response should contain valid certificates")
+    @SneakyThrows
+    public void theJSONArrayOfResponseShouldContainValidCertificates(final String path) {
+        disc.jsonArrayPathShouldContainValidCertificates(path);
+    }
+
+    @Then("the response is an 302 error with code {string} and message matching {string}")
+    public void theResponseIsAnErrorWithMessageMatching(final String errcode, final String regex) {
+        author.responseIs302ErrorWithMessageMatching(errcode, regex);
+    }
+
+    // =================================================================================================================
+    //
+    // C U S T O M P A R A M E T E R T Y P E S
+    //
+    // =================================================================================================================
+
+
+    @ParameterType("failed state|successfully|unsuccessfully|[1-5][0-9]{2}")
+    public HttpStatus HttpStatus(final String httpStatusStr) {
+        return new HttpStatus(httpStatusStr);
+    }
+
+    @ParameterType("P[-\\d\\.DTHMS]*")
+    public Duration Duration(final String durationStr) {
+        return Duration.parse(durationStr);
+    }
+
+    <E extends Enum> io.cucumber.cucumberexpressions.ParameterType<E> fromEnum(final Class<E> enumClass) {
+        final Enum[] enumConstants = enumClass.getEnumConstants();
+        final StringBuilder regexpBuilder = new StringBuilder();
+        for (int i = 0; i < enumConstants.length; i++) {
+            if (i > 0) {
+                regexpBuilder.append("|");
+            }
+            regexpBuilder.append(enumConstants[i].name());
+        }
+        return new io.cucumber.cucumberexpressions.ParameterType<>(
+            enumClass.getSimpleName(),
+            regexpBuilder.toString(),
+            enumClass,
+            (String arg) -> (E) Enum.valueOf(enumClass, arg)
+        );
+    }
+
+
+    @ParameterType("(body|header)")
+    public ClaimLocation ClaimLocation(final String claimLocationStr) {
+        return ClaimLocation.valueOf(claimLocationStr);
+    }
+
+    @ParameterType(".*")
+    public DateCompareMode DateCompareMode(final String dateCompareModeStr) {
+        return DateCompareMode.valueOf(dateCompareModeStr);
+    }
+
+    @ParameterType(".*")
+    public ContextKey ContextKey(final String contextKeyStr) {
+        return ContextKey.valueOf(contextKeyStr);
+    }
+
+    @ParameterType(".*")
+    public CodeAuthType CodeAuthType(final String codeAuthTypeStr) {
+        return CodeAuthType.valueOf(codeAuthTypeStr);
+    }
+
+    @ParameterType(".*")
+    public HttpMethods HttpMethods(final String httpMethodsStr) {
+        return HttpMethods.valueOf(httpMethodsStr);
     }
 }

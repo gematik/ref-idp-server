@@ -18,13 +18,14 @@ package de.gematik.idp.server.services;
 
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
 
-import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.server.configuration.IdpConfiguration;
+import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.exceptions.IdpServerException;
 import de.gematik.idp.server.exceptions.oauth2spec.IdpServerInvalidRequestException;
+import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
 import de.gematik.idp.token.SsoTokenBuilder;
 import de.gematik.idp.token.TokenClaimExtraction;
@@ -45,22 +46,35 @@ public class IdpAuthenticator {
 
     private final SsoTokenBuilder ssoTokenBuilder;
     private final SsoTokenValidator ssoTokenValidator;
-    private final AuthenticationChallengeVerifier authenticationChallengeVerifier;
     private final AuthenticationTokenBuilder authenticationTokenBuilder;
     private final IdpConfiguration idpConfiguration;
+    private final IdpKey authKey;
+    private final SignatureValidationService signatureValidationService;
 
-    public String getTokenLocation(final JsonWebToken signedChallenge, final JsonWebToken ssoToken,
-        final JsonWebToken challengeToken, final String serverUrl) {
+    public String getBasicFlowTokenLocation(final IdpJwe signedChallenge, final String serverUrl) {
         try {
             final URIBuilder locationBuilder = new URIBuilder(serverUrl + TOKEN_ENDPOINT);
-            if (ssoToken != null) {
-                buildSsoTokenLocation(ssoToken, challengeToken, locationBuilder);
-            } else if (signedChallenge != null) {
-                buildBasicFlowTokenLocation(signedChallenge, locationBuilder);
-            } else {
-                throw new IdpServerException("Expected either sso_token or signed_challenge to be present",
-                    IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
-            }
+            buildBasicFlowTokenLocation(decryptChallenge(signedChallenge), locationBuilder);
+            return locationBuilder.build().toString();
+        } catch (final URISyntaxException e) {
+            throw new IdpServerException("Error while building the token-location URL", e,
+                IdpErrorType.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private JsonWebToken decryptChallenge(final IdpJwe signedChallenge) {
+        try {
+            return signedChallenge.decrypt(authKey.getIdentity().getPrivateKey());
+        } catch (final RuntimeException e) {
+            throw new IdpServerInvalidRequestException("Error during challenge decryption", e);
+        }
+    }
+
+    public String getSsoTokenLocation(final JsonWebToken ssoToken, final JsonWebToken challengeToken,
+        final String serverUrl) {
+        try {
+            final URIBuilder locationBuilder = new URIBuilder(serverUrl + TOKEN_ENDPOINT);
+            buildSsoTokenLocation(ssoToken, challengeToken, locationBuilder);
             return locationBuilder.build().toString();
         } catch (final URISyntaxException e) {
             throw new IdpServerException("Error while building the token-location URL", e,
@@ -77,11 +91,11 @@ public class IdpAuthenticator {
             .orElseThrow(() -> new IdpServerInvalidRequestException(
                 "Expected signed_challenge to contain String-Claim 'njwt'."));
 
-        authenticationChallengeVerifier.verifyResponseAndThrowExceptionIfFail(signedChallenge);
+        signatureValidationService.validateSignature(signedChallenge);
 
-        final X509Certificate nestedX509ClientCertificate = TokenClaimExtraction
-            .extractX509ClientCertificate(signedChallenge)
-            .orElseThrow(() -> new IdpServerException("No Certificate given in header of Signed-Challenge!"));
+        final X509Certificate nestedX509ClientCertificate =
+            signedChallenge.getClientCertificateFromHeader()
+                .orElseThrow(() -> new IdpServerException("No Certificate given in header of Signed-Challenge!"));
 
         final ZonedDateTime authTime = ZonedDateTime.now();
 
@@ -100,12 +114,13 @@ public class IdpAuthenticator {
                     new IdpServerException(IdpErrorType.STATE_MISSING_IN_NESTED_CHALLENGE, HttpStatus.BAD_REQUEST)));
     }
 
+
     private void buildSsoTokenLocation(final JsonWebToken ssoToken, final JsonWebToken challengeToken,
         final URIBuilder locationBuilder) {
         ssoTokenValidator.validateSsoToken(ssoToken);
         if (challengeToken == null) {
             throw new IdpServerInvalidRequestException(
-                "For the use of the SSO-Flow the challenge_token parameter is required");
+                "For the use of the SSO-Flow the challengeToken parameter is required");
         }
 
         locationBuilder.addParameter("code", authenticationTokenBuilder

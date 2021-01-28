@@ -18,11 +18,21 @@ package de.gematik.idp.token;
 
 import static de.gematik.idp.field.ClaimName.*;
 
-import de.gematik.idp.authentication.JwtDescription;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.field.IdpScope;
+import java.io.IOException;
+import java.security.Key;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
@@ -36,14 +46,20 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
+import org.jose4j.jwe.ContentEncryptionAlgorithmIdentifiers;
+import org.jose4j.jwe.JsonWebEncryption;
+import org.jose4j.jwe.KeyManagementAlgorithmIdentifiers;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
+import org.jose4j.lang.JoseException;
 
 @Builder
 @Getter
 @AllArgsConstructor
 @RequiredArgsConstructor
+@JsonSerialize(using = JsonWebToken.Serializer.class)
+@JsonDeserialize(using = JsonWebToken.Deserializer.class)
 public class JsonWebToken {
 
     private final String jwtRawString;
@@ -59,7 +75,7 @@ public class JsonWebToken {
         try {
             jwtConsumer.process(jwtRawString);
         } catch (final InvalidJwtException e) {
-            throw new IdpJoseException(e);
+            throw new IdpJoseException("Invalid JWT encountered", e);
         }
     }
 
@@ -125,6 +141,14 @@ public class JsonWebToken {
             .map(String.class::cast);
     }
 
+    public Optional<ZonedDateTime> getBodyDateTimeClaim(final ClaimName claimName) {
+        return getDateTimeClaim(claimName, this::getBodyClaims);
+    }
+
+    public Optional<ZonedDateTime> getHeaderDateTimeClaim(final ClaimName claimName) {
+        return getDateTimeClaim(claimName, this::getHeaderClaims);
+    }
+
     public Optional<ZonedDateTime> getDateTimeClaim(final ClaimName claimName,
         final Supplier<Map<String, Object>> claims) {
         return Optional
@@ -164,15 +188,14 @@ public class JsonWebToken {
             .filter(Objects::nonNull);
     }
 
-    public JwtDescription toJwtDescription() {
-        return JwtDescription.builder()
-            .claims(getBodyClaims())
-            .headers(getHeaderClaims())
-            .build();
+    public JwtBuilder toJwtDescription() {
+        return new JwtBuilder()
+            .addAllBodyClaims(getBodyClaims())
+            .addAllHeaderClaims(getHeaderClaims());
     }
 
     public Optional<X509Certificate> getClientCertificateFromHeader() {
-        return Optional.ofNullable(getHeaderClaims().get(X509_Certificate_Chain.getJoseName()))
+        return Optional.ofNullable(getHeaderClaims().get(X509_CERTIFICATE_CHAIN.getJoseName()))
             .filter(List.class::isInstance)
             .map(List.class::cast)
             .filter(list -> !list.isEmpty())
@@ -180,5 +203,41 @@ public class JsonWebToken {
             .map(Object::toString)
             .map(java.util.Base64.getDecoder()::decode)
             .map(CryptoLoader::getCertificateFromPem);
+    }
+
+    public IdpJwe encrypt(final Key key) {
+        final JsonWebEncryption senderJwe = new JsonWebEncryption();
+
+        senderJwe.setPlaintext(jwtRawString);
+        if (key instanceof PublicKey) {
+            senderJwe.setAlgorithmHeaderValue(KeyManagementAlgorithmIdentifiers.ECDH_ES_A256KW);
+        } else {
+            senderJwe.setAlgorithmHeaderValue(KeyManagementAlgorithmIdentifiers.DIRECT);
+        }
+        senderJwe.setEncryptionMethodHeaderParameter(ContentEncryptionAlgorithmIdentifiers.AES_128_CBC_HMAC_SHA_256);
+        senderJwe.setKey(key);
+
+        try {
+            return new IdpJwe(senderJwe.getCompactSerialization());
+        } catch (final JoseException e) {
+            throw new IdpJoseException("Error during token encryption", e);
+        }
+    }
+
+    public static class Serializer extends JsonSerializer<JsonWebToken> {
+
+        @Override
+        public void serialize(final JsonWebToken value, final JsonGenerator gen, final SerializerProvider serializers)
+            throws IOException {
+            gen.writeString(value.getJwtRawString());
+        }
+    }
+
+    public static class Deserializer extends JsonDeserializer<JsonWebToken> {
+
+        @Override
+        public JsonWebToken deserialize(final JsonParser p, final DeserializationContext ctxt) throws IOException {
+            return new JsonWebToken(ctxt.readValue(p, String.class));
+        }
     }
 }

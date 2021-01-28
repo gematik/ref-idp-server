@@ -1,3 +1,6 @@
+# Release 6.0.0
+RELEASE 6.0.0
+
 # Release 5.1.0
 RELEASE 5.1.0 Zulassungstest Version 1.1.0
 

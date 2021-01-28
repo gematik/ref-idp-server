@@ -22,10 +22,12 @@ import static de.gematik.idp.field.ClaimName.REDIRECT_URI;
 import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.server.data.TokenResponse;
 import de.gematik.idp.server.exceptions.oauth2spec.IdpServerInvalidRedirectUriException;
+import de.gematik.idp.server.exceptions.oauth2spec.IdpServerInvalidRequestException;
 import de.gematik.idp.token.AccessTokenBuilder;
 import de.gematik.idp.token.IdTokenBuilder;
 import de.gematik.idp.token.JsonWebToken;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -39,7 +41,9 @@ public class TokenService {
 
     public TokenResponse getTokenResponse(final JsonWebToken authenticationToken, final String codeVerifier,
         final String redirectUri, final String clientId) {
-        final String codeChallenge = (String) authenticationToken.getBodyClaims().get(CODE_CHALLENGE.getJoseName());
+        final String codeChallenge = (String) authenticationToken.getBodyClaim(CODE_CHALLENGE)
+            .orElseThrow(() -> new IdpServerInvalidRequestException(
+                "Authentication_Token without " + CODE_CHALLENGE.getJoseName() + " found!"));
         pkceChecker.checkCodeVerifier(codeVerifier, codeChallenge);
         authenticationTokenValidator.validateAuthenticationToken(authenticationToken);
 
@@ -49,11 +53,13 @@ public class TokenService {
             throw new IdpServerInvalidRedirectUriException("Expected redirect_uri to match the original value");
         }
 
+        final String accessToken = getAccessToken(authenticationToken);
         return TokenResponse.builder()
             .tokenType("Bearer")
             .expiresIn(300)
-            .accessToken(getAccessToken(authenticationToken))
-            .idToken(idTokenBuilder.buildIdToken(clientId, authenticationToken).getJwtRawString())
+            .accessToken(accessToken)
+            .idToken(idTokenBuilder.buildIdToken(clientId, authenticationToken, DigestUtils.sha256(accessToken))
+                .getJwtRawString())
             .build();
     }
 

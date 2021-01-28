@@ -16,6 +16,8 @@
 
 package de.gematik.idp.client.data;
 
+import de.gematik.idp.token.IdpJwe;
+import de.gematik.idp.token.JsonWebToken;
 import lombok.Builder;
 import lombok.Data;
 
@@ -24,8 +26,8 @@ import lombok.Data;
 public class AuthenticationRequest {
 
     private final String authenticationEndpointUrl;
-    private final String signedChallenge;
+    private final IdpJwe signedChallenge;
     private final String ssoToken;
-    private final String challengeToken;
+    private final JsonWebToken challengeToken;
 }
 

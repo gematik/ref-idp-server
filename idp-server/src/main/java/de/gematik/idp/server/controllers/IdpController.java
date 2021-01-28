@@ -16,7 +16,8 @@
 
 package de.gematik.idp.server.controllers;
 
-import static de.gematik.idp.IdpConstants.AUTHORIZATION_ENDPOINT;
+import static de.gematik.idp.IdpConstants.BASIC_AUTHORIZATION_ENDPOINT;
+import static de.gematik.idp.IdpConstants.SSO_AUTHORIZATION_ENDPOINT;
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
 
 import de.gematik.idp.authentication.AuthenticationChallenge;
@@ -30,6 +31,7 @@ import de.gematik.idp.server.validation.clientSystem.ValidateClientSystem;
 import de.gematik.idp.server.validation.parameterConstraints.CheckClientId;
 import de.gematik.idp.server.validation.parameterConstraints.CheckCodeChallengeMethod;
 import de.gematik.idp.server.validation.parameterConstraints.CheckScope;
+import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -63,7 +65,7 @@ public class IdpController {
     private final IdpAuthenticator idpAuthenticator;
     private final TokenService tokenService;
 
-    @GetMapping(AUTHORIZATION_ENDPOINT)
+    @GetMapping(BASIC_AUTHORIZATION_ENDPOINT)
     @ApiOperation(httpMethod = "GET", value = "Endpunkt für Authentifizierung", notes = "Die übergebenen Parameter"
         + " werden zu einer Liste von JWTClaims zusammengefasst und daraus dann die zurückgelieferte "
         + "AuthenticationChallenge gebaut.", response = AuthenticationChallenge.class)
@@ -79,46 +81,59 @@ public class IdpController {
         @RequestParam(name = "client_id") @CheckClientId @ApiParam(value = "Identifier für den zugreifenden Client") final String clientId,
         @RequestParam(name = "state") @ApiParam(value = "Eine Sicherheitsmaßnahme gegen CSRF-Angriffe") final String state,
         @RequestParam(name = "redirect_uri") @ApiParam(value = "TODO redirect_uri") final String redirectUri,
+        @RequestParam(name = "nonce", required = false) @ApiParam(value = "TODO nonce") final String nonce,
+        @RequestParam(name = "response_type") @NotEmpty @Pattern(regexp = "code", message = "Expected response_type to be 'code'") @ApiParam(value = "response_type, muss 'code' sein") final String responseType,
         @RequestParam(name = "code_challenge") @Pattern(regexp = SHA256_AS_BASE64_REGEX, message = "invalid code_challenge") @ApiParam(value = "Authentifizierungscode") final String codeChallenge,
         @RequestParam(name = "code_challenge_method") @CheckCodeChallengeMethod @ApiParam(value = "Hash Methode für die Code challenge, derzeit wird nur 'S256' unterstützt") final CodeChallengeMethod codeChallengeMethod,
         @RequestParam(name = "scope") @CheckScope @ApiParam(value = "Scope der Anfrage, derzeit werden 'openid e-rezept', 'openid', 'openid pairing' und 'openid e-rezept pairing' unterstützt") final String scope,
         final HttpServletResponse response) {
         idpAuthenticator.validateRedirectUri(redirectUri);
-        // TODO NONCE parameter missing
         setNoCacheHeader(response);
         return authenticationChallengeBuilder
-            .buildAuthenticationChallenge(clientId, state, redirectUri, codeChallenge, scope);
+            .buildAuthenticationChallenge(clientId, state, redirectUri, codeChallenge, scope, nonce);
     }
 
-    @PostMapping(AUTHORIZATION_ENDPOINT)
-    @ApiOperation(httpMethod = "POST", value = "Endpunkt für Authorisierung", notes =
-        "Der Endpunkt kann 2 Parameter entgegennehmen, wird aber nur einen Parameter verarbeiten."
-            + "\nWird ein SSO-Token übergeben, so wird aus diesem der Code für die Tokenabfrage generiert. "
-            + "Der Code wird dann als Query parameter mit der URL zum Token Endpunkt zurückgeliefert."
-            + "\nWird kein SSO-Token und nur eine signierte Challenge an den Endpunkt übergeben, wird diese validiert, "
+    @PostMapping(BASIC_AUTHORIZATION_ENDPOINT)
+    @ApiOperation(httpMethod = "POST", value = "Endpunkt für Basis-Authorisierung", notes =
+        "Wird eine signierte Challenge an den Endpunkt übergeben, wird diese validiert, "
             + "das Client-Zertifikat extrahiert und daraus der Code für die Tokenabfrage und ein SSO Token generiert. "
             + "Der Code und der SsoToken werden dann zusammen als Query parameter mit der URL zum Token Endpunkt "
-            + "zurückgeliefert."
-            + "\nWird kein Parameter an den Endpunkt übergeben, wird eine Exception "
-            + "und der HttpStatusCode 400 zurückgegeben")
+            + "zurückgeliefert.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "302", description = "Erfolgreich Daten für Token-Abfrage erhalten"),
-        @ApiResponse(responseCode = "401", description = "Nicht autorisierter Zugriff"),
-        @ApiResponse(responseCode = "403", description = "Nicht erlaubter Zugriff"),
-        @ApiResponse(responseCode = "404", description = "Nicht gefunden - Methodenaufruf nicht korrekt")
+        @ApiResponse(responseCode = "302", description = "Erfolgreich Daten für Token-Abfrage erhalten")
     })
     @ValidateClientSystem
     public void validateChallengeAndGetTokenCode(
-        @RequestParam(value = "signed_challenge", required = false) @ApiParam(value = "Signierte Challenge") final JsonWebToken signedChallenge,
-        @RequestParam(value = "sso_token", required = false) @ApiParam(value = "Single Sign-On Token") final JsonWebToken ssoToken,
-        @RequestParam(value = "challenge_token", required = false) @ApiParam(value = "Originale Server-Challenge. Benötigt für den SSO-Flow") final JsonWebToken challengeToken,
+        @RequestParam(value = "signed_challenge", required = false) @NotNull @ApiParam(value = "Signierte Challenge") final IdpJwe signedChallenge,
         final HttpServletResponse response,
         final HttpServletRequest request) {
         setNoCacheHeader(response);
         response.setStatus(HttpStatus.FOUND.value());
 
-        final String tokenLocation = idpAuthenticator.getTokenLocation(
+        final String tokenLocation = idpAuthenticator.getBasicFlowTokenLocation(
             signedChallenge,
+            serverUrlService.determineServerUrl(request));
+
+        response.setHeader(HttpHeaders.LOCATION, tokenLocation);
+    }
+
+    @PostMapping(SSO_AUTHORIZATION_ENDPOINT)
+    @ApiOperation(httpMethod = "POST", value = "Endpunkt für SSO-Authorisierung", notes =
+        "Wird ein SSO-Token übergeben, so wird aus diesem der Code für die Tokenabfrage generiert. "
+            + "Der Code wird dann als Query parameter mit der URL zum Token Endpunkt zurückgeliefert.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "302", description = "Erfolgreich Daten für Token-Abfrage erhalten")
+    })
+    @ValidateClientSystem
+    public void validateSsoTokenAndGetTokenCode(
+        @RequestParam(value = "sso_token", required = false) @NotNull @ApiParam(value = "Single Sign-On Token") final JsonWebToken ssoToken,
+        @RequestParam(value = "unsigned_challenge", required = false) @NotNull @ApiParam(value = "Originale Server-Challenge. Benötigt für den SSO-Flow") final JsonWebToken challengeToken,
+        final HttpServletResponse response,
+        final HttpServletRequest request) {
+        setNoCacheHeader(response);
+        response.setStatus(HttpStatus.FOUND.value());
+
+        final String tokenLocation = idpAuthenticator.getSsoTokenLocation(
             ssoToken,
             challengeToken,
             serverUrlService.determineServerUrl(request));

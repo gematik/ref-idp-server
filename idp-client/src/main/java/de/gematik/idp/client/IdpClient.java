@@ -16,6 +16,7 @@
 
 package de.gematik.idp.client;
 
+import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.authentication.AuthenticationResponseBuilder;
 import de.gematik.idp.authentication.UriUtils;
@@ -23,6 +24,7 @@ import de.gematik.idp.client.data.*;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.field.CodeChallengeMethod;
 import de.gematik.idp.field.IdpScope;
+import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
 import java.util.Objects;
 import java.util.Set;
@@ -85,6 +87,7 @@ public class IdpClient implements IIdpClient {
         assertThatClientIsInitialized();
 
         final String codeVerifier = ClientUtilities.generateCodeVerifier();
+        final String nonce = RandomStringUtils.randomAlphanumeric(20);
 
         // Authorization
         final String state = RandomStringUtils.randomAlphanumeric(20);
@@ -100,6 +103,7 @@ public class IdpClient implements IIdpClient {
                         .redirectUri(redirectUrl)
                         .state(state)
                         .scopes(scopes)
+                        .nonce(nonce)
                         .build(),
                     beforeAuthorizationMapper,
                     afterAuthorizationCallback));
@@ -144,6 +148,7 @@ public class IdpClient implements IIdpClient {
         assertThatClientIsInitialized();
 
         final String codeVerifier = ClientUtilities.generateCodeVerifier();
+        final String nonce = RandomStringUtils.randomAlphanumeric(20);
 
         // Authorization
         final String state = RandomStringUtils.randomAlphanumeric(20);
@@ -159,17 +164,19 @@ public class IdpClient implements IIdpClient {
                         .redirectUri(redirectUrl)
                         .state(state)
                         .scopes(scopes)
+                        .nonce(nonce)
                         .build(),
                     beforeAuthorizationMapper,
                     afterAuthorizationCallback));
 
         // Authentication
-        LOGGER.debug("Performing Sso-Authentication with remote-URL '{}'",
-            discoveryDocumentResponse.getAuthorizationEndpoint());
+        final String ssoChallengeEndpoint = discoveryDocumentResponse.getAuthorizationEndpoint().replace(
+            IdpConstants.BASIC_AUTHORIZATION_ENDPOINT, IdpConstants.SSO_AUTHORIZATION_ENDPOINT);
+        LOGGER.debug("Performing Sso-Authentication with remote-URL '{}'", ssoChallengeEndpoint);
         final AuthenticationResponse authenticationResponse = authenticationResponseMapper.apply(
             authenticatorClient
                 .performAuthenticationWithSsoToken(AuthenticationRequest.builder()
-                        .authenticationEndpointUrl(discoveryDocumentResponse.getAuthorizationEndpoint())
+                        .authenticationEndpointUrl(ssoChallengeEndpoint)
                         .ssoToken(ssoToken.getJwtRawString())
                         .challengeToken(authorizationResponse.getAuthenticationChallenge().getChallenge())
                         .build(),
@@ -203,13 +210,13 @@ public class IdpClient implements IIdpClient {
         Objects.requireNonNull(idpIdentity.getPrivateKey());
     }
 
-    private String signChallenge(
+    private IdpJwe signChallenge(
         final AuthenticationChallenge authenticationChallenge,
         final PkiIdentity idpIdentity) {
         return AuthenticationResponseBuilder.builder().build()
             .buildResponseForChallenge(authenticationChallenge, idpIdentity)
             .getSignedChallenge()
-            .getJwtRawString();
+            .encrypt(discoveryDocumentResponse.getServerTokenCertificate().getPublicKey());
     }
 
     private void assertThatClientIsInitialized() {

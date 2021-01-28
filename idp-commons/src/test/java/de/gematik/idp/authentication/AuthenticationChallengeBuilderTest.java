@@ -16,18 +16,7 @@
 
 package de.gematik.idp.authentication;
 
-import static de.gematik.idp.field.ClaimName.CODE_CHALLENGE_METHOD;
-import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
-import static de.gematik.idp.field.ClaimName.FAMILY_NAME;
-import static de.gematik.idp.field.ClaimName.GIVEN_NAME;
-import static de.gematik.idp.field.ClaimName.ID_NUMBER;
-import static de.gematik.idp.field.ClaimName.ISSUED_AT;
-import static de.gematik.idp.field.ClaimName.JWT_ID;
-import static de.gematik.idp.field.ClaimName.NONCE;
-import static de.gematik.idp.field.ClaimName.NOT_BEFORE;
-import static de.gematik.idp.field.ClaimName.ORGANIZATION_NAME;
-import static de.gematik.idp.field.ClaimName.PROFESSION_OID;
-import static de.gematik.idp.field.ClaimName.TYPE;
+import static de.gematik.idp.field.ClaimName.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import de.gematik.idp.crypto.model.PkiIdentity;
@@ -35,14 +24,10 @@ import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.tests.Remark;
 import de.gematik.idp.tests.Rfc;
-import de.gematik.idp.token.TokenClaimExtraction;
 import java.time.ZonedDateTime;
-import java.util.Map;
-import org.bouncycastle.util.encoders.Base64;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
-import org.jose4j.jwt.consumer.JwtContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,24 +37,18 @@ public class AuthenticationChallengeBuilderTest {
 
     private static final long CHALLENGE_TOKEN_VALIDITY_IN_MINUTES = 5;
     private AuthenticationChallengeBuilder authenticationChallengeBuilder;
-    private JwtConsumer jwtConsumer;
 
     @BeforeEach
     public void init(@PkiKeyResolver.Filename("rsa") final PkiIdentity serverIdentity) {
         authenticationChallengeBuilder = AuthenticationChallengeBuilder.builder()
             .authenticationIdentity(serverIdentity)
             .build();
-
-        jwtConsumer = new JwtConsumerBuilder()
-            .setVerificationKey(serverIdentity.getCertificate().getPublicKey())
-            .setSkipDefaultAudienceValidation()
-            .build();
     }
 
     @Test
     public void authenticationChallengeTest() {
         assertThat(authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid"))
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue"))
             .isNotNull();
     }
 
@@ -77,51 +56,46 @@ public class AuthenticationChallengeBuilderTest {
     public void challengeAttributeIsJwtAndSignedByCertificate(
         @PkiKeyResolver.Filename("rsa") final PkiIdentity serverIdentity) throws InvalidJwtException {
         final AuthenticationChallenge response = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
 
         final JwtConsumer jwtConsumer = new JwtConsumerBuilder()
             .setVerificationKey(serverIdentity.getCertificate().getPublicKey())
             .setSkipDefaultAudienceValidation()
             .build();
 
-        jwtConsumer.process(response.getChallenge());
+        jwtConsumer.process(response.getChallenge().getJwtRawString());
         assertThat(response.getChallenge())
             .isNotNull();
     }
 
     @Test
-    public void challengeWithClaims() throws InvalidJwtException {
+    public void challengeWithClaims() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
 
-        final JwtContext jwtContext = jwtConsumer.process(response.getChallenge());
-        assertThat(jwtContext.getJwtClaims().getClaimNames())
-            .contains(CODE_CHALLENGE_METHOD.getJoseName());
-        assertThat(jwtContext.getJwtClaims().getClaimValue(CODE_CHALLENGE_METHOD.getJoseName()))
-            .isEqualTo("S256");
-    }
-
-    @Test
-    @Remark("Ticket IDP-93: Server Nonce 256 bits == 32 bytes")
-    public void challengeHeaderClaimItemSnc() {
-        final int SNC_NONCE_BYTE_AMOUNT = 32;
-        final AuthenticationChallenge response = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid");
-
-        final Map<String, Object> headerClaims = TokenClaimExtraction
-            .extractClaimsFromTokenHeader(response.getChallenge());
-        final String snc = headerClaims.get(NONCE.getJoseName()).toString();
-        assertThat(Base64.decode(snc)).hasSize(SNC_NONCE_BYTE_AMOUNT);
+        assertThat(response.getChallenge().getBodyClaims())
+            .containsEntry(CODE_CHALLENGE_METHOD.getJoseName(), "S256");
     }
 
     @Test
     @Remark("Ticket IDP-93: typ == JWT")
     public void challengeHeaderClaimItemTyp() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
 
-        assertThat(TokenClaimExtraction.extractClaimsFromTokenHeader(response.getChallenge()))
-            .hasFieldOrPropertyWithValue(TYPE.getJoseName(), "JWT");
+        assertThat(response.getChallenge().getHeaderClaims())
+            .containsEntry(TYPE.getJoseName(), "JWT");
+    }
+
+    @Test
+    @Remark("Ticket IDP-93: typ == JWT")
+    public void challengeBodyTokenType() {
+        final AuthenticationChallenge response = authenticationChallengeBuilder
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
+
+        assertThat(response.getChallenge().getBodyClaim(TOKEN_TYPE))
+            .get().asString()
+            .isEqualTo("challenge");
     }
 
     @Test
@@ -129,12 +103,9 @@ public class AuthenticationChallengeBuilderTest {
     @Rfc("7519 4.1.4.  \"exp\" (Expiration Time) Claim")
     public void challengeBodyClaimItemExp() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
 
-        final Map<String, Object> bodyClaims = TokenClaimExtraction
-            .extractClaimsFromTokenBody(response.getChallenge());
-
-        assertThat(TokenClaimExtraction.claimToDateTime(bodyClaims.get(EXPIRES_AT.getJoseName())))
+        assertThat(response.getChallenge().getExpiresAt())
             .isBetween(ZonedDateTime.now().plusMinutes(CHALLENGE_TOKEN_VALIDITY_IN_MINUTES).minusSeconds(5),
                 ZonedDateTime.now().plusMinutes(CHALLENGE_TOKEN_VALIDITY_IN_MINUTES));
     }
@@ -143,11 +114,9 @@ public class AuthenticationChallengeBuilderTest {
     @Rfc("7519 4.1.6.  \"iat\" (Issued At) Claim")
     public void challengeBodyClaimItemIat() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
 
-        final Map<String, Object> bodyClaims = TokenClaimExtraction
-            .extractClaimsFromTokenBody(response.getChallenge());
-        assertThat(TokenClaimExtraction.claimToDateTime(bodyClaims.get(ISSUED_AT.getJoseName())))
+        assertThat(response.getChallenge().getBodyDateTimeClaim(ISSUED_AT).get())
             .isBetween(ZonedDateTime.now().minusSeconds(5), ZonedDateTime.now());
     }
 
@@ -156,31 +125,18 @@ public class AuthenticationChallengeBuilderTest {
     @Rfc("7519 4.1.7.  \"jti\" (JWT ID) Claim")
     public void challengeHeaderClaimItemJti() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
 
-        assertThat(TokenClaimExtraction.extractClaimsFromTokenHeader(response.getChallenge())).as("headerClaims").
-            extracting(JWT_ID.getJoseName()).asString().hasSizeBetween(16, 64);
-    }
-
-    @Test
-    @Rfc("7519 4.1.5.  \"nbf\" (Not Before) Claim")
-    public void challengeBodyClaimItemNbf() {
-        final AuthenticationChallenge response = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid");
-
-        final Map<String, Object> bodyClaims = TokenClaimExtraction
-            .extractClaimsFromTokenBody(response.getChallenge());
-
-        final ZonedDateTime tokenNotBefore = TokenClaimExtraction
-            .claimToDateTime(bodyClaims.get(NOT_BEFORE.getJoseName()));
-        assertThat(tokenNotBefore).isBetween(ZonedDateTime.now().minusSeconds(10), ZonedDateTime.now());
+        assertThat(response.getChallenge().getHeaderClaim(JWT_ID).get())
+            .asString()
+            .hasSizeBetween(16, 64);
     }
 
     @Test
     @Afo("A_20440")
     public void challengeWithConsent() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
         assertThat(response.getUserConsent()).isNotNull();
         assertThat(response.getUserConsent()).hasSize(5);
         assertThat(response.getUserConsent())
@@ -191,13 +147,9 @@ public class AuthenticationChallengeBuilderTest {
     @Test
     public void verifyThatAuthenticationChallengeCarriesExpButNotIatNbfClaimInHeader() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid");
-        final Map<String, Object> headerClaims = TokenClaimExtraction
-            .extractClaimsFromTokenHeader(response.getChallenge());
-        assertThat(headerClaims)
-            .containsKey(EXPIRES_AT.getJoseName())
-            .doesNotContainKeys(NOT_BEFORE.getJoseName())
-            .doesNotContainKeys(ISSUED_AT.getJoseName());
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
+        assertThat(response.getChallenge().getHeaderClaims().keySet())
+            .contains(EXPIRES_AT.getJoseName())
+            .doesNotContain(NOT_BEFORE.getJoseName(), ISSUED_AT.getJoseName());
     }
-
 }

@@ -23,7 +23,6 @@ import de.gematik.idp.test.steps.model.HttpMethods;
 import de.gematik.idp.test.steps.model.HttpStatus;
 import io.cucumber.datatable.DataTable;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,7 +30,7 @@ import org.json.JSONObject;
 public class IdpAuthenticationSteps extends IdpStepsBase {
 
     public void getChallenge(final DataTable params, final HttpStatus status)
-        throws JSONException, URISyntaxException, IOException {
+        throws JSONException, IOException {
         final Map<String, String> mapParsedParams = getMapFromDatatable(params);
 
         final Map<ContextKey, Object> ctxt = Context.getThreadContext();

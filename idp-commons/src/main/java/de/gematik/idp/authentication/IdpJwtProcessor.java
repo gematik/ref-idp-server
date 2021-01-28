@@ -21,7 +21,6 @@ import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifie
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.IdpJoseException;
-import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.token.JsonWebToken;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
@@ -32,8 +31,6 @@ import java.util.Objects;
 import lombok.NonNull;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
-import org.jose4j.jwt.JwtClaims;
-import org.jose4j.jwt.NumericDate;
 import org.jose4j.lang.JoseException;
 
 public class IdpJwtProcessor {
@@ -59,26 +56,13 @@ public class IdpJwtProcessor {
         }
     }
 
-    public JsonWebToken buildJwt(@NonNull final JwtDescription jwtDescription) {
+    public JsonWebToken buildJwt(@NonNull final JwtBuilder jwtBuilder) {
         Objects.requireNonNull(privateKey, "No private key supplied, cancelling JWT signing");
-        Objects.requireNonNull(jwtDescription, "No Descriptor supplied, cancelling JWT signing");
-
-        final JwtClaims claims = new JwtClaims();
-
-        jwtDescription.getClaims()
-            .forEach((key, value) -> claims.setClaim(key, value));
-
-        if (jwtDescription.getExpiresAt() != null) {
-            claims.setExpirationTime(
-                NumericDate.fromSeconds(
-                    jwtDescription.getExpiresAt().toEpochSecond()));
-            jwtDescription.getHeaders().remove(ClaimName.EXPIRES_AT.getJoseName());
-            jwtDescription.getHeaders().put(ClaimName.EXPIRES_AT.getJoseName(),
-                jwtDescription.getExpiresAt().toEpochSecond());
-        }
-
-        return buildJws(claims.toJson(), jwtDescription.getHeaders(),
-            jwtDescription.isIncludeSignerCertificateInHeader());
+        Objects.requireNonNull(jwtBuilder, "No Descriptor supplied, cancelling JWT signing");
+        return jwtBuilder
+            .setSignerKey(privateKey)
+            .setCertificate(certificate)
+            .buildJwt();
     }
 
     public JsonWebToken buildJws(

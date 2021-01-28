@@ -1,4 +1,4 @@
-Endpunkte
+Kernfunktionalität
 
 Folgende Endpunkte sind von einem IDP Dienst zur Verfügung zu stellen:
 

@@ -41,6 +41,4 @@ public class TokenResponse {
     private String idToken;
     @ApiModelProperty(notes = "Zugangstoken")
     private String accessToken;
-    @ApiModelProperty(notes = "SingleSignOn Token für wiederholte Anfragen für einen Zugangstoken")
-    private String ssoToken;
 }

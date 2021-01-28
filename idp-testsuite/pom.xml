@@ -1,404 +1,406 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns="http://maven.apache.org/POM/4.0.0"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <artifactId>idp-testsuite</artifactId>
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <artifactId>idp-testsuite</artifactId>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.1.0</version>
-        <executions>
-          <execution>
-            <id>init-build-properties</id>
-            <goals>
-              <goal>hostname</goal>
-            </goals>
-            <configuration>
-              <hostnameProperty>testclient</hostnameProperty>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-jar-plugin</artifactId>
-        <groupId>org.apache.maven.plugins</groupId>
-        <version>3.2.0</version>
-      </plugin>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-        <groupId>org.apache.maven.plugins</groupId>
-        <version>3.0.0-M5</version>
-      </plugin>
-      <!-- creates junit test driver classes in target/generated-test-sources
-           for multiple parallel batches run simultaneously
-      -->
-      <plugin>
-        <artifactId>cucumber-jvm-parallel-plugin</artifactId>
-        <executions>
-          <execution>
-            <configuration>
-              <customVmTemplate>src/test/resources/cucumber-serenity-runner.vm</customVmTemplate>
-              <glue>
-                <package>de.gematik.idp.test.steps</package>
-              </glue>
-              <parallelScheme>FEATURE</parallelScheme>
-              <!-- deactivated as jenkins xunit plugin is not very flexible and does not work well with serenity junit xml exports
-              see https://issues.apache.org/jira/browse/SUREFIRE-1533
-              <plugins>
-                <plugin>
-                  <name>junit</name>
-                  <extension>xml</extension>
-                </plugin>
-              </plugins>-->
-            </configuration>
-            <goals>
-              <goal>generateRunners</goal>
-            </goals>
-            <id>generateRunners</id>
-            <phase>generate-test-sources</phase>
-          </execution>
-        </executions>
-        <groupId>com.github.temyers</groupId>
-        <version>4.2.0</version>
-      </plugin>
-      <plugin>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <configuration>
-          <includes>
-            <include>**/Parallel*IT.java</include>
-          </includes>
-          <parallel>classes</parallel>
-          <perCoreThreadCount>true</perCoreThreadCount>
-          <skipITs>${skip.inttests}</skipITs>
-          <systemPropertyVariables>
-            <IDP_SERVER_PORT>${tomcat.http.port}</IDP_SERVER_PORT>
-            <cucumber.options>--tags @ReleaseV1 --tags 'not @OpenBug'</cucumber.options>-->
-          </systemPropertyVariables>
-          <threadCount>4</threadCount>
-        </configuration>
-        <groupId>org.apache.maven.plugins</groupId>
-        <version>3.0.0-M5</version>
-      </plugin>
-
-      <plugin>
-        <artifactId>serenity-maven-plugin</artifactId>
-        <dependencies>
-          <dependency>
-            <artifactId>serenity-core</artifactId>
-            <groupId>net.serenity-bdd</groupId>
-            <version>${version.serenity.core}</version>
-          </dependency>
-          <dependency>
-            <artifactId>serenity-single-page-report</artifactId>
-            <groupId>net.serenity-bdd</groupId>
-            <version>${version.serenity.core}</version>
-          </dependency>
-        </dependencies>
-        <executions>
-          <execution>
-            <configuration>
-              <reports>single-page-html</reports>
-              <systemPropertyVariables>
-                <report.customfields.Server>${report.server.host}</report.customfields.Server>
-                <report.customfields.Testsuite>Release V1</report.customfields.Testsuite>
-                <report.customfields.User>${user.name}</report.customfields.User>
-                <report.customfields.Client>${testclient}</report.customfields.Client>
-              </systemPropertyVariables>
-            </configuration>
-            <goals>
-              <goal>aggregate</goal>
-              <goal>reports</goal>
-            </goals>
-            <id>serenity-reports</id>
-            <phase>post-integration-test</phase>
-          </execution>
-        </executions>
-        <groupId>net.serenity-bdd.maven.plugins</groupId>
-        <version>${version.serenity.maven.plugin}</version>
-      </plugin>
-      <!-- workaround for bug in single-page-report of serenity
-      for large failure details to expand table to right of screen -->
-      <plugin>
-        <artifactId>replacer</artifactId>
-        <configuration>
-          <file>idp-testsuite/target/site/serenity/serenity-summary.html</file>
-          <replacements>
-            <replacement>
-              <token>&lt;/head&gt;
-              </token>
-              <value>&lt;style&gt;.compact-wrapper {
-                max-width: 1200px;
-                }
-
-                .for-failure {
-                max-width: 1150px;
-                line-break: anywhere;
-                }&lt;/style&gt;&lt;/head&gt;
-              </value>
-            </replacement>
-          </replacements>
-          <skip>${skip.inttests}</skip>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>replace</goal>
-            </goals>
-            <phase>post-integration-test</phase>
-          </execution>
-        </executions>
-        <groupId>com.google.code.maven-replacer-plugin</groupId>
-        <version>1.5.3</version>
-      </plugin>
-
-    </plugins>
-  </build>
-
-  <dependencies>
-    <!-- Needed for correct working of idp spring boot instance in test run -->
-    <dependency>
-      <artifactId>commons-codec</artifactId>
-      <groupId>commons-codec</groupId>
-      <version>1.15</version>
-    </dependency>
-
-    <!-- Idp server -->
-    <dependency>
-      <artifactId>idp-server</artifactId>
-      <groupId>de.gematik.idp</groupId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <artifactId>idp-crypto</artifactId>
-      <groupId>de.gematik.idp</groupId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <artifactId>idp-commons</artifactId>
-      <groupId>de.gematik.idp</groupId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <!-- Spring boot -->
-    <dependency>
-      <artifactId>spring-boot-starter-test</artifactId>
-      <groupId>org.springframework.boot</groupId>
-      <version>${version.spring-boot}</version>
-    </dependency>
-    <dependency>
-      <artifactId>spring-boot-starter-thymeleaf</artifactId>
-      <groupId>org.springframework.boot</groupId>
-      <version>${version.spring-boot}</version>
-    </dependency>
-
-    <!-- BDD / REST -->
-    <dependency>
-      <artifactId>serenity-core</artifactId>
-      <groupId>net.serenity-bdd</groupId>
-      <scope>test</scope>
-      <version>${version.serenity.core}</version>
-    </dependency>
-    <dependency>
-      <artifactId>serenity-rest-assured</artifactId>
-      <groupId>net.serenity-bdd</groupId>
-      <scope>test</scope>
-      <version>${version.serenity.core}</version>
-    </dependency>
-    <dependency>
-      <artifactId>serenity-cucumber4</artifactId>
-      <groupId>net.serenity-bdd</groupId>
-      <scope>test</scope>
-      <version>${version.serenity.cucumber.4}</version>
-    </dependency>
-    <dependency><!-- needed for type registry -->
-      <artifactId>cucumber-core</artifactId>
-      <groupId>io.cucumber</groupId>
-      <scope>test</scope>
-      <version>${version.cucumber}</version>
-    </dependency>
-    <dependency>
-      <artifactId>datatable</artifactId>
-      <groupId>io.cucumber</groupId>
-      <scope>test</scope>
-      <version>3.5.0</version>
-    </dependency>
-    <dependency>
-      <artifactId>datatable-matchers</artifactId>
-      <groupId>io.cucumber</groupId>
-      <scope>test</scope>
-      <version>3.5.0</version>
-    </dependency>
-    <dependency>
-      <artifactId>lombok</artifactId>
-      <groupId>org.projectlombok</groupId>
-      <scope>provided</scope>
-      <version>${version.lombok}</version>
-    </dependency>
-    <dependency>
-      <artifactId>assertj-core</artifactId>
-      <groupId>org.assertj</groupId>
-      <scope>test</scope>
-      <version>${version.assertj}</version>
-    </dependency>
-
-    <!-- https://mvnrepository.com/artifact/org.json/json -->
-    <dependency>
-      <artifactId>json</artifactId>
-      <groupId>org.json</groupId>
-      <scope>test</scope>
-      <version>20201115</version>
-    </dependency>
-    <dependency>
-      <artifactId>json-unit-spring</artifactId>
-      <groupId>net.javacrumbs.json-unit</groupId>
-      <scope>test</scope>
-      <version>2.21.0</version>
-    </dependency>
-  </dependencies>
-  <modelVersion>4.0.0</modelVersion>
-  <packaging>jar</packaging>
-
-  <parent>
-    <artifactId>idp-global</artifactId>
-    <groupId>de.gematik.idp</groupId>
-    <relativePath>../pom.xml</relativePath>
-    <version>5.1.0</version>
-  </parent>
-
-  <profiles>
-    <profile>
-      <activation>
-        <property>
-          <name>!env.IDP_SERVER</name>
-        </property>
-      </activation>
-      <build>
+    <build>
         <plugins>
-          <plugin>
-            <artifactId>maven-resources-plugin</artifactId>
-            <executions>
-              <execution>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>init-build-properties</id>
+                        <goals>
+                            <goal>hostname</goal>
+                        </goals>
+                        <configuration>
+                            <hostnameProperty>testclient</hostnameProperty>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <version>3.2.0</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                  <encoding>UTF-8</encoding>
-                  <outputDirectory>target/test-classes</outputDirectory>
-                  <resources>
-                    <resource>
-                      <directory>${basedir}/../idp-server/src/main/resources</directory>
-                      <includes>
-                        <include>**/*</include>
-                      </includes>
-                    </resource>
-                  </resources>
+                    <skip>true</skip>
                 </configuration>
-                <goals>
-                  <goal>copy-resources</goal>
-                </goals>
-                <id>copy-server-config</id>
-                <phase>pre-integration-test</phase>
-              </execution>
-            </executions>
-            <version>3.2.0</version>
-          </plugin>
-          <plugin>
-            <artifactId>build-helper-maven-plugin</artifactId>
-            <executions>
-              <execution>
+                <groupId>org.apache.maven.plugins</groupId>
+                <version>3.0.0-M5</version>
+            </plugin>
+            <!-- creates junit test driver classes in target/generated-test-sources
+                 for multiple parallel batches run simultaneously
+            -->
+            <plugin>
+                <artifactId>cucumber-jvm-parallel-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <configuration>
+                            <customVmTemplate>src/test/resources/cucumber-serenity-runner.vm</customVmTemplate>
+                            <glue>
+                                <package>de.gematik.idp.test.steps</package>
+                            </glue>
+                            <parallelScheme>FEATURE</parallelScheme>
+                            <!-- deactivated as jenkins xunit plugin is not very flexible and does not work well with serenity junit xml exports
+                            see https://issues.apache.org/jira/browse/SUREFIRE-1533
+                            <plugins>
+                              <plugin>
+                                <name>junit</name>
+                                <extension>xml</extension>
+                              </plugin>
+                            </plugins>-->
+                        </configuration>
+                        <goals>
+                            <goal>generateRunners</goal>
+                        </goals>
+                        <id>generateRunners</id>
+                        <phase>generate-test-sources</phase>
+                    </execution>
+                </executions>
+                <groupId>com.github.temyers</groupId>
+                <version>4.2.0</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
-                  <portNames>
-                    <portName>tomcat.http.port</portName>
-                  </portNames>
+                    <includes>
+                        <include>**/Parallel*IT.java</include>
+                    </includes>
+                    <parallel>classes</parallel>
+                    <perCoreThreadCount>true</perCoreThreadCount>
+                    <skipITs>${skip.inttests}</skipITs>
+                    <systemPropertyVariables>
+                        <IDP_SERVER_PORT>${tomcat.http.port}</IDP_SERVER_PORT>
+                        <cucumber.filter.tags>
+                            @Approval and not @OpenBug and not @WiP
+                        </cucumber.filter.tags>
+                    </systemPropertyVariables>
+                    <threadCount>4</threadCount>
                 </configuration>
-                <goals>
-                  <goal>reserve-network-port</goal>
-                </goals>
-                <id>reserve-tomcat-port</id>
-                <phase>process-resources</phase>
-              </execution>
-            </executions>
-            <groupId>org.codehaus.mojo</groupId>
-            <version>${version.build-helper-maven-plugin}</version>
-          </plugin>
-          <plugin>
-            <artifactId>spring-boot-maven-plugin</artifactId>
-            <executions>
-              <execution>
+                <groupId>org.apache.maven.plugins</groupId>
+                <version>3.0.0-M5</version>
+            </plugin>
+
+            <plugin>
+                <artifactId>serenity-maven-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <artifactId>serenity-core</artifactId>
+                        <groupId>net.serenity-bdd</groupId>
+                        <version>${version.serenity.core}</version>
+                    </dependency>
+                    <dependency>
+                        <artifactId>serenity-single-page-report</artifactId>
+                        <groupId>net.serenity-bdd</groupId>
+                        <version>${version.serenity.core}</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <configuration>
+                            <reports>single-page-html</reports>
+                            <systemPropertyVariables>
+                                <report.customfields.Server>${report.server.host}</report.customfields.Server>
+                                <report.customfields.Testsuite>Release V6.0.0</report.customfields.Testsuite>
+                                <report.customfields.User>${user.name}</report.customfields.User>
+                                <report.customfields.Client>${testclient}</report.customfields.Client>
+                            </systemPropertyVariables>
+                        </configuration>
+                        <goals>
+                            <goal>aggregate</goal>
+                            <goal>reports</goal>
+                        </goals>
+                        <id>serenity-reports</id>
+                        <phase>post-integration-test</phase>
+                    </execution>
+                </executions>
+                <groupId>net.serenity-bdd.maven.plugins</groupId>
+                <version>${version.serenity.maven.plugin}</version>
+            </plugin>
+            <!-- workaround for bug in single-page-report of serenity
+            for large failure details to expand table to right of screen -->
+            <plugin>
+                <artifactId>replacer</artifactId>
                 <configuration>
-                  <skip>true</skip>
+                    <file>idp-testsuite/target/site/serenity/serenity-summary.html</file>
+                    <replacements>
+                        <replacement>
+                            <token>&lt;/head&gt;
+                            </token>
+                            <value>&lt;style&gt;.compact-wrapper {
+                                max-width: 1200px;
+                                }
+
+                                .for-failure {
+                                max-width: 1150px;
+                                line-break: anywhere;
+                                }&lt;/style&gt;&lt;/head&gt;
+                            </value>
+                        </replacement>
+                    </replacements>
+                    <skip>${skip.inttests}</skip>
                 </configuration>
-                <goals>
-                  <goal>repackage</goal>
-                </goals>
-                <id>repackage</id>
-              </execution>
-              <execution>
-                <configuration>
-                  <arguments>
-                    <argument>--server.port=${tomcat.http.port}</argument>
-                  </arguments>
-                  <!-- BOTH tags are needed to get all folders into the classpath for spring boot to startup correctly-->
-                  <classesDirectory>${project.basedir}/../idp-server/target/classes
-                  </classesDirectory>
-                  <folders>
-                    <folder>../idp-server/target/classes</folder>
-                    <folder>../idp-commons/target/classes</folder>
-                    <folder>../idp-crypto/target/classes</folder>
-                  </folders>
-                  <mainClass>de.gematik.idp.server.IdpServer</mainClass>
-                  <skip>${skip.inttests}</skip>
-                </configuration>
-                <goals>
-                  <goal>start</goal>
-                </goals>
-                <id>pre-integration-test</id>
-              </execution>
-              <execution>
-                <configuration>
-                  <skip>${skip.inttests}</skip>
-                </configuration>
-                <goals>
-                  <goal>stop</goal>
-                </goals>
-                <id>stop</id>
-                <phase>post-integration-test</phase>
-              </execution>
-            </executions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <phase>post-integration-test</phase>
+                    </execution>
+                </executions>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <version>1.5.3</version>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <dependencies>
+        <!-- Needed for correct working of idp spring boot instance in test run -->
+        <dependency>
+            <artifactId>commons-codec</artifactId>
+            <groupId>commons-codec</groupId>
+            <version>1.15</version>
+        </dependency>
+
+        <!-- Idp server -->
+        <dependency>
+            <artifactId>idp-server</artifactId>
+            <groupId>de.gematik.idp</groupId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <artifactId>idp-crypto</artifactId>
+            <groupId>de.gematik.idp</groupId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <artifactId>idp-commons</artifactId>
+            <groupId>de.gematik.idp</groupId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Spring boot -->
+        <dependency>
+            <artifactId>spring-boot-starter-test</artifactId>
             <groupId>org.springframework.boot</groupId>
             <version>${version.spring-boot}</version>
-          </plugin>
-        </plugins>
-      </build>
-      <id>local-idp-server</id>
-      <properties>
-        <report.server.host>Local springboot instance</report.server.host>
-      </properties>
-    </profile>
-    <profile>
-      <activation>
-        <property>
-          <name>env.IDP_SERVER</name>
-        </property>
-      </activation>
-      <id>remote-idp-server</id>
-      <properties>
-        <profile.assembly.suffix>-online</profile.assembly.suffix>
-        <report.server.host>${env.IDP_SERVER}</report.server.host>
-      </properties>
-    </profile>
-  </profiles>
+        </dependency>
+        <dependency>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <version>${version.spring-boot}</version>
+        </dependency>
 
-  <properties>
-    <version.assertj>3.18.1</version.assertj>
-    <version.cucumber>4.8.0</version.cucumber>
-    <version.serenity.core>2.1.7</version.serenity.core>
-    <version.serenity.cucumber.4>2.1.2</version.serenity.cucumber.4>
-    <version.serenity.maven.plugin>2.1.7</version.serenity.maven.plugin>
-  </properties>
+        <!-- BDD / REST -->
+        <dependency>
+            <artifactId>serenity-core</artifactId>
+            <groupId>net.serenity-bdd</groupId>
+            <scope>test</scope>
+            <version>${version.serenity.core}</version>
+        </dependency>
+        <dependency>
+            <artifactId>serenity-rest-assured</artifactId>
+            <groupId>net.serenity-bdd</groupId>
+            <scope>test</scope>
+            <version>${version.serenity.core}</version>
+        </dependency>
+        <dependency>
+            <artifactId>serenity-cucumber6</artifactId>
+            <groupId>net.serenity-bdd</groupId>
+            <scope>test</scope>
+            <version>${version.serenity.cucumber.6}</version>
+        </dependency>
+        <dependency><!-- needed for type registry -->
+            <artifactId>cucumber-core</artifactId>
+            <groupId>io.cucumber</groupId>
+            <scope>test</scope>
+            <version>${version.cucumber}</version>
+        </dependency>
+        <dependency>
+            <artifactId>datatable</artifactId>
+            <groupId>io.cucumber</groupId>
+            <scope>test</scope>
+            <version>3.5.0</version>
+        </dependency>
+        <dependency>
+            <artifactId>datatable-matchers</artifactId>
+            <groupId>io.cucumber</groupId>
+            <scope>test</scope>
+            <version>3.5.0</version>
+        </dependency>
+        <dependency>
+            <artifactId>lombok</artifactId>
+            <groupId>org.projectlombok</groupId>
+            <scope>provided</scope>
+            <version>${version.lombok}</version>
+        </dependency>
+        <dependency>
+            <artifactId>assertj-core</artifactId>
+            <groupId>org.assertj</groupId>
+            <scope>test</scope>
+            <version>${version.assertj}</version>
+        </dependency>
 
-  <version>5.1.0</version>
+        <!-- https://mvnrepository.com/artifact/org.json/json -->
+        <dependency>
+            <artifactId>json</artifactId>
+            <groupId>org.json</groupId>
+            <scope>test</scope>
+            <version>20201115</version>
+        </dependency>
+        <dependency>
+            <artifactId>json-unit-spring</artifactId>
+            <groupId>net.javacrumbs.json-unit</groupId>
+            <scope>test</scope>
+            <version>2.21.0</version>
+        </dependency>
+    </dependencies>
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>jar</packaging>
+
+    <parent>
+        <artifactId>idp-global</artifactId>
+        <groupId>de.gematik.idp</groupId>
+        <relativePath>../pom.xml</relativePath>
+        <version>6.0.0</version>
+    </parent>
+
+    <profiles>
+        <profile>
+            <activation>
+                <property>
+                    <name>!env.IDP_SERVER</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <configuration>
+                                    <encoding>UTF-8</encoding>
+                                    <outputDirectory>target/test-classes</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${basedir}/../idp-server/src/main/resources</directory>
+                                            <includes>
+                                                <include>**/*</include>
+                                            </includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <id>copy-server-config</id>
+                                <phase>pre-integration-test</phase>
+                            </execution>
+                        </executions>
+                        <version>3.2.0</version>
+                    </plugin>
+                    <plugin>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <configuration>
+                                    <portNames>
+                                        <portName>tomcat.http.port</portName>
+                                    </portNames>
+                                </configuration>
+                                <goals>
+                                    <goal>reserve-network-port</goal>
+                                </goals>
+                                <id>reserve-tomcat-port</id>
+                                <phase>process-resources</phase>
+                            </execution>
+                        </executions>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <version>${version.build-helper-maven-plugin}</version>
+                    </plugin>
+                    <plugin>
+                        <artifactId>spring-boot-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <configuration>
+                                    <skip>true</skip>
+                                </configuration>
+                                <goals>
+                                    <goal>repackage</goal>
+                                </goals>
+                                <id>repackage</id>
+                            </execution>
+                            <execution>
+                                <configuration>
+                                    <arguments>
+                                        <argument>--server.port=${tomcat.http.port}</argument>
+                                    </arguments>
+                                    <!-- BOTH tags are needed to get all folders into the classpath for spring boot to startup correctly-->
+                                    <classesDirectory>${project.basedir}/../idp-server/target/classes
+                                    </classesDirectory>
+                                    <folders>
+                                        <folder>../idp-server/target/classes</folder>
+                                        <folder>../idp-commons/target/classes</folder>
+                                        <folder>../idp-crypto/target/classes</folder>
+                                    </folders>
+                                    <mainClass>de.gematik.idp.server.IdpServer</mainClass>
+                                    <skip>${skip.inttests}</skip>
+                                </configuration>
+                                <goals>
+                                    <goal>start</goal>
+                                </goals>
+                                <id>pre-integration-test</id>
+                            </execution>
+                            <execution>
+                                <configuration>
+                                    <skip>${skip.inttests}</skip>
+                                </configuration>
+                                <goals>
+                                    <goal>stop</goal>
+                                </goals>
+                                <id>stop</id>
+                                <phase>post-integration-test</phase>
+                            </execution>
+                        </executions>
+                        <groupId>org.springframework.boot</groupId>
+                        <version>${version.spring-boot}</version>
+                    </plugin>
+                </plugins>
+            </build>
+            <id>local-idp-server</id>
+            <properties>
+                <report.server.host>Local springboot instance</report.server.host>
+            </properties>
+        </profile>
+        <profile>
+            <activation>
+                <property>
+                    <name>env.IDP_SERVER</name>
+                </property>
+            </activation>
+            <id>remote-idp-server</id>
+            <properties>
+                <profile.assembly.suffix>-online</profile.assembly.suffix>
+                <report.server.host>${env.IDP_SERVER}</report.server.host>
+            </properties>
+        </profile>
+    </profiles>
+
+    <properties>
+        <version.assertj>3.18.1</version.assertj>
+        <version.cucumber>6.6.0</version.cucumber>
+        <version.serenity.core>2.3.4</version.serenity.core>
+        <version.serenity.cucumber.6>2.3.4</version.serenity.cucumber.6>
+        <version.serenity.maven.plugin>2.3.4</version.serenity.maven.plugin>
+    </properties>
+
+    <version>6.0.0</version>
 </project>

@@ -16,6 +16,7 @@
 
 package de.gematik.idp.test.steps.model;
 
+@SuppressWarnings("unused")
 public enum HttpMethods {
     GET("GET"), POST("POST"), PUT("PUT"), DELETE("DELETE"), HEAD("HEAD");
 

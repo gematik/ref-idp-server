@@ -39,7 +39,7 @@ public class AuthenticationResponseBuilder {
         final AuthenticationChallenge authenticationChallenge,
         final PkiIdentity clientIdentity) {
         final JwtClaims claims = new JwtClaims();
-        claims.setClaim(ClaimName.NESTED_JWT.getJoseName(), authenticationChallenge.getChallenge());
+        claims.setClaim(ClaimName.NESTED_JWT.getJoseName(), authenticationChallenge.getChallenge().getJwtRawString());
 
         final JsonWebSignature jsonWebSignature = new JsonWebSignature();
         jsonWebSignature.setPayload(claims.toJson());

@@ -16,10 +16,9 @@
 
 package de.gematik.idp.test.steps.model;
 
-import static org.assertj.core.api.Fail.fail;
-
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.api.Assertions;
 
 @Getter
 @Slf4j
@@ -47,7 +46,7 @@ public class HttpStatus {
                     value = -3;
                     break;
                 default:
-                    fail("Invalid http status code string '" + statusStr + "'");
+                    Assertions.fail("Invalid http status code string '" + statusStr + "'");
             }
         }
     }
@@ -63,7 +62,7 @@ public class HttpStatus {
                     value = statusInt;
                     break;
                 default:
-                    fail("Invalid http status code int '" + statusInt + "'");
+                    Assertions.fail("Invalid http status code int '" + statusInt + "'");
             }
         }
     }
@@ -86,10 +85,12 @@ public class HttpStatus {
         }
     }
 
+    @SuppressWarnings("unused")
     public boolean is1xxInformational() {
         return value / 100 == 1;
     }
 
+    @SuppressWarnings("unused")
     public boolean is2xxSuccessful() {
         return value / 100 == 2;
     }

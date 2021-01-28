@@ -18,6 +18,7 @@ package de.gematik.idp.authentication;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.gematik.idp.field.ClaimName;
+import de.gematik.idp.token.JsonWebToken;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
@@ -34,7 +35,7 @@ import lombok.NoArgsConstructor;
 public class AuthenticationChallenge {
 
     @ApiModelProperty(value = "Am IDP Server erzeugte Challenge")
-    private String challenge;
+    private JsonWebToken challenge;
     @JsonProperty(value = "user_consent")
     @ApiModelProperty(value = "Die vom Benutzer einzuholende Zustimmung.")
     private List<ClaimName> userConsent;

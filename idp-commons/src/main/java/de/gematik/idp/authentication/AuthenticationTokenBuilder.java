@@ -32,13 +32,12 @@ import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import org.apache.commons.lang3.RandomStringUtils;
 
 @Data
 @AllArgsConstructor
 @Builder
 public class AuthenticationTokenBuilder {
-
-    public static final String EIDAS_LOA_HIGH = "eidas-loa-high";
 
     private final IdpJwtProcessor jwtProcessor;
     private final AuthenticationChallengeVerifier authenticationChallengeVerifier;
@@ -51,24 +50,30 @@ public class AuthenticationTokenBuilder {
         final Map<String, Object> serverChallengeClaims,
         final ZonedDateTime issueingTime) {
         final Map<String, Object> claimsMap = X509ClaimExtraction.extractClaimsFromCertificate(clientCertificate);
-        claimsMap.put(AUTHENTICATION_CONTEXT_CLASS.getJoseName(), EIDAS_LOA_HIGH);
-        claimsMap.put(CLIENT_ID.getJoseName(), "client_id");
-        claimsMap.put(REDIRECT_URI.getJoseName(), "redirect_uri");
+        claimsMap.put(CLIENT_ID.getJoseName(), IdpConstants.CLIENT_ID);
+        claimsMap.put(REDIRECT_URI.getJoseName(), serverChallengeClaims.get(REDIRECT_URI.getJoseName()));
+        claimsMap.put(NONCE.getJoseName(), serverChallengeClaims.get(NONCE.getJoseName()));
+        claimsMap.put(CODE_CHALLENGE.getJoseName(), serverChallengeClaims.get(CODE_CHALLENGE.getJoseName()));
+        claimsMap
+            .put(CODE_CHALLENGE_METHOD.getJoseName(), serverChallengeClaims.get(CODE_CHALLENGE_METHOD.getJoseName()));
+        claimsMap.put(ISSUER.getJoseName(), serverChallengeClaims.get(ISSUER.getJoseName()));
+        claimsMap.put(RESPONSE_TYPE.getJoseName(), serverChallengeClaims.get(RESPONSE_TYPE.getJoseName()));
+        claimsMap.put(STATE.getJoseName(), serverChallengeClaims.get(STATE.getJoseName()));
+        claimsMap.put(SCOPE.getJoseName(), serverChallengeClaims.get(SCOPE.getJoseName()));
         claimsMap.put(ISSUED_AT.getJoseName(), issueingTime.toEpochSecond());
         claimsMap.put(NOT_BEFORE.getJoseName(), issueingTime.toEpochSecond());
-        claimsMap.putAll(serverChallengeClaims);
+        claimsMap.put(TOKEN_TYPE.getJoseName(), "code");
         claimsMap.put(AUTH_TIME.getJoseName(), issueingTime.toEpochSecond());
+        claimsMap.put(SERVER_NONCE.getJoseName(), RandomStringUtils.randomAlphanumeric(20));
 
         final Map<String, Object> headerMap = new HashMap<>();
         headerMap.put(TYPE.getJoseName(), "JWT");
-        headerMap.put(CONTENT_TYPE.getJoseName(), "NJWT");
         headerMap.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
 
-        return jwtProcessor.buildJwt(JwtDescription.builder()
-            .claims(claimsMap)
-            .expiresAt(issueingTime.plusHours(1))
-            .headers(headerMap)
-            .build());
+        return jwtProcessor.buildJwt(new JwtBuilder()
+            .addAllBodyClaims(claimsMap)
+            .addAllHeaderClaims(headerMap)
+            .expiresAt(issueingTime.plusHours(1)));
     }
 
     public JsonWebToken buildAuthenticationTokenFromSsoToken(final JsonWebToken ssoToken,
@@ -82,23 +87,25 @@ public class AuthenticationTokenBuilder {
         claimsMap.put(CODE_CHALLENGE.getJoseName(), extractClaimFromChallengeToken(challengeToken, CODE_CHALLENGE));
         claimsMap.put(CODE_CHALLENGE_METHOD.getJoseName(),
             extractClaimFromChallengeToken(challengeToken, CODE_CHALLENGE_METHOD));
+        claimsMap.put(NONCE.getJoseName(), extractClaimFromChallengeToken(challengeToken, NONCE));
         claimsMap.put(CLIENT_ID.getJoseName(), extractClaimFromChallengeToken(challengeToken, CLIENT_ID));
         claimsMap.put(REDIRECT_URI.getJoseName(), extractClaimFromChallengeToken(challengeToken, REDIRECT_URI));
         claimsMap.put(SCOPE.getJoseName(), extractClaimFromChallengeToken(challengeToken, SCOPE));
-        claimsMap.put(SUBJECT.getJoseName(), extractClaimFromChallengeToken(challengeToken, SUBJECT));
         claimsMap.put(STATE.getJoseName(), extractClaimFromChallengeToken(challengeToken, STATE));
         claimsMap.put(RESPONSE_TYPE.getJoseName(), extractClaimFromChallengeToken(challengeToken, RESPONSE_TYPE));
-        claimsMap.put(AUTHENTICATION_CONTEXT_CLASS.getJoseName(), EIDAS_LOA_HIGH);
+        claimsMap.put(TOKEN_TYPE.getJoseName(), "code");
         claimsMap.put(AUTH_TIME.getJoseName(), ZonedDateTime.now().toEpochSecond());
+        claimsMap.put(SERVER_NONCE.getJoseName(), RandomStringUtils.randomAlphanumeric(20));
+        claimsMap.put(ISSUER.getJoseName(), extractClaimFromChallengeToken(challengeToken, ISSUER));
 
         final HashMap headerClaims = new HashMap(ssoToken.getHeaderClaims());
+        headerClaims.put(TYPE.getJoseName(), "JWT");
         headerClaims.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
 
-        return jwtProcessor.buildJwt(JwtDescription.builder()
-            .headers(headerClaims)
-            .claims(claimsMap)
-            .expiresAt(ZonedDateTime.now().plusHours(1))
-            .build());
+        return jwtProcessor.buildJwt(new JwtBuilder()
+            .replaceAllHeaderClaims(headerClaims)
+            .replaceAllBodyClaims(claimsMap)
+            .expiresAt(ZonedDateTime.now().plusHours(1)));
     }
 
     private Object extractClaimFromChallengeToken(final JsonWebToken challengeToken, final ClaimName claimName) {
@@ -111,7 +118,7 @@ public class AuthenticationTokenBuilder {
 
             .filter(Map.class::isInstance)
             .map(Map.class::cast)
-            .map(map -> map.get(ClaimName.X509_Certificate_Chain.getJoseName()))
+            .map(map -> map.get(ClaimName.X509_CERTIFICATE_CHAIN.getJoseName()))
 
             .filter(List.class::isInstance)
             .map(List.class::cast)

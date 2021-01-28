@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
-import java.security.cert.CertificateEncodingException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.json.JSONException;
@@ -28,7 +27,7 @@ public class DiscoveryDocumentResponse implements Response {
     private final DiscoveryDocumentResponseBody body;
 
     public DiscoveryDocumentResponse(final File template, final String certFile)
-        throws IOException, JSONException, CertificateEncodingException {
+        throws IOException, JSONException {
         body = new DiscoveryDocumentResponseBody(template, certFile);
     }
 

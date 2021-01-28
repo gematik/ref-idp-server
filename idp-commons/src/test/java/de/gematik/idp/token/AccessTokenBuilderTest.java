@@ -26,13 +26,12 @@ import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
 import de.gematik.idp.authentication.IdpJwtProcessor;
-import de.gematik.idp.authentication.JwtDescription;
+import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.RequiredClaimException;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
 import java.time.ZonedDateTime;
-import java.util.Collections;
 import java.util.Map;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,18 +58,18 @@ public class AccessTokenBuilderTest {
             .authenticationChallengeVerifier(mock(AuthenticationChallengeVerifier.class))
             .build();
         authenticationToken = authenticationTokenBuilder
-            .buildAuthenticationToken(clientIdentity.getCertificate(), Collections.emptyMap(), ZonedDateTime.now());
+            .buildAuthenticationToken(clientIdentity.getCertificate(), Map.of("acr", "foobar"), ZonedDateTime.now());
     }
 
     @Afo("A_20524")
     @Test
     public void requiredFieldMissingFromAuthenticationToken_ShouldThrowRequiredClaimException() {
         assertThatThrownBy(
-            () -> accessTokenBuilder.buildAccessToken(serverTokenProcessor.buildJwt(JwtDescription.builder()
-                .claims(Map.of(PROFESSION_OID.getJoseName(), "foo"))
-                .expiresAt(ZonedDateTime.now().plusMinutes(100))
-                .build()))).isInstanceOf(RequiredClaimException.class)
-            .hasMessageContaining(ID_NUMBER.getJoseName());
+            () -> accessTokenBuilder.buildAccessToken(serverTokenProcessor.buildJwt(new JwtBuilder()
+                .addAllBodyClaims(Map.of(PROFESSION_OID.getJoseName(), "foo"))
+                .expiresAt(ZonedDateTime.now().plusMinutes(100)))))
+            .isInstanceOf(RequiredClaimException.class)
+            .hasMessageContaining(CLIENT_ID.getJoseName());
     }
 
     @Afo("A_20524")
@@ -87,8 +86,7 @@ public class AccessTokenBuilderTest {
             .containsEntry(ISSUER.getJoseName(), URI_IDP_SERVER)
             .containsEntry(AUDIENCE.getJoseName(), IdpConstants.AUDIENCE)
             .containsKey(ISSUED_AT.getJoseName())
-            .containsKey(AUTH_TIME.getJoseName())
-            .containsKey(NOT_BEFORE.getJoseName());
+            .containsKey(AUTH_TIME.getJoseName());
     }
 
     @Test

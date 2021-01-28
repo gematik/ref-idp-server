@@ -21,10 +21,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.jose4j.jws.AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256;
 
 import de.gematik.idp.authentication.IdpJwtProcessor;
-import de.gematik.idp.authentication.JwtDescription;
+import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.PkiKeyResolver;
-import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -92,15 +91,12 @@ public class TokenClaimExtractionTest {
     @Test
     public void extractClientCertificate_shouldMatch(@PkiKeyResolver.Filename("ecc") final PkiIdentity identity) {
         final JsonWebToken token = new IdpJwtProcessor(identity).buildJwt(
-            JwtDescription.builder()
+            new JwtBuilder()
                 .expiresAt(ZonedDateTime.now())
-                .includeSignerCertificateInHeader(true)
-                .build()
-        );
+                .includeSignerCertificateInHeader(true));
 
-        final X509Certificate certificate = TokenClaimExtraction.extractX509ClientCertificate(token).get();
-
-        assertThat(certificate)
+        assertThat(TokenClaimExtraction.extractX509ClientCertificate(token))
+            .get()
             .isEqualTo(identity.getCertificate());
     }
 }

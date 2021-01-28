@@ -48,13 +48,24 @@ public enum ClaimName {
     CODE_CHALLENGE_METHOD("code_challenge_method"), // HASH-Algorithmus (S256) [RFC7636 # section-4.3]
     CONFIRMATION("cnf"), // gemSpec_IDP_Dienst
     CLAIMS("claims"), // gemSpec_IDP_Dienst
-    AUTHENTICATION_CONTEXT_CLASS("acr"), // https://openid.net/specs/openid-connect-core-1_0.html#IDToken
+    AUTHENTICATION_CLASS_REFERENCE("acr"), // https://openid.net/specs/openid-connect-core-1_0.html#IDToken
+    AUTHENTICATION_METHODS_REFERENCE("amr"),
+    AUTHORIZED_PARTY("azp"),
     SUBJECT("sub"),
-    X509_Certificate_Chain("x5c"),
-    NONCE("snc"),
+    X509_CERTIFICATE_CHAIN("x5c"),
+    SERVER_NONCE("snc"),
     AUDIENCE("aud"),
     JWKS_URI("jwks_uri"),
-    ACR_VALUES_SUPPORTED("acr_values_supported");
+    ACR_VALUES_SUPPORTED("acr_values_supported"),
+    TOKEN_TYPE("token_type"),
+    NONCE("nonce"),
+    ACCESS_TOKEN_HASH("at_hash"),
+    DEVICE_MANUFACTURER("manufacturer"),
+    DEVICE_PRODUCT("product"),
+    DEVICE_MODEL("model"),
+    DEVICE_OS("os"),
+    DEVICE_OS_VERSION("osVersion"),
+    DEVICE_NAME("name");
 
     @JsonValue
     private final String joseName;

@@ -20,22 +20,23 @@ import static de.gematik.idp.field.ClaimName.*;
 
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.IdpJwtProcessor;
-import de.gematik.idp.authentication.JwtDescription;
+import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.exceptions.RequiredClaimException;
 import de.gematik.idp.field.ClaimName;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.Data;
-import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 @Data
 public class AccessTokenBuilder {
 
-    private static final List<ClaimName> requiredClaims = Arrays.asList(PROFESSION_OID, ID_NUMBER);
+    private static final List<ClaimName> CLAIMS_TO_TAKE_FROM_AUTHENTICATION_TOKEN = List
+        .of(PROFESSION_OID, GIVEN_NAME, FAMILY_NAME,
+            ORGANIZATION_NAME, ID_NUMBER, CLIENT_ID, SCOPE, AUTH_TIME);
     private final IdpJwtProcessor jwtProcessor;
     private final String uriIdpServer;
 
@@ -43,29 +44,26 @@ public class AccessTokenBuilder {
         final ZonedDateTime now = ZonedDateTime.now();
         final Map<String, Object> claimsMap = new HashMap<>();
 
-        claimsMap.putAll(authenticationToken.getBodyClaims());
+        CLAIMS_TO_TAKE_FROM_AUTHENTICATION_TOKEN.stream()
+            .map(claimName -> Pair.of(claimName, authenticationToken.getBodyClaim(claimName)))
+            .filter(pair -> pair.getValue().isPresent())
+            .forEach(pair -> claimsMap.put(pair.getKey().getJoseName(), pair.getValue().get()));
         claimsMap.put(ISSUED_AT.getJoseName(), now.toEpochSecond());
-        claimsMap.put(NOT_BEFORE.getJoseName(), now.toEpochSecond());
-        claimsMap.put(AUTH_TIME.getJoseName(), now.toEpochSecond());
         claimsMap.put(ISSUER.getJoseName(), uriIdpServer);
         claimsMap.put(AUDIENCE.getJoseName(), IdpConstants.AUDIENCE);
-
-        for (final ClaimName requiredClaim : requiredClaims) {
-            final Object claim = claimsMap.get(requiredClaim.getJoseName());
-            if (ObjectUtils.isEmpty(claim)) {
-                throw new RequiredClaimException(
-                    String.format("claim '%s' does not exits, is null or empty", requiredClaim.getJoseName()));
-            }
-        }
+        claimsMap.put(AUTHENTICATION_CLASS_REFERENCE.getJoseName(), IdpConstants.EIDAS_LOA_HIGH);
+        claimsMap.put(SUBJECT.getJoseName(), "subject");
+        claimsMap.put(AUTHORIZED_PARTY.getJoseName(), authenticationToken.getBodyClaim(CLIENT_ID)
+            .orElseThrow(() -> new RequiredClaimException("Unable to obtain " + CLIENT_ID.getJoseName() + "!")));
+        claimsMap.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), "[\"mfa\", \"sc\", \"pin\"]");
 
         final Map<String, Object> headerClaimsMap = new HashMap<>();
         headerClaimsMap.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
         headerClaimsMap.put(TYPE.getJoseName(), "at+JWT");
 
-        return jwtProcessor.buildJwt(JwtDescription.builder()
-            .claims(claimsMap)
-            .headers(headerClaimsMap)
-            .expiresAt(now.plusMinutes(5))
-            .build());
+        return jwtProcessor.buildJwt(new JwtBuilder()
+            .replaceAllBodyClaims(claimsMap)
+            .replaceAllHeaderClaims(headerClaimsMap)
+            .expiresAt(now.plusMinutes(5)));
     }
 }

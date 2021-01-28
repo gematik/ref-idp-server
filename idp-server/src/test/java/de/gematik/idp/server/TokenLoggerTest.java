@@ -24,12 +24,18 @@ import de.gematik.idp.client.IdpClient;
 import de.gematik.idp.client.IdpTokenResult;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.server.configuration.IdpConfiguration;
+import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.tests.PkiKeyResolver;
+import de.gematik.idp.token.IdpJwe;
+import de.gematik.idp.token.JsonWebToken;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.stream.Collectors;
 import kong.unirest.BodyPart;
+import kong.unirest.HttpRequest;
+import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.io.FileUtils;
@@ -47,7 +53,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 public class TokenLoggerTest {
 
     @Autowired
-    IdpConfiguration idpConfiguration;
+    private IdpConfiguration idpConfiguration;
+    @Autowired
+    private IdpKey authKey;
     private IdpClient idpClient;
     private PkiIdentity egkUserIdentity;
     @LocalServerPort
@@ -85,28 +93,35 @@ public class TokenLoggerTest {
     @Test
     public void writeAllTokensToFile() {
         // Authorization Request
-        idpClient.setBeforeAuthorizationMapper(getRequest -> {
-                appendTokenToFile(
-                    tokenLogFile, "Authorization Request", getRequest.getUrl());
-                return getRequest;
-            }
-        );
+        idpClient.setBeforeAuthorizationCallback(getRequest -> appendRequestToFile(
+            tokenLogFile, "Authorization Request", getRequest));
+
         // Challenge Token
-        idpClient.setAfterAuthorizationCallback(response -> appendTokenToFile(
-            tokenLogFile, "Challenge Token", response.getBody().getChallenge() + "\n" +
-                jwtToJson(response.getBody().getChallenge())));
+        idpClient.setAfterAuthorizationCallback(response -> {
+            appendResponseToFile(tokenLogFile, "Authorization Response", response);
+
+            appendTokenToFile(
+                tokenLogFile, "Challenge Token", response.getBody().getChallenge() + "\n" +
+                    jwtToJson(response.getBody().getChallenge().getJwtRawString()));
+        });
 
         // Challenge Response Token
         idpClient.setBeforeAuthenticationCallback(mb -> mb.getBody().get().multiParts().stream()
             .filter(bodyPart -> bodyPart.getName().equals("signed_challenge"))
             .map(BodyPart::getValue)
             .findAny()
+            .map(Object::toString)
+            .map(IdpJwe::new)
+            .map(jwe -> jwe.decrypt(authKey.getIdentity().getPrivateKey()))
+            .map(JsonWebToken::getJwtRawString)
             .ifPresent(o -> appendTokenToFile(tokenLogFile, "Challenge Response Token",
                 o.toString() + "\n" + jwtToJson(o.toString())))
         );
 
         // Authorization Code
         idpClient.setAfterAuthenticationCallback(response -> {
+                appendResponseToFile(tokenLogFile, "Authentication Response", response);
+
                 final String tokenAuthorizationCode = extractParameterValue(response.getHeaders().getFirst("Location"),
                     "code");
                 appendTokenToFile(tokenLogFile, "Authorization Code",
@@ -116,6 +131,9 @@ public class TokenLoggerTest {
                 appendTokenToFile(tokenLogFile, "SSO Token", ssToken + "\n" + jwtToJson(ssToken));
             }
         );
+
+        idpClient.setAfterTokenCallback(response ->
+            appendResponseToFile(tokenLogFile, "Token Response", response));
 
         // Access Token
         final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
@@ -141,9 +159,29 @@ public class TokenLoggerTest {
         return file;
     }
 
+    private void appendRequestToFile(final File file, final String name, final HttpRequest<?> request) {
+        final String multipartBody = request.getBody().map(
+            body -> body.multiParts().stream()
+                .map(part -> part.getName() + "=" + part.getValue())
+                .collect(Collectors.joining("\n", "Multiparts:\n", "\n")))
+            .orElse("");
+        appentToFile(file, name + ":\n" + request.getUrl() + "\n" + multipartBody + "\n");
+    }
+
+    private void appendResponseToFile(final File file, final String name, final HttpResponse<?> response) {
+        appentToFile(file, name + ":\n" + response.getStatus() + "\n" + response.getHeaders()
+            .all().stream()
+            .map(header -> header.getName() + "=" + header.getValue())
+            .collect(Collectors.joining(",\n")) + "\n" + response.getBody() + "\n");
+    }
+
     private void appendTokenToFile(final File file, final String tokenName, final String tokenContent) {
+        appentToFile(file, tokenName + ":\n" + tokenContent + "\n\n");
+    }
+
+    private void appentToFile(final File file, final String content) {
         try {
-            FileUtils.writeStringToFile(file, tokenName + ":\n" + tokenContent + "\n\n", StandardCharsets.UTF_8, true);
+            FileUtils.writeStringToFile(file, content, StandardCharsets.UTF_8, true);
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }

@@ -33,5 +33,6 @@ public class AuthorizationRequest {
     private final String redirectUri;
     private final String state;
     private final Set<IdpScope> scopes;
+    private final String nonce;
 }
 

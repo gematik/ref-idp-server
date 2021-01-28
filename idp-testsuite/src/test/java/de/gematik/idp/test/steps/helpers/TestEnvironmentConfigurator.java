@@ -17,7 +17,6 @@
 package de.gematik.idp.test.steps.helpers;
 
 import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -32,7 +31,7 @@ public class TestEnvironmentConfigurator {
     private static String DISCOVERY_URL = null;
     private static String GET_CHALLENGE_URL = "";
     private static String POST_SIGNED_CHALLENGE_URL = "";
-    private static String POST_SSOTOKEN_URL = "";
+    private static String POST_SSOTOKEN_URL = "/../sso_response";
 
     public static synchronized String getDiscoveryDocumentURL() throws IOException {
         // To allow IDE to simply call features/scenarios we do check for missing initialization in this call
@@ -98,7 +97,7 @@ public class TestEnvironmentConfigurator {
 
         if (idpServerType != null) {
             final Properties props = new Properties();
-            props.load(new FileInputStream(new File("testsuite_config.properties")));
+            props.load(new FileInputStream("testsuite_config.properties"));
             GET_CHALLENGE_URL = props.getProperty(idpServerType + ".url.auth.getchallenge");
             POST_SIGNED_CHALLENGE_URL = props.getProperty(idpServerType + ".url.auth.signedchallengeflow");
             POST_SSOTOKEN_URL = props.getProperty(idpServerType + ".url.auth.ssoflow");

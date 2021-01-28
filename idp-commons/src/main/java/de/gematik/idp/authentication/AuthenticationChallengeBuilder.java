@@ -25,6 +25,7 @@ import de.gematik.idp.IdpConstants;
 import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.IdpJoseException;
+import de.gematik.idp.token.JsonWebToken;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -51,16 +52,13 @@ public class AuthenticationChallengeBuilder {
         final String clientId,
         final String state,
         final String redirect,
-        final String code, final String scope) {
+        final String code, final String scope, final String nonce) {
         final JwtClaims claims = new JwtClaims();
         claims.setIssuer(uriIdpServer);
-        claims.setAudience(IdpConstants.AUDIENCE);
 
         final ZonedDateTime now = ZonedDateTime.now();
         claims.setClaim(EXPIRES_AT.getJoseName(), now.plusMinutes(CHALLENGE_TOKEN_VALIDITY_IN_MINUTES).toEpochSecond());
         claims.setClaim(ISSUED_AT.getJoseName(), now.toEpochSecond());
-        claims.setClaim(NOT_BEFORE.getJoseName(), now.toEpochSecond());
-        claims.setSubject("subject");
         claims.setClaim(RESPONSE_TYPE.getJoseName(), "code");
         claims.setClaim(SCOPE.getJoseName(), scope);
         claims.setClaim(CLIENT_ID.getJoseName(), clientId);
@@ -68,9 +66,13 @@ public class AuthenticationChallengeBuilder {
         claims.setClaim(REDIRECT_URI.getJoseName(), redirect);
         claims.setClaim(CODE_CHALLENGE_METHOD.getJoseName(), "S256");
         claims.setClaim(CODE_CHALLENGE.getJoseName(), code);
+        claims.setClaim(TOKEN_TYPE.getJoseName(), "challenge");
+        if (nonce != null) {
+            claims.setClaim(NONCE.getJoseName(), nonce);
+        }
+        claims.setClaim(SERVER_NONCE.getJoseName(), new Nonce().getNonceAsBase64(NONCE_BYTE_AMOUNT));
 
         final Map<String, Object> headerClaims = new HashMap<>();
-        headerClaims.put(NONCE.getJoseName(), new Nonce().getNonceAsBase64(NONCE_BYTE_AMOUNT));
         headerClaims.put(TYPE.getJoseName(), "JWT");
         headerClaims
             .put(EXPIRES_AT.getJoseName(), now.plusMinutes(CHALLENGE_TOKEN_VALIDITY_IN_MINUTES).toEpochSecond());
@@ -83,7 +85,7 @@ public class AuthenticationChallengeBuilder {
             .build();
     }
 
-    private String buildJwt(final String payload, @NonNull final Map<String, Object> headerClaims) {
+    private JsonWebToken buildJwt(final String payload, @NonNull final Map<String, Object> headerClaims) {
         final JsonWebSignature jws = new JsonWebSignature();
 
         jws.setPayload(payload);
@@ -96,7 +98,7 @@ public class AuthenticationChallengeBuilder {
         headerClaims.keySet().forEach(key -> jws.setHeader(key, headerClaims.get(key)));
 
         try {
-            return jws.getCompactSerialization();
+            return new JsonWebToken(jws.getCompactSerialization());
         } catch (final JoseException e) {
             throw new IdpJoseException(e);
         }

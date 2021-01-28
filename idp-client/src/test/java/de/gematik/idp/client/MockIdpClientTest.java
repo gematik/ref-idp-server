@@ -18,7 +18,6 @@ package de.gematik.idp.client;
 
 import static de.gematik.idp.field.ClaimName.ALGORITHM;
 import static de.gematik.idp.field.ClaimName.ISSUER;
-import static de.gematik.idp.field.ClaimName.NOT_BEFORE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -28,8 +27,6 @@ import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.JsonWebToken;
-import de.gematik.idp.token.TokenClaimExtraction;
-import java.time.ZonedDateTime;
 import java.util.Map;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.InvalidJwtSignatureException;
@@ -195,30 +192,5 @@ public class MockIdpClientTest {
         assertThat(bodyClaims.get(ISSUER.getJoseName()))
             .as("AccessToken ISS claim")
             .isEqualTo(URI_IDP_SERVER);
-    }
-
-    @Test
-    @Afo("A_20374")
-    public void verifyNbfInAccessTokenIsCorrect() {
-        final JsonWebToken jwt = mockIdpClient.login(rsaClientIdentity).getAccessToken();
-        final Map<String, Object> bodyClaims = jwt.getBodyClaims();
-        assertThat(TokenClaimExtraction.claimToDateTime(bodyClaims.get(NOT_BEFORE.getJoseName())))
-            .isBetween(ZonedDateTime.now().minusSeconds(1), ZonedDateTime.now());
-    }
-
-    @Test
-    @Afo("A_20374")
-    public void verifyAccessTokenCheckByNbf() {
-        final JsonWebToken jwt = mockIdpClient.login(rsaClientIdentity).getAccessToken();
-        final ZonedDateTime dateUseAccessToken = ZonedDateTime.now();
-        final ZonedDateTime notBefore = jwt.getNotBefore();
-
-        assertThat(dateUseAccessToken)
-            .overridingErrorMessage("Time check exp header failed")
-            .isBetween(notBefore.minusSeconds(1), jwt.getExpiresAt());
-
-        assertThat(dateUseAccessToken)
-            .overridingErrorMessage("Time check exp body failed")
-            .isBetween(notBefore.minusSeconds(1), jwt.getExpiresAtBody());
     }
 }

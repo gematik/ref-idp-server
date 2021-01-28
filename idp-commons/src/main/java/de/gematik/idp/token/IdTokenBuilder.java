@@ -20,26 +20,39 @@ import static de.gematik.idp.field.ClaimName.*;
 
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.IdpJwtProcessor;
-import de.gematik.idp.authentication.JwtDescription;
+import de.gematik.idp.authentication.JwtBuilder;
+import de.gematik.idp.field.ClaimName;
 import java.time.ZonedDateTime;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.Data;
+import org.apache.commons.lang3.ArrayUtils;
 
 @Data
 public class IdTokenBuilder {
 
+    private static final Set<String> requiredClaims = Stream.of(PROFESSION_OID, GIVEN_NAME, FAMILY_NAME,
+        ORGANIZATION_NAME, ID_NUMBER, AUTHENTICATION_CLASS_REFERENCE, CLIENT_ID, SCOPE, AUTH_TIME)
+        .map(ClaimName::getJoseName)
+        .collect(Collectors.toSet());
     private final IdpJwtProcessor jwtProcessor;
     private final String uriIdpServer;
 
-    public JsonWebToken buildIdToken(final String clientId, final JsonWebToken authenticationToken) {
+    public JsonWebToken buildIdToken(final String clientId, final JsonWebToken authenticationToken,
+        final byte[] accesTokenHash) {
         final Map<String, Object> claimsMap = new HashMap<>();
+        final ZonedDateTime now = ZonedDateTime.now();
+        final String atHashValue = Base64.getEncoder().encodeToString(
+            ArrayUtils.subarray(accesTokenHash, 0, 16));
+
         claimsMap.put(ISSUER.getJoseName(), uriIdpServer);
         claimsMap.put(SUBJECT.getJoseName(), clientId);
         claimsMap.put(AUDIENCE.getJoseName(), IdpConstants.AUDIENCE);
-        final ZonedDateTime now = ZonedDateTime.now();
         claimsMap.put(ISSUED_AT.getJoseName(), now.toEpochSecond());
-        claimsMap.put(NOT_BEFORE.getJoseName(), now.toEpochSecond());
 
         claimsMap.put(PROFESSION_OID.getJoseName(), authenticationToken.getBodyClaim(PROFESSION_OID).orElse(""));
         claimsMap
@@ -47,14 +60,19 @@ public class IdTokenBuilder {
         claimsMap.put(ID_NUMBER.getJoseName(), authenticationToken.getBodyClaim(ID_NUMBER).orElse(""));
         claimsMap.put(GIVEN_NAME.getJoseName(), authenticationToken.getBodyClaim(GIVEN_NAME).orElse(""));
         claimsMap.put(FAMILY_NAME.getJoseName(), authenticationToken.getBodyClaim(FAMILY_NAME).orElse(""));
+        claimsMap.put(AUTH_TIME.getJoseName(), authenticationToken.getBodyClaim(AUTH_TIME).orElse(""));
+        claimsMap.put(NONCE.getJoseName(), authenticationToken.getBodyClaim(NONCE).orElse(""));
+        claimsMap.put(AUTHORIZED_PARTY.getJoseName(), authenticationToken.getBodyClaim(CLIENT_ID).get());
+        claimsMap.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), "[\"mfa\", \"sc\", \"pin\"]");
+        claimsMap.put(AUTHENTICATION_CLASS_REFERENCE.getJoseName(), IdpConstants.EIDAS_LOA_HIGH);
+        claimsMap.put(ACCESS_TOKEN_HASH.getJoseName(), atHashValue);
 
         final Map<String, Object> headerClaims = new HashMap<>();
         headerClaims.put(TYPE.getJoseName(), "JWT");
 
-        return jwtProcessor.buildJwt(JwtDescription.builder()
-            .claims(claimsMap)
-            .headers(headerClaims)
-            .expiresAt(now.plusMinutes(5))
-            .build());
+        return jwtProcessor.buildJwt(new JwtBuilder()
+            .addAllBodyClaims(claimsMap)
+            .addAllHeaderClaims(headerClaims)
+            .expiresAt(now.plusMinutes(5)));
     }
 }

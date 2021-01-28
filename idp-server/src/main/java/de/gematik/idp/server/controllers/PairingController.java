@@ -50,7 +50,7 @@ public class PairingController {
     }
 
     @DeleteMapping(PAIRING_ENDPOINT + "/{kvnr}")
-    @ApiOperation(httpMethod = "DELETE", value = "Endpunkt für das Löschen aller Pairingdaten zu einer KVNR", notes = "Es werden zur übergebenen KVNR alle gespeicherten Pairingdaten gelöscht. ")
+    @ApiOperation(httpMethod = "DELETE", value = "Endpunkt zum Löschen aller Pairingdaten zu einer KVNR", notes = "Es werden zur übergebenen KVNR alle gespeicherten Pairingdaten gelöscht. ")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Erfolgreich Pairingdaten gelöscht"),
         @ApiResponse(responseCode = "400", description = "Ungültige Anfrage (Parameter fehlen/ungültig)"),
@@ -66,7 +66,7 @@ public class PairingController {
     }
 
     @DeleteMapping(PAIRING_ENDPOINT + "/{kvnr}/{id}")
-    @ApiOperation(httpMethod = "DELETE", value = "Endpunkt für das Löschen eines spezifischen Pairingdatensatzes",
+    @ApiOperation(httpMethod = "DELETE", value = "Endpunkt zum Löschen eines spezifischen Pairingdatensatzes",
         notes = "Es wird zur übergebenen KVNR und ID der entsprechende Pairingdatensatz gelöscht. ")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Erfolgreich Pairingdaten gelöscht"),

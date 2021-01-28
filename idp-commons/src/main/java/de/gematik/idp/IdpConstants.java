@@ -23,7 +23,8 @@ import lombok.NoArgsConstructor;
 public final class IdpConstants {
 
     public static final String DISCOVERY_DOCUMENT_ENDPOINT = "/discoveryDocument";
-    public static final String AUTHORIZATION_ENDPOINT = "/authorization";
+    public static final String BASIC_AUTHORIZATION_ENDPOINT = "/sign_response";
+    public static final String SSO_AUTHORIZATION_ENDPOINT = "/sso_response";
     public static final String TOKEN_ENDPOINT = "/token";
     public static final String PAIRING_ENDPOINT = "/pairing";
     public static final String PUK_URI_AUTH = "/authKey/jwks.json";
@@ -31,5 +32,6 @@ public final class IdpConstants {
     public static final String PUK_URI_DISC = "/discKey/jwks.json";
     public static final String CLIENT_ID = "eRezeptApp";
     public static final String AUDIENCE = "https://erp.zentral.erp.splitdns.ti-dienste.de";
+    public static final String EIDAS_LOA_HIGH = "eidas-loa-high";
     public static final int JTI_LENGTH = 16;
 }

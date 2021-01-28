@@ -16,6 +16,7 @@
 
 package de.gematik.idp.test.steps.model;
 
+@SuppressWarnings("unused")
 public enum ClaimLocation {
     body, header
 }

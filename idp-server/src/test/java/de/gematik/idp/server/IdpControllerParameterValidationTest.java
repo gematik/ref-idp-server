@@ -24,6 +24,7 @@ import de.gematik.idp.authentication.AuthenticationTokenBuilder;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpController;
+import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.exceptions.handler.IdpServerExceptionHandler;
 import de.gematik.idp.server.services.IdpAuthenticator;
 import de.gematik.idp.server.services.PkceChecker;
@@ -60,6 +61,8 @@ public class IdpControllerParameterValidationTest {
         Pair.of("redirect_uri", "fdsafdsa"),
         Pair.of("code_challenge", "l1yM_9krH3fPE2aOkRXzHQDU0lKn0mI0-Gp165Pgb1Y"),
         Pair.of("code_challenge_method", "S256"),
+        Pair.of("response_type", "code"),
+        Pair.of("nonce", "foobarschmar"),
         Pair.of("scope", "openid e-rezept"));
 
     private static final List<Pair<String, String>> getAccessTokenParameterMap = List.of(
@@ -96,6 +99,8 @@ public class IdpControllerParameterValidationTest {
     private IdpJwtProcessor jwtProcessor;
     @MockBean
     private RequestAccessToken requestAccessToken;
+    @MockBean
+    private IdpKey authKey;
 
     @Autowired
     private IdpController idpController;
@@ -104,13 +109,35 @@ public class IdpControllerParameterValidationTest {
 
     @BeforeEach
     public void setup() {
-        mockMvc = MockMvcBuilders.standaloneSetup(new IdpServerExceptionHandler(), idpController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(new IdpServerExceptionHandler(serverUrlService, null),
+            idpController)
+            .build();
     }
 
     @Test
     public void getAuthenticationChallenge_invalidClientId_shouldGiveError() throws Exception {
         mockMvc.perform(buildGetChallengeRequest(getInvalidationFunction("client_id", "invalid_client_id")))
             .andDo(mvcResult -> assertThat(mvcResult.getResponse().getContentAsString()).contains("client_id"))
+            .andDo(mvcResult -> assertThat(mvcResult.getResponse().getStatus()).isEqualTo(400));
+    }
+
+    @Test
+    public void getAuthenticationChallenge_noNonce_shouldGive200() throws Exception {
+        mockMvc.perform(buildGetChallengeRequest(getInvalidationFunction("nonce", null)))
+            .andDo(mvcResult -> assertThat(mvcResult.getResponse().getStatus()).isEqualTo(200));
+    }
+
+    @Test
+    public void getAuthenticationChallenge_missingResponseType_shouldGiveError() throws Exception {
+        mockMvc.perform(buildGetChallengeRequest(getInvalidationFunction("response_type", null)))
+            .andDo(mvcResult -> assertThat(mvcResult.getResponse().getContentAsString()).contains("response_type"))
+            .andDo(mvcResult -> assertThat(mvcResult.getResponse().getStatus()).isEqualTo(400));
+    }
+
+    @Test
+    public void getAuthenticationChallenge_invalidResponseType_shouldGiveError() throws Exception {
+        mockMvc.perform(buildGetChallengeRequest(getInvalidationFunction("response_type", "something_else")))
+            .andDo(mvcResult -> assertThat(mvcResult.getResponse().getContentAsString()).contains("response_type"))
             .andDo(mvcResult -> assertThat(mvcResult.getResponse().getStatus()).isEqualTo(400));
     }
 
@@ -126,6 +153,19 @@ public class IdpControllerParameterValidationTest {
         mockMvc.perform(buildGetChallengeRequest(getInvalidationFunction("scope", "openid e-rezept x")))
             .andDo(mvcResult -> assertThat(mvcResult.getResponse().getContentAsString()).contains("scope"))
             .andDo(mvcResult -> assertThat(mvcResult.getResponse().getStatus()).isEqualTo(400));
+    }
+
+    @Test
+    public void getAuthenticationChallenge_onlyOpenidScope_shouldGiveError() throws Exception {
+        mockMvc.perform(buildGetChallengeRequest(getInvalidationFunction("scope", "openid")))
+            .andDo(mvcResult -> assertThat(mvcResult.getResponse().getContentAsString()).contains("scope"))
+            .andDo(mvcResult -> assertThat(mvcResult.getResponse().getStatus()).isEqualTo(400));
+    }
+
+    @Test
+    public void getAuthenticationChallenge_onlyOpenidScope_should200() throws Exception {
+        mockMvc.perform(buildGetChallengeRequest(getInvalidationFunction("scope", "e-rezept openid")))
+            .andDo(mvcResult -> assertThat(mvcResult.getResponse().getStatus()).isEqualTo(200));
     }
 
     @Test
@@ -194,7 +234,7 @@ public class IdpControllerParameterValidationTest {
     private MockHttpServletRequestBuilder buildGetChallengeRequest(
         final Function<Entry<String, String>, Entry<String, String>> entryStringFunction) {
         final MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
-            .get(IdpConstants.AUTHORIZATION_ENDPOINT);
+            .get(IdpConstants.BASIC_AUTHORIZATION_ENDPOINT);
 
         getChallengeParameterMap.stream()
             .map(entryStringFunction)
@@ -210,6 +250,7 @@ public class IdpControllerParameterValidationTest {
 
         getAccessTokenParameterMap.stream()
             .map(entryStringFunction)
+            .filter(pair -> pair.getValue() != null)
             .forEach(entry -> requestBuilder.queryParam(entry.getKey(), entry.getValue()));
 
         return requestBuilder;

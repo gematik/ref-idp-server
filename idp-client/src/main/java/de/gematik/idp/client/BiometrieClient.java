@@ -1,61 +1,49 @@
 package de.gematik.idp.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.client.data.BiometrieData;
 import de.gematik.idp.token.JsonWebToken;
 import java.util.List;
 import javax.ws.rs.core.HttpHeaders;
+import kong.unirest.GenericType;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
+import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpStatus;
 import org.springframework.http.MediaType;
 
+@RequiredArgsConstructor
 public class BiometrieClient {
 
-    private String host;
-    private final String accessToken;
+    private final String serverUrl;
+    private final JsonWebToken accessToken;
 
-    public BiometrieClient(String host, JsonWebToken token) {
-        this.host = host;
-        this.accessToken = token.getJwtRawString();
-    }
-
-    public boolean insertPairing(BiometrieData biometrieData) {
-        HttpResponse<String> response = Unirest.put(host)
+    public boolean insertPairing(final BiometrieData biometrieData) {
+        final HttpResponse<String> response = Unirest.put(serverUrl)
             .body(biometrieData)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getJwtRawString())
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .asString();
         return response.getStatus() == HttpStatus.SC_OK;
     }
 
-    public List<BiometrieData> getAllPairingsForKvnr(String kvnr) {
-        HttpResponse<String> response = Unirest
-            .get(host + "/" + kvnr)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
-            .asString();
+    public List<BiometrieData> getAllPairingsForKvnr(final String kvnr) {
+        final HttpResponse<List<BiometrieData>> response = Unirest
+            .get(serverUrl + "/" + kvnr)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getJwtRawString())
+            .asObject(new GenericType<>() {
+            });
 
         if (response.getStatus() != HttpStatus.SC_OK) {
             throw new IdpClientRuntimeException(
                 "Unexpected Server-Response " + response.getStatus());
         }
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            List<BiometrieData> biometrieDataList = mapper.reader()
-                .forType(new TypeReference<List<BiometrieData>>() {
-                })
-                .readValue(response.getBody());
-            return biometrieDataList;
-        } catch (JsonProcessingException e) {
-            throw new IdpClientRuntimeException("error occured: " + e);
-        }
+
+        return response.getBody();
     }
 
-    public boolean deleteAllPairingsForKvnr(String kvnr) {
-        HttpResponse<String> response = Unirest.delete(host + "/" + kvnr)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+    public boolean deleteAllPairingsForKvnr(final String kvnr) {
+        final HttpResponse<String> response = Unirest.delete(serverUrl + "/" + kvnr)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getJwtRawString())
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .asString();
         return response.getStatus() == HttpStatus.SC_OK;

@@ -16,19 +16,7 @@
 
 package de.gematik.idp.token;
 
-import static de.gematik.idp.field.ClaimName.ALGORITHM;
-import static de.gematik.idp.field.ClaimName.AUDIENCE;
-import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
-import static de.gematik.idp.field.ClaimName.FAMILY_NAME;
-import static de.gematik.idp.field.ClaimName.GIVEN_NAME;
-import static de.gematik.idp.field.ClaimName.ID_NUMBER;
-import static de.gematik.idp.field.ClaimName.ISSUED_AT;
-import static de.gematik.idp.field.ClaimName.ISSUER;
-import static de.gematik.idp.field.ClaimName.JWKS_URI;
-import static de.gematik.idp.field.ClaimName.NOT_BEFORE;
-import static de.gematik.idp.field.ClaimName.ORGANIZATION_NAME;
-import static de.gematik.idp.field.ClaimName.PROFESSION_OID;
-import static de.gematik.idp.field.ClaimName.SUBJECT;
+import static de.gematik.idp.field.ClaimName.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import de.gematik.idp.IdpConstants;
@@ -37,9 +25,13 @@ import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.tests.Rfc;
+import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,8 +41,8 @@ public class IdTokenBuilderTest {
 
     private static final String uriIdpServer = "https://idp.zentral.idp.splitdns.ti-dienste.de";
     private static final long maxIdTokenExpirationInSec = 86400;
-
-    private JsonWebToken idToken;
+    private IdTokenBuilder idTokenBuilder;
+    private JsonWebToken authenticationToken;
 
     @BeforeEach
     public void init(@PkiKeyResolver.Filename("authz_rsa") final PkiIdentity clientIdentity) {
@@ -61,10 +53,10 @@ public class IdTokenBuilderTest {
         bodyClaims.put(GIVEN_NAME.getJoseName(), "given_name");
         bodyClaims.put(FAMILY_NAME.getJoseName(), "family_name");
         bodyClaims.put(JWKS_URI.getJoseName(), "jwks_uri");
-        final JsonWebToken authenticationToken = new JsonWebToken("", Map.of("headerNotCopy", "headerNotCopy"),
+        bodyClaims.put(CLIENT_ID.getJoseName(), IdpConstants.CLIENT_ID);
+        authenticationToken = new JsonWebToken("", Map.of("headerNotCopy", "headerNotCopy"),
             bodyClaims);
-        final IdTokenBuilder idTokenBuilder = new IdTokenBuilder(new IdpJwtProcessor(clientIdentity), uriIdpServer);
-        idToken = idTokenBuilder.buildIdToken(IdpConstants.CLIENT_ID, authenticationToken);
+        idTokenBuilder = new IdTokenBuilder(new IdpJwtProcessor(clientIdentity), uriIdpServer);
     }
 
     @Rfc("OpenID Connect Core 1.0 incorporating errata set 1 - 2 ID Token")
@@ -72,13 +64,16 @@ public class IdTokenBuilderTest {
     @Afo("TODO A_20297/ML-110385?")
     @Test
     public void checkIdTokenClaims() {
+        final JsonWebToken idToken = idTokenBuilder
+            .buildIdToken(IdpConstants.CLIENT_ID, authenticationToken, "fdsjkfldsöaf".getBytes(
+                StandardCharsets.UTF_8));
+
         assertThat(idToken.getBodyClaims())
             .containsEntry(ISSUER.getJoseName(), uriIdpServer)
             .containsEntry(SUBJECT.getJoseName(), IdpConstants.CLIENT_ID)
             .containsEntry(AUDIENCE.getJoseName(), IdpConstants.AUDIENCE)
             .containsKey(EXPIRES_AT.getJoseName())
             .containsKey(ISSUED_AT.getJoseName())
-            .containsKey(NOT_BEFORE.getJoseName())
             .containsEntry(PROFESSION_OID.getJoseName(), "profession")
             .containsEntry(ORGANIZATION_NAME.getJoseName(), "organization")
             .containsEntry(ID_NUMBER.getJoseName(), "id_number")
@@ -95,16 +90,30 @@ public class IdTokenBuilderTest {
     @Afo("A_20462")
     @Test
     public void checkIdTokenClaimTimestamps() {
+        final JsonWebToken idToken = idTokenBuilder
+            .buildIdToken(IdpConstants.CLIENT_ID, authenticationToken, "fdsjkfldsöaf".getBytes(
+                StandardCharsets.UTF_8));
+
         final long now = ZonedDateTime.now().toEpochSecond();
         final long expHeader = idToken.getExpiresAt().toEpochSecond();
         final long expBody = idToken.getExpiresAtBody().toEpochSecond();
         final long iat = idToken.getIssuedAt().toEpochSecond();
-        final long nbf = idToken.getNotBefore().toEpochSecond();
 
         assertThat(now).isGreaterThanOrEqualTo(iat);
-        assertThat(now).isGreaterThanOrEqualTo(nbf);
         assertThat(now).isLessThan(expHeader);
         assertThat(now).isLessThan(expBody);
         assertThat(expHeader - now).isLessThan(maxIdTokenExpirationInSec);
+    }
+
+    @Rfc("OpenID Connect Core 1.0 - 3.1.3.6.")
+    @Test
+    public void checkIdTokenClaimAtHash() {
+        final byte[] accesTokenHash = DigestUtils.sha256("fdsjkfldsöaf");
+        final JsonWebToken idToken = idTokenBuilder
+            .buildIdToken(IdpConstants.CLIENT_ID, authenticationToken, accesTokenHash);
+
+        assertThat(Base64.getDecoder().decode(idToken.getStringBodyClaim(ACCESS_TOKEN_HASH).get()))
+            .isEqualTo(ArrayUtils.subarray(accesTokenHash, 0, (128 / 8)))
+            .hasSize(128 / 8);
     }
 }

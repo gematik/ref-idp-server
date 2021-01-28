@@ -1,10 +1,10 @@
-# ![Logo](doc/images/IDPLogo-64.png) Gematik IDP Zulassungstestsuite
+# ![Logo](doc/images/IDPLogo-64.png) Gematik IDP Zulassungstestsuite v6.0.0
 
 Die Gematik IDP Zulassungstestsuite dient zur Pr&uuml;fung externer IDP Dienst Drittanbieter. Sie ist derzeit in
 Entwicklung und noch **NICHT** fertiggestellt. Ziel der Suite ist es sowohl externe IDP Dienste, als auch die Gematik
 interne Referenzimplementierung bezüglich ihrer Eignung als IDP Dienst in der TI Umgebung zu testen.
 
-#### Informationen zum IDP Dienst
+## Informationen zum IDP Dienst
 
 [Produkübersicht (intern)](https://confluence.int.gematik.de/display/DEV/IDP+-+Aufbau)
 
@@ -39,6 +39,35 @@ Weiterführende interne Dokumente
   JSON Web Signature)
 * [RFC7516 Section 3](https://tools.ietf.org/html/rfc7516#section-3) beschreibt die zu verwendende Form der
   Verschlüsslung (JSON Web Encryption)
+
+## Testüberdeckung
+
+mit dem aktuellen Release sind folgende Testszenarien abgedeckt:
+
+* Discovery Endpunkt
+    * Tests über Erreichbarkeit des Endpunkts, Struktur der Antwort, Inhalte der Claims, Signaturen, zeitliche
+      Gültigkeit
+    * _In Arbeit: ungültige Zertifikate_
+* Authorization Endpunkt - Anforderung Challenge Token
+    * Tests über Erreichbarkeit des Endpunkts, Eingangsparameter, Struktur der Antwort, Inhalte der Claims, Signaturen,
+      Negativtests auf Parameter, Fehlermeldungen
+    * _Noch nicht realisiert: zeitliche Gültigkeit, kartenspezifische Szenarien_
+* Authorization Endpunkt - Anforderung Tokencode
+    * Tests über Erreichbarkeit des Endpunkts, Eingangsparameter, beide Flows (signed challenge, sso token), Signaturen,
+      Negativtests auf Parameter, Fehlermeldungen
+    * _Abzuklären: Struktur der Antwort, Inhalte der Claims_
+    * _Noch nicht realisiert: zeitliche Gültigkeit, ungültige Zertifikate, ungültiger SSO Token_
+* Token Endpunkt - Anforderung Access Token
+    * Tests über Erreichbarkeit des Endpunkts, Eingangsparameter, Beide FLows (signed challenge, sso token),
+      Signaturen (ID Token), Negativtests auf Parameter
+    * _Abzuklären: Struktur der Antwort, Inhalte der Claims_
+    * _In Arbeit: Fehlermeldungen_
+    * _Noch nicht realisiert: zeitliche Gültigkeit, Ungültige Zertifikate, kartenspezifische Szenarien_
+
+Noch nicht realisiert:
+
+* CR Tokenverschlüsselung
+* CR Biometrie
 
 ## Installation der notwendigen Software
 
@@ -146,7 +175,7 @@ alle derzeit in der Testsuite vorhandenen und teilweise noch in Entwicklung befi
 folgender mvn Aufruf:
 
 ````
-mvn clean verify -Dcucumber.options="" -Dskip.unittests=true
+mvn clean verify -Dcucumber.filter.tags="" -Dskip.unittests=true
 ````
 
 ![Anmerkung](doc/images/emblem-generic.png) Im Gegensatz zur IDE Methode, laufen die Tests via Maven parallel ab.

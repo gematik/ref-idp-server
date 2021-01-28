@@ -5,6 +5,11 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
     <changeSet author="idpServer" id="changelog-5.0">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="pairing"/>
+            </not>
+        </preConditions>
         <createTable tableName="pairing" schemaName="IDP">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" unique="true"/>
@@ -33,7 +38,7 @@
             <column name="device_biometry" type="VARCHAR(45)">
                 <constraints nullable="false" primaryKey="false" unique="false"/>
             </column>
-            <column name="puk_se_sig" type="VARCHAR(255)">
+            <column name="puk_se_sig" type="VARCHAR(2048)">
                 <constraints nullable="false" primaryKey="false" unique="false"/>
             </column>
             <column name="timestamp_pairing" type="TIMESTAMP">
@@ -54,6 +59,12 @@
         <createIndex indexName="ix_kvnr_id" schemaName="IDP" tableName="pairing" unique="true">
             <column name="kvnr"/>
             <column name="id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="addUniquenessKvnrDeviceManufacturer" author="idpServer">
+        <createIndex indexName="ix_kvnr_device_manufacturer" schemaName="IDP" tableName="pairing" unique="true">
+            <column name="kvnr"/>
+            <column name="device_manufacturer"/>
         </createIndex>
     </changeSet>
 </databaseChangeLog>

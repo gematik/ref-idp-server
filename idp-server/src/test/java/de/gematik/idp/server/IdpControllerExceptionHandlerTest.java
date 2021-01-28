@@ -18,14 +18,18 @@ package de.gematik.idp.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
 import de.gematik.idp.authentication.IdpJwtProcessor;
+import de.gematik.idp.authentication.UriUtils;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpController;
+import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.exceptions.handler.IdpServerExceptionHandler;
 import de.gematik.idp.server.exceptions.oauth2spec.IdpServerInvalidRequestException;
 import de.gematik.idp.server.services.IdpAuthenticator;
@@ -42,6 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -74,8 +79,6 @@ public class IdpControllerExceptionHandlerTest {
     @MockBean
     private ScopeValidator scopeValidator;
     @MockBean
-    private IdpConfiguration idpConfiguration;
-    @MockBean
     private ClientIdValidator clientIdValidator;
     @MockBean
     private TokenService tokenService;
@@ -83,6 +86,10 @@ public class IdpControllerExceptionHandlerTest {
     private IdpJwtProcessor jwtProcessor;
     @MockBean
     private RequestAccessToken requestAccessToken;
+    @MockBean
+    private IdpConfiguration idpConfiguration;
+    @MockBean
+    private IdpKey authKey;
 
     @Autowired
     private IdpController idpController;
@@ -91,16 +98,30 @@ public class IdpControllerExceptionHandlerTest {
 
     @BeforeEach
     public void setup() {
-        mockMvc = MockMvcBuilders.standaloneSetup(new IdpServerExceptionHandler(), idpController).build();
+        doReturn("http://foo.bar/")
+            .when(serverUrlService).determineServerUrl();
+        mockMvc = MockMvcBuilders.standaloneSetup(new IdpServerExceptionHandler(serverUrlService, null),
+            idpController)
+            .build();
     }
 
     @Test
     public void testIdpServerInvalidRequestException() throws Exception {
         final RuntimeException exc = new IdpServerInvalidRequestException(EXCEPTION_TEXT);
-        when(idpAuthenticator.getTokenLocation(any(), any(), any(), any())).thenThrow(exc);
+        doThrow(exc)
+            .when(idpAuthenticator).validateRedirectUri(any());
         mockMvc.perform(MockMvcRequestBuilders
-            .post(IdpConstants.AUTHORIZATION_ENDPOINT)
+            .get(IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
             .queryParam("signed_challenge", "signed_challenge")
+            .queryParam("client_id", "eRezeptApp")
+            .queryParam("state", "state")
+            .queryParam("redirect_uri", "fdsafdsa")
+            .queryParam("nonce", "fdsalkfdksalfdsa")
+            .queryParam("response_type", "code")
+            .queryParam("code_challenge", "fkdsjfkdsjfkjdskafjdksljfkdsjfkldsjjjjjjjjj")
+            .queryParam("code_challenge_method", "S256")
+            .queryParam("scope", "openid e-rezept")
+
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(result -> assertThat(result.getResolvedException()).isEqualTo(exc))
             .andExpect(result -> assertThat(result.getResolvedException().getMessage()).isEqualTo(EXCEPTION_TEXT))
@@ -108,5 +129,35 @@ public class IdpControllerExceptionHandlerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$.error_code").value("invalid_request"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.error_uuid").exists())
             .andExpect(MockMvcResultMatchers.jsonPath("$.timestamp").exists());
+    }
+
+    @Test
+    public void authentication_serverError_expectRedirect() throws Exception {
+        when(idpAuthenticator.getBasicFlowTokenLocation(any(), any()))
+            .thenThrow(new IdpServerInvalidRequestException(EXCEPTION_TEXT));
+        mockMvc.perform(MockMvcRequestBuilders
+            .post(IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
+            .queryParam("signed_challenge", "signed_challenge")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(result -> assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.FOUND.value()))
+            .andExpect(
+                result -> assertThat(UriUtils.extractParameterMap(result.getResponse().getHeader(HttpHeaders.LOCATION)))
+                    .containsEntry("error", "invalid_request")
+                    .containsEntry("error_description", EXCEPTION_TEXT));
+    }
+
+    @Test
+    public void authentication_genericError_expectRedirect() throws Exception {
+        when(idpAuthenticator.getBasicFlowTokenLocation(any(), any()))
+            .thenThrow(new RuntimeException(EXCEPTION_TEXT));
+        mockMvc.perform(MockMvcRequestBuilders
+            .post(IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
+            .queryParam("signed_challenge", "signed_challenge")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(result -> assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.FOUND.value()))
+            .andExpect(
+                result -> assertThat(UriUtils.extractParameterMap(result.getResponse().getHeader(HttpHeaders.LOCATION)))
+                    .containsEntry("error", "invalid_request")
+                    .containsEntry("error_description", "Invalid Request"));
     }
 }

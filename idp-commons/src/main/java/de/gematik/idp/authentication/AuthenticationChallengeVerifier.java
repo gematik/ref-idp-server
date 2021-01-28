@@ -46,6 +46,11 @@ public class AuthenticationChallengeVerifier {
         performServerSignatureValidationOfNjwt(authenticationResponse);
     }
 
+    public void verifyResponseWithCertAndThrowExceptionIfFail(final X509Certificate validationCert,
+        final JsonWebToken authenticationResponse) {
+        performClientSignatureValidation(validationCert, authenticationResponse.getJwtRawString());
+    }
+
     private void performClientSignatureValidation(final X509Certificate clientCertificate,
         final String authResponse) {
         final JwtConsumer serverJwtConsumer = new JwtConsumerBuilder()

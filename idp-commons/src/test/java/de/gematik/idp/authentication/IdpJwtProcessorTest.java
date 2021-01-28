@@ -39,9 +39,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 public class IdpJwtProcessorTest {
 
     static final long TOKEN_VALIDITY_MINUTES = 10;
-    JwtDescription jwtDescription = JwtDescription.builder()
+    JwtBuilder jwtBuilder = new JwtBuilder()
         .expiresAt(ZonedDateTime.now().plusMinutes(10))
-        .claims(new HashMap<>(Map.ofEntries(
+        .addAllBodyClaims(new HashMap<>(Map.ofEntries(
             entry(ISSUED_AT.getJoseName(), ZonedDateTime.now().toEpochSecond()),
             entry(NOT_BEFORE.getJoseName(), ZonedDateTime.now().toEpochSecond()),
             entry(ISSUER.getJoseName(), "https://idp.zentral.idp.splitdns.ti-dienste.de"),
@@ -54,14 +54,14 @@ public class IdpJwtProcessorTest {
             entry(CODE_CHALLENGE.getJoseName(), "S41HgHxhXL1CIpfGvivWYpbO9b_QKzva-9ImuZbt0Is")
         )))
 
-        .headers(new HashMap<>(Map.ofEntries(
+        .addAllHeaderClaims(new HashMap<>(Map.ofEntries(
             // two parts of header are written by library: ("typ", "JWT"),("alg", "ES256")
             entry(JWT_ID.getJoseName(), "c3a8f9c8-aa62-11ea-ac15-6b7a3355d0f6"),
-            entry(NONCE.getJoseName(), "sLlxlkskAyuzdDOwe8nZeeQVFBWgscNkRcpgHmKidFc"),
+            entry(SERVER_NONCE.getJoseName(), "sLlxlkskAyuzdDOwe8nZeeQVFBWgscNkRcpgHmKidFc"),
             entry(EXPIRES_AT.getJoseName(),
                 LocalDateTime.now().plusMinutes(TOKEN_VALIDITY_MINUTES).toEpochSecond(ZoneOffset.UTC))
-        )))
-        .build();
+        )));
+
     private IdpJwtProcessor jwtProcessor;
 
     {
@@ -137,12 +137,12 @@ public class IdpJwtProcessorTest {
         final JsonWebToken jwtAsBase64 = createJwt(ecc);
         jwtProcessor.verifyAndThrowExceptionIfFail(jwtAsBase64);
         final String payloadAsString = jwtProcessor.getPayloadDecoded(jwtAsBase64);
-        jwtDescription.getClaims().forEach((key, value) -> assertThat(payloadAsString).contains(key));
-        jwtDescription.getClaims().forEach((key, value) -> assertThat(payloadAsString).contains(value.toString()));
+        jwtBuilder.getClaims().forEach((key, value) -> assertThat(payloadAsString).contains(key));
+        jwtBuilder.getClaims().forEach((key, value) -> assertThat(payloadAsString).contains(value.toString()));
     }
 
     private JsonWebToken createJwt(final PkiIdentity identity) {
         jwtProcessor = new IdpJwtProcessor(identity);
-        return jwtProcessor.buildJwt(jwtDescription);
+        return jwtProcessor.buildJwt(jwtBuilder);
     }
 }

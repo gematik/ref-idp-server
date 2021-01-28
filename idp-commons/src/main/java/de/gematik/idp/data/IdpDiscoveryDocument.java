@@ -16,6 +16,8 @@
 
 package de.gematik.idp.data;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,24 +27,25 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class IdpDiscoveryDocument {
 
-    private String authorization_endpoint;
-    private String token_endpoint;
+    private String authorizationEndpoint;
+    private String tokenEndpoint;
     private String issuer;
-    private String jwks_uri;
+    private String jwksUri;
     private long exp;
     private long nbf;
     private long iat;
-    private String puk_uri_auth;
-    private String puk_uri_token;
-    private String puk_uri_disc;
-    private String[] subject_types_supported;
-    private String[] id_token_signing_alg_values_supported;
-    private String[] response_types_supported;
-    private String[] scopes_supported;
-    private String[] response_modes_supported;
-    private String[] grant_types_supported;
-    private String[] acr_values_supported;
-    private String[] token_endpoint_auth_methods_supported;
+    private String pukUriAuth;
+    private String pukUriToken;
+    private String pukUriDisc;
+    private String[] subjectTypesSupported;
+    private String[] idTokenSigningAlgValuesSupported;
+    private String[] responseTypesSupported;
+    private String[] scopesSupported;
+    private String[] responseModesSupported;
+    private String[] grantTypesSupported;
+    private String[] acrValuesSupported;
+    private String[] tokenEndpointAuthMethodsSupported;
 }

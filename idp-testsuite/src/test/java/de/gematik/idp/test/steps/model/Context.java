@@ -17,7 +17,6 @@
 package de.gematik.idp.test.steps.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 import io.restassured.response.Response;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -62,6 +61,7 @@ public class Context {
         getThreadContext().put(key, value);
     }
 
+    @SuppressWarnings("unused")
     public void deleteKey(final ContextKey key) {
         getThreadContext().remove(key);
     }

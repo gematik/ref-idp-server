@@ -16,7 +16,7 @@
 
 package de.gematik.idp.server;
 
-import static de.gematik.idp.IdpConstants.AUTHORIZATION_ENDPOINT;
+import static de.gematik.idp.IdpConstants.BASIC_AUTHORIZATION_ENDPOINT;
 import static de.gematik.idp.IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT;
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -196,7 +196,7 @@ public class DiscoveryDocumentTest {
         final String authorizationEndpointValue = extractClaimMapFromResponse(retrieveDiscoveryDocument())
             .get("authorization_endpoint").toString();
         assertThat(authorizationEndpointValue)
-            .isEqualTo(CONFIGURED_SERVER_URL + AUTHORIZATION_ENDPOINT);
+            .isEqualTo(CONFIGURED_SERVER_URL + BASIC_AUTHORIZATION_ENDPOINT);
     }
 
     @Test
@@ -251,7 +251,7 @@ public class DiscoveryDocumentTest {
     @Remark("Nach IDP-336 soll das Header-Zertifikat nicht mehr verwendet werden (IDP-181 hatte das noch gefordert)")
     public void testDiscoveryDocumentSigningCertificateReference() throws UnirestException {
         assertThat(retrieveAndParseDiscoveryDocument()
-            .getHeaderClaim(ClaimName.X509_Certificate_Chain)).isEmpty();
+            .getHeaderClaim(ClaimName.X509_CERTIFICATE_CHAIN)).isEmpty();
     }
 
     private Map<String, Object> extractClaimMapFromResponse(final HttpResponse<String> httpResponse) {

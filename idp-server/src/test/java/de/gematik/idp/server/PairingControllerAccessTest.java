@@ -27,6 +27,7 @@ import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.tests.PkiKeyResolver.Filename;
 import java.time.ZonedDateTime;
 import java.util.Set;
+import javax.transaction.Transactional;
 import javax.ws.rs.core.HttpHeaders;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
@@ -44,6 +45,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @ExtendWith(PkiKeyResolver.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Transactional
 public class PairingControllerAccessTest {
 
     @Autowired

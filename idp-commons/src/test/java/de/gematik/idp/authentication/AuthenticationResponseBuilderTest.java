@@ -17,7 +17,7 @@
 package de.gematik.idp.authentication;
 
 import static de.gematik.idp.field.ClaimName.NESTED_JWT;
-import static de.gematik.idp.field.ClaimName.X509_Certificate_Chain;
+import static de.gematik.idp.field.ClaimName.X509_CERTIFICATE_CHAIN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -25,12 +25,11 @@ import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.tests.PkiKeyResolver;
-import de.gematik.idp.token.TokenClaimExtraction;
+import de.gematik.idp.token.JsonWebToken;
 import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import java.util.Base64;
 import java.util.Map;
-import java.util.stream.Stream;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jose4j.jwt.consumer.InvalidJwtException;
@@ -74,7 +73,7 @@ public class AuthenticationResponseBuilderTest {
             .serverIdentity(serverIdentity)
             .build();
         challenge = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
     }
 
     @Test
@@ -83,7 +82,7 @@ public class AuthenticationResponseBuilderTest {
             authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
 
         assertThat(authenticationResponse.getSignedChallenge().getHeaderClaims())
-            .extractingByKey(X509_Certificate_Chain.getJoseName(), InstanceOfAssertFactories.LIST)
+            .extractingByKey(X509_CERTIFICATE_CHAIN.getJoseName(), InstanceOfAssertFactories.LIST)
             .contains(Base64.getEncoder().encodeToString(clientIdentity.getCertificate().getEncoded()));
     }
 
@@ -112,7 +111,7 @@ public class AuthenticationResponseBuilderTest {
 
         assertThat(authenticationResponse.getSignedChallenge().getBodyClaims())
             .extractingByKey(ClaimName.NESTED_JWT.getJoseName())
-            .isEqualTo(challenge.getChallenge());
+            .isEqualTo(challenge.getChallenge().getJwtRawString());
     }
 
     @Test
@@ -124,7 +123,7 @@ public class AuthenticationResponseBuilderTest {
             .extractClaimsFromSignedChallenge(authenticationResponse);
         assertThat(extractedClaims)
             .containsOnlyKeys(NESTED_JWT.getJoseName())
-            .containsEntry(NESTED_JWT.getJoseName(), challenge.getChallenge());
+            .containsEntry(NESTED_JWT.getJoseName(), challenge.getChallenge().getJwtRawString());
     }
 
     @Test
@@ -132,22 +131,10 @@ public class AuthenticationResponseBuilderTest {
         final AuthenticationResponse authenticationResponse =
             authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
 
-        Stream.of(authenticationChallengeVerifier
-            .extractClaimsFromSignedChallenge(authenticationResponse))
-            .map(a -> {
-                assertThat(a)
-                    .containsEntry(NESTED_JWT.getJoseName(), challenge.getChallenge());
-                return a;
-            })
-            .map(a -> a.get(NESTED_JWT.getJoseName()))
-            .map(String.class::cast)
-            .findFirst()
-            .map(TokenClaimExtraction::extractClaimsFromTokenHeader)
-            .map(a -> assertThat(a)
-                .as("Authentication-Response Header-Claims")
-                .containsKey(ClaimName.EXPIRES_AT.getJoseName())
-            );
-
-
+        assertThat(authenticationResponse.getSignedChallenge()
+            .getStringBodyClaim(ClaimName.NESTED_JWT)
+            .map(JsonWebToken::new)
+            .map(token -> token.getHeaderDateTimeClaim(ClaimName.EXPIRES_AT)))
+            .isPresent();
     }
 }

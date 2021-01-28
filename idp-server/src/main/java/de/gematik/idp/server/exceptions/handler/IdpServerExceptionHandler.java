@@ -16,31 +16,56 @@
 
 package de.gematik.idp.server.exceptions.handler;
 
+import de.gematik.idp.IdpConstants;
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.exceptions.IdpJoseException;
+import de.gematik.idp.field.ClaimName;
+import de.gematik.idp.server.ServerUrlService;
+import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.exceptions.IdpServerException;
 import de.gematik.idp.server.exceptions.data.IdpErrorTypeResponse;
+import de.gematik.idp.token.IdpJwe;
+import de.gematik.idp.token.JsonWebToken;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.time.ZonedDateTime;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import javax.validation.ConstraintViolationException;
 import javax.validation.ValidationException;
+import javax.ws.rs.core.UriBuilder;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.util.UriUtils;
 
 @ControllerAdvice
+@RequiredArgsConstructor
 public class IdpServerExceptionHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(IdpServerExceptionHandler.class);
+    private final ServerUrlService serverUrlService;
+    private final IdpKey authKey;
 
     @ExceptionHandler(IdpServerException.class)
-    public ResponseEntity<IdpErrorTypeResponse> handleIdpServerException(final IdpServerException exc) {
+    public ResponseEntity<IdpErrorTypeResponse> handleIdpServerException(final IdpServerException exc,
+        final WebRequest request) {
+        if (isAuthorizationRequest(request)) {
+            return buildForwardingError(exc, request);
+        }
+
         final IdpErrorTypeResponse body = getBody(exc.getErrorType());
         if (!StringUtils.isEmpty(exc.getMessage())) {
             body.setDetailMessage(exc.getMessage());
@@ -49,33 +74,93 @@ public class IdpServerExceptionHandler {
         return new ResponseEntity<>(body, getHeader(), exc.getStatus());
     }
 
+    private ResponseEntity<IdpErrorTypeResponse> buildForwardingError(final IdpServerException exc,
+        final WebRequest request) {
+        final HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add(HttpHeaders.CACHE_CONTROL, "no-store");
+        responseHeaders.add(HttpHeaders.PRAGMA, "no-cache");
+        final UriBuilder uriBuilder = UriBuilder.fromPath(serverUrlService.determineServerUrl())
+            .queryParam("error", "invalid_request");
+        addStateIfAvailable(uriBuilder, request);
+        addDescriptionIfAvailable(uriBuilder, exc);
+        final URI location = uriBuilder.build();
+        responseHeaders.add(HttpHeaders.LOCATION, location.toString());
+
+        return new ResponseEntity<>(responseHeaders, HttpStatus.FOUND);
+    }
+
+    private void addDescriptionIfAvailable(final UriBuilder uriBuilder, final IdpServerException exc) {
+        try {
+            Optional.ofNullable(exc)
+                .filter(Objects::nonNull)
+                .map(IdpServerException::getMessage)
+                .filter(org.apache.commons.lang3.StringUtils::isNotEmpty)
+                .map(value -> UriUtils.encodeQueryParam(value, StandardCharsets.UTF_8))
+                .ifPresent(descr -> uriBuilder.queryParam("error_description", descr));
+        } catch (final RuntimeException e) {
+            //swallow
+        }
+    }
+
+    private void addStateIfAvailable(final UriBuilder uriBuilder, final WebRequest request) {
+        try {
+            Optional.ofNullable(request.getParameter("signed_challenge"))
+                .filter(Objects::nonNull)
+                .map(IdpJwe::new)
+                .map(jwe -> jwe.decrypt(authKey.getIdentity().getPrivateKey()))
+                .flatMap(jwt -> jwt.getStringBodyClaim(ClaimName.NESTED_JWT))
+                .map(JsonWebToken::new)
+                .flatMap(jwt -> jwt.getStringBodyClaim(ClaimName.STATE))
+                .map(value -> UriUtils.encodeQueryParam(value, StandardCharsets.UTF_8))
+                .ifPresent(state -> uriBuilder.queryParam("state", state));
+        } catch (final RuntimeException e) {
+            //swallow
+        }
+    }
+
+    private boolean isAuthorizationRequest(final WebRequest webRequest) {
+        if (!(webRequest instanceof ServletWebRequest)) {
+            return false;
+        }
+        final ServletWebRequest servletWebRequest = (ServletWebRequest) webRequest;
+        final Path normalizedRequestPath = Path.of(servletWebRequest.getRequest().getRequestURI()).normalize();
+        final boolean isForwardingEnpointUrl =
+            normalizedRequestPath.equals(Path.of(IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)) ||
+                normalizedRequestPath.equals(Path.of(IdpConstants.SSO_AUTHORIZATION_ENDPOINT));
+        return isForwardingEnpointUrl && servletWebRequest.getHttpMethod() == HttpMethod.POST;
+    }
+
     @ExceptionHandler(IdpJoseException.class)
-    public ResponseEntity<IdpErrorTypeResponse> handleIdpJoseException(final IdpJoseException exc) {
+    public ResponseEntity<IdpErrorTypeResponse> handleIdpJoseException(final IdpJoseException exc,
+        final WebRequest request) {
         return handleIdpServerException(
-            new IdpServerException(exc.getMessage(), exc, IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST));
+            new IdpServerException("Error during JOSE-operations", exc, IdpErrorType.INVALID_REQUEST,
+                HttpStatus.BAD_REQUEST),
+            request);
     }
 
     @ExceptionHandler({ConstraintViolationException.class, ValidationException.class})
-    public ResponseEntity<IdpErrorTypeResponse> handleValidationException(final ValidationException exc) {
+    public ResponseEntity<IdpErrorTypeResponse> handleValidationException(final ValidationException exc,
+        final WebRequest request) {
         return handleIdpServerException(
             new IdpServerException(exc.getMessage(), exc, IdpErrorType.INVALID_REQUEST,
-                HttpStatus.BAD_REQUEST));
+                HttpStatus.BAD_REQUEST), request);
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<IdpErrorTypeResponse> handleRuntimeException(final RuntimeException exc) {
+    public ResponseEntity<IdpErrorTypeResponse> handleRuntimeException(final RuntimeException exc,
+        final WebRequest request) {
         return handleIdpServerException(
-            new IdpServerException(exc.getMessage(), exc, IdpErrorType.INTERNAL_SERVER_ERROR,
-                HttpStatus.INTERNAL_SERVER_ERROR));
+            new IdpServerException("Invalid Request", exc, IdpErrorType.INTERNAL_SERVER_ERROR,
+                HttpStatus.INTERNAL_SERVER_ERROR), request);
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<IdpErrorTypeResponse> handleMissingServletRequestParameter(
-        final MissingServletRequestParameterException ex) {
-        final IdpErrorTypeResponse body = getBody(IdpErrorType.MISSING_PARAMETERS);
-        body.setDetailMessage(ex.getMessage());
-        logEntry(body, ex);
-        return new ResponseEntity<>(body, getHeader(), HttpStatus.BAD_REQUEST);
+        final MissingServletRequestParameterException ex, final WebRequest request) {
+        return handleIdpServerException(
+            new IdpServerException(ex.getMessage(), ex, IdpErrorType.MISSING_PARAMETERS,
+                HttpStatus.BAD_REQUEST), request);
     }
 
     private void logEntry(final IdpErrorTypeResponse body, final Exception exc) {

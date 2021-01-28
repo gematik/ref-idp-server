@@ -52,7 +52,6 @@ public class AuthenticationTokenBuilderTest {
         assertThat(authenticationTokenBuilder
             .buildAuthenticationToken(clientIdentity.getCertificate(), Collections.emptyMap(),
                 ZonedDateTime.now()).getBodyClaims())
-            .containsEntry(AUTHENTICATION_CONTEXT_CLASS.getJoseName(), "eidas-loa-high")
             .containsEntry(PROFESSION_OID.getJoseName(), "1.2.276.0.76.4.49")
             .containsEntry(GIVEN_NAME.getJoseName(), "Juna")
             .containsEntry(FAMILY_NAME.getJoseName(), "Fuchs");

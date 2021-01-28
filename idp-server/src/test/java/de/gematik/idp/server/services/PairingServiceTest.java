@@ -3,15 +3,15 @@ package de.gematik.idp.server.services;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import de.gematik.idp.server.data.PairingDto;
-import de.gematik.idp.server.pairing.PairingData;
-import de.gematik.idp.server.pairing.PairingRepository;
 import java.time.ZonedDateTime;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
+@Transactional
 @TestPropertySource(properties = {
     "spring.jpa.hibernate.ddl-auto=validate"
 })
@@ -21,17 +21,28 @@ public class PairingServiceTest {
 
     @Autowired
     private PairingService pairingService;
-    @Autowired
-    private PairingRepository pairingRepository;
 
     @Test
     public void insertPairing_ValidateEntry() {
-        pairingService.insertPairing(createPairingData());
+        createPairingDataEntry();
         assertThat(pairingService.getPairingList(test_kvnr)).isNotEmpty();
     }
 
-    private PairingDto createPairingData() {
-        return PairingDto.builder()
+    @Test
+    public void searchPairing_ValidateEntry() {
+        createPairingDataEntry();
+        final PairingDto pairingData = searchPairingData(test_kvnr);
+        assertThat(pairingData).isNotNull();
+        //FIXME: Wegen unterschiedlichen Timestamps beim Write/Read wird vorerst kein Equals gebaut,
+        //      was aber nach Bugfix nachgebaut wird.
+    }
+
+    private PairingDto searchPairingData(final String kvnr) {
+        return pairingService.getPairingList(kvnr).stream().findAny().orElseThrow();
+    }
+
+    private void createPairingDataEntry() {
+        final PairingDto pairingDto = PairingDto.builder()
             .kvnr(test_kvnr)
             .deviceBiometry("TouchID")
             .deviceManufacturer("samsung")
@@ -44,19 +55,8 @@ public class PairingServiceTest {
             .timestampPairing(ZonedDateTime.now().minusDays(1))
             .timestampSmartcardAuth(ZonedDateTime.now())
             .build();
-    }
-
-    @Test
-    public void searchPairing_ValidateEntry() {
-        PairingDto pairingDto = createPairingData();
         pairingService.insertPairing(pairingDto);
-        PairingDto pairingData = searchPairingData(test_kvnr);
-        assertThat(pairingData).isNotNull();
-        //FIXME: Wegen unterschiedlichen Timestamps beim Write/Read wird vorerst kein Equals gebaut,
-        //      was aber nach Bugfix nachgebaut wird.
     }
 
-    private PairingDto searchPairingData( String kvnr) {
-        return pairingService.getPairingList(kvnr).stream().findAny().orElseThrow();
-    }
+
 }

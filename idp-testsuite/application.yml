@@ -1,6 +1,0 @@
-idp:
-  authKeyFile: classpath:authenticatorModule_idpServer.p12
-  tokenKeyFile: classpath:authenticatorModule_idpServer.p12
-  discoveryKeyFile: classpath:authenticatorModule_idpServer.p12
-
-logging.file.path: logs

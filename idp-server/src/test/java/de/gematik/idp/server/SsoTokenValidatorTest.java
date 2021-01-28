@@ -24,7 +24,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import de.gematik.idp.authentication.IdpJwtProcessor;
-import de.gematik.idp.authentication.JwtDescription;
+import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.IdpJoseException;
@@ -82,20 +82,18 @@ public class SsoTokenValidatorTest {
     }
 
     private JsonWebToken generateExpiredSsoToken() {
-        return serverTokenProzessor.buildJwt(JwtDescription.builder()
-            .headers(generateHeaderClaims())
-            .claims(generateBodyClaims())
-            .expiresAt(ZonedDateTime.now().minusMinutes(1))
-            .build());
+        return serverTokenProzessor.buildJwt(new JwtBuilder()
+            .addAllHeaderClaims(generateHeaderClaims())
+            .addAllBodyClaims(generateBodyClaims())
+            .expiresAt(ZonedDateTime.now().minusMinutes(1)));
     }
 
     private JsonWebToken generateInvalidSsoToken() {
         final IdpJwtProcessor invalidProcessor = new IdpJwtProcessor(rsaUserIdentity);
-        return invalidProcessor.buildJwt(JwtDescription.builder()
-            .headers(generateHeaderClaims())
-            .claims(generateBodyClaims())
-            .expiresAt(ZonedDateTime.now().plusMinutes(5))
-            .build());
+        return invalidProcessor.buildJwt(new JwtBuilder()
+            .addAllHeaderClaims(generateHeaderClaims())
+            .addAllBodyClaims(generateBodyClaims())
+            .expiresAt(ZonedDateTime.now().plusMinutes(5)));
     }
 
     private Map<String, Object> generateHeaderClaims() {
@@ -113,7 +111,6 @@ public class SsoTokenValidatorTest {
     }
 
     private JsonWebToken generateValidSsoToken() {
-        final Map<String, Object> bodyClaims = new HashMap<>();
         return ssoTokenBuilder.buildSsoToken(egkUserIdentity.getCertificate(), ZonedDateTime.now());
     }
 

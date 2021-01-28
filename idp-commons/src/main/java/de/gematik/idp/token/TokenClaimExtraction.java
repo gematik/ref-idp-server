@@ -83,7 +83,7 @@ public class TokenClaimExtraction {
 
     public static Optional<X509Certificate> extractX509ClientCertificate(final JsonWebToken jwt) {
         return Optional.ofNullable(jwt.getHeaderClaims()
-            .get(ClaimName.X509_Certificate_Chain.getJoseName()))
+            .get(ClaimName.X509_CERTIFICATE_CHAIN.getJoseName()))
             .filter(List.class::isInstance)
             .map(List.class::cast)
             .stream()

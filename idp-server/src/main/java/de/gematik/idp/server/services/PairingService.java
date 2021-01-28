@@ -4,6 +4,7 @@ import de.gematik.idp.server.data.PairingDto;
 import de.gematik.idp.server.pairing.PairingData;
 import de.gematik.idp.server.pairing.PairingRepository;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -36,6 +37,12 @@ public class PairingService {
         return pairingRepository.save(convertToEntity(data)).getId();
     }
 
+    public Optional<PairingDto> getPairingDtoForKvnrAndDevice(final String kvnr, final String deviceManufacturer) {
+        return pairingRepository
+            .findByKvnrAndDeviceManufacturer(kvnr, deviceManufacturer)
+            .map(this::convertToDto);
+    }
+
     private PairingDto convertToDto(final PairingData pairingData) {
         return modelMapper.map(pairingData, PairingDto.class);
     }
@@ -44,3 +51,4 @@ public class PairingService {
         return modelMapper.map(pairingDto, PairingData.class);
     }
 }
+

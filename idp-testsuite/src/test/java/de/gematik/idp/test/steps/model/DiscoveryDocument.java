@@ -17,12 +17,7 @@
 package de.gematik.idp.test.steps.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -54,7 +49,7 @@ public class DiscoveryDocument {
 
     private static final BouncyCastleProvider BOUNCY_CASTLE_PROVIDER = new BouncyCastleProvider();
 
-    private JSONObject json = null;
+    private final JSONObject json;
 
     private JSONObject pukUriToken;
     // puk_uri_token
@@ -77,7 +72,7 @@ public class DiscoveryDocument {
     }
 
     public DiscoveryDocument(final File template)
-        throws IOException, JSONException, KeyStoreException, CertificateException, NoSuchAlgorithmException, URISyntaxException {
+        throws IOException, JSONException {
         this(new JSONObject(IOUtils.toString(new FileReader(template, StandardCharsets.UTF_8))));
     }
 
@@ -112,10 +107,13 @@ public class DiscoveryDocument {
                 final String alias = e.nextElement();
                 certificate = (X509Certificate) p12.getCertificate(alias);
             }
+            assertThat(certificate).withFailMessage("No Certificate found in file '" + uri + "'").isNotNull();
+
             final JSONObject json = new JSONObject();
             final JSONArray x5c = new JSONArray();
             x5c.put(0, new X509Util().toBase64(certificate));
             json.put("x5c", x5c);
+            //noinspection ConstantConditions
             json.put("kid", String.valueOf(certificate.getSerialNumber()));
             json.put("kty", certificate.getPublicKey().getAlgorithm());
 
@@ -133,8 +131,8 @@ public class DiscoveryDocument {
     }
 
     // jwks_uri
-
-    public X509Certificate getCertificateFromJWKS(final JSONObject jwks) throws JSONException, CertificateException {
+    public static X509Certificate getCertificateFromJWK(final JSONObject jwks)
+        throws JSONException, CertificateException {
         final String certString = jwks.getJSONArray("x5c").getString(0);
         final byte[] decode = Base64.getDecoder().decode(certString);
         final CertificateFactory certFactory = CertificateFactory.getInstance("X.509", BOUNCY_CASTLE_PROVIDER);
