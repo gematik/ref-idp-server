@@ -18,22 +18,26 @@ package de.gematik.idp.test.steps;
 
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
-import de.gematik.idp.test.steps.model.Context;
-import de.gematik.idp.test.steps.model.ContextKey;
-import de.gematik.idp.test.steps.model.HttpMethods;
-import de.gematik.idp.test.steps.model.HttpStatus;
+import de.gematik.idp.test.steps.helpers.TestEnvironmentConfigurator;
+import de.gematik.idp.test.steps.model.*;
 import io.cucumber.datatable.DataTable;
 import io.restassured.response.Response;
+import java.security.PublicKey;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-import org.json.JSONException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import lombok.SneakyThrows;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.jose4j.jwt.JwtClaims;
 import org.json.JSONObject;
 import org.springframework.http.MediaType;
 
 public class IdpAccessTokenSteps extends IdpStepsBase {
 
-    public void getToken(final HttpStatus result, final DataTable paramsTable)
-        throws JSONException {
+    @SneakyThrows
+    public void getToken(final HttpStatus result, final DataTable paramsTable) {
         final Map<ContextKey, Object> ctxt = Context.getThreadContext();
         assertThat(ctxt)
             .containsKey(ContextKey.TOKEN_CODE)
@@ -43,6 +47,12 @@ public class IdpAccessTokenSteps extends IdpStepsBase {
             .containsKey(ContextKey.CLIENT_ID)
             .doesNotContainEntry(ContextKey.CLIENT_ID, null);
 
+        if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
+            assertThat(ctxt)
+                .containsKey(ContextKey.TOKEN_CODE_ENCRYPTED)
+                .doesNotContainEntry(ContextKey.TOKEN_CODE_ENCRYPTED, null);
+        }
+
         final Map<String, String> params = new HashMap<>();
         if (paramsTable != null) {
             params.putAll(getMapFromDatatable(paramsTable));
@@ -50,6 +60,7 @@ public class IdpAccessTokenSteps extends IdpStepsBase {
                 ctxt.put(ContextKey.REDIRECT_URI, params.get("redirect_uri"));
             }
             if (params.containsKey("code")) {
+                // TODO for token encryption active this needs to encrypt the given token code and store it in ctxt
                 ctxt.put(ContextKey.TOKEN_CODE, params.get("code"));
             }
             if (params.containsKey("code_verifier")) {
@@ -61,11 +72,25 @@ public class IdpAccessTokenSteps extends IdpStepsBase {
         } else {
             params.put("grant_type", "authorization_code");
             params.put("redirect_uri", (String) ctxt.get(ContextKey.REDIRECT_URI));
-            params.put("code", (String) ctxt.get(ContextKey.TOKEN_CODE));
+            if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
+                params.put("code", (String) ctxt.get(ContextKey.TOKEN_CODE_ENCRYPTED));
+            } else {
+                params.put("code", (String) ctxt.get(ContextKey.TOKEN_CODE));
+            }
             params.put("code_verifier", (String) ctxt.get(ContextKey.CODE_VERIFIER));
             params.put("client_id", (String) ctxt.get(ContextKey.CLIENT_ID));
         }
 
+        // create/encrypt key_verifier
+        final byte[] tokenKeyBytes = RandomStringUtils.randomAlphanumeric(256 / 8).getBytes();
+        final SecretKey tokenKey = new SecretKeySpec(tokenKeyBytes, "AES");
+        if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
+            Context.getDiscoveryDocument();
+            final PublicKey pukToken = DiscoveryDocument.getPublicKeyFromCertFromJWK(ContextKey.PUK_TOKEN);
+            params.put(
+                "key_verifier",
+                buildKeyVerifierToken(tokenKeyBytes, String.valueOf(ctxt.get(ContextKey.CODE_VERIFIER)), pukToken));
+        }
         final Map<String, String> headers = new HashMap<>();
         headers.put(CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
         final Response r = requestResponseAndAssertStatus(
@@ -73,16 +98,31 @@ public class IdpAccessTokenSteps extends IdpStepsBase {
             headers,
             HttpMethods.POST,
             params,
-            result);
+            null, result);
         ctxt.put(ContextKey.RESPONSE, r);
 
         if (r.getStatusCode() == 200) {
             final JSONObject json = new JSONObject(r.getBody().asString());
-            ctxt.put(ContextKey.ACCESS_TOKEN, json.getString("access_token"));
-            ctxt.put(ContextKey.ID_TOKEN, json.getString("id_token"));
+            if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
+                // decrypt access and id token
+                ctxt.put(ContextKey.ACCESS_TOKEN, decrypt(json.getString("access_token"), tokenKey));
+                ctxt.put(ContextKey.ID_TOKEN, decrypt(json.getString("id_token"), tokenKey));
+            } else {
+                ctxt.put(ContextKey.ACCESS_TOKEN, json.getString("access_token"));
+                ctxt.put(ContextKey.ID_TOKEN, json.getString("id_token"));
+            }
         } else {
             ctxt.put(ContextKey.ACCESS_TOKEN, null);
             ctxt.put(ContextKey.ID_TOKEN, null);
         }
+    }
+
+    @SneakyThrows
+    private String buildKeyVerifierToken(final byte[] tokenKeyBytes, final String codeVerifier,
+        final PublicKey pukToken) {
+        final JwtClaims claims = new JwtClaims();
+        claims.setStringClaim("token_key", new String(Base64.getEncoder().encode(tokenKeyBytes)));
+        claims.setStringClaim("code_verifier", codeVerifier);
+        return encrypt(claims.toJson(), pukToken);
     }
 }

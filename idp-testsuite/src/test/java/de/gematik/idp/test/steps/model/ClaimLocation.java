@@ -18,5 +18,7 @@ package de.gematik.idp.test.steps.model;
 
 @SuppressWarnings("unused")
 public enum ClaimLocation {
-    body, header
+    body, header;
+
+    public final static String CUCUMBER_REGEX = "(body|header)";
 }

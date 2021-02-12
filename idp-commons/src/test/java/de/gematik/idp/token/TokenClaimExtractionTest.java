@@ -16,7 +16,6 @@
 
 package de.gematik.idp.token;
 
-import static de.gematik.idp.token.TokenClaimExtraction.claimToDateTime;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.jose4j.jws.AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256;
 
@@ -52,7 +51,7 @@ public class TokenClaimExtractionTest {
 
     @Test
     public void verifyAccessTokenExtraction() {
-        final Map<String, Object> claims = TokenClaimExtraction.extractClaimsFromTokenBody(ACCESS_TOKEN);
+        final Map<String, Object> claims = TokenClaimExtraction.extractClaimsFromJwtBody(ACCESS_TOKEN);
 
         assertThat(claims)
             .containsEntry("given_name", "der Vorname")
@@ -67,18 +66,20 @@ public class TokenClaimExtractionTest {
 
     @Test
     public void verifyGetClaimAsDateTime() {
-        final Map<String, Object> claims = TokenClaimExtraction.extractClaimsFromTokenBody(ACCESS_TOKEN);
+        final Map<String, Object> claims = TokenClaimExtraction.extractClaimsFromJwtBody(ACCESS_TOKEN);
         final String DATE = "2020-09-21T08:32:59";
-        assertThat(Duration.between(LocalDateTime.parse(DATE), claimToDateTime(claims.get("iat"))))
+        assertThat(
+            Duration.between(LocalDateTime.parse(DATE), TokenClaimExtraction.claimToZonedDateTime(claims.get("iat"))))
             .as("Teste korrektes iat:")
             .overridingErrorMessage(
-                "iat ist nicht wie erwartet (" + DATE + "), sondern: " + claimToDateTime(claims.get("iat")))
+                "iat ist nicht wie erwartet (" + DATE + "), sondern: " + TokenClaimExtraction
+                    .claimToZonedDateTime(claims.get("iat")))
             .isEqualTo(Duration.ofMinutes(0));
     }
 
     @Test
     public void verifyExtractHeaderClaimsFromToken() {
-        final Map<String, Object> headerClaims = TokenClaimExtraction.extractClaimsFromTokenHeader(ACCESS_TOKEN);
+        final Map<String, Object> headerClaims = TokenClaimExtraction.extractClaimsFromJwtHeader(ACCESS_TOKEN);
         assertThat(headerClaims)
             .hasSize(2)
             .containsKey("typ")

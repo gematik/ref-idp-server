@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet author="idpServer" id="changelog-8.0">
+        <preConditions onFail="MARK_RAN">
+            <tableExists schemaName="IDP" tableName="pairing"/>
+        </preConditions>
+        <dropTable cascadeConstraints="true"
+            schemaName="IDP"
+            tableName="pairing"/>
+    </changeSet>
+    <changeSet author="idpServer" id="changelog-8.1">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="pairing"/>
+            </not>
+        </preConditions>
+        <createTable tableName="pairing" schemaName="IDP">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" unique="true"/>
+            </column>
+            <column name="id_number" type="VARCHAR(45)">
+                <constraints nullable="false" primaryKey="false" unique="false"/>
+            </column>
+            <column name="key_identifier" type="VARCHAR(255)">
+                <constraints nullable="false" primaryKey="false" unique="false"/>
+            </column>
+            <column name="device_name" type="VARCHAR(255)">
+                <constraints nullable="false" primaryKey="false" unique="false"/>
+            </column>
+            <column name="signed_pairing_data" type="VARCHAR(8192)">
+                <constraints nullable="false" primaryKey="false" unique="false"/>
+            </column>
+            <column name="timestamp_pairing" type="TIMESTAMP">
+                <constraints nullable="false" primaryKey="false" unique="false"/>
+            </column>
+        </createTable>
+        <addAutoIncrement columnDataType="BIGINT" schemaName="IDP" columnName="id"
+            incrementBy="1" startWith="100" tableName="pairing"/>
+        <createIndex indexName="ix_pairing_id" schemaName="IDP" tableName="pairing" unique="true">
+            <column name="id"/>
+        </createIndex>
+        <createIndex indexName="ix_id_number_key_identifier" schemaName="IDP" tableName="pairing" unique="true">
+            <column name="id_number"/>
+            <column name="key_identifier"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

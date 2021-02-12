@@ -17,6 +17,8 @@
 package de.gematik.idp.server.services;
 
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
+import static de.gematik.idp.error.IdpErrorType.MISSING_PARAMETERS;
+import static de.gematik.idp.field.ClaimName.CHALLENGE_TOKEN;
 
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
 import de.gematik.idp.error.IdpErrorType;
@@ -24,6 +26,7 @@ import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.exceptions.IdpServerException;
+import de.gematik.idp.server.exceptions.authentication.IdpServerLocationBuildException;
 import de.gematik.idp.server.exceptions.oauth2spec.IdpServerInvalidRequestException;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
@@ -49,7 +52,8 @@ public class IdpAuthenticator {
     private final AuthenticationTokenBuilder authenticationTokenBuilder;
     private final IdpConfiguration idpConfiguration;
     private final IdpKey authKey;
-    private final SignatureValidationService signatureValidationService;
+    private final ChallengeTokenValidationService challengeTokenValidationService;
+
 
     public String getBasicFlowTokenLocation(final IdpJwe signedChallenge, final String serverUrl) {
         try {
@@ -57,28 +61,36 @@ public class IdpAuthenticator {
             buildBasicFlowTokenLocation(decryptChallenge(signedChallenge), locationBuilder);
             return locationBuilder.build().toString();
         } catch (final URISyntaxException e) {
-            throw new IdpServerException("Error while building the token-location URL", e,
-                IdpErrorType.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new IdpServerLocationBuildException(e);
+        }
+    }
+
+    public String getAlternateFlowTokenLocation(final IdpJwe signedAuthData, final String serverUrl) {
+        try {
+            final URIBuilder locationBuilder = new URIBuilder(serverUrl + TOKEN_ENDPOINT);
+            buildAlternateFlowTokenLocation(decryptChallenge(signedAuthData), locationBuilder);
+            return locationBuilder.build().toString();
+        } catch (final URISyntaxException e) {
+            throw new IdpServerLocationBuildException(e);
         }
     }
 
     private JsonWebToken decryptChallenge(final IdpJwe signedChallenge) {
         try {
-            return signedChallenge.decrypt(authKey.getIdentity().getPrivateKey());
+            return signedChallenge.decryptNestedJwt(authKey.getIdentity().getPrivateKey());
         } catch (final RuntimeException e) {
-            throw new IdpServerInvalidRequestException("Error during challenge decryption", e);
+            throw new IdpServerInvalidRequestException("Error during client-challenge decryption!", e);
         }
     }
 
-    public String getSsoTokenLocation(final JsonWebToken ssoToken, final JsonWebToken challengeToken,
+    public String getSsoTokenLocation(final IdpJwe ssoToken, final JsonWebToken challengeToken,
         final String serverUrl) {
         try {
             final URIBuilder locationBuilder = new URIBuilder(serverUrl + TOKEN_ENDPOINT);
             buildSsoTokenLocation(ssoToken, challengeToken, locationBuilder);
             return locationBuilder.build().toString();
         } catch (final URISyntaxException e) {
-            throw new IdpServerException("Error while building the token-location URL", e,
-                IdpErrorType.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new IdpServerLocationBuildException(e);
         }
     }
 
@@ -87,45 +99,77 @@ public class IdpAuthenticator {
         final URIBuilder locationBuilder) {
         final Map<String, Object> serverChallengeClaims = signedChallenge
             .getStringBodyClaim(ClaimName.NESTED_JWT)
-            .map(TokenClaimExtraction::extractClaimsFromTokenBody)
+            .map(TokenClaimExtraction::extractClaimsFromJwtBody)
             .orElseThrow(() -> new IdpServerInvalidRequestException(
                 "Expected signed_challenge to contain String-Claim 'njwt'."));
 
-        signatureValidationService.validateSignature(signedChallenge);
+        challengeTokenValidationService.validateChallengeToken(signedChallenge);
 
         final X509Certificate nestedX509ClientCertificate =
             signedChallenge.getClientCertificateFromHeader()
                 .orElseThrow(() -> new IdpServerException("No Certificate given in header of Signed-Challenge!"));
 
+        final String state = Optional.ofNullable(serverChallengeClaims.get(ClaimName.STATE.getJoseName()))
+            .map(Object::toString)
+            .orElseThrow(() ->
+                new IdpServerException(IdpErrorType.STATE_MISSING_IN_NESTED_CHALLENGE,
+                    HttpStatus.BAD_REQUEST));
+        buildLocationUri(locationBuilder, nestedX509ClientCertificate, serverChallengeClaims, state);
+    }
+
+    private void buildAlternateFlowTokenLocation(
+        final JsonWebToken signedAuthData,
+        final URIBuilder locationBuilder) {
+        final Map<String, Object> authDataClaims = addAllClaimsFromAuthDataAndChallenge(signedAuthData);
+        challengeTokenValidationService.validateChallengeToken(signedAuthData);
+        final X509Certificate nestedX509ClientCertificate = signedAuthData.getAuthenticationCertificate()
+            .orElseThrow(() -> new IdpServerException("No Certificate given in authentication data!",
+                MISSING_PARAMETERS, HttpStatus.BAD_REQUEST));
+        //TODO OCSP-Check(nestedX509ClientCertificate)
+        final Map<String, Object> challengeTokenClaimsMap = TokenClaimExtraction
+            .extractClaimsFromJwtBody((String) authDataClaims.get(CHALLENGE_TOKEN.getJoseName()));
+        final String state = Optional.ofNullable(challengeTokenClaimsMap.get(ClaimName.STATE.getJoseName()))
+            .map(Object::toString)
+            .orElseThrow(() ->
+                new IdpServerException(IdpErrorType.STATE_MISSING_IN_NESTED_CHALLENGE,
+                    HttpStatus.BAD_REQUEST));
+        buildLocationUri(locationBuilder, nestedX509ClientCertificate, authDataClaims, state);
+    }
+
+    private Map<String, Object> addAllClaimsFromAuthDataAndChallenge(final JsonWebToken signedAuthData) {
+        final Map<String, Object> claimsMap = signedAuthData.getBodyClaims();
+        claimsMap.putAll(signedAuthData.getStringBodyClaim(CHALLENGE_TOKEN)
+            .map(TokenClaimExtraction::extractClaimsFromJwtBody)
+            .orElseThrow(() -> new IdpServerInvalidRequestException(
+                "Expected authentication data to contain claim 'challenge_token'.")));
+        return claimsMap;
+    }
+
+    private void buildLocationUri(final URIBuilder locationBuilder, final X509Certificate certificate,
+        final Map<String, Object> claimsMap, final String state) {
         final ZonedDateTime authTime = ZonedDateTime.now();
-
         locationBuilder.addParameter("code", authenticationTokenBuilder
-            .buildAuthenticationToken(nestedX509ClientCertificate, serverChallengeClaims, authTime)
-            .getJwtRawString());
-
+            .buildAuthenticationToken(certificate, claimsMap, authTime)
+            .getRawString());
         locationBuilder.addParameter("sso_token", ssoTokenBuilder
-            .buildSsoToken(nestedX509ClientCertificate, authTime)
-            .getJwtRawString());
-
-        locationBuilder
-            .addParameter("state", Optional.ofNullable(serverChallengeClaims.get(ClaimName.STATE.getJoseName()))
-                .map(Object::toString)
-                .orElseThrow(() ->
-                    new IdpServerException(IdpErrorType.STATE_MISSING_IN_NESTED_CHALLENGE, HttpStatus.BAD_REQUEST)));
+            .buildSsoToken(certificate, authTime)
+            .getRawString());
+        locationBuilder.addParameter("state", state);
     }
 
 
-    private void buildSsoTokenLocation(final JsonWebToken ssoToken, final JsonWebToken challengeToken,
+    private void buildSsoTokenLocation(final IdpJwe encryptedSsoToken, final JsonWebToken challengeToken,
         final URIBuilder locationBuilder) {
-        ssoTokenValidator.validateSsoToken(ssoToken);
         if (challengeToken == null) {
             throw new IdpServerInvalidRequestException(
                 "For the use of the SSO-Flow the challengeToken parameter is required");
         }
+        challengeToken.verify(authKey.getIdentity().getCertificate().getPublicKey());
+        final JsonWebToken ssoToken = ssoTokenValidator.decryptAndValidateSsoToken(encryptedSsoToken);
 
         locationBuilder.addParameter("code", authenticationTokenBuilder
             .buildAuthenticationTokenFromSsoToken(ssoToken, challengeToken)
-            .getJwtRawString());
+            .getRawString());
 
         locationBuilder
             .addParameter("state",

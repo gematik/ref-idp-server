@@ -41,7 +41,7 @@ public class IdpDiscoveryDocumentSteps extends IdpStepsBase {
                 requestResponseAndAssertStatus(TestEnvironmentConfigurator.getDiscoveryDocumentURL(), null,
                     HttpMethods.GET,
                     null,
-                    desiredStatus));
+                    null, desiredStatus));
             if (log.isDebugEnabled()) {
                 log.debug("Response:" + Context.getCurrentResponse().getBody().prettyPrint());
             }

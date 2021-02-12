@@ -43,7 +43,7 @@ import org.jose4j.lang.JoseException;
 @Builder
 public class AuthenticationChallengeBuilder {
 
-    private static final long CHALLENGE_TOKEN_VALIDITY_IN_MINUTES = 5;
+    private static final long CHALLENGE_TOKEN_VALIDITY_IN_MINUTES = 3;
     private static final int NONCE_BYTE_AMOUNT = 32;
     private final PkiIdentity authenticationIdentity;
     private final String uriIdpServer;
@@ -71,17 +71,16 @@ public class AuthenticationChallengeBuilder {
             claims.setClaim(NONCE.getJoseName(), nonce);
         }
         claims.setClaim(SERVER_NONCE.getJoseName(), new Nonce().getNonceAsBase64(NONCE_BYTE_AMOUNT));
+        claims.setClaim(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
 
         final Map<String, Object> headerClaims = new HashMap<>();
         headerClaims.put(TYPE.getJoseName(), "JWT");
         headerClaims
             .put(EXPIRES_AT.getJoseName(), now.plusMinutes(CHALLENGE_TOKEN_VALIDITY_IN_MINUTES).toEpochSecond());
-        headerClaims.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
 
         return AuthenticationChallenge.builder()
             .challenge(buildJwt(claims.toJson(), headerClaims))
-            .userConsent(Arrays.asList(GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME
-                , PROFESSION_OID, ID_NUMBER))
+            .userConsent(Arrays.asList(GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER))
             .build();
     }
 

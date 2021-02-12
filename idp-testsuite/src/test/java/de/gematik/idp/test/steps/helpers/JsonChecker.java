@@ -21,9 +21,9 @@ import static net.javacrumbs.jsonunit.assertj.JsonAssertions.json;
 import static net.javacrumbs.jsonunit.jsonpath.JsonPathAdapter.inPath;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
-
 import de.gematik.idp.test.steps.model.Context;
 import java.util.Iterator;
+import lombok.SneakyThrows;
 import net.thucydides.core.annotations.Step;
 import org.apache.commons.collections.IteratorUtils;
 import org.json.JSONException;
@@ -72,5 +72,21 @@ public class JsonChecker {
         assertThatJson(inPath(json, path))
             .withFailMessage("JSON did not contain only the node '" + node + "' at path '" + path + "'")
             .isEqualTo(json("{\"" + node + "\": \"${json-unit.ignore}\"}"));
+    }
+
+    @Step
+    @SneakyThrows
+    public void assertJsonShouldMatch(final SerenityJSONObject serenityJSONObject, final String claimName,
+        final String regex) {
+        assertThat(IteratorUtils.toArray(serenityJSONObject.keys())).contains(claimName);
+        final String jsoValue = serenityJSONObject.get(claimName).toString();
+
+        if (!jsoValue.equals(regex)) {
+            assertThat(jsoValue).withFailMessage(
+                String.format(
+                    "JSON object does not match at key '%s'\nExpected:\n%s\n\n--------\n\nReceived:\n%s",
+                    claimName, regex, jsoValue))
+                .matches(regex);
+        }
     }
 }

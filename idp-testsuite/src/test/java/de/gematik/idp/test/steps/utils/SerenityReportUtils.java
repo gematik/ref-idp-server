@@ -44,7 +44,7 @@ public class SerenityReportUtils {
             .map(SerenityReportUtils::getValueFromLogLine)
             .findFirst().orElse(null);
 
-        final StringBuilder curlCmd = new StringBuilder("curl ");
+        final StringBuilder curlCmd = new StringBuilder("curl -v ");
         if (uri != null && method != null) {
             // add headers
             final List<String> headers = getValuesForBlock(lines, "Headers");

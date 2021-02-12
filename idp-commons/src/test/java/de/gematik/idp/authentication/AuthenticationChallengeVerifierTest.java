@@ -23,9 +23,8 @@ import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.JsonWebToken;
-import de.gematik.idp.token.TokenClaimExtraction;
 import java.time.ZonedDateTime;
-import java.util.Map;
+import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -81,9 +80,10 @@ public class AuthenticationChallengeVerifierTest {
             authenticationResponseBuilder.buildResponseForChallenge(authenticationChallenge,
                 clientIdentity);
 
-        final Map<String, Object> nestedClaims = TokenClaimExtraction.extractClaimsFromTokenBody(
-            authenticationResponse.getSignedChallenge().getStringBodyClaim(ClaimName.NESTED_JWT).get());
-        assertThat(nestedClaims)
+        assertThat(authenticationResponse.getSignedChallenge().getStringBodyClaim(ClaimName.NESTED_JWT)
+            .map(Objects::toString)
+            .map(JsonWebToken::new)
+            .map(JsonWebToken::getBodyClaims).get())
             .containsEntry("client_id", "goo")
             .containsEntry("state", "foo")
             .containsEntry("redirect_uri", "bar")

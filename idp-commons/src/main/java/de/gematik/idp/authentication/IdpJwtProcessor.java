@@ -21,6 +21,7 @@ import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifie
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.IdpJoseException;
+import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.token.JsonWebToken;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
@@ -28,6 +29,7 @@ import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import lombok.NonNull;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
@@ -37,11 +39,13 @@ public class IdpJwtProcessor {
 
     private final X509Certificate certificate;
     private final String algorithm;
+    private Optional<String> keyId;
     private PrivateKey privateKey;
 
     public IdpJwtProcessor(@NonNull final PkiIdentity identity) {
         this(identity.getCertificate());
         privateKey = identity.getPrivateKey();
+        keyId = identity.getKeyId();
     }
 
     public IdpJwtProcessor(@NonNull final X509Certificate certificate) {
@@ -59,14 +63,14 @@ public class IdpJwtProcessor {
     public JsonWebToken buildJwt(@NonNull final JwtBuilder jwtBuilder) {
         Objects.requireNonNull(privateKey, "No private key supplied, cancelling JWT signing");
         Objects.requireNonNull(jwtBuilder, "No Descriptor supplied, cancelling JWT signing");
+        keyId.ifPresent(keyId -> jwtBuilder.addHeaderClaim(ClaimName.KEY_ID, keyId));
         return jwtBuilder
             .setSignerKey(privateKey)
             .setCertificate(certificate)
             .buildJwt();
     }
 
-    public JsonWebToken buildJws(
-        @NonNull final String payload, @NonNull final Map<String, Object> headerClaims,
+    public JsonWebToken buildJws(@NonNull final String payload, @NonNull final Map<String, Object> headerClaims,
         final boolean includeSignerCertificateInHeader) {
         final JsonWebSignature jws = new JsonWebSignature();
 
@@ -77,6 +81,8 @@ public class IdpJwtProcessor {
         for (final String key : headerClaims.keySet()) {
             jws.setHeader(key, headerClaims.get(key));
         }
+
+        keyId.ifPresent(keyId -> jws.setHeader(ClaimName.KEY_ID.getJoseName(), keyId));
 
         if (includeSignerCertificateInHeader) {
             jws.setCertificateChainHeaderValue(certificate);

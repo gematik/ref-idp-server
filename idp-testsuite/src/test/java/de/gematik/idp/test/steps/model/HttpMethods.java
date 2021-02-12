@@ -20,6 +20,8 @@ package de.gematik.idp.test.steps.model;
 public enum HttpMethods {
     GET("GET"), POST("POST"), PUT("PUT"), DELETE("DELETE"), HEAD("HEAD");
 
+    public final static String CUCUMBER_REGEX = "(GET|POST|PUT|DELETE|HEAD)";
+
     private final String value;
 
     HttpMethods(final String value) {

@@ -24,7 +24,7 @@ public class IdpPkceVerificationFailureException extends IdpServerException {
 
     private static final long serialVersionUID = -8208966997249616972L;
 
-    public IdpPkceVerificationFailureException() {
-        super(IdpErrorType.PKCE_VERIFICATION_FAILURE, HttpStatus.BAD_REQUEST);
+    public IdpPkceVerificationFailureException(final String message) {
+        super(message, IdpErrorType.PKCE_VERIFICATION_FAILURE, HttpStatus.BAD_REQUEST);
     }
 }

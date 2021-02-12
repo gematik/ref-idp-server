@@ -16,14 +16,24 @@
 
 package de.gematik.idp.test.steps.model;
 
+import java.util.Arrays;
+
 public enum CodeAuthType {
-    SIGNED_CHALLENGE("signed_challenge"), SSO_TOKEN("sso_token"), SSO_TOKEN_NO_CHALLENGE(
-        "sso_token_no_challenge"), NO_PARAMS("no_params");
+    SIGNED_CHALLENGE, SSO_TOKEN, SSO_TOKEN_NO_CHALLENGE, NO_PARAMS;
+
+    public final static String CUCUMBER_REGEX = "(signed challenge|sso token|sso token no challenge|no params)";
 
     private final String value;
 
-    CodeAuthType(final String value) {
-        this.value = value.toUpperCase();
+    public static CodeAuthType fromString(final String value) {
+        return Arrays.stream(CodeAuthType.values())
+            .filter(e -> e.value.equals(value))
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("Invalid code auth type '" + value + "'"));
+    }
+
+    CodeAuthType() {
+        value = name().toLowerCase().replace("_", " ");
     }
 
     @Override

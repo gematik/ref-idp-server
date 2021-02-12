@@ -52,5 +52,4 @@ public class UriUtils {
         return extractParameterValueOptional(uri, param)
             .orElseThrow(() -> new RuntimeException("Could not find '" + param + "' parameter in '" + uri + "'"));
     }
-
 }

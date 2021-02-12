@@ -1,11 +1,20 @@
 idp:
   version: @project.version@
-  authKeyFile: classpath:authenticatorModule_idpServer.p12
-  tokenKeyFile: classpath:authenticatorModule_idpServer.p12
-  discoveryKeyFile: classpath:authenticatorModule_idpServer.p12
+  authKey:
+    fileName: classpath:authenticatorModule_idpServer.p12
+    keyId: authKey
+  tokenKey:
+    fileName: classpath:authenticatorModule_idpServer.p12
+    keyId: tokenKey
+  discoveryKey:
+    fileName: classpath:authenticatorModule_idpServer.p12
+    keyId: discoveryKey
+  symmetricEncryptionKey: "geheimerSchluesselDerNochGehashtWird"
   redirectUri: http://redirect.gematik.de/erezept
+  defaultLocale: US
   debug:
     requestLogging: true
+  subjectSaltValue: fkdlsjaviaen4evdsnavaew4vcxo
   blockedClientSystems:
     - "blocked_user_agent"
 logging:

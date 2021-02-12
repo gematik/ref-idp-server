@@ -23,6 +23,7 @@ Feature: Fordere Access Token mittels SSO Token an
     Given I initialize scenario from discovery document endpoint
     And I retrieve public keys from URIs
 
+  @Afo:A_20950-01
   @Approval @Todo:AccessTokenContent
   Scenario: GetToken mit SSO Token - Gutfall - Check Access Token - Validiere Antwortstruktur
     Given I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
@@ -31,16 +32,18 @@ Feature: Fordere Access Token mittels SSO Token an
       | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state         | nonce  | response_type |
       | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx1a | 997755 | code          |
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
-    And I request a code token with SIGNED_CHALLENGE
+    And I request a code token with signed challenge
     And I request an access token
-    And I start new interaction keeping only SSO_TOKEN
+    And I start new interaction keeping only
+      | SSO_TOKEN           |
+      | SSO_TOKEN_ENCRYPTED |
     And I initialize scenario from discovery document endpoint
     And I retrieve public keys from URIs
     And I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
     And I request a challenge with
       | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state         | nonce  | response_type |
       | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx2a | 997744 | code          |
-    And I request a code token with SSO_TOKEN
+    And I request a code token with sso token
     And I set the context with key REDIRECT_URI to 'http://redirect.gematik.de/erezept'
 
     When I request an access token
@@ -54,7 +57,10 @@ Feature: Fordere Access Token mittels SSO Token an
           }
         """
 
+  @Afo:A_20731 @Afo:A_20310 @Afo:A_20464 @Afo:A_20952
   @Approval @Todo:AccessTokenContent
+  @Todo:CompareSubjectInfosInAccessTokenAndInCert
+  # TODO: wollen wir noch den Wert der auth_time gegen den Zeitpunkt der Authentifizierung pruefen
   Scenario: GetToken mit SSO Token - Gutfall - Check Access Token - Validiere Access Token Claims
     Given I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
         # code_challenge for given verifier can be obtained from https://tonyxu-io.github.io/pkce-generator/
@@ -62,25 +68,27 @@ Feature: Fordere Access Token mittels SSO Token an
       | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state         | nonce  | response_type |
       | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx1a | 997755 | code          |
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
-    And I request a code token with SIGNED_CHALLENGE
+    And I request a code token with signed challenge
     And I request an access token
-    And I start new interaction keeping only SSO_TOKEN
+    And I start new interaction keeping only
+      | SSO_TOKEN           |
+      | SSO_TOKEN_ENCRYPTED |
     And I initialize scenario from discovery document endpoint
     And I retrieve public keys from URIs
     And I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
     And I request a challenge with
       | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state         | nonce  | response_type |
       | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx2a | 997744 | code          |
-    And I request a code token with SSO_TOKEN
+    And I request a code token with sso token
     And I set the context with key REDIRECT_URI to 'http://redirect.gematik.de/erezept'
+    And I request an access token
 
-    When I request an access token
-    And I extract the header claims from token ACCESS_TOKEN
+    When I extract the header claims from token ACCESS_TOKEN
     Then the header claims should match in any order
         """
           { alg: "BP256R1",
             exp: "[\\d]*",
-            jti: "${json-unit.ignore}",
+            kid: "${json-unit.ignore}",
             typ: "at+JWT"
           }
         """
@@ -89,11 +97,12 @@ Feature: Fordere Access Token mittels SSO Token an
         """
           { acr:              "eidas-loa-high",
             amr:              "[\"mfa\", \"sc\", \"pin\"]",
-            aud:              "https://erp.zentral.erp.splitdns.ti-dienste.de",
+            aud:              "https://erp.telematik.de/login",
             auth_time:        "[\\d]*",
             azp:              "eRezeptApp",
             client_id:        "eRezeptApp",
             exp:              "[\\d]*",
+            jti:              "${json-unit.ignore}",
             family_name:      "(.{1,64})",
             given_name:       "(.{1,64})",
             iat:              "[\\d]*",
@@ -102,7 +111,7 @@ Feature: Fordere Access Token mittels SSO Token an
             organizationName: "(.{1,64})",
             professionOID:    "1\\.2\\.276\\.0\\.76\\.4\\.(3\\d|4\\d|178|23[2-90]|240|241)",
             scope:            "(openid e-rezept|e-rezept openid)",
-            sub:              "subject"
+            sub:              ".*"
           }
         """
 
@@ -114,16 +123,18 @@ Feature: Fordere Access Token mittels SSO Token an
       | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state         | nonce  | response_type |
       | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx1a | 886655 | code          |
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
-    And I request a code token with SIGNED_CHALLENGE
+    And I request a code token with signed challenge
     And I request an access token
-    And I start new interaction keeping only SSO_TOKEN
+    And I start new interaction keeping only
+      | SSO_TOKEN           |
+      | SSO_TOKEN_ENCRYPTED |
     And I initialize scenario from discovery document endpoint
     And I retrieve public keys from URIs
     And I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
     And I request a challenge with
       | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state         | nonce  | response_type |
       | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx2a | 886644 | code          |
-    And I request a code token with SSO_TOKEN
+    And I request a code token with sso token
     And I set the context with key REDIRECT_URI to 'http://redirect.gematik.de/erezept'
 
     When I request an access token
@@ -145,34 +156,37 @@ Feature: Fordere Access Token mittels SSO Token an
       | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state         | nonce  | response_type |
       | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx1a | 886655 | code          |
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
-    And I request a code token with SIGNED_CHALLENGE
+    And I request a code token with signed challenge
     And I request an access token
-    And I start new interaction keeping only SSO_TOKEN
+    And I start new interaction keeping only
+      | SSO_TOKEN           |
+      | SSO_TOKEN_ENCRYPTED |
     And I initialize scenario from discovery document endpoint
     And I retrieve public keys from URIs
     And I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
     And I request a challenge with
       | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state         | nonce  | response_type |
       | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx2a | 886644 | code          |
-    And I request a code token with SSO_TOKEN
+    And I request a code token with sso token
     And I set the context with key REDIRECT_URI to 'http://redirect.gematik.de/erezept'
+    And I request an access token
 
-    When I request an access token
-    And I extract the header claims from response field id_token
+    When I extract the header claims from token ID_TOKEN
     Then the header claims should match in any order
         """
           { alg: "BP256R1",
             exp: "[\\d]*",
+            kid: "${json-unit.ignore}",
             typ: "JWT"
           }
         """
-    When I extract the body claims from response field id_token
+    When I extract the body claims from token ID_TOKEN
     Then the body claims should match in any order
         """
           { acr:              "eidas-loa-high",
             amr:              '["mfa", "sc", "pin"]',
             at_hash:          ".*",
-            aud:              "https://erp.zentral.erp.splitdns.ti-dienste.de",
+            aud:              "eRezeptApp",
             auth_time:        "[\\d]*",
             azp:              "eRezeptApp",
             exp:              "[\\d]*",
@@ -184,7 +198,7 @@ Feature: Fordere Access Token mittels SSO Token an
             nonce:            "886644",
             organizationName: "(.{1,64})",
             professionOID:    "1\\.2\\.276\\.0\\.76\\.4\\.(3\\d|4\\d|178|23[2-90]|240|241)",
-            sub:              "eRezeptApp"
+            sub:              ".*"
           }
         """
 
@@ -197,20 +211,51 @@ Feature: Fordere Access Token mittels SSO Token an
       | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state         | nonce  | response_type |
       | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx1a | 887722 | code          |
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
-    And I request a code token with SIGNED_CHALLENGE
+    And I request a code token with signed challenge
     And I request an access token
-    And I start new interaction keeping only SSO_TOKEN
+    And I start new interaction keeping only
+      | SSO_TOKEN           |
+      | SSO_TOKEN_ENCRYPTED |
     And I initialize scenario from discovery document endpoint
     And I retrieve public keys from URIs
     And I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
     And I request a challenge with
       | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state         | nonce  | response_type |
       | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx2a | 887711 | code          |
-    And I request a code token with SSO_TOKEN
+    And I request a code token with sso token
     And I set the context with key REDIRECT_URI to 'http://redirect.gematik.de/erezept'
 
     When I request an access token
     Then the context ID_TOKEN must be signed with cert PUK_TOKEN
 
 
-    # TODO card specific cases (if user consent claims should be validated)
+  @Approval @Ready
+  @Timeout
+  Scenario: GetToken mit SSO Token - Speichere SSO Token für manuelle Tests
+    Given I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+    And I request a challenge with
+      | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state         | nonce  | response_type |
+      | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx1a | 887722 | code          |
+    And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    When I request a code token with signed challenge
+    Then I store SSO_TOKEN as text
+    And I store SSO_TOKEN_ENCRYPTED as text
+
+  @Afo:A_20315-01
+  @Approval @Todo:NotCheckingSsoTokenExactly12H
+  @Timeout
+  Scenario: GetToken mit SSO Token - Veralteter SSO Token wird abgelehnt
+
+    Given I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+    And I request a challenge with
+      | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state         | nonce  | response_type |
+      | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx2a | 887711 | code          |
+
+    When I load SSO_TOKEN from folder 'old_sso_token'
+    And I load SSO_TOKEN_ENCRYPTED from folder 'old_sso_token'
+    And I request a code token with sso token
+    Then the response is an 302 error with code "invalid_request" and message matching 'SsoToken%20expired'
+
+  # TODO we have no scenario where we check that an SSO Token is valid after 11h59m
+
+  # TODO card specific cases (if user consent claims should be validated)

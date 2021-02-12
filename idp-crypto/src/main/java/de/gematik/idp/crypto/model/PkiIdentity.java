@@ -16,10 +16,9 @@
 
 package de.gematik.idp.crypto.model;
 
-import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import java.security.PrivateKey;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -33,12 +32,5 @@ public class PkiIdentity {
 
     private X509Certificate certificate;
     private PrivateKey privateKey;
-
-    public String getBase64EncodedCertificate() {
-        try {
-            return java.util.Base64.getUrlEncoder().encodeToString(certificate.getEncoded());
-        } catch (final CertificateEncodingException e) {
-            throw new IdpCryptoException("Error while retrieving key information", e);
-        }
-    }
+    private Optional<String> keyId;
 }

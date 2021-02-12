@@ -23,6 +23,7 @@ import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers;
 import de.gematik.idp.crypto.X509ClaimExtraction;
 import de.gematik.idp.data.IdpKeyDescriptor;
+import java.security.Key;
 import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
@@ -33,15 +34,16 @@ import lombok.Data;
 public class SsoTokenBuilder {
 
     private final IdpJwtProcessor jwtProcessor;
-    private final String uriIdpServer;
+    private final String issuerUrl;
+    private final Key tokenEncryptionKey;
 
-    public JsonWebToken buildSsoToken(final X509Certificate certificate, final ZonedDateTime issuingTime) {
+    public IdpJwe buildSsoToken(final X509Certificate certificate, final ZonedDateTime issuingTime) {
         final Map<String, Object> bodyClaimsMap = new HashMap<>();
         final Map<String, Object> headerClaimsMap = new HashMap<>();
         headerClaimsMap.put(ALGORITHM.getJoseName(), BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256);
         bodyClaimsMap.put(CONFIRMATION.getJoseName(), IdpKeyDescriptor.constructFromX509Certificate(certificate));
         headerClaimsMap.put(TYPE.getJoseName(), "JWT");
-        bodyClaimsMap.put(ISSUER.getJoseName(), uriIdpServer);
+        bodyClaimsMap.put(ISSUER.getJoseName(), issuerUrl);
         bodyClaimsMap.put(ISSUED_AT.getJoseName(), issuingTime.toEpochSecond());
         bodyClaimsMap.put(NOT_BEFORE.getJoseName(), issuingTime.toEpochSecond());
         bodyClaimsMap.put(AUTH_TIME.getJoseName(), issuingTime.toEpochSecond());
@@ -50,6 +52,7 @@ public class SsoTokenBuilder {
         return jwtProcessor.buildJwt(new JwtBuilder()
             .addAllHeaderClaims(headerClaimsMap)
             .addAllBodyClaims(bodyClaimsMap)
-            .expiresAt(issuingTime.plusMinutes(5)));
+            .expiresAt(issuingTime.plusHours(12)))
+            .encrypt(tokenEncryptionKey);
     }
 }

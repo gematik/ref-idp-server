@@ -16,6 +16,10 @@
 
 package de.gematik.idp.server;
 
+import de.gematik.idp.server.configuration.IdpConfiguration;
+import java.util.Locale;
+import javax.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.trace.http.HttpTraceRepository;
 import org.springframework.boot.actuate.trace.http.InMemoryHttpTraceRepository;
@@ -28,7 +32,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @SpringBootApplication(scanBasePackages = {"de.gematik"})
 @EnableWebMvc
+@RequiredArgsConstructor
 public class IdpServer implements WebMvcConfigurer {
+
+    private final IdpConfiguration idpConfiguration;
 
     @SuppressWarnings("java:S4823")
     public static void main(final String[] args) {
@@ -44,6 +51,13 @@ public class IdpServer implements WebMvcConfigurer {
         loggingFilter.setIncludePayload(true);
         loggingFilter.setMaxPayloadLength(64000);
         return loggingFilter;
+    }
+
+    @PostConstruct
+    public void setIdpLocale() {
+        if (idpConfiguration.getDefaultLocale() != null) {
+            Locale.setDefault(idpConfiguration.getDefaultLocale());
+        }
     }
 
     @Bean

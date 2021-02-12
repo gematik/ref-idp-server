@@ -24,7 +24,6 @@ import static org.mockito.Mockito.verify;
 
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
-import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
 import de.gematik.idp.authentication.UriUtils;
 import de.gematik.idp.client.IdpClient;
 import de.gematik.idp.crypto.model.PkiIdentity;
@@ -62,7 +61,6 @@ public class AuthenticationCallTest {
     @Autowired
     private IdpKey authKey;
     private AuthenticationChallengeBuilder authenticationChallengeBuilderSpy;
-    private AuthenticationChallengeVerifier authenticationChallengeVerifier;
     @Autowired
     private IdpConfiguration idpConfiguration;
 
@@ -79,10 +77,6 @@ public class AuthenticationCallTest {
         egkUserIdentity = PkiIdentity.builder()
             .certificate(egkIdentity.getCertificate())
             .privateKey(egkIdentity.getPrivateKey())
-            .build();
-
-        authenticationChallengeVerifier = AuthenticationChallengeVerifier.builder()
-            .serverIdentity(egkUserIdentity)
             .build();
 
         authenticationChallengeBuilderSpy = spy(authenticationChallengeBuilder);
@@ -138,11 +132,10 @@ public class AuthenticationCallTest {
     @Test
     public void verifySignedChallengeBodyAttribute_njwt() {
         idpClient.setBeforeAuthenticationCallback(request -> assertThat(new IdpJwe(getTokenOfRequest(request))
-            .decrypt(authKey.getIdentity().getPrivateKey())
+            .decryptNestedJwt(authKey.getIdentity().getPrivateKey())
             .getBodyClaims()).containsKey("njwt"));
         idpClient.login(egkUserIdentity);
     }
-
 
     private String getTokenOfRequest(final MultipartBody request) {
         return (String) request.getBody().get().multiParts().stream().findFirst().get().getValue();

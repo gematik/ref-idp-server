@@ -91,7 +91,7 @@ public class AuthenticationResponseBuilderTest {
         final AuthenticationResponse authenticationResponse =
             authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
 
-        serverJwtConsumer.process(authenticationResponse.getSignedChallenge().getJwtRawString());
+        serverJwtConsumer.process(authenticationResponse.getSignedChallenge().getRawString());
     }
 
     @Test
@@ -111,7 +111,7 @@ public class AuthenticationResponseBuilderTest {
 
         assertThat(authenticationResponse.getSignedChallenge().getBodyClaims())
             .extractingByKey(ClaimName.NESTED_JWT.getJoseName())
-            .isEqualTo(challenge.getChallenge().getJwtRawString());
+            .isEqualTo(challenge.getChallenge().getRawString());
     }
 
     @Test
@@ -123,7 +123,7 @@ public class AuthenticationResponseBuilderTest {
             .extractClaimsFromSignedChallenge(authenticationResponse);
         assertThat(extractedClaims)
             .containsOnlyKeys(NESTED_JWT.getJoseName())
-            .containsEntry(NESTED_JWT.getJoseName(), challenge.getChallenge().getJwtRawString());
+            .containsEntry(NESTED_JWT.getJoseName(), challenge.getChallenge().getRawString());
     }
 
     @Test

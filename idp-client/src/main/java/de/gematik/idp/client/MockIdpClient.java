@@ -16,19 +16,21 @@
 
 package de.gematik.idp.client;
 
+import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.*;
 import de.gematik.idp.crypto.model.PkiIdentity;
+import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.token.AccessTokenBuilder;
+import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
+import javax.crypto.spec.SecretKeySpec;
 import lombok.*;
+import org.apache.commons.codec.digest.DigestUtils;
 
 @Getter
 @EqualsAndHashCode
@@ -41,12 +43,15 @@ public class MockIdpClient implements IIdpClient {
     private final String clientId;
     private final boolean produceTokensWithInvalidSignature;
     private final boolean produceOnlyExpiredTokens;
-    private final String uriIdpServer;
+    @Builder.Default
+    private final String uriIdpServer = IdpConstants.DEFAULT_SERVER_URL;
     private AccessTokenBuilder accessTokenBuilder;
     private AuthenticationResponseBuilder authenticationResponseBuilder;
     private AuthenticationTokenBuilder authenticationTokenBuilder;
     private AuthenticationChallengeBuilder authenticationChallengeBuilder;
     private IdpJwtProcessor jwtProcessor;
+    private final String serverSubSalt = "someArbitrarySubSaltValue";
+    private SecretKeySpec encryptionKey;
 
     @Override
     public IdpTokenResult login(final PkiIdentity clientIdentity) {
@@ -64,11 +69,17 @@ public class MockIdpClient implements IIdpClient {
                 IdpScope.EREZEPT.getJwtValue() + " " + IdpScope.OPENID.getJwtValue(), "nonceValue");
         final AuthenticationResponse authenticationResponse = authenticationResponseBuilder
             .buildResponseForChallenge(challenge, clientIdentity);
-        final JsonWebToken authenticationToken = authenticationTokenBuilder
+        final IdpJwe authenticationToken = authenticationTokenBuilder
             .buildAuthenticationToken(clientIdentity.getCertificate(),
-                authenticationResponse.getSignedChallenge().getBodyClaims(), ZonedDateTime.now());
+                authenticationResponse.getSignedChallenge().getBodyClaim(ClaimName.NESTED_JWT)
+                    .map(Objects::toString)
+                    .map(JsonWebToken::new)
+                    .map(JsonWebToken::getBodyClaims)
+                    .orElseThrow(),
+                ZonedDateTime.now());
 
-        JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);
+        JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(
+            authenticationToken.decryptNestedJwt(encryptionKey));
 
         if (produceOnlyExpiredTokens) {
             accessToken = resignToken(accessToken.getHeaderClaims(),
@@ -77,7 +88,7 @@ public class MockIdpClient implements IIdpClient {
         }
 
         if (produceTokensWithInvalidSignature) {
-            final List<String> strings = Arrays.asList(accessToken.getJwtRawString().split("\\."));
+            final List<String> strings = Arrays.asList(accessToken.getRawString().split("\\."));
             strings.set(2, strings.get(2) + "mvK");
             accessToken = new JsonWebToken(strings.stream()
                 .collect(Collectors.joining(".")));
@@ -99,12 +110,17 @@ public class MockIdpClient implements IIdpClient {
 
     @Override
     public MockIdpClient initialize() {
+        serverIdentity.setKeyId(Optional.of("authKey"));
         jwtProcessor = new IdpJwtProcessor(serverIdentity);
-        accessTokenBuilder = new AccessTokenBuilder(jwtProcessor, uriIdpServer);
+        accessTokenBuilder = new AccessTokenBuilder(jwtProcessor, uriIdpServer, serverSubSalt);
         authenticationChallengeBuilder = new AuthenticationChallengeBuilder(serverIdentity, uriIdpServer);
         authenticationResponseBuilder = new AuthenticationResponseBuilder();
-        authenticationTokenBuilder = new AuthenticationTokenBuilder(jwtProcessor,
-            new AuthenticationChallengeVerifier(serverIdentity));
+        encryptionKey = new SecretKeySpec(DigestUtils.sha256("fdsa"), "AES");
+        authenticationTokenBuilder = AuthenticationTokenBuilder.builder()
+            .jwtProcessor(jwtProcessor)
+            .authenticationChallengeVerifier(new AuthenticationChallengeVerifier(serverIdentity))
+            .encryptionKey(encryptionKey)
+            .build();
         return this;
     }
 

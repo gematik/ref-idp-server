@@ -25,7 +25,6 @@ import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.field.CodeChallengeMethod;
 import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.token.IdpJwe;
-import de.gematik.idp.token.JsonWebToken;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -132,19 +131,20 @@ public class IdpClient implements IIdpClient {
 
         // get Token
         LOGGER.debug("Performing getToken with remote-URL '{}'", discoveryDocumentResponse.getTokenEndpoint());
-        return authenticatorClient.retrieveAcessToken(TokenRequest.builder()
+        return authenticatorClient.retrieveAccessToken(TokenRequest.builder()
                 .tokenUrl(discoveryDocumentResponse.getTokenEndpoint())
                 .clientId(clientId)
                 .code(authenticationResponse.getCode())
                 .ssoToken(authenticationResponse.getSsoToken())
                 .redirectUrl(redirectUrl)
                 .codeVerifier(codeVerifier)
+                .pukToken(discoveryDocumentResponse.getServerTokenCertificate().getPublicKey())
                 .build(),
             beforeTokenMapper,
             afterTokenCallback);
     }
 
-    public IdpTokenResult loginWithSsoToken(final JsonWebToken ssoToken) {
+    public IdpTokenResult loginWithSsoToken(final IdpJwe ssoToken) {
         assertThatClientIsInitialized();
 
         final String codeVerifier = ClientUtilities.generateCodeVerifier();
@@ -171,13 +171,13 @@ public class IdpClient implements IIdpClient {
 
         // Authentication
         final String ssoChallengeEndpoint = discoveryDocumentResponse.getAuthorizationEndpoint().replace(
-            IdpConstants.BASIC_AUTHORIZATION_ENDPOINT, IdpConstants.SSO_AUTHORIZATION_ENDPOINT);
+            IdpConstants.BASIC_AUTHORIZATION_ENDPOINT, IdpConstants.SSO_ENDPOINT);
         LOGGER.debug("Performing Sso-Authentication with remote-URL '{}'", ssoChallengeEndpoint);
         final AuthenticationResponse authenticationResponse = authenticationResponseMapper.apply(
             authenticatorClient
                 .performAuthenticationWithSsoToken(AuthenticationRequest.builder()
                         .authenticationEndpointUrl(ssoChallengeEndpoint)
-                        .ssoToken(ssoToken.getJwtRawString())
+                        .ssoToken(ssoToken.getRawString())
                         .challengeToken(authorizationResponse.getAuthenticationChallenge().getChallenge())
                         .build(),
                     beforeAuthenticationMapper,
@@ -192,13 +192,14 @@ public class IdpClient implements IIdpClient {
 
         // get Token
         LOGGER.debug("Performing getToken with remote-URL '{}'", discoveryDocumentResponse.getTokenEndpoint());
-        return authenticatorClient.retrieveAcessToken(TokenRequest.builder()
+        return authenticatorClient.retrieveAccessToken(TokenRequest.builder()
                 .tokenUrl(discoveryDocumentResponse.getTokenEndpoint())
                 .clientId(clientId)
                 .code(authenticationResponse.getCode())
-                .ssoToken(ssoToken.getJwtRawString())
+                .ssoToken(ssoToken.getRawString())
                 .redirectUrl(redirectUrl)
                 .codeVerifier(codeVerifier)
+                .pukToken(discoveryDocumentResponse.getServerTokenCertificate().getPublicKey())
                 .build(),
             beforeTokenMapper,
             afterTokenCallback);

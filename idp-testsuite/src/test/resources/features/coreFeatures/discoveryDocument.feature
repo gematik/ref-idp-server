@@ -36,7 +36,7 @@ Feature: Fordere Discovery Dokument an
     Then the response status is 200
     And the response content type is 'application/json'
 
-  @Afo:A_20614 @Afo:A_20623 @Afo:A_20591
+  @Afo:A_20614 @Afo:A_20623 @Afo:A_20591-01
   @Approval @Ready
   Scenario: Disc - Discovery Dokument muss signiert sein
 
@@ -70,11 +70,13 @@ Feature: Fordere Discovery Dokument an
     Then the header claims should match in any order
         """
         {
-          alg: "BP256R1"
+          alg: "BP256R1",
+          kid: "${json-unit.ignore}",
+          x5c: "${json-unit.ignore}"
         }
         """
 
-  @Afo:A_20297_01 @Afo:A_20505_01 @Afo:A_20506_01 @Afo:A_20698
+  @Afo:A_20297_01 @Afo:A_20505_01 @Afo:A_20506_01 @Afo:A_20698 @Afo:A_20458-01
   @Approval @Ready
   Scenario: Disc - Discovery Dokument body claims sind korrekt
 
@@ -93,6 +95,9 @@ Feature: Fordere Discovery Dokument an
         """
           { acr_values_supported :                  '["urn:eidas:loa:high"]',
             authorization_endpoint:                 "http.*",
+            alternative_authorization_endpoint:     "http.*",
+            sso_endpoint:                           "http.*",
+            pairing_endpoint:                       "http.*",
             exp:                                    "[\\d]*",
             grant_types_supported :                 '["authorization_code"]',
             iat:                                    "[\\d]*",
@@ -101,7 +106,7 @@ Feature: Fordere Discovery Dokument an
             jwks_uri :                              "http.*",
             nbf:                                    "[\\d]*",
             puk_uri_auth:                           ".*",
-            puk_uri_disc:                           ".*",
+            uri_disc:                               ".*",
             puk_uri_token:                          ".*",
             response_modes_supported :              '["query"]',
             response_types_supported :              '["code"]',
@@ -111,7 +116,6 @@ Feature: Fordere Discovery Dokument an
             token_endpoint_auth_methods_supported : '["none"]'
           }
         """
-        # TODO RISE puk uri tokens UPPERCASE, puk uri disc fehlt, puk uri auth fehlt, dafür claims_supported -> Tomi, OPL
 
   @Afo:A_20297_01 @Afo:A_20505_01 @Afo:A_20506_01 @Afo:A_20698
   @Approval @Ready
@@ -127,16 +131,25 @@ Feature: Fordere Discovery Dokument an
 
     When I extract the body claims
     # iat must be within 24h and before now
-    Then the body claim 'iat' contains a date NOT_BEFORE P-1DT-1S
-    And the body claim 'iat' contains a date NOT_AFTER PT1S
+    Then the body claim 'iat' contains a date not before P-1DT-1S
+    And the body claim 'iat' contains a date not after PT1S
     # nbf must be in past and within 24h
-    And the body claim 'nbf' contains a date NOT_BEFORE P-1DT-1S
-    And the body claim 'nbf' contains a date NOT_AFTER PT1S
+    And the body claim 'nbf' contains a date not before P-1DT-1S
+    And the body claim 'nbf' contains a date not after PT1S
     # exp must be after now but within 24h
-    And the body claim 'exp' contains a date NOT_BEFORE PT1S
-    And the body claim 'exp' contains a date NOT_AFTER P1DT1S
+    And the body claim 'exp' contains a date not before PT1S
+    And the body claim 'exp' contains a date not after P1DT1S
 
-  # TODO duration test to check that over 25h no disc doc is older than 24h
+  @Afo:A_20691
+  @Manual
+  @Approval @Ready
+  @Timeout
+  Scenario: Disc - Prüfe Zeitliche Gültigkeit ist maximal 24h
+  ```
+  Ich wiederhole stündlich das Szenario 'Disc - Discovery Dokument - Zeitliche Body Claims sind korrekt'
+
+  Result: Keiner der Testdurchläufe darf fehlschlagen
+  ```
 
   @Afo:A_20687
   @Approval @Ready
@@ -155,14 +168,17 @@ Feature: Fordere Discovery Dokument an
     Given I request the discovery document
 
     When I extract the body claims
-    Then URI in claim "issuer" exists with method GET and status 404
-    And URI in claim "issuer" exists with method POST and status 404
+    Then URI in claim "uri_disc" exists with method GET and status 200
+    And URI in claim "uri_disc" exists with method POST and status 405
     And URI in claim "authorization_endpoint" exists with method GET and status 400
     And URI in claim "authorization_endpoint" exists with method POST and status 302
+    And URI in claim "sso_endpoint" exists with method GET and status 405
+    And URI in claim "sso_endpoint" exists with method POST and status 302
     And URI in claim "token_endpoint" exists with method GET and status 405
     And URI in claim "token_endpoint" exists with method POST and status 400
 
-  @Approval @Todo:KeyChecksOCSP
+  @Afo:A_20732
+    @Approval @Todo:KeyChecksOCSP
   #OpenBug: currently not working if we use file based key material
   Scenario Outline: Disc - Die Schlüssel URIs sind erreichbar und enthalten public X509 Schlüssel
 
@@ -171,7 +187,8 @@ Feature: Fordere Discovery Dokument an
 
   - puk_uri_auth
   - puk_uri_token
-  - puk_uri_disc
+
+  Der PuK_Disc wird aus dem header des Disc Docs gelesen und hier NICHT geprüft.
 
   Die Antwort des Servers auf Anfragen auf diese URIs muss einen validen ECC BP256 Schlüssel liefern.
 
@@ -196,7 +213,6 @@ Feature: Fordere Discovery Dokument an
       | claim         |
       | puk_uri_auth  |
       | puk_uri_token |
-      | puk_uri_disc  |
 
   @Approval @Todo:KeyChecksOCSP
   Scenario Outline: Check JWKS URI

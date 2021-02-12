@@ -33,11 +33,13 @@ import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.exceptions.IdpServerException;
 import de.gematik.idp.server.services.SsoTokenValidator;
 import de.gematik.idp.tests.PkiKeyResolver;
-import de.gematik.idp.token.JsonWebToken;
+import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.SsoTokenBuilder;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import javax.crypto.spec.SecretKeySpec;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,6 +53,7 @@ public class SsoTokenValidatorTest {
     private IdpJwtProcessor serverTokenProzessor;
     private SsoTokenBuilder ssoTokenBuilder;
     private final ServerUrlService urlService = new ServerUrlService(new IdpConfiguration());
+    private SecretKeySpec tokenEncryptionKey;
 
     @BeforeEach
     public void init(
@@ -60,40 +63,44 @@ public class SsoTokenValidatorTest {
         rsaUserIdentity = rsaIdentity;
         final IdpKey serverKey = new IdpKey(egkUserIdentity);
         serverTokenProzessor = new IdpJwtProcessor(egkUserIdentity);
-        ssoTokenBuilder = new SsoTokenBuilder(serverTokenProzessor, urlService.determineServerUrl());
-        ssoTokenValidator = new SsoTokenValidator(serverKey);
+        tokenEncryptionKey = new SecretKeySpec(DigestUtils.sha256("fdsfdsafdsayvcxy".getBytes()), "AES");
+        ssoTokenBuilder = new SsoTokenBuilder(serverTokenProzessor, urlService.determineServerUrl(),
+            tokenEncryptionKey);
+        ssoTokenValidator = new SsoTokenValidator(serverKey, tokenEncryptionKey);
     }
 
     @Test
     public void validateValidSsoToken() {
-        assertDoesNotThrow(() -> ssoTokenValidator.validateSsoToken(generateValidSsoToken()));
+        assertDoesNotThrow(() -> ssoTokenValidator.decryptAndValidateSsoToken(generateValidSsoToken()));
     }
 
     @Test
     public void validateSsoTokenExpired() {
-        assertThatThrownBy(() -> ssoTokenValidator.validateSsoToken(generateExpiredSsoToken()))
+        assertThatThrownBy(() -> ssoTokenValidator.decryptAndValidateSsoToken(generateExpiredSsoToken()))
             .isInstanceOf(IdpServerException.class);
     }
 
     @Test
     public void validateSsoTokenInvalidCert() {
-        assertThatThrownBy(() -> ssoTokenValidator.validateSsoToken(generateInvalidSsoToken()))
+        assertThatThrownBy(() -> ssoTokenValidator.decryptAndValidateSsoToken(generateInvalidSsoToken()))
             .isInstanceOf(IdpJoseException.class);
     }
 
-    private JsonWebToken generateExpiredSsoToken() {
+    private IdpJwe generateExpiredSsoToken() {
         return serverTokenProzessor.buildJwt(new JwtBuilder()
             .addAllHeaderClaims(generateHeaderClaims())
             .addAllBodyClaims(generateBodyClaims())
-            .expiresAt(ZonedDateTime.now().minusMinutes(1)));
+            .expiresAt(ZonedDateTime.now().minusMinutes(1)))
+            .encrypt(tokenEncryptionKey);
     }
 
-    private JsonWebToken generateInvalidSsoToken() {
+    private IdpJwe generateInvalidSsoToken() {
         final IdpJwtProcessor invalidProcessor = new IdpJwtProcessor(rsaUserIdentity);
         return invalidProcessor.buildJwt(new JwtBuilder()
             .addAllHeaderClaims(generateHeaderClaims())
             .addAllBodyClaims(generateBodyClaims())
-            .expiresAt(ZonedDateTime.now().plusMinutes(5)));
+            .expiresAt(ZonedDateTime.now().plusMinutes(5)))
+            .encrypt(tokenEncryptionKey);
     }
 
     private Map<String, Object> generateHeaderClaims() {
@@ -110,8 +117,7 @@ public class SsoTokenValidatorTest {
         return bodyClaims;
     }
 
-    private JsonWebToken generateValidSsoToken() {
+    private IdpJwe generateValidSsoToken() {
         return ssoTokenBuilder.buildSsoToken(egkUserIdentity.getCertificate(), ZonedDateTime.now());
     }
-
 }

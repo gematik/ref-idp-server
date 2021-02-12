@@ -1,12 +1,28 @@
+/*
+ * Copyright (c) 2021 gematik GmbH
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package de.gematik.idp.server.controllers;
 
 import static de.gematik.idp.IdpConstants.PAIRING_ENDPOINT;
 
-import de.gematik.idp.server.KeyConfiguration;
+import de.gematik.idp.server.RequestAccessToken;
 import de.gematik.idp.server.data.PairingDto;
+import de.gematik.idp.server.data.RegistrationData;
 import de.gematik.idp.server.services.PairingService;
 import de.gematik.idp.server.validation.accessToken.ValidateAccessToken;
-import de.gematik.idp.server.validation.accessToken.ValidateKvnrWithAccessToken;
 import de.gematik.idp.server.validation.clientSystem.ValidateClientSystem;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -16,7 +32,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -31,10 +46,9 @@ import org.springframework.web.bind.annotation.*;
 public class PairingController {
 
     private final PairingService pairingService;
-    @Autowired
-    private KeyConfiguration keyConfiguration;
+    private final RequestAccessToken requestAccessToken;
 
-    @GetMapping(PAIRING_ENDPOINT + "/{kvnr}")
+    @GetMapping(PAIRING_ENDPOINT)
     @ApiOperation(httpMethod = "GET", value = "Endpunkt für Abrufen der Pairingdaten", notes = "Es werden zur übergebenen KVNR alle Pairingdaten abgerufen.", response = List.class)
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Erfolgreich Pairingdaten erhalten"),
@@ -44,28 +58,11 @@ public class PairingController {
     })
     @ValidateClientSystem
     @ValidateAccessToken
-    public List<PairingDto> getAllPairingsForKvnr(
-        @PathVariable("kvnr") @ApiParam(value = "Krankenversichertennummer") @ValidateKvnrWithAccessToken final String kvnr) {
-        return pairingService.getPairingList(kvnr);
+    public List<PairingDto> getAllPairingsForKvnr() {
+        return pairingService.validateTokenAndGetPairingList(requestAccessToken.getAccessToken());
     }
 
-    @DeleteMapping(PAIRING_ENDPOINT + "/{kvnr}")
-    @ApiOperation(httpMethod = "DELETE", value = "Endpunkt zum Löschen aller Pairingdaten zu einer KVNR", notes = "Es werden zur übergebenen KVNR alle gespeicherten Pairingdaten gelöscht. ")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Erfolgreich Pairingdaten gelöscht"),
-        @ApiResponse(responseCode = "400", description = "Ungültige Anfrage (Parameter fehlen/ungültig)"),
-        @ApiResponse(responseCode = "403", description = "Nicht erlaubter Zugriff"),
-        @ApiResponse(responseCode = "404", description = "Nicht gefunden - Methodenaufruf nicht korrekt")
-    })
-    @ValidateClientSystem
-    @ValidateAccessToken
-    public void deleteAllPairingsForKvnr(
-        @PathVariable("kvnr") @ApiParam(value = "Krankenversichertennummer") @ValidateKvnrWithAccessToken final String kvnr
-    ) {
-        pairingService.deleteAllPairings(kvnr);
-    }
-
-    @DeleteMapping(PAIRING_ENDPOINT + "/{kvnr}/{id}")
+    @DeleteMapping(PAIRING_ENDPOINT + "/{key_identifier}")
     @ApiOperation(httpMethod = "DELETE", value = "Endpunkt zum Löschen eines spezifischen Pairingdatensatzes",
         notes = "Es wird zur übergebenen KVNR und ID der entsprechende Pairingdatensatz gelöscht. ")
     @ApiResponses(value = {
@@ -77,10 +74,10 @@ public class PairingController {
     @ValidateAccessToken
     @ValidateClientSystem
     public void deleteSinglePairing(
-        @PathVariable("kvnr") @ApiParam(value = "Krankenversichertennummer") @ValidateKvnrWithAccessToken final String kvnr,
-        @PathVariable(value = "id") @ApiParam(value = "PairingID") final String pairingID
+        @PathVariable(value = "key_identifier") @ApiParam(value = "Key Identifier") final String keyIdentifier
     ) {
-        pairingService.deleteSelectedPairing(kvnr, pairingID);
+        pairingService
+            .validateTokenAndDeleteSelectedPairing(requestAccessToken.getAccessToken(), keyIdentifier);
     }
 
     @PutMapping(value = PAIRING_ENDPOINT, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -96,7 +93,8 @@ public class PairingController {
     @ValidateAccessToken
     @ValidateClientSystem
     public String insertPairing(
-        @RequestBody @ApiParam(value = "Pairingdaten") @NotNull final PairingDto pairingData) {
-        return String.valueOf(pairingService.insertPairing(pairingData));
+        @RequestBody @ApiParam(value = "Registrierungsdaten") @NotNull final RegistrationData registrationData) {
+        return String.valueOf(
+            pairingService.validateAndInsertPairingData(requestAccessToken.getAccessToken(), registrationData));
     }
 }

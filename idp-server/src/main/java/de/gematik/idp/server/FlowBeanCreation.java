@@ -21,11 +21,16 @@ import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.discoveryDocument.DiscoveryDocumentBuilder;
+import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpKey;
+import de.gematik.idp.server.exceptions.IdpServerStartupException;
 import de.gematik.idp.token.AccessTokenBuilder;
 import de.gematik.idp.token.IdTokenBuilder;
 import de.gematik.idp.token.SsoTokenBuilder;
+import java.security.Key;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,26 +41,30 @@ public class FlowBeanCreation {
 
     private final IdpJwtProcessor idpJwtProcessor;
     private final IdpKey authKey;
+    private final Key symmetricEncryptionKey;
     private final ServerUrlService serverUrlService;
+    private final IdpConfiguration idpConfiguration;
 
     @Bean
     public AuthenticationTokenBuilder authenticationTokenBuilder() {
-        return new AuthenticationTokenBuilder(idpJwtProcessor, authenticationChallengeVerifier());
+        return new AuthenticationTokenBuilder(idpJwtProcessor, symmetricEncryptionKey,
+            authenticationChallengeVerifier());
     }
 
     @Bean
     public AccessTokenBuilder accessTokenBuilder() {
-        return new AccessTokenBuilder(idpJwtProcessor, serverUrlService.determineServerUrl());
+        return new AccessTokenBuilder(idpJwtProcessor, serverUrlService.determineServerUrl(), getSubjectSaltValue());
     }
 
     @Bean
     public IdTokenBuilder idTokenBuilder() {
-        return new IdTokenBuilder(idpJwtProcessor, serverUrlService.determineServerUrl());
+        return new IdTokenBuilder(idpJwtProcessor, serverUrlService.determineServerUrl(), getSubjectSaltValue());
     }
 
     @Bean
     public SsoTokenBuilder ssoTokenBuilder() {
-        return new SsoTokenBuilder(idpJwtProcessor, serverUrlService.determineServerUrl());
+        return new SsoTokenBuilder(idpJwtProcessor, serverUrlService.getIssuerUrl(),
+            symmetricEncryptionKey);
     }
 
     @Bean
@@ -81,5 +90,11 @@ public class FlowBeanCreation {
     @Bean
     public ModelMapper modelMapper() {
         return new ModelMapper();
+    }
+
+    private String getSubjectSaltValue() {
+        return Optional.ofNullable(idpConfiguration.getSubjectSaltValue())
+            .filter(StringUtils::isNotEmpty)
+            .orElseThrow(() -> new IdpServerStartupException("Missing configuration value: idp.subjectSaltValue"));
     }
 }

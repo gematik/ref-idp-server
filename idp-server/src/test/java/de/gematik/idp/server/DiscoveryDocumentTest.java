@@ -51,6 +51,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 public class DiscoveryDocumentTest {
 
     private static final String CONFIGURED_SERVER_URL = "foobarschmar";
+    private static final String CONFIGURED_ISSUER_URL = "issuerUrl";
     @LocalServerPort
     private int localServerPort;
     private String testHostUrl;
@@ -64,6 +65,8 @@ public class DiscoveryDocumentTest {
         testHostUrl = "http://localhost:" + localServerPort;
         doReturn(CONFIGURED_SERVER_URL)
             .when(serverUrlService).determineServerUrl(any());
+        doReturn(CONFIGURED_ISSUER_URL)
+            .when(serverUrlService).getIssuerUrl();
     }
 
     @Test
@@ -74,7 +77,7 @@ public class DiscoveryDocumentTest {
     }
 
     @Test
-    public void testHTTPCacheHeader() throws UnirestException {
+    public void testHttpCacheHeader() throws UnirestException {
         final HttpResponse httpResponse = retrieveDiscoveryDocument();
         assertThat(httpResponse.getHeaders().get("Cache-Control")).isEqualTo(Arrays.asList("max-age=300"));
     }
@@ -89,6 +92,9 @@ public class DiscoveryDocumentTest {
         assertThat(extractClaimMapFromResponse(httpResponse))
             .containsOnlyKeys("issuer",
                 "authorization_endpoint",
+                "alternative_authorization_endpoint",
+                "sso_endpoint",
+                "pairing_endpoint",
                 "token_endpoint",
                 "jwks_uri",
                 "subject_types_supported",
@@ -104,7 +110,7 @@ public class DiscoveryDocumentTest {
                 "iat",
                 "puk_uri_auth",
                 "puk_uri_token",
-                "puk_uri_disc");
+                "uri_disc");
     }
 
     @Remark("Ruecksprache mit Tommy in IDP-123, wir verwenden pairwise")
@@ -186,7 +192,7 @@ public class DiscoveryDocumentTest {
     public void testValueForIssuer() throws UnirestException {
         final String issuer = (String) extractClaimMapFromResponse(retrieveDiscoveryDocument())
             .get("issuer");
-        assertThat(issuer).isEqualTo(CONFIGURED_SERVER_URL + "/auth/realms/idp");
+        assertThat(issuer).isEqualTo(CONFIGURED_ISSUER_URL);
     }
 
     @Test
@@ -248,14 +254,13 @@ public class DiscoveryDocumentTest {
 
     @Test
     @Afo("A_20591")
-    @Remark("Nach IDP-336 soll das Header-Zertifikat nicht mehr verwendet werden (IDP-181 hatte das noch gefordert)")
     public void testDiscoveryDocumentSigningCertificateReference() throws UnirestException {
         assertThat(retrieveAndParseDiscoveryDocument()
-            .getHeaderClaim(ClaimName.X509_CERTIFICATE_CHAIN)).isEmpty();
+            .getHeaderClaim(ClaimName.X509_CERTIFICATE_CHAIN)).isPresent();
     }
 
     private Map<String, Object> extractClaimMapFromResponse(final HttpResponse<String> httpResponse) {
-        return TokenClaimExtraction.extractClaimsFromTokenBody(httpResponse.getBody());
+        return TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody());
     }
 
     private JsonWebToken retrieveAndParseDiscoveryDocument() {

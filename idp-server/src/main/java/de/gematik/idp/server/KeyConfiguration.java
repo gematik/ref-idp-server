@@ -20,11 +20,16 @@ import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.server.configuration.IdpConfiguration;
+import de.gematik.idp.server.configuration.IdpKeyConfiguration;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.exceptions.IdpServerStartupException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.Key;
+import java.util.Optional;
+import javax.crypto.spec.SecretKeySpec;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
@@ -40,17 +45,22 @@ public class KeyConfiguration {
 
     @Bean
     public IdpKey authKey() {
-        return getIdpKey(idpConfiguration.getAuthKeyFile());
+        return getIdpKey(idpConfiguration.getAuthKey());
     }
 
     @Bean
     public IdpKey tokenKey() {
-        return getIdpKey(idpConfiguration.getTokenKeyFile());
+        return getIdpKey(idpConfiguration.getTokenKey());
     }
 
     @Bean
     public IdpKey discKey() {
-        return getIdpKey(idpConfiguration.getDiscoveryKeyFile());
+        return getIdpKey(idpConfiguration.getDiscoveryKey());
+    }
+
+    @Bean
+    public Key symmetricEncryptionKey() {
+        return new SecretKeySpec(DigestUtils.sha256(idpConfiguration.getSymmetricEncryptionKey()), "AES");
     }
 
     @Bean
@@ -58,15 +68,17 @@ public class KeyConfiguration {
         return new IdpJwtProcessor(authKey().getIdentity());
     }
 
-    private IdpKey getIdpKey(final String tokenKeyFile) {
-        final Resource resource = resourceLoader.getResource(tokenKeyFile);
+    private IdpKey getIdpKey(final IdpKeyConfiguration keyConfiguration) {
+        final Resource resource = resourceLoader.getResource(keyConfiguration.getFileName());
         try (final InputStream inputStream = resource.getInputStream()) {
             final PkiIdentity pkiIdentity = CryptoLoader.getIdentityFromP12(
                 StreamUtils.copyToByteArray(inputStream), "00");
 
+            pkiIdentity.setKeyId(Optional.ofNullable(keyConfiguration.getKeyId()));
             return new IdpKey(pkiIdentity);
         } catch (final IOException e) {
-            throw new IdpServerStartupException("Error while loading Key from resource '" + tokenKeyFile + "'", e);
+            throw new IdpServerStartupException(
+                "Error while loading Key from resource '" + keyConfiguration.getFileName() + "'", e);
         }
     }
 }

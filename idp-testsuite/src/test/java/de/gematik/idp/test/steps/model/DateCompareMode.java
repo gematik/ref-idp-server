@@ -16,15 +16,26 @@
 
 package de.gematik.idp.test.steps.model;
 
+import java.util.Arrays;
+
 public enum DateCompareMode {
-    BEFORE("before"), AFTER("after"), NOT_BEFORE(
-        "not before"), NOT_AFTER("not after");
+    BEFORE, AFTER, NOT_BEFORE, NOT_AFTER;
+
+    public final static String CUCUMBER_REGEX = "(before|after|not\\ before|not\\ after)";
 
     private final String value;
     private final String compareMathSign;
 
-    DateCompareMode(final String value) {
-        this.value = value.toUpperCase().replace(" ", "_");
+    public static DateCompareMode fromString(final String value) {
+        return Arrays.stream(DateCompareMode.values())
+            .filter(e -> e.value.equals(value))
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("Invalid date compare mode '" + value + "'"));
+
+    }
+
+    DateCompareMode() {
+        value = name().toLowerCase().replace("_", " ");
         switch (value) {
             case "not before":
                 compareMathSign = ">=";
@@ -41,7 +52,6 @@ public enum DateCompareMode {
             default:
                 compareMathSign = "??";
         }
-
     }
 
     @Override

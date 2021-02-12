@@ -16,8 +16,9 @@
 
 package de.gematik.idp.server.controllers;
 
+import static de.gematik.idp.IdpConstants.ALTERNATIVE_AUTHORIZATION_ENDPOINT;
 import static de.gematik.idp.IdpConstants.BASIC_AUTHORIZATION_ENDPOINT;
-import static de.gematik.idp.IdpConstants.SSO_AUTHORIZATION_ENDPOINT;
+import static de.gematik.idp.IdpConstants.SSO_ENDPOINT;
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
 
 import de.gematik.idp.authentication.AuthenticationChallenge;
@@ -59,7 +60,7 @@ import org.springframework.web.bind.annotation.RestController;
     "Idp-Dienst"}, description = "REST Endpunkte für das Authentifizieren, Authorisieren und die Tokenabfrage")
 public class IdpController {
 
-    private static final String SHA256_AS_BASE64_REGEX = "^[_\\-a-zA-Z0-9]{42,44}$";
+    private static final String SHA256_AS_BASE64_REGEX = "^[_\\-a-zA-Z0-9]{42,44}[=]{0,2}$";
     private final ServerUrlService serverUrlService;
     private final AuthenticationChallengeBuilder authenticationChallengeBuilder;
     private final IdpAuthenticator idpAuthenticator;
@@ -94,7 +95,7 @@ public class IdpController {
     }
 
     @PostMapping(BASIC_AUTHORIZATION_ENDPOINT)
-    @ApiOperation(httpMethod = "POST", value = "Endpunkt für Basis-Authorisierung", notes =
+    @ApiOperation(httpMethod = "POST", value = "Endpunkt für Basis-Autorisierung", notes =
         "Wird eine signierte Challenge an den Endpunkt übergeben, wird diese validiert, "
             + "das Client-Zertifikat extrahiert und daraus der Code für die Tokenabfrage und ein SSO Token generiert. "
             + "Der Code und der SsoToken werden dann zusammen als Query parameter mit der URL zum Token Endpunkt "
@@ -104,7 +105,7 @@ public class IdpController {
     })
     @ValidateClientSystem
     public void validateChallengeAndGetTokenCode(
-        @RequestParam(value = "signed_challenge", required = false) @NotNull @ApiParam(value = "Signierte Challenge") final IdpJwe signedChallenge,
+        @RequestParam(value = "signed_challenge", required = false) @NotNull @ApiParam(value = "Signierte und verschlüsselte Challenge") final IdpJwe signedChallenge,
         final HttpServletResponse response,
         final HttpServletRequest request) {
         setNoCacheHeader(response);
@@ -117,7 +118,30 @@ public class IdpController {
         response.setHeader(HttpHeaders.LOCATION, tokenLocation);
     }
 
-    @PostMapping(SSO_AUTHORIZATION_ENDPOINT)
+    @PostMapping(ALTERNATIVE_AUTHORIZATION_ENDPOINT)
+    @ApiOperation(httpMethod = "POST", value = "Endpunkt für alternative Autorisierung", notes =
+        "Es werden signierte Autorisierungsdaten für die alternative Autorisierung an den Endpunkt übergeben "
+            + "und validiert. Wie bei der Basis-Autorisierung, werden Code und der SsoToken dann zusammen als "
+            + "Query parameter mit der URL zum Token Endpunkt zurückgegeben")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "302", description = "Erfolgreich Daten für Token-Abfrage erhalten"),
+    })
+    @ValidateClientSystem
+    public void validateSignedAuthenticationDataAndGetTokenCode(
+        @RequestParam(value = "signed_authentication_data", required = false) @NotNull @ApiParam(value = "Signierte Autorisierungsdaten") final IdpJwe signedAuthenticationData,
+        final HttpServletResponse response,
+        final HttpServletRequest request) {
+        setNoCacheHeader(response);
+        response.setStatus(HttpStatus.FOUND.value());
+
+        final String tokenLocation = idpAuthenticator.getAlternateFlowTokenLocation(
+            signedAuthenticationData,
+            serverUrlService.determineServerUrl(request));
+
+        response.setHeader(HttpHeaders.LOCATION, tokenLocation);
+    }
+
+    @PostMapping(SSO_ENDPOINT)
     @ApiOperation(httpMethod = "POST", value = "Endpunkt für SSO-Authorisierung", notes =
         "Wird ein SSO-Token übergeben, so wird aus diesem der Code für die Tokenabfrage generiert. "
             + "Der Code wird dann als Query parameter mit der URL zum Token Endpunkt zurückgeliefert.")
@@ -126,7 +150,7 @@ public class IdpController {
     })
     @ValidateClientSystem
     public void validateSsoTokenAndGetTokenCode(
-        @RequestParam(value = "sso_token", required = false) @NotNull @ApiParam(value = "Single Sign-On Token") final JsonWebToken ssoToken,
+        @RequestParam(value = "sso_token", required = false) @NotNull @ApiParam(value = "Single Sign-On Token") final IdpJwe ssoToken,
         @RequestParam(value = "unsigned_challenge", required = false) @NotNull @ApiParam(value = "Originale Server-Challenge. Benötigt für den SSO-Flow") final JsonWebToken challengeToken,
         final HttpServletResponse response,
         final HttpServletRequest request) {
@@ -153,8 +177,8 @@ public class IdpController {
     })
     @ValidateClientSystem
     public TokenResponse getTokensForCode(
-        @RequestParam(value = "code") @NotNull @ApiParam(value = "Tokenzugriffscode") final JsonWebToken authenticationToken,
-        @RequestParam("code_verifier") @NotEmpty @ApiParam(value = "Verifikation des Authentifizierungscodes") final String codeVerifier,
+        @RequestParam("code") @NotNull @ApiParam(value = "Tokenzugriffscode") final IdpJwe authenticationToken,
+        @RequestParam("key_verifier") @NotNull @ApiParam(value = "Für den Server verschlüsseltes JWE, welches den code_verifier und den token_code enthält") final IdpJwe keyVerifier,
         @RequestParam("grant_type") @Pattern(regexp = "authorization_code") @ApiParam(value = "Grant_type. Wert muss 'authorization_code' sein") final String grantType,
         @RequestParam("redirect_uri") @NotEmpty @ApiParam(value = "Redirect-URI aus dem Authorization-Request") final String redirectUri,
         @RequestParam("client_id") @NotEmpty @ApiParam(value = "Client-ID") final String clientId,
@@ -162,7 +186,7 @@ public class IdpController {
 
         setNoCacheHeader(response);
 
-        return tokenService.getTokenResponse(authenticationToken, codeVerifier, redirectUri, clientId);
+        return tokenService.getTokenResponse(authenticationToken, keyVerifier, redirectUri, clientId);
     }
 
     private void setNoCacheHeader(final HttpServletResponse response) {

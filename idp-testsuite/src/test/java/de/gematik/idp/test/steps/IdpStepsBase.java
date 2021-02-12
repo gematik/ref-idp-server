@@ -16,6 +16,7 @@
 
 package de.gematik.idp.test.steps;
 
+import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
@@ -46,9 +47,15 @@ import lombok.extern.slf4j.Slf4j;
 import net.serenitybdd.rest.SerenityRest;
 import net.thucydides.core.annotations.Step;
 import org.apache.commons.collections.IteratorUtils;
+import org.assertj.core.api.Assertions;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jose4j.json.JsonUtil;
+import org.jose4j.jwa.AlgorithmConstraints.ConstraintType;
+import org.jose4j.jwe.ContentEncryptionAlgorithmIdentifiers;
+import org.jose4j.jwe.JsonWebEncryption;
+import org.jose4j.jwe.KeyManagementAlgorithmIdentifiers;
+import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
@@ -68,7 +75,7 @@ public class IdpStepsBase {
     @Step
     Response requestResponseAndAssertStatus(final String uri,
         final Map<String, String> headers, final HttpMethods method,
-        final Map<String, String> params, final HttpStatus status) {
+        final Map<String, String> params, final String body, final HttpStatus status) {
         final RequestSpecification reqSpec = SerenityRest.rest();
         if (params != null) {
             if (method == HttpMethods.GET) {
@@ -76,6 +83,9 @@ public class IdpStepsBase {
             } else /* "POST" */ {
                 reqSpec.contentType(ContentType.URLENC.withCharset("UTF-8")).formParams(params);
             }
+        }
+        if (body != null) {
+            reqSpec.contentType(ContentType.JSON.withCharset("UTF-8")).body(body);
         }
         if (headers != null) {
             reqSpec.headers(headers);
@@ -185,17 +195,19 @@ public class IdpStepsBase {
     //
     // =================================================================================================================
     @Step
-    public void initializeFromDiscoveryDocument()
-        throws JSONException, InvalidJwtException, IOException {
+    @SneakyThrows
+    public void initializeFromDiscoveryDocument() {
         final String idpLocalDiscdoc = System.getenv("IDP_LOCAL_DISCDOC");
         if (idpLocalDiscdoc == null || idpLocalDiscdoc.isBlank()) {
-            final Response r = SerenityRest.given().get(TestEnvironmentConfigurator.getDiscoveryDocumentURL())
+            final Response r = SerenityRest.get(TestEnvironmentConfigurator.getDiscoveryDocumentURL())
                 .thenReturn();
             Context.getThreadContext()
-                .put(ContextKey.DISC_DOC, new DiscoveryDocument(getClaims(r.getBody().asString())));
+                .put(ContextKey.DISC_DOC, new DiscoveryDocument(getClaims(r.getBody().asString()),
+                    extractHeaderClaimsFromString(r.getBody().asString())));
         } else {
             Context.getThreadContext()
-                .put(ContextKey.DISC_DOC, new DiscoveryDocument(new File(idpLocalDiscdoc)));
+                .put(ContextKey.DISC_DOC, new DiscoveryDocument(new File(idpLocalDiscdoc + "_body.json"),
+                    new File(idpLocalDiscdoc + "_header.json")));
         }
     }
 
@@ -248,7 +260,8 @@ public class IdpStepsBase {
     @Step
     public void extractClaimsFromToken(final ClaimLocation cType, final ContextKey token)
         throws JoseException, InvalidJwtException, JSONException {
-        assertThat(token).isIn(ContextKey.TOKEN_CODE, ContextKey.SIGNED_CHALLENGE, ContextKey.ACCESS_TOKEN);
+        assertThat(token)
+            .isIn(ContextKey.TOKEN_CODE, ContextKey.SIGNED_CHALLENGE, ContextKey.ACCESS_TOKEN, ContextKey.ID_TOKEN);
         extractClaimsFromString(cType, Context.getThreadContext().get(token).toString());
     }
 
@@ -264,13 +277,12 @@ public class IdpStepsBase {
         }
     }
 
-
     @Step
     public void iRequestTheUriFromClaim(final String claim, final HttpMethods method, final HttpStatus result)
         throws JSONException {
         Context.getThreadContext().put(ContextKey.RESPONSE,
             requestResponseAndAssertStatus(Context.getCurrentClaims().getString(claim), null, method, null,
-                result));
+                null, result));
     }
 
     @Step
@@ -280,7 +292,7 @@ public class IdpStepsBase {
         assertThat(Context.getCurrentClaims().has(claim))
             .withFailMessage("Current claims do not contain key " + claim)
             .isTrue();
-        requestResponseAndAssertStatus(Context.getCurrentClaims().getString(claim), null, method, null, status);
+        requestResponseAndAssertStatus(Context.getCurrentClaims().getString(claim), null, method, null, null, status);
     }
 
     public void assertDateFromClaimMatches(final ClaimLocation claimLocation, final String claimName,
@@ -328,14 +340,18 @@ public class IdpStepsBase {
         } catch (final IOException e) {
             fail("Invalid KeyValuePairs in DocString", e);
         }
-        final Map<String, String> responseHeaders = Context.getCurrentResponse().getHeaders().asList().stream()
-            .collect(Collectors.toMap(Header::getName, Header::getValue));
-        final Map<String, String> stringProps = props.entrySet().stream()
-            .collect(Collectors.toMap(e -> e.getKey().toString(), e -> e.getValue().toString()));
-        stringProps.forEach((key, value) -> {
-            assertThat(responseHeaders).containsKey(key);
-            assertThat(responseHeaders.get(key)).matches(value);
-        });
+        try {
+            final Map<String, String> responseHeaders = Context.getCurrentResponse().getHeaders().asList().stream()
+                .collect(Collectors.toMap(Header::getName, Header::getValue));
+            final Map<String, String> stringProps = props.entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey().toString(), e -> e.getValue().toString()));
+            stringProps.forEach((key, value) -> {
+                assertThat(responseHeaders).containsKey(key);
+                assertThat(responseHeaders.get(key)).matches(value);
+            });
+        } catch (final IllegalStateException ise) {
+            Assertions.fail(ise.getMessage());
+        }
     }
 
     public void assertThatHttpResponseUriParameterContains(final String parameter, final String value) {
@@ -378,5 +394,74 @@ public class IdpStepsBase {
         for (int i = 0; i < jarr.length(); i++) {
             jsonObjectShouldBeValidCertificate(jarr.getJSONObject(i));
         }
+    }
+
+    @SneakyThrows
+    public void wait(final Duration timeout) {
+        final long start = System.currentTimeMillis();
+        final long end = start + timeout.getSeconds() * 1000;
+        long sleepms;
+        if (timeout.getSeconds() < 90) {
+            sleepms = 5000;
+        } else {
+            sleepms = 15000;
+        }
+        while (end > System.currentTimeMillis()) {
+            log.info(String
+                .format("Waiting %ds, passed %ds...",
+                    timeout.getSeconds(),
+                    (System.currentTimeMillis() - start) / 1000));
+            if (System.currentTimeMillis() + sleepms > end) {
+                sleepms = end - System.currentTimeMillis();
+            }
+            //noinspection BusyWait
+            Thread.sleep(sleepms);
+        }
+    }
+
+    // TODO dev code -> review mit spec abklären ob so vorgegeben
+    @SneakyThrows
+    public String encrypt(final String payload, final PublicKey puk) {
+        final JsonWebEncryption jwe = new JsonWebEncryption();
+        jwe.setPlaintext(payload);
+        jwe.setAlgorithmHeaderValue(KeyManagementAlgorithmIdentifiers.ECDH_ES_A256KW);
+        jwe.setEncryptionMethodHeaderParameter(ContentEncryptionAlgorithmIdentifiers.AES_256_GCM);
+        jwe.setKey(puk);
+        return jwe.getCompactSerialization();
+    }
+
+    @SneakyThrows
+    public String decrypt(final String payload, final Key puk) {
+        final JsonWebEncryption receiverJwe = new JsonWebEncryption();
+
+        receiverJwe.setAlgorithmConstraints(
+            new org.jose4j.jwa.AlgorithmConstraints(ConstraintType.PERMIT, KeyManagementAlgorithmIdentifiers.DIRECT,
+                KeyManagementAlgorithmIdentifiers.ECDH_ES_A256KW));
+        receiverJwe.setContentEncryptionAlgorithmConstraints(
+            new org.jose4j.jwa.AlgorithmConstraints(ConstraintType.PERMIT,
+                ContentEncryptionAlgorithmIdentifiers.AES_256_GCM));
+
+        receiverJwe.setCompactSerialization(payload);
+        receiverJwe.setKey(puk);
+
+        return receiverJwe.getPlaintextString();
+    }
+
+    @SneakyThrows
+    public String signChallenge(final String challenge, final Key pkey, final Certificate cert) {
+        final JSONObject claims = new JSONObject();
+        claims.put("njwt", challenge);
+        final JsonWebSignature jsonWebSignature = new JsonWebSignature();
+        jsonWebSignature.setPayload(claims.toString());
+        jsonWebSignature.setKey(pkey);
+        if (cert.getPublicKey().getAlgorithm().equals("EC")) {
+            jsonWebSignature.setAlgorithmHeaderValue(BRAINPOOL256_USING_SHA256);
+        } else {
+            jsonWebSignature.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_PSS_USING_SHA256);
+        }
+        jsonWebSignature.setHeader("typ", "JWT");
+        jsonWebSignature.setHeader("cty", "NJWT");
+        jsonWebSignature.setCertificateChainHeaderValue((X509Certificate) cert);
+        return jsonWebSignature.getCompactSerialization();
     }
 }

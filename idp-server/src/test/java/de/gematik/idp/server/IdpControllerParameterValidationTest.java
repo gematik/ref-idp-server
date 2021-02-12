@@ -68,7 +68,7 @@ public class IdpControllerParameterValidationTest {
     private static final List<Pair<String, String>> getAccessTokenParameterMap = List.of(
         Pair.of("code",
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"),
-        Pair.of("code_verifier", "fjdkslafdsa"),
+        Pair.of("key_verifier", "fjdkslafdsa"),
         Pair.of("grant_type", "authorization_code"),
         Pair.of("client_id", IdpConstants.CLIENT_ID),
         Pair.of("redirect_uri", "irgend://ein.uri"));
@@ -198,8 +198,8 @@ public class IdpControllerParameterValidationTest {
 
     @Test
     public void getAccessToken_missingCodeVerifier_shouldGiveError() throws Exception {
-        mockMvc.perform(buildGetAccessTokenRequest(getInvalidationFunction("code_verifier", null)))
-            .andDo(mvcResult -> assertThat(mvcResult.getResponse().getContentAsString()).contains("'code_verifier'"))
+        mockMvc.perform(buildGetAccessTokenRequest(getInvalidationFunction("key_verifier", null)))
+            .andDo(mvcResult -> assertThat(mvcResult.getResponse().getContentAsString()).contains("'key_verifier'"))
             .andDo(mvcResult -> assertThat(mvcResult.getResponse().getStatus()).isEqualTo(400));
     }
 

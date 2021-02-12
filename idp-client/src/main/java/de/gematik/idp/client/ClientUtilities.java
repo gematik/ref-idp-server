@@ -56,6 +56,7 @@ public class ClientUtilities {
 
     @SuppressWarnings("java:S2245")
     public static String generateCodeVerifier() {
-        return RandomStringUtils.random(128, ALPHANUM.toCharArray());
+        return Base64.getUrlEncoder().withoutPadding()
+            .encodeToString(DigestUtils.sha256(RandomStringUtils.random(123)));
     }
 }

@@ -23,7 +23,7 @@ Feature: Authentifiziere Anwendung am IDP Server
     Given I initialize scenario from discovery document endpoint
     And I retrieve public keys from URIs
 
-  @Afo:A_20601 @Afo:A_20740
+  @Afo:A_20601 @Afo:A_20740 @Afo:A_20698
   @Approval @Ready
   Scenario: Auth - Gutfall - Validiere Antwortstruktur
 
@@ -39,6 +39,7 @@ Feature: Authentifiziere Anwendung am IDP Server
 
     Given I choose code verifier 'zdrfcvz3iw47fgderuzbq834werb3q84wgrb3zercb8q3wbd834wefb348ch3rq9e8fd9sac'
         # REM code_challenge for given verifier can be obtained from https://tonyxu-io.github.io/pkce-generator/
+
     When I request a challenge with
       | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state       | nonce     | response_type |
       | eRezeptApp | e-rezept openid | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | code          |
@@ -62,7 +63,7 @@ Feature: Authentifiziere Anwendung am IDP Server
           }
         """
 
-  @Afo:A_20601 @Afo:A_20740
+  @Afo:A_20601 @Afo:A_20740 @Afo:A_20376 @Afo:A_20521-01 @Afo:A_20377
   @Approval @Ready
   Scenario: Auth - Gutfall - Validiere Claims
 
@@ -74,19 +75,18 @@ Feature: Authentifiziere Anwendung am IDP Server
 
     Given I choose code verifier 'zdrfcvz3iw47fgderuzbq834werb3q84wgrb3zercb8q3wbd834wefb348ch3rq9e8fd9sac'
         # REM code_challenge for given verifier can be obtained from https://tonyxu-io.github.io/pkce-generator/
-    When I request a challenge with
+    And I request a challenge with
       | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state       | nonce     | response_type |
       | eRezeptApp | e-rezept openid | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | code          |
-    And I extract the header claims from response field challenge
+
+    When I extract the header claims from response field challenge
     Then the header claims should match in any order
         """
           { alg: "BP256R1",
             exp: "[\\d]*",
-            jti: "${json-unit.ignore}",
             typ: "JWT"
           }
         """
-
     When I extract the body claims from response field challenge
     Then the body claims should match in any order
         """
@@ -94,6 +94,7 @@ Feature: Authentifiziere Anwendung am IDP Server
             code_challenge:        "P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk",
             code_challenge_method: "S256",
             exp:                   "[\\d]*",
+            jti:                   "${json-unit.ignore}",
             iat:                   "[\\d]*",
             iss:                   "https://idp.zentral.idp.splitdns.ti-dienste.de",
             nonce:                 "123456789",
@@ -117,16 +118,18 @@ Feature: Authentifiziere Anwendung am IDP Server
 
     Given I choose code verifier 'zdrfcvz3iw47fgderuzbq834werb3q84wgrb3zercb8q3wbd834wefb348ch3rq9e8fd9sac'
         # REM code_challenge for given verifier can be obtained from https://tonyxu-io.github.io/pkce-generator/
-    When I request a challenge with
+    And I request a challenge with
       | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state       | response_type |
       | eRezeptApp | e-rezept openid | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | code          |
-    And I extract the body claims from response field challenge
+
+    When I extract the body claims from response field challenge
     Then the body claims should match in any order
         """
           { client_id:             "eRezeptApp",
             code_challenge:        "P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk",
             code_challenge_method: "S256",
             exp:                   "[\\d]*",
+            jti:                   "${json-unit.ignore}",
             iat:                   "[\\d]*",
             iss:                   "https://idp.zentral.idp.splitdns.ti-dienste.de",
             redirect_uri:          "http://redirect.gematik.de/erezept",
@@ -157,7 +160,7 @@ Feature: Authentifiziere Anwendung am IDP Server
     Then the context CHALLENGE must be signed with cert PUK_AUTH
 
 
-  @Afo:A_20740 @Afo:A_20601
+  @Afo:A_20740 @Afo:A_20601 @Afo:A_20698
     @Approval @Ready
   Scenario Outline: Auth - Fehlende Parameter
 
@@ -222,8 +225,8 @@ Feature: Authentifiziere Anwendung am IDP Server
       | eRezeptApp | e-rezept openid | 932F3C1B56257CE8539AC269D7AAB42550DACF8818D075F0BDF1990562AAE3EF | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | $NULL     | code          |
       | eRezeptApp | e-rezept openid | 932F3C1B56257CE8539AC269D7AAB42550DACF8818D075F0BDF1990562AAE3EF | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | $NULL         |
 
-  @Afo:A_20601
-    @Approval @Todo:ErrorMessages
+  @Afo:A_20601 @Afo:A_20440-01
+    @Approval @Todo:ErrorMessage
   Scenario Outline: Auth - Ungültige Parameter
 
   ```
@@ -243,7 +246,6 @@ Feature: Authentifiziere Anwendung am IDP Server
             timestamp:      ".*"
           }
         """
-        # TODO "(getAuthenticationChallenge.*invalid.*|Redirect-URI is invalid or missing|getAuthenticationChallenge.responseType: Expected response_type to be 'code')"
 
     Examples: Auth - Ungültige Parameter Beispiele
       | error_code            | client_id          | scope           | code_challenge                                                   | code_challenge_method | redirect_uri                       | state       | nonce | response_type |

@@ -39,8 +39,10 @@ import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.tests.PkiKeyResolver.Filename;
 import de.gematik.idp.tests.Remark;
 import de.gematik.idp.tests.Rfc;
+import de.gematik.idp.token.IdpJoseObject;
+import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
-import de.gematik.idp.token.TokenClaimExtraction;
+import java.security.Key;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
@@ -61,10 +63,14 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class TokenRetrievalTest {
 
+    private static final String SHA256_AS_BASE64_REGEX = "^[_\\-a-zA-Z0-9]{42,44}[=]{0,2}$";
+
     @Autowired
     private IdpConfiguration idpConfiguration;
     @Autowired
     private IdpKey authKey;
+    @Autowired
+    private Key symmetricEncryptionKey;
     private IdpClient idpClient;
     private PkiIdentity egkUserIdentity;
     @LocalServerPort
@@ -244,17 +250,27 @@ public class TokenRetrievalTest {
     }
 
     @Test
+    public void ssoShouldBeEncrypted() throws UnirestException {
+        final IdpTokenResult tokenResult = idpClient.login(egkUserIdentity);
+
+        assertThatThrownBy(() -> tokenResult.getSsoToken().getBodyClaims())
+            .isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
     public void ssoTokenCnfClaimShouldBeJsonObject() throws UnirestException {
         final IdpTokenResult tokenResult = idpClient.login(egkUserIdentity);
 
-        assertThat(tokenResult.getSsoToken().getBodyClaim(ClaimName.CONFIRMATION).get())
+        assertThat(tokenResult.getSsoToken().decryptNestedJwt(symmetricEncryptionKey)
+            .getBodyClaim(ClaimName.CONFIRMATION).get())
             .isInstanceOf(Map.class);
     }
 
     @Test
     public void ssoTokenShouldNotContainNjwtClaim() throws UnirestException {
         final IdpTokenResult tokenResult = idpClient.login(egkUserIdentity);
-        assertThat(tokenResult.getSsoToken().getBodyClaims())
+        assertThat(tokenResult.getSsoToken().decryptNestedJwt(symmetricEncryptionKey)
+            .getBodyClaims())
             .doesNotContainKey(ClaimName.NESTED_JWT.getJoseName());
     }
 
@@ -262,28 +278,44 @@ public class TokenRetrievalTest {
     public void verifyTokenAlgorithm() throws UnirestException {
         final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
 
-        assertThat(TokenClaimExtraction
-            .extractClaimsFromTokenHeader(tokenResponse.getAccessToken().getJwtRawString()))
-            .as("'alg'-Header field")
-            .containsEntry("alg", BRAINPOOL256_USING_SHA256);
+        assertThat(tokenResponse.getAccessToken().getHeaderClaim(ClaimName.ALGORITHM))
+            .get()
+            .isEqualTo(BRAINPOOL256_USING_SHA256);
     }
 
     @Test
     public void verifyTokenContainsAcr() throws UnirestException {
         final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
 
-        assertThat(TokenClaimExtraction
-            .extractClaimsFromTokenBody(tokenResponse.getAccessToken().getJwtRawString()))
-            .containsEntry("acr", "eidas-loa-high");
+        assertThat(tokenResponse.getAccessToken().getBodyClaim(ClaimName.AUTHENTICATION_CLASS_REFERENCE))
+            .get()
+            .isEqualTo("eidas-loa-high");
     }
 
     @Test
     public void verifyTokenContainsGematikClaims() throws UnirestException {
         final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
 
-        assertThat(TokenClaimExtraction
-            .extractClaimsFromTokenBody(tokenResponse.getAccessToken().getJwtRawString()))
-            .containsKeys("professionOID"); // This is the most robust claim
+        assertThat(tokenResponse.getAccessToken().getBodyClaim(ClaimName.PROFESSION_OID))
+            .isPresent(); // This is the most robust claim
+    }
+
+    @Test
+    public void verifyTokenContainsCorrectSubClaim() throws UnirestException {
+        final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
+
+        assertThat(tokenResponse.getAccessToken().getStringBodyClaim(ClaimName.SUBJECT))
+            .get().asString()
+            .matches(SHA256_AS_BASE64_REGEX);
+    }
+
+    @Test
+    public void verifySubClaimMatchesInIdTokenAndAccessToken() throws UnirestException {
+        final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
+
+        assertThat(tokenResponse.getAccessToken().getStringBodyClaim(ClaimName.SUBJECT))
+            .get().asString()
+            .isEqualTo(tokenResponse.getIdToken().getStringBodyClaim(ClaimName.SUBJECT).get());
     }
 
     @Test
@@ -401,16 +433,17 @@ public class TokenRetrievalTest {
 
     @Test
     public void resignedAuthenticationTokenWithDifferentIdentity_ShouldGiveServerError(
-        @Filename("80276883110000129084-C_HP_AUT_E256.p12") final PkiIdentity notTheServerIdentity)
+        @Filename("80276883110000129084-C_HP_AUT_E256") final PkiIdentity notTheServerIdentity)
         throws UnirestException {
         final IdpJwtProcessor differentSigner = new IdpJwtProcessor(notTheServerIdentity);
         idpClient.setAuthenticationResponseMapper(response -> {
-            final JsonWebToken originalChallenge = new JsonWebToken(response.getCode());
+            final JsonWebToken originalChallenge = new IdpJwe(response.getCode())
+                .decryptNestedJwt(symmetricEncryptionKey);
             final JsonWebToken resignedChallenge = differentSigner.buildJwt(originalChallenge.toJwtDescription());
             return AuthenticationResponse.builder()
                 .ssoToken(response.getSsoToken())
                 .location(response.getLocation())
-                .code(resignedChallenge.getJwtRawString())
+                .code(resignedChallenge.getRawString())
                 .build();
         });
 
@@ -439,7 +472,7 @@ public class TokenRetrievalTest {
     @Test
     public void getAuthorizationToken_testBodyClaims() throws UnirestException {
         idpClient.setAuthenticationResponseMapper(response -> {
-            assertThat(new JsonWebToken(response.getCode()).getBodyClaims())
+            assertThat(new IdpJwe(response.getCode()).decryptNestedJwt(symmetricEncryptionKey).getBodyClaims())
                 .containsEntry(ClaimName.CLIENT_ID.getJoseName(), IdpConstants.CLIENT_ID)
                 .containsEntry(ClaimName.TOKEN_TYPE.getJoseName(), "code")
                 .containsKeys(ClaimName.SERVER_NONCE.getJoseName(),
@@ -513,8 +546,26 @@ public class TokenRetrievalTest {
     }
 
     @Test
+    public void ssoFlow_expiredChallenge_shouldGiveFoundAndCorrectState() throws UnirestException {
+        final IdpJwe ssoToken = idpClient.login(egkUserIdentity).getSsoToken();
+
+        idpClient.setAuthorizationResponseMapper(response -> AuthorizationResponse.builder()
+            .authenticationChallenge(AuthenticationChallenge.builder()
+                .userConsent(response.getAuthenticationChallenge().getUserConsent())
+                .challenge(response.getAuthenticationChallenge().getChallenge().toJwtDescription()
+                    .expiresAt(ZonedDateTime.now().minusMinutes(1))
+                    .setIdentity(authKey.getIdentity())
+                    .buildJwt())
+                .build())
+            .build());
+
+        assertThatThrownBy(() -> idpClient.loginWithSsoToken(ssoToken))
+            .isInstanceOf(IdpClientRuntimeException.class);
+    }
+
+    @Test
     public void authenticationWithSso_missingParameter_shouldGiveFound() throws UnirestException {
-        final JsonWebToken ssoToken = idpClient.login(egkUserIdentity).getSsoToken();
+        final IdpJwe ssoToken = idpClient.login(egkUserIdentity).getSsoToken();
         idpClient.setBeforeAuthenticationMapper(request -> Unirest.post(request.getUrl())
             .multiPartContent().field("sso_token", request.multiParts().stream()
                 .filter(part -> part.getName().equals("sso_token"))
@@ -527,11 +578,71 @@ public class TokenRetrievalTest {
             .isInstanceOf(IdpClientRuntimeException.class);
     }
 
+    @Test
+    public void expiredAuthenticationToken_shouldGiveValidationError() throws UnirestException {
+        idpClient.setAuthenticationResponseMapper(authResponse -> {
+            final IdpJoseObject expiredAuthToken = new IdpJwe(authResponse.getCode())
+                .decryptNestedJwt(symmetricEncryptionKey)
+                .toJwtDescription()
+                .expiresAt(ZonedDateTime.now().minusSeconds(1))
+                .setSignerKey(authKey.getIdentity().getPrivateKey())
+                .buildJwt()
+                .encrypt(symmetricEncryptionKey);
+            return AuthenticationResponse.builder()
+                .code(expiredAuthToken.getRawString())
+                .location(authResponse.getLocation())
+                .ssoToken(authResponse.getSsoToken())
+                .build();
+        });
+
+        idpClient.setAfterTokenCallback(response -> assertThat(response.getStatus()).isEqualTo(400));
+
+        assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
+            .isInstanceOf(IdpClientRuntimeException.class);
+    }
+
+    @Test
+    public void expiredSsoToken_shouldGiveValidationError() throws UnirestException {
+        final IdpTokenResult tokenResult = idpClient.login(egkUserIdentity);
+
+        final IdpJwe expiredSsoToken = tokenResult.getSsoToken()
+            .decryptNestedJwt(symmetricEncryptionKey)
+            .toJwtDescription()
+            .expiresAt(ZonedDateTime.now().minusMinutes(10))
+            .setSignerKey(authKey.getIdentity().getPrivateKey())
+            .buildJwt()
+            .encrypt(symmetricEncryptionKey);
+
+        assertThatThrownBy(() -> idpClient.loginWithSsoToken(expiredSsoToken))
+            .isInstanceOf(IdpClientRuntimeException.class);
+    }
+
+    @Test
+    public void expiredServerChallenge_shouldGiveValidationError() throws UnirestException {
+        idpClient.setAuthorizationResponseMapper(authResponse -> {
+            final JsonWebToken expiredChallenge = authResponse.getAuthenticationChallenge().getChallenge()
+                .toJwtDescription()
+                .expiresAt(ZonedDateTime.now().minusSeconds(1))
+                .setSignerKey(authKey.getIdentity().getPrivateKey())
+                .buildJwt();
+            return AuthorizationResponse.builder()
+                .authenticationChallenge(AuthenticationChallenge.builder()
+                    .challenge(expiredChallenge)
+                    .userConsent(authResponse.getAuthenticationChallenge().getUserConsent())
+                    .build())
+                .build();
+        });
+
+        assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
+            .isInstanceOf(IdpClientRuntimeException.class);
+    }
+
     private JsonWebToken extractAuthenticationTokenFromResponse(final kong.unirest.HttpResponse<String> response,
         final String parameterName) {
         return Optional.ofNullable(response.getHeaders().getFirst("Location"))
             .map(uri -> UriUtils.extractParameterValue(uri, parameterName))
-            .map(code -> new JsonWebToken(code))
+            .map(code -> new IdpJwe(code))
+            .map(jwe -> jwe.decryptNestedJwt(symmetricEncryptionKey))
             .get();
     }
 }

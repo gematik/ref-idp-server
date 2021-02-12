@@ -158,6 +158,8 @@ public class IdpControllerExceptionHandlerTest {
             .andExpect(
                 result -> assertThat(UriUtils.extractParameterMap(result.getResponse().getHeader(HttpHeaders.LOCATION)))
                     .containsEntry("error", "invalid_request")
-                    .containsEntry("error_description", "Invalid Request"));
+                    .containsEntry("error_description", "Invalid Request"))
+            .andExpect(result -> assertThat(result.getResponse().getHeaderValues("Cache-Control"))
+                .containsOnlyOnce("no-store"));
     }
 }

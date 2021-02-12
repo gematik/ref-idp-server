@@ -29,10 +29,14 @@ import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.RequiredClaimException;
+import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
 import java.time.ZonedDateTime;
 import java.util.Map;
+import java.util.Optional;
+import javax.crypto.spec.SecretKeySpec;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,23 +46,29 @@ import org.junit.jupiter.api.extension.ExtendWith;
 public class AccessTokenBuilderTest {
 
     private final static String URI_IDP_SERVER = "https://idp.zentral.idp.splitdns.ti-dienste.de";
+    private static final String KEY_ID = "my_key_id";
 
     private AccessTokenBuilder accessTokenBuilder;
     private IdpJwtProcessor serverTokenProcessor;
     private JsonWebToken authenticationToken;
+    private SecretKeySpec encryptionKey;
 
     @BeforeEach
     public void init(
         @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity clientIdentity,
         @PkiKeyResolver.Filename("ecc") final PkiIdentity serverIdentity) {
+        serverIdentity.setKeyId(Optional.of(KEY_ID));
         serverTokenProcessor = new IdpJwtProcessor(serverIdentity);
-        accessTokenBuilder = new AccessTokenBuilder(serverTokenProcessor, URI_IDP_SERVER);
+        accessTokenBuilder = new AccessTokenBuilder(serverTokenProcessor, URI_IDP_SERVER, "saltValue");
+        encryptionKey = new SecretKeySpec(DigestUtils.sha256("fdsa"), "AES");
         final AuthenticationTokenBuilder authenticationTokenBuilder = AuthenticationTokenBuilder.builder()
             .jwtProcessor(serverTokenProcessor)
             .authenticationChallengeVerifier(mock(AuthenticationChallengeVerifier.class))
+            .encryptionKey(encryptionKey)
             .build();
         authenticationToken = authenticationTokenBuilder
-            .buildAuthenticationToken(clientIdentity.getCertificate(), Map.of("acr", "foobar"), ZonedDateTime.now());
+            .buildAuthenticationToken(clientIdentity.getCertificate(), Map.of("acr", "foobar"), ZonedDateTime.now())
+            .decryptNestedJwt(encryptionKey);
     }
 
     @Afo("A_20524")
@@ -69,7 +79,7 @@ public class AccessTokenBuilderTest {
                 .addAllBodyClaims(Map.of(PROFESSION_OID.getJoseName(), "foo"))
                 .expiresAt(ZonedDateTime.now().plusMinutes(100)))))
             .isInstanceOf(RequiredClaimException.class)
-            .hasMessageContaining(CLIENT_ID.getJoseName());
+            .hasMessageContaining(ID_NUMBER.getJoseName());
     }
 
     @Afo("A_20524")
@@ -93,7 +103,7 @@ public class AccessTokenBuilderTest {
     public void verifyThatAllRequiredClaimsAreInHeader() {
         final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);
         assertThat(accessToken.getHeaderClaims())
-            .containsKey(JWT_ID.getJoseName());
+            .containsEntry(ClaimName.KEY_ID.getJoseName(), KEY_ID);
     }
 
     @Test
@@ -119,7 +129,7 @@ public class AccessTokenBuilderTest {
         final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);
         assertThat(accessToken.getBodyClaims())
             .extractingByKey(AUTH_TIME.getJoseName())
-            .extracting(authTimeValue -> TokenClaimExtraction.claimToDateTime(authTimeValue),
+            .extracting(authTimeValue -> TokenClaimExtraction.claimToZonedDateTime(authTimeValue),
                 InstanceOfAssertFactories.ZONED_DATE_TIME)
             .isBetween(ZonedDateTime.now().minusMinutes(1), ZonedDateTime.now());
     }

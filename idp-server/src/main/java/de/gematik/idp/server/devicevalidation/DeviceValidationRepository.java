@@ -22,6 +22,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface DeviceValidationRepository extends
     JpaRepository<DeviceValidationData, Long> {
 
-    Optional<DeviceValidationData> findByManufacturerAndProductAndModelAndOsAndOsVersionAndName(
-        String manufacturer, String product, String model, String os, String osVersion, String name);
+    Optional<DeviceValidationData> findByManufacturerAndProductAndOsAndOsVersion(
+        String manufacturer, String product, String os, String osVersion);
 }

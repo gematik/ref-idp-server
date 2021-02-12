@@ -1,62 +1,70 @@
+/*
+ * Copyright (c) 2021 gematik GmbH
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package de.gematik.idp.server.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import de.gematik.idp.server.data.PairingDto;
+import de.gematik.idp.tests.PkiKeyResolver;
 import java.time.ZonedDateTime;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ExtendWith(PkiKeyResolver.class)
 @Transactional
 @TestPropertySource(properties = {
     "spring.jpa.hibernate.ddl-auto=validate"
 })
 public class PairingServiceTest {
 
-    private static final String test_kvnr = "123";
-
     @Autowired
     private PairingService pairingService;
 
-    @Test
-    public void insertPairing_ValidateEntry() {
-        createPairingDataEntry();
-        assertThat(pairingService.getPairingList(test_kvnr)).isNotEmpty();
-    }
+    private static final String testIdNumber = "X114428530";
+    private static final String testDeviceName = "Peters Fon";
+
 
     @Test
-    public void searchPairing_ValidateEntry() {
-        createPairingDataEntry();
-        final PairingDto pairingData = searchPairingData(test_kvnr);
-        assertThat(pairingData).isNotNull();
-        //FIXME: Wegen unterschiedlichen Timestamps beim Write/Read wird vorerst kein Equals gebaut,
-        //      was aber nach Bugfix nachgebaut wird.
+    public void insertPairingAndFindEntrySuccessfully() {
+        pairingService.insertPairing(createPairingDto("123"));
+        assertThat(pairingService.getPairingList(testIdNumber)).isNotEmpty();
     }
 
-    private PairingDto searchPairingData(final String kvnr) {
-        return pairingService.getPairingList(kvnr).stream().findAny().orElseThrow();
+    @Test
+    public void insertPairingAndDeleteEntrySuccessfully() {
+        pairingService.insertPairing(createPairingDto("456"));
+        assertDoesNotThrow(() -> pairingService.deleteAllPairing(testIdNumber));
+        assertThat(pairingService.getPairingList(testIdNumber)).isEmpty();
     }
 
-    private void createPairingDataEntry() {
-        final PairingDto pairingDto = PairingDto.builder()
-            .kvnr(test_kvnr)
-            .deviceBiometry("TouchID")
-            .deviceManufacturer("samsung")
-            .deviceModel("s8")
-            .deviceOS("android")
-            .deviceName("Peters Fon")
-            .deviceVersion("10")
-            .pukSeB64("132164g6d4gfd35g15311")
-            .serial("123456789")
-            .timestampPairing(ZonedDateTime.now().minusDays(1))
-            .timestampSmartcardAuth(ZonedDateTime.now())
+    private PairingDto createPairingDto(final String keyIdentifier) {
+        return PairingDto.builder()
+            .id(null)
+            .idNumber(testIdNumber)
+            .keyIdentifier(keyIdentifier)
+            .deviceName(testDeviceName)
+            .signedPairingData("bla")
+            .timestampPairing(ZonedDateTime.now())
             .build();
-        pairingService.insertPairing(pairingDto);
     }
-
-
 }

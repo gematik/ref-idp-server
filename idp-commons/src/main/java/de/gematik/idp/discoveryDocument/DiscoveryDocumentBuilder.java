@@ -25,11 +25,15 @@ import lombok.Data;
 @Data
 public class DiscoveryDocumentBuilder {
 
-    public IdpDiscoveryDocument buildDiscoveryDocument(final String serverUrl) {
+    public IdpDiscoveryDocument buildDiscoveryDocument(final String serverUrl, final String issuerUrl) {
         final ZonedDateTime currentTime = ZonedDateTime.now();
         return IdpDiscoveryDocument.builder()
             .authorizationEndpoint(serverUrl + BASIC_AUTHORIZATION_ENDPOINT)
             .tokenEndpoint(serverUrl + TOKEN_ENDPOINT)
+            .uriDisc(serverUrl + DISCOVERY_DOCUMENT_ENDPOINT)
+            .alternativeAuthorizationEndpoint(serverUrl + ALTERNATIVE_AUTHORIZATION_ENDPOINT)
+            .ssoEndpoint(serverUrl + SSO_ENDPOINT)
+            .pairingEndpoint(serverUrl + PAIRING_ENDPOINT)
             .grantTypesSupported(new String[]{"authorization_code"})
             .idTokenSigningAlgValuesSupported(new String[]{"BP256R1"})
             .scopesSupported(new String[]{"openid", "e-rezept"})
@@ -38,15 +42,13 @@ public class DiscoveryDocumentBuilder {
             .tokenEndpointAuthMethodsSupported(new String[]{"none"})
             .acrValuesSupported(new String[]{"urn:eidas:loa:high"})
             .responseModesSupported(new String[]{"query"})
-            .issuer(serverUrl + "/auth/realms/idp")
+            .issuer(issuerUrl)
             .jwksUri(serverUrl + "/jwks")
             .exp(currentTime.plusHours(24).toEpochSecond())
             .iat(currentTime.toEpochSecond())
             .nbf(currentTime.toEpochSecond())
             .pukUriAuth(serverUrl + PUK_URI_AUTH)
             .pukUriToken(serverUrl + PUK_URI_TOKEN)
-            .pukUriDisc(serverUrl + PUK_URI_DISC)
             .build();
     }
-
 }

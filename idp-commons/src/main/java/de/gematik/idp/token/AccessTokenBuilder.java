@@ -17,6 +17,7 @@
 package de.gematik.idp.token;
 
 import static de.gematik.idp.field.ClaimName.*;
+import static de.gematik.idp.token.TokenBuilderUtil.buildSubjectClaim;
 
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.IdpJwtProcessor;
@@ -38,7 +39,8 @@ public class AccessTokenBuilder {
         .of(PROFESSION_OID, GIVEN_NAME, FAMILY_NAME,
             ORGANIZATION_NAME, ID_NUMBER, CLIENT_ID, SCOPE, AUTH_TIME);
     private final IdpJwtProcessor jwtProcessor;
-    private final String uriIdpServer;
+    private final String issuerUrl;
+    private final String serverSubjectSalt;
 
     public JsonWebToken buildAccessToken(final JsonWebToken authenticationToken) {
         final ZonedDateTime now = ZonedDateTime.now();
@@ -49,16 +51,23 @@ public class AccessTokenBuilder {
             .filter(pair -> pair.getValue().isPresent())
             .forEach(pair -> claimsMap.put(pair.getKey().getJoseName(), pair.getValue().get()));
         claimsMap.put(ISSUED_AT.getJoseName(), now.toEpochSecond());
-        claimsMap.put(ISSUER.getJoseName(), uriIdpServer);
+        claimsMap.put(ISSUER.getJoseName(), issuerUrl);
         claimsMap.put(AUDIENCE.getJoseName(), IdpConstants.AUDIENCE);
         claimsMap.put(AUTHENTICATION_CLASS_REFERENCE.getJoseName(), IdpConstants.EIDAS_LOA_HIGH);
-        claimsMap.put(SUBJECT.getJoseName(), "subject");
+        claimsMap.put(SUBJECT.getJoseName(),
+            buildSubjectClaim(
+                IdpConstants.AUDIENCE,
+                authenticationToken.getStringBodyClaim(ID_NUMBER)
+                    .orElseThrow(() -> new RequiredClaimException("Missing '" + ID_NUMBER.getJoseName() + "' claim!")),
+                serverSubjectSalt));
         claimsMap.put(AUTHORIZED_PARTY.getJoseName(), authenticationToken.getBodyClaim(CLIENT_ID)
             .orElseThrow(() -> new RequiredClaimException("Unable to obtain " + CLIENT_ID.getJoseName() + "!")));
-        claimsMap.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), "[\"mfa\", \"sc\", \"pin\"]");
+        claimsMap.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
+        claimsMap.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(),
+            authenticationToken.getStringBodyClaim(AUTHENTICATION_METHODS_REFERENCE)
+                .orElse("[\"mfa\", \"sc\", \"pin\"]"));
 
         final Map<String, Object> headerClaimsMap = new HashMap<>();
-        headerClaimsMap.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
         headerClaimsMap.put(TYPE.getJoseName(), "at+JWT");
 
         return jwtProcessor.buildJwt(new JwtBuilder()

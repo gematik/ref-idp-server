@@ -18,7 +18,6 @@ package de.gematik.idp.authentication;
 
 import static de.gematik.idp.field.ClaimName.*;
 import static org.assertj.core.api.Assertions.assertThat;
-
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
@@ -35,7 +34,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(PkiKeyResolver.class)
 public class AuthenticationChallengeBuilderTest {
 
-    private static final long CHALLENGE_TOKEN_VALIDITY_IN_MINUTES = 5;
+    private static final long CHALLENGE_TOKEN_VALIDITY_IN_MINUTES = 3;
     private AuthenticationChallengeBuilder authenticationChallengeBuilder;
 
     @BeforeEach
@@ -63,7 +62,7 @@ public class AuthenticationChallengeBuilderTest {
             .setSkipDefaultAudienceValidation()
             .build();
 
-        jwtConsumer.process(response.getChallenge().getJwtRawString());
+        jwtConsumer.process(response.getChallenge().getRawString());
         assertThat(response.getChallenge())
             .isNotNull();
     }
@@ -123,11 +122,11 @@ public class AuthenticationChallengeBuilderTest {
     @Test
     @Remark("Ticket IDP-93: \"jti\" string length: 8-64")
     @Rfc("7519 4.1.7.  \"jti\" (JWT ID) Claim")
-    public void challengeHeaderClaimItemJti() {
+    public void challengeBodyClaimItemJti() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
             .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
 
-        assertThat(response.getChallenge().getHeaderClaim(JWT_ID).get())
+        assertThat(response.getChallenge().getBodyClaim(JWT_ID).get())
             .asString()
             .hasSizeBetween(16, 64);
     }

@@ -19,8 +19,12 @@ package de.gematik.idp.test.steps.model;
 import static org.assertj.core.api.Assertions.assertThat;
 import io.restassured.response.Response;
 import java.nio.charset.StandardCharsets;
+import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import net.thucydides.core.annotations.Step;
 import org.json.JSONObject;
 
@@ -82,12 +86,13 @@ public class Context {
     }
 
     @Step
-    public void iStartNewInteractionKeepingOnly(final ContextKey key) {
+    public void iStartNewInteractionKeepingOnly(final List<ContextKey> keys) {
         final Map<ContextKey, Object> ctxt = Context.getThreadContext();
-        assertThat(ctxt).containsKey(key);
-        final Object o = ctxt.get(key);
+        final Map<ContextKey, Object> ctxt2 = keys.stream()
+            .map(key -> new AbstractMap.SimpleEntry<>(key, ctxt.get(key)))
+            .collect(Collectors.toMap(SimpleEntry::getKey, e -> ctxt.get(e.getKey())));
         ctxt.clear();
-        ctxt.put(key, o);
+        ctxt.putAll(ctxt2);
     }
 
     public void flipBit(final int bitidx, final ContextKey key) {

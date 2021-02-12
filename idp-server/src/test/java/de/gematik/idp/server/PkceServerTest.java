@@ -118,8 +118,7 @@ public class PkceServerTest {
         throws UnirestException {
         idpClient.setBeforeTokenMapper(request -> {
             final Map<String, Object> newFields = getAllFieldElementsAsMap(request);
-            newFields.put("code_verifier",
-                "invalidCodeVerifierInvalidCodeVerifierinvalidCodeVerifier");
+            newFields.put("key_verifier", "invalidCodeVerifierInvalidCodeVerifierinvalidCodeVerifier");
             return Unirest
                 .post(request.getUrl())
                 .headers(getAllHeaderElementsAsMap(request))
@@ -139,7 +138,7 @@ public class PkceServerTest {
         throws UnirestException {
         idpClient.setBeforeTokenMapper(request -> {
             final Map<String, Object> newFields = getAllFieldElementsAsMap(request);
-            newFields.remove("code_verifier");
+            newFields.remove("key_verifier");
             return Unirest
                 .post(request.getUrl())
                 .headers(getAllHeaderElementsAsMap(request))

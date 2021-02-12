@@ -16,10 +16,20 @@
 
 package de.gematik.idp.token;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import de.gematik.idp.exceptions.IdpJoseException;
+import de.gematik.idp.field.ClaimName;
 import java.security.Key;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import java.security.PublicKey;
+import java.time.ZonedDateTime;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import org.jose4j.json.JsonUtil;
 import org.jose4j.jwa.AlgorithmConstraints;
 import org.jose4j.jwa.AlgorithmConstraints.ConstraintType;
 import org.jose4j.jwe.ContentEncryptionAlgorithmIdentifiers;
@@ -27,13 +37,51 @@ import org.jose4j.jwe.JsonWebEncryption;
 import org.jose4j.jwe.KeyManagementAlgorithmIdentifiers;
 import org.jose4j.lang.JoseException;
 
-@RequiredArgsConstructor
-@Data
-public class IdpJwe {
+@EqualsAndHashCode
+@Getter
+@Setter
+@JsonSerialize(using = IdpJoseObject.Serializer.class)
+@JsonDeserialize(using = IdpJoseObject.Deserializer.class)
+public class IdpJwe extends IdpJoseObject {
 
-    private final String rawValue;
+    private Key decryptionKey;
 
-    public JsonWebToken decrypt(final Key key) {
+    public IdpJwe(final String rawString) {
+        super(rawString);
+    }
+
+    public static IdpJwe createWithPayloadAndEncryptWithKey(final String payload, final Key key) {
+        return createWithPayloadAndExpiryAndEncryptWithKey(payload, Optional.empty(), key);
+    }
+
+    public static IdpJwe createWithPayloadAndExpiryAndEncryptWithKey(final String payload,
+        final Optional<ZonedDateTime> expiryOptional, final Key key) {
+        final JsonWebEncryption jwe = new JsonWebEncryption();
+
+        jwe.setPlaintext(payload);
+        if (key instanceof PublicKey) {
+            jwe.setAlgorithmHeaderValue(KeyManagementAlgorithmIdentifiers.ECDH_ES_A256KW);
+        } else {
+            jwe.setAlgorithmHeaderValue(KeyManagementAlgorithmIdentifiers.DIRECT);
+        }
+        jwe.setEncryptionMethodHeaderParameter(ContentEncryptionAlgorithmIdentifiers.AES_256_GCM);
+        jwe.setKey(key);
+        expiryOptional
+            .map(TokenClaimExtraction::zonedDateTimeToClaim)
+            .ifPresent(expValue -> jwe.setHeader(ClaimName.EXPIRES_AT.getJoseName(), expValue));
+
+        try {
+            return new IdpJwe(jwe.getCompactSerialization());
+        } catch (final JoseException e) {
+            throw new IdpJoseException("Error during token encryption", e);
+        }
+    }
+
+    public JsonWebToken decryptNestedJwt(final Key key) {
+        return new JsonWebToken(decryptJweAndReturnPayloadString(key));
+    }
+
+    private String decryptJweAndReturnPayloadString(final Key key) {
         final JsonWebEncryption receiverJwe = new JsonWebEncryption();
 
         receiverJwe.setAlgorithmConstraints(
@@ -41,17 +89,36 @@ public class IdpJwe {
                 KeyManagementAlgorithmIdentifiers.ECDH_ES_A256KW));
         receiverJwe.setContentEncryptionAlgorithmConstraints(
             new AlgorithmConstraints(ConstraintType.PERMIT,
-                ContentEncryptionAlgorithmIdentifiers.AES_128_CBC_HMAC_SHA_256,
-                ContentEncryptionAlgorithmIdentifiers.AES_256_CBC_HMAC_SHA_512));
+                ContentEncryptionAlgorithmIdentifiers.AES_256_GCM));
 
         try {
-            receiverJwe.setCompactSerialization(rawValue);
-
+            receiverJwe.setCompactSerialization(getRawString());
             receiverJwe.setKey(key);
 
-            return new JsonWebToken(receiverJwe.getPlaintextString());
+            return receiverJwe.getPlaintextString();
         } catch (final JoseException e) {
             throw new IdpJoseException("Error during decryption", e);
+        }
+    }
+
+    @Override
+    public Map<String, Object> extractHeaderClaims() {
+        final JsonWebEncryption jwe = new JsonWebEncryption();
+        try {
+            jwe.setCompactSerialization(getRawString());
+            return JsonUtil.parseJson(jwe.getHeaders().getFullHeaderAsJsonString());
+        } catch (final JoseException e) {
+            throw new IdpJoseException(e);
+        }
+    }
+
+    @Override
+    public Map<String, Object> extractBodyClaims() {
+        Objects.requireNonNull(decryptionKey, "Body-claim extraction requires non-null decryption key");
+        try {
+            return JsonUtil.parseJson(decryptJweAndReturnPayloadString(decryptionKey));
+        } catch (final JoseException e) {
+            throw new IdpJoseException("Exception occurred during body-claim extraction", e);
         }
     }
 }

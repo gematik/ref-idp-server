@@ -30,4 +30,3 @@ public class AuthenticationRequest {
     private final String ssoToken;
     private final JsonWebToken challengeToken;
 }
-

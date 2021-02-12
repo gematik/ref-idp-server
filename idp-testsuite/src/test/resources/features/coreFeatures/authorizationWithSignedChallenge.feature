@@ -83,7 +83,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
   #          }
   #          """
 
-  @Afo:A_20699 @Afo:A_20951 @Afo:A_20460
+  @Afo:A_20699 @Afo:A_20951 @Afo:A_20460 @Afo:A_20699
   @Approval @Todo:ClarifyTokenCodeContentRelevant
   Scenario: Author mit signierter Challenge - Gutfall - Validiere Antwortstruktur
 
@@ -100,7 +100,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
       | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 12345 | code          |
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
 
-    When I request a code token with SIGNED_CHALLENGE
+    When I request a code token with signed challenge
     Then the response status is 302
     And the response http headers match
         """
@@ -112,8 +112,8 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And I expect the Context with key STATE to match 'xxxstatexxx'
     And I expect the Context with key SSO_TOKEN to match '.*'
 
-  @Afo:A_20699 @Afo:A_20951 @Afo:A_20460
-  @Approval @Todo:ClarifyTokenCodeContentRelevant
+  @Afo:A_20699 @Afo:A_20951 @Afo:A_20460 @Afo:A_20731 @Afo:A_20310 @Afo:A_20377 @Afo:A_20697
+  @Approval @Todo:ClarifyTokenCodeContentRelevant @Todo:CompareSubjectInfosInTokenAndInCert
   Scenario: Author mit signierter Challenge - Gutfall - Validiere Location Header und Code Token Claims
 
   ```
@@ -129,14 +129,14 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
       | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state       | nonce | response_type |
       | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 12345 | code          |
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And I request a code token with signed challenge
 
-    When I request a code token with SIGNED_CHALLENGE
-    And I extract the header claims from token TOKEN_CODE
+    When I extract the header claims from token TOKEN_CODE
     Then the header claims should match in any order
         """
           { alg: "BP256R1",
             exp: "[\\d]*",
-            jti: "${json-unit.ignore}",
+            kid: "${json-unit.ignore}",
             typ: "JWT"
           }
         """
@@ -149,6 +149,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
             code_challenge:        "Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg",
             code_challenge_method: "S256",
             exp:                   "[\\d]*",
+            jti:                   "${json-unit.ignore}",
             family_name:           "(.{1,64})",
             given_name:            "(.{1,64})",
             iat:                   "[\\d]*",
@@ -187,8 +188,52 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
       | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 3333  | code          |
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
 
-    When I request a code token with SIGNED_CHALLENGE
+    When I request a code token with signed challenge
     Then the context TOKEN_CODE must be signed with cert PUK_AUTH
+
+  @Afo:A_20695
+  @Approval @Ready
+  @Signature
+  Scenario: Author mit signierter Challenge - Validiere Signatur des SSO Token
+
+  ```
+  Wir wählen einen gültigen Code verifier, fordern einen Challenge Token an, signieren diesen und
+  fordern einen TOKEN_CODE und einen SSO_TOKEN mit der signierten Challenge an.
+
+  Der SSO Token muss mit dem Auth Zertifikat gültig signiert sein.
+
+    Given I retrieve public keys from URIs
+    And I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+    And I request a challenge with
+      | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state       | nonce | response_type |
+      | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 3333  | code          |
+    And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+
+    When I request a code token with signed challenge
+    Then the context SSO_TOKEN must be signed with cert PUK_AUTH
+
+  @Afo:A_20314
+  @Approval @Ready
+  @Timeout
+  @LongRunning
+  Scenario: Author mit signierter Challenge - Veralteter Challenge Token wird abgelehnt
+
+  ```
+  Wir wählen einen gültigen Code verifier, fordern einen Challenge Token an, signieren diesen, warten 3 Minuten und
+  fordern dann einen TOKEN_CODE mit der signierten Challenge an.
+
+  Der Server muss diese Anfrage mit einem Timeout Fehler ablehnen.
+
+    Given I retrieve public keys from URIs
+    And I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+    And I request a challenge with
+      | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state       | nonce | response_type |
+      | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 3333  | code          |
+    And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+
+    When I wait PT3M5S
+    And I request a code token with signed challenge
+    Then the response is an 302 error with code 'invalid_request' and message matching 'The%20given%20JWT%20has%20expired%20and%20is%20no%20longer%20valid%20%28exp%20is%20in%20the%20past%29'
 
 
 
@@ -211,10 +256,11 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
       | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state        | nonce | response_type |
       | eRezeptApp | e-rezept openid | ds7JaEfpdLidWekR52OhoVpjXHDlplLyV3GtUezxfY0 | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx1 | 1212  | code          |
 
-    When I request a code token with NO_PARAMS
+    When I request a code token with no params
     Then the response is an 302 error with code 'invalid_request' and message matching 'validateChallengeAndGetTokenCode.signedChallenge%3A%20must%20not%20be%20null'
 
 
+  @Afo:A_20951
   @Approval @Todo:ErrorMessages
   @OpenBug @issue:IDP-368
   Scenario: Author mit signierter Challenge - Challenge mit abgelaufenem Zertifikat signiert
@@ -232,10 +278,10 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
       | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 3344  | code          |
 
     When I sign the challenge with '/certs/invalid/smcb-idp-expired.p12'
-    And I request a code token with SIGNED_CHALLENGE
+    And I request a code token with signed challenge
     Then the response is an 302 error with code 'invalid_request' and message matching 'TODO'
 
-  @Afo:A_20951 @Afo:A_20318
+  @Afo:A_20951 @Afo:A_20318 @Afo:A_20465
   @Approval @Todo:ErrorMessages
   @OpenBug @issue:IDP-368
   Scenario: Author mit signierter Challenge - Challenge mit gesperrtem Zertifikat signiert
@@ -253,9 +299,10 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
       | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 0101  | code          |
 
     When I sign the challenge with '/certs/invalid/smcb-idp-revoked.p12'
-    And I request a code token with SIGNED_CHALLENGE
+    And I request a code token with signed challenge
     Then the response is an 302 error with code 'invalid_request' and message matching 'TODO'
 
+  @Afo:A_20951
   @Approval @Todo:ErrorMessages
   @OpenBug @issue:IDP-368
   Scenario: Author mit signierter Challenge - Challenge mit selbst signiertem Zertifikat signiert
@@ -273,7 +320,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
       | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 0011  | code          |
 
     When I sign the challenge with '/certs/invalid/smcb-idp-selfsigned.p12'
-    And I request a code token with SIGNED_CHALLENGE
+    And I request a code token with signed challenge
     Then the response is an 302 error with code 'invalid_request' and message matching 'TODO'
 
   @Afo:A_20951 @Afo:A_20460
@@ -293,7 +340,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
       | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 110011 | code          |
 
     When I set the context with key SIGNED_CHALLENGE to 'invalid signed challenge for sure'
-    And I request a code token with SIGNED_CHALLENGE
+    And I request a code token with signed challenge
     Then the response is an 302 error with code 'invalid_request' and message matching '.*Error%20during%20JOSE-operations.*'
 
   @Approval @Ready
@@ -313,7 +360,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
 
     When I set the context with key CHALLENGE to 'malicious content test'
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
-    And I request a code token with SIGNED_CHALLENGE
+    And I request a code token with signed challenge
     Then the response is an 302 error with code 'invalid_request' and message matching '.*Error%20during%20JOSE-operations.*'
 
   @Afo:A_20951 @Afo:A_20460
@@ -336,5 +383,5 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     When I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     #flipping bits seems to be tricky. due to bits as bytes and bytes as base64 the last couple of bits may or may not have influence on the signature
     And I flip bit -20 on context with key SIGNED_CHALLENGE
-    And I request a code token with SIGNED_CHALLENGE
+    And I request a code token with signed challenge
     Then the response is an 302 error with code 'invalid_request' and message matching 'Error%20during%20JOSE-operations'

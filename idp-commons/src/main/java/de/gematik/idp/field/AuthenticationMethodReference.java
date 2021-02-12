@@ -32,5 +32,5 @@ public enum AuthenticationMethodReference {
     PASSWORD("pwd", true);
 
     private final String description;
-    private final boolean isBiometric;
+    private final boolean isAlternativeAuthentication;
 }

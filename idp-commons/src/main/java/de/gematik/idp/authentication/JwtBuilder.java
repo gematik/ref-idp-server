@@ -71,6 +71,11 @@ public class JwtBuilder {
         return this;
     }
 
+    public JwtBuilder addHeaderClaim(final ClaimName key, final Object value) {
+        headerClaims.put(key.getJoseName(), value);
+        return this;
+    }
+
     public JwtBuilder expiresAt(final ZonedDateTime exp) {
         final NumericDate expDate = NumericDate.fromSeconds(exp.toEpochSecond());
         headerClaims.put(ClaimName.EXPIRES_AT.getJoseName(), expDate.getValue());

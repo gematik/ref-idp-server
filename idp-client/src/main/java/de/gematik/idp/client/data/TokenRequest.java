@@ -16,6 +16,7 @@
 
 package de.gematik.idp.client.data;
 
+import java.security.PublicKey;
 import lombok.Builder;
 import lombok.Data;
 
@@ -29,4 +30,5 @@ public class TokenRequest {
     private final String codeVerifier;
     private final String redirectUrl;
     private final String ssoToken;
+    private final PublicKey pukToken;
 }

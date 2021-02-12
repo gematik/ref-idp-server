@@ -41,15 +41,16 @@ public enum ClaimName {
     TYPE("typ"),
     CONTENT_TYPE("cty"),
     JWT_ID("jti"),
+    KEY_ID("kid"),
     NOT_BEFORE("nbf"),
     CLIENT_SIGNATURE("csig"),
     NESTED_JWT("njwt"),
     CODE_CHALLENGE("code_challenge"), // (Hashwert des "code_verifier") [RFC7636 # section-4.2]
     CODE_CHALLENGE_METHOD("code_challenge_method"), // HASH-Algorithmus (S256) [RFC7636 # section-4.3]
+    CODE_VERIFIER("code_verifier"),
     CONFIRMATION("cnf"), // gemSpec_IDP_Dienst
     CLAIMS("claims"), // gemSpec_IDP_Dienst
     AUTHENTICATION_CLASS_REFERENCE("acr"), // https://openid.net/specs/openid-connect-core-1_0.html#IDToken
-    AUTHENTICATION_METHODS_REFERENCE("amr"),
     AUTHORIZED_PARTY("azp"),
     SUBJECT("sub"),
     X509_CERTIFICATE_CHAIN("x5c"),
@@ -58,14 +59,30 @@ public enum ClaimName {
     JWKS_URI("jwks_uri"),
     ACR_VALUES_SUPPORTED("acr_values_supported"),
     TOKEN_TYPE("token_type"),
+    TOKEN_KEY("token_key"),
     NONCE("nonce"),
     ACCESS_TOKEN_HASH("at_hash"),
-    DEVICE_MANUFACTURER("manufacturer"),
-    DEVICE_PRODUCT("product"),
-    DEVICE_MODEL("model"),
-    DEVICE_OS("os"),
-    DEVICE_OS_VERSION("osVersion"),
-    DEVICE_NAME("name");
+    AUTHENTICATION_DATA("authentication_data"),
+    AUTHENTICATION_METHODS_REFERENCE("amr"),
+    AUTHENTICATION_CERTIFICATE("authentication_cert"),
+    KEY_IDENTIFIER("key_identifier"),
+    CHALLENGE_TOKEN("challenge_token"),
+    DEVICE_INFORMATION("device_information"),
+    DEVICE_NAME("device_name"),
+    DEVICE_TYPE("device_type"),
+    DEVICE_MANUFACTURER("device_manufacturer"),
+    DEVICE_PRODUCT("device_product"),
+    DEVICE_MODEL("device_model"),
+    DEVICE_OS("device_os"),
+    DEVICE_OS_VERSION("device_version"),
+    SIGNED_PAIRING_DATA("signed_pairing_data"),
+    PAIRING_DATA("pairing_data"),
+    PUK_SE_AUT_PUBLIC_KEY("key_data"),
+    PUK_EGK_AUT_PUBLIC_KEY("public_key"),
+    PUK_EGK_AUT_CERT_ID("cert_id"),
+    PUK_EGK_AUT_CERT_ISSUER("issuer"),
+    PUK_EGK_AUT_CERT_NOT_AFTER("not_after"),
+    ENCRYPTION_ALGORITHM("enc");
 
     @JsonValue
     private final String joseName;

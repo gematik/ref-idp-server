@@ -16,29 +16,45 @@
 
 package de.gematik.idp.server;
 
-import static de.gematik.idp.authentication.UriUtils.extractParameterValue;
-import static org.assertj.core.api.Assertions.assertThat;
+import static de.gematik.idp.authentication.UriUtils.extractParameterMap;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import de.gematik.idp.IdpConstants;
+import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.client.IdpClient;
-import de.gematik.idp.client.IdpTokenResult;
 import de.gematik.idp.crypto.model.PkiIdentity;
+import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.tests.PkiKeyResolver;
+import de.gematik.idp.token.IdpJoseObject;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
+import de.gematik.idp.token.TokenClaimExtraction;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
+import java.security.Key;
+import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-import kong.unirest.BodyPart;
-import kong.unirest.HttpRequest;
-import kong.unirest.HttpResponse;
-import kong.unirest.JsonNode;
-import org.apache.commons.codec.binary.StringUtils;
+import java.util.stream.Stream;
+import javax.crypto.spec.SecretKeySpec;
+import kong.unirest.*;
+import kong.unirest.json.JSONArray;
+import kong.unirest.json.JSONObject;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,29 +66,98 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @ExtendWith(PkiKeyResolver.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Slf4j
 public class TokenLoggerTest {
 
+    private final static Map<String, Function<Object, Object>> MASKING_FUNCTIONS = new HashMap<>();
+    private static final int MAX_STRING_LENGHT = 50;
+    private static final int CUT_STRING_LENGTH = 20;
+    private static final String CODE_SEPERATOR = "\n```\n";
     @Autowired
     private IdpConfiguration idpConfiguration;
     @Autowired
     private IdpKey authKey;
+    @Autowired
+    private IdpKey tokenKey;
+    @Autowired
+    private Key symmetricEncryptionKey;
     private IdpClient idpClient;
     private PkiIdentity egkUserIdentity;
     @LocalServerPort
     private int localServerPort;
     private File tokenLogFile;
+    private Gson gson;
 
-    private static String jwtToJson(final String jwt) {
+    {
+        MASKING_FUNCTIONS.put("exp", value -> "<Duration of " + roundToNearestMinute(
+            Duration.between(ZonedDateTime.now(), TokenClaimExtraction.claimToZonedDateTime(value))).toString()
+            + ". Beispiel: '" + value.toString() + "'>");
+        MASKING_FUNCTIONS
+            .put("iat", value -> "<Timestamp of the issueing of the token. Beispiel: '" + value.toString() + "'>");
+        MASKING_FUNCTIONS
+            .put("nbf", value -> "<token can not used before this timestamp. Beispiel: '" + value.toString() + "'>");
 
-        final JsonNode jwtHeader = new JsonNode(
-            StringUtils.newStringUtf8(Base64.getDecoder().decode(jwt.split("\\.")[0])));
-        final JsonNode jwtBody = new JsonNode(
-            StringUtils.newStringUtf8(Base64.getDecoder().decode(jwt.split("\\.")[1])));
-        return jwtHeader.toPrettyString() + "\n" + jwtBody.toPrettyString();
+        MASKING_FUNCTIONS.put("code_challenge",
+            v -> "<code_challenge value, Base64URL(SHA256(code_verifier)). Beispiel: " + v.toString() + ">");
+
+        MASKING_FUNCTIONS.put("nonce", v ->
+            "<String value used to associate a Client session with an ID Token, and to mitigate replay attacks. Beispiel: '"
+                + v.toString() + "'>");
+
+        MASKING_FUNCTIONS.put("state",
+            v -> "<OAuth 2.0 state value. Constant over complete flow. Value is a case-sensitive string. Beispiel: '"
+                + v
+                .toString() + "'>");
+
+        MASKING_FUNCTIONS.put("jti", v ->
+            "<A unique identifier for the token, which can be used to prevent reuse of the token. Value is a case-sensitive string. Beispiel: '"
+                + v
+                .toString() + "'>");
+
+        MASKING_FUNCTIONS.put("given_name",
+            v -> "<'givenName' from given authentication-certificate subject-DN. Beispiel: '" + v.toString() + "'>");
+        MASKING_FUNCTIONS.put("family_name",
+            v -> "<'surname' from given authentication-certificate subject-DN. Beispiel: '" + v.toString() + "'>");
+        MASKING_FUNCTIONS.put("idNummer",
+            v -> "<KVNR or Telematik-ID from given authentication-certificate. Beispiel: '" + v.toString() + "'>");
+        MASKING_FUNCTIONS.put("professionOID",
+            v -> "<professionOID of HBA from given authentication-certificate. Null if not present. Beispiel: '" + v
+                .toString() + "'>");
+        MASKING_FUNCTIONS.put("organizationName",
+            v -> "<professionOID of HBA from given authentication-certificate. Null if not present. Beispiel: '" + v
+                .toString() + "'>");
+        MASKING_FUNCTIONS.put("auth_time",
+            v ->
+                "<timestamp of authentication. Technically this is the time of authentication-token signing. Beispiel: '"
+                    + v.toString() + "'>");
+        MASKING_FUNCTIONS.put("snc",
+            v -> "<server-nonce. Used to introduce noise. Beispiel: '" + v.toString() + "'>");
+        MASKING_FUNCTIONS.put("cnf",
+            v -> "<confirmation. Authenticated certificate of the client. For details see rfc7800. Beispiel: '" +
+                prettyPrintJsonString(v.toString(), " ".repeat(60)) + "'>");
+        MASKING_FUNCTIONS.put("sub",
+            v -> "<subject. Base64(sha256(audClaim + idNummerClaim + serverSubjectSalt)). Beispiel: '" + v
+                .toString() + "'>");
+        MASKING_FUNCTIONS.put("at_hash",
+            v ->
+                "<Erste 16 Bytes des Hash des Authentication Tokens Base64(subarray(Sha256(authentication_token), 0, 16)). Beispiel: '"
+                    + v.toString() + "'>");
+        MASKING_FUNCTIONS.put("x5c",
+            v -> "<Enthält das verwendete Signer-Zertifikat. Beispiel: '" + prettyPrintJsonString(v.toString(),
+                " ".repeat(60)) + "'>");
+
+        MASKING_FUNCTIONS.put("authorization_endpoint", v -> "<URL des Authorization Endpunkts.>");
+        MASKING_FUNCTIONS.put("sso_endpoint", v -> "<URL des Authorization Endpunkts.>");
+        MASKING_FUNCTIONS.put("token_endpoint", v -> "<URL des Authorization Endpunkts.>");
+        MASKING_FUNCTIONS.put("uri_disc", v -> "<URL des Discovery-Dokuments>");
+        MASKING_FUNCTIONS.put("puk_uri_auth", v -> "<URL einer JWK-Struktur des Authorization Public-Keys>");
+        MASKING_FUNCTIONS.put("puk_uri_token", v -> "<URL einer JWK-Struktur des Token Public-Keys>");
+        MASKING_FUNCTIONS.put("jwks_uri", v -> "<URL einer JWKS-Struktur mit allen vom Server verwendeten Schlüsseln>");
     }
 
     @BeforeEach
-    public void startup(@PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity clientIdentity)
+    public void startup(
+        @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity clientIdentity)
         throws IOException {
         idpClient = IdpClient.builder()
             .clientId(IdpConstants.CLIENT_ID)
@@ -87,101 +172,332 @@ public class TokenLoggerTest {
             .privateKey(clientIdentity.getPrivateKey())
             .build();
 
-        tokenLogFile = createTokenLogFile();
+        createTokenLogFile();
+
+        gson = new GsonBuilder()
+            .setPrettyPrinting()
+            .create();
     }
 
     @Test
     public void writeAllTokensToFile() {
         // Authorization Request
-        idpClient.setBeforeAuthorizationCallback(getRequest -> appendRequestToFile(
-            tokenLogFile, "Authorization Request", getRequest));
+        idpClient
+            .setBeforeAuthorizationCallback(getRequest -> appendRequestToFile("Authorization Request", getRequest));
 
         // Challenge Token
         idpClient.setAfterAuthorizationCallback(response -> {
-            appendResponseToFile(tokenLogFile, "Authorization Response", response);
+            appendResponseToFile("Authorization Response", response);
 
-            appendTokenToFile(
-                tokenLogFile, "Challenge Token", response.getBody().getChallenge() + "\n" +
-                    jwtToJson(response.getBody().getChallenge().getJwtRawString()));
+            appendTokenToFile("Challenge Token", response.getBody().getChallenge());
         });
 
-        // Challenge Response Token
-        idpClient.setBeforeAuthenticationCallback(mb -> mb.getBody().get().multiParts().stream()
-            .filter(bodyPart -> bodyPart.getName().equals("signed_challenge"))
-            .map(BodyPart::getValue)
-            .findAny()
-            .map(Object::toString)
-            .map(IdpJwe::new)
-            .map(jwe -> jwe.decrypt(authKey.getIdentity().getPrivateKey()))
-            .map(JsonWebToken::getJwtRawString)
-            .ifPresent(o -> appendTokenToFile(tokenLogFile, "Challenge Response Token",
-                o.toString() + "\n" + jwtToJson(o.toString())))
-        );
+        // Authentication Request
+        idpClient
+            .setBeforeAuthenticationCallback(getRequest -> {
+                    appendRequestToFile("Authentication Request", getRequest);
+
+                    appendMultipartAndDecrypt(getRequest.getBody().get().multiParts(), "signed_challenge",
+                        "Challenge Response", tokenKey.getIdentity().getPrivateKey());
+                    appendMultipartAndDecrypt(getRequest.getBody().get().multiParts(), "sso_token",
+                        "SSO Token", symmetricEncryptionKey);
+                    appendMultipartAndDecrypt(getRequest.getBody().get().multiParts(), "unsigned_challenge",
+                        "Unsigned Challenge", null);
+                }
+            );
 
         // Authorization Code
         idpClient.setAfterAuthenticationCallback(response -> {
-                appendResponseToFile(tokenLogFile, "Authentication Response", response);
+                appendResponseToFile("Authentication Response", response);
+                final Map<String, String> parameterMap = extractParameterMap(response.getHeaders().getFirst("Location"));
 
-                final String tokenAuthorizationCode = extractParameterValue(response.getHeaders().getFirst("Location"),
-                    "code");
-                appendTokenToFile(tokenLogFile, "Authorization Code",
-                    tokenAuthorizationCode + "\n" + jwtToJson(tokenAuthorizationCode));
+                if (parameterMap.containsKey("code")) {
+                    appendJwe(new IdpJwe(parameterMap.get("code")), "Authorization Code", symmetricEncryptionKey);
+                }
 
-                final String ssToken = extractParameterValue(response.getHeaders().getFirst("Location"), "sso_token");
-                appendTokenToFile(tokenLogFile, "SSO Token", ssToken + "\n" + jwtToJson(ssToken));
+                if (parameterMap.containsKey("sso_token")) {
+                    appendJwe(new IdpJwe(parameterMap.get("sso_token")), "SSO Token", symmetricEncryptionKey);
+                }
             }
         );
 
-        idpClient.setAfterTokenCallback(response ->
-            appendResponseToFile(tokenLogFile, "Token Response", response));
+        final AtomicReference<Key> clientTokenKey = new AtomicReference<>();
 
-        // Access Token
-        final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
-        final String accessToken = tokenResponse.getAccessToken().getJwtRawString();
-        appendTokenToFile(tokenLogFile, "Access Token", accessToken + "\n" + jwtToJson(accessToken));
+        // Token Request
+        idpClient.setBeforeTokenCallback(getRequest -> {
+                appendRequestToFile("Token Request", getRequest);
+                final IdpJwe keyVerifier = getRequest.getBody().get().multiParts().stream()
+                    .filter(p -> p.getName().equals("key_verifier"))
+                    .map(p -> new IdpJwe(p.getValue().toString()))
+                    .findAny().get();
 
-        // Id Token
-        final String idToken = tokenResponse.getIdToken().getJwtRawString();
-        appendTokenToFile(tokenLogFile, "Id Token", idToken + "\n" + jwtToJson(idToken));
+                appendTokenToFile("Key verifier (Encryption Header)", keyVerifier);
+                keyVerifier.setDecryptionKey(tokenKey.getIdentity().getPrivateKey());
 
-        assertThat(tokenLogFile).exists();
+                appendToFile(
+                    "Key verifier (Body)\n\n" + CODE_SEPERATOR + prettyPrintJsonString(
+                        gson.toJson(keyVerifier.getBodyClaims()), "") + CODE_SEPERATOR + "\n");
+                clientTokenKey.set(new SecretKeySpec(
+                    Base64.getUrlDecoder().decode(keyVerifier.getStringBodyClaim(ClaimName.TOKEN_KEY).get()),
+                    "AES"));
+            }
+        );
+
+        idpClient.setAfterTokenCallback(response -> {
+            appendResponseToFile("Token Response", response);
+
+            final JSONObject responseObject = response.getBody().getObject();
+            final IdpJwe accessToken = new IdpJwe(responseObject.getString("access_token"));
+            appendTokenToFile("Access Token (Encryption Header)", accessToken);
+            appendTokenToFile("Access Token (Decrypted)", accessToken.decryptNestedJwt(clientTokenKey.get()));
+
+            final IdpJwe idToken = new IdpJwe(responseObject.getString("id_token"));
+            appendTokenToFile("ID Token (Encryption Header)", idToken);
+            appendTokenToFile("ID Token (Decrypted)", idToken.decryptNestedJwt(clientTokenKey.get()));
+        });
+        addSeperator("# Basic FLOW", "=");
+        appendToFile("Log-In attempt using egk with DN '"
+            + egkUserIdentity.getCertificate().getSubjectX500Principal().toString() + "'\n\n\n");
+
+        final IdpJwe ssoToken = idpClient.login(egkUserIdentity).getSsoToken();
+
+        addSeperator("# SSO Flow", "=");
+
+        idpClient.loginWithSsoToken(ssoToken);
+
+        // Discovery Document
+        final String ddRaw = Unirest.get(idpClient.getDiscoveryDocumentUrl()).asString().getBody();
+
+        addSeperator("# Discovery Document", "=");
+        appendTokenToFile("", new JsonWebToken(ddRaw));
     }
 
-    private File createTokenLogFile() throws IOException {
-        final File file = new File("target/allTokens.txt");
-        if (file.isFile()) {
-            file.delete();
+    private void appendMultipartAndDecrypt(
+        final Collection<BodyPart> bodyParts, final String parameter_name, final String tokenName,
+        final Key decryptionKey) {
+        bodyParts
+            .stream()
+            .filter(bodyPart -> bodyPart.getName().equals(parameter_name))
+            .map(BodyPart::getValue)
+            .findAny()
+            .map(Object::toString)
+            .ifPresent(tokenString -> {
+                if (decryptionKey != null) {
+                    appendJwe(new IdpJwe(tokenString), tokenName, decryptionKey);
+                } else {
+                    appendTokenToFile(tokenName, new JsonWebToken(tokenString));
+                }
+            });
+    }
+
+    private void appendJwe(final IdpJwe token, final String tokenName, final Key decryptionKey) {
+        appendTokenToFile(tokenName + " (Encryption Header)", token);
+        appendTokenToFile(tokenName + " (Decrypted)", token.decryptNestedJwt(decryptionKey));
+    }
+
+    private void createTokenLogFile() throws IOException {
+        tokenLogFile = new File("target/tokenFlow_" + ZonedDateTime.now()
+            .format(DateTimeFormatter.ofPattern("YYYY-MM-dd_HH-mm-SS")) + ".md");
+        if (tokenLogFile.isFile()) {
+            tokenLogFile.delete();
         }
-        file.createNewFile();
-        FileUtils
-            .writeStringToFile(file, egkUserIdentity.getCertificate().getSubjectX500Principal().toString() + "\n\n\n",
-                StandardCharsets.UTF_8, true);
-        return file;
+        tokenLogFile.createNewFile();
     }
 
-    private void appendRequestToFile(final File file, final String name, final HttpRequest<?> request) {
+    private void appendRequestToFile(final String name, final HttpRequest<?> request) {
+        addSeperator("## " + name, ">");
         final String multipartBody = request.getBody().map(
             body -> body.multiParts().stream()
                 .map(part -> part.getName() + "=" + part.getValue())
                 .collect(Collectors.joining("\n", "Multiparts:\n", "\n")))
             .orElse("");
-        appentToFile(file, name + ":\n" + request.getUrl() + "\n" + multipartBody + "\n");
+        appendToFile(CODE_SEPERATOR + formatUrl(request.getUrl()) + "\n\n" + multipartBody + CODE_SEPERATOR + "\n");
     }
 
-    private void appendResponseToFile(final File file, final String name, final HttpResponse<?> response) {
-        appentToFile(file, name + ":\n" + response.getStatus() + "\n" + response.getHeaders()
+    @SneakyThrows
+    private String formatUrl(final String url) {
+        final URI uri = new URI(url);
+        final Map<String, String> pathMapping = Map.of(
+            IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT, "<URI_DISC>",
+            IdpConstants.BASIC_AUTHORIZATION_ENDPOINT, "<AUTHORIZATION_ENDPOINT>",
+            IdpConstants.SSO_ENDPOINT, "<SSO_ENDPOINT>",
+            IdpConstants.TOKEN_ENDPOINT, "<TOKEN_ENDPOINT>"
+        );
+
+        final String query = formatQueryString(uri);
+        return "https://<FQDN Server>/"
+            + pathMapping.getOrDefault(uri.getPath(), uri.getPath())
+            + query;
+    }
+
+    private String formatQueryString(final URI uri) {
+        if (StringUtils.isEmpty(uri.getQuery())) {
+            return "";
+        }
+
+        return Stream.of(uri.getQuery().split("&"))
+            .map(q -> {
+                final String[] split = q.split("=");
+                if (MASKING_FUNCTIONS.containsKey(split[0])) {
+                    return split[0] + "=" + MASKING_FUNCTIONS.get(split[0])
+                        .apply(split[1]);
+                } else {
+                    return q;
+                }
+            })
+            .collect(Collectors.joining("\n    &", "\n    ?", ""));
+    }
+
+    private void addSeperator(final String title, final String seperatorString) {
+        appendToFile(title + " \n");
+    }
+
+    private void appendResponseToFile(final String name, final HttpResponse<?> response) {
+        addSeperator("## " + name, "<");
+        appendToFile(CODE_SEPERATOR + response.getStatus() + "\n" + response.getHeaders()
             .all().stream()
-            .map(header -> header.getName() + "=" + header.getValue())
-            .collect(Collectors.joining(",\n")) + "\n" + response.getBody() + "\n");
+            .map(header -> {
+                if (header.getName().equals("Location")) {
+                    return Pair.of("Location", formatUrl(header.getValue()));
+                } else if (MASKING_FUNCTIONS.containsKey(header.getName())) {
+                    return Pair.of(header.getName(), MASKING_FUNCTIONS.get(header.getName()).apply(header.getValue()));
+                } else {
+                    return Pair.of(header.getName(), header.getValue());
+                }
+            })
+            .map(header -> header.getKey() + "=" + header.getValue())
+            .collect(Collectors.joining(",\n")) + CODE_SEPERATOR + extractBodyFromResponse(response) + "\n\n");
     }
 
-    private void appendTokenToFile(final File file, final String tokenName, final String tokenContent) {
-        appentToFile(file, tokenName + ":\n" + tokenContent + "\n\n");
+    private String extractBodyFromResponse(final HttpResponse<?> response) {
+        if (response.getBody().toString().isEmpty()) {
+            return "";
+        }
+        return "\n\nResponse-Body:\n" + CODE_SEPERATOR + mapBodyToString(response.getBody()) + CODE_SEPERATOR;
     }
 
-    private void appentToFile(final File file, final String content) {
+    private String mapBodyToString(final Object body) {
+        if (body instanceof AuthenticationChallenge) {
+            return gson.toJson(body);
+        } else if (body instanceof JsonNode) {
+            return ((JsonNode) body).toPrettyString();
+        } else if (body instanceof String) {
+            return body.toString();
+        } else {
+            return "Ugly-printing " + body.getClass().getSimpleName() + ": \n\n'" + body.toString() + "'";
+        }
+    }
+
+    private void appendTokenToFile(final String tokenName, final IdpJoseObject token) {
+        final String prettyPrintendTokenParts = prettyPrintJoseParts(token.getRawString());
+        final String intro = tokenName.isBlank() ? "" : "### " + tokenName + ":\n";
+        appendToFile(intro + CODE_SEPERATOR + prettyPrintendTokenParts + CODE_SEPERATOR + "\n\n");
+    }
+
+    private String prettyPrintJoseParts(final String tokenString) {
+        return Stream.of(tokenString.split("\\."))
+            .map(Base64.getUrlDecoder()::decode)
+            .map(String::new)
+            .filter(StringUtils::isNotBlank)
+            .map(str -> {
+                try {
+                    return Optional.of(new JsonNode(str));
+                } catch (final Exception e) {
+                    return Optional.empty();
+                }
+            })
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .map(JsonNode.class::cast)
+            .map(this::maskVariableParts)
+            .map(JsonNode::toPrettyString)
+            .map(StringEscapeUtils::unescapeJava)
+            .collect(Collectors.joining("\n"));
+    }
+
+    private String prettyPrintJsonString(final String value, final String newLineFiller) {
+        final JsonNode jsonNode = new JsonNode(value);
+        cutStrings(jsonNode);
+        final String cleanString = StringEscapeUtils.unescapeJava(jsonNode.toPrettyString());
+        return cleanString.replace("\n", "\n" + newLineFiller);
+    }
+
+    private void cutStrings(final JsonNode jsonNode) {
+        if (jsonNode == null) {
+            return;
+        }
+        cutStrings(jsonNode.getObject());
+        cutStrings(jsonNode.getArray());
+    }
+
+    private void cutStrings(final JSONArray array) {
+        if (array == null) {
+            return;
+        }
+        for (int i = 0; i < array.length(); i++) {
+            final Object value = cutStrings(array.get(i));
+            if (value != null) {
+                array.put(i, value);
+            }
+        }
+    }
+
+    private void cutStrings(final JSONObject object) {
+        if (object == null) {
+            return;
+        }
+        for (final String key : object.keySet()) {
+            final Object value = cutStrings(object.get(key));
+            if (value != null) {
+                object.put(key, value);
+            }
+        }
+    }
+
+    private Object cutStrings(final Object o) {
+        if (o == null) {
+            return null;
+        }
+        if (o instanceof JsonNode) {
+            cutStrings((JsonNode) o);
+        } else if (o instanceof JSONArray) {
+            cutStrings((JSONArray) o);
+        } else if (o instanceof JSONObject) {
+            cutStrings((JSONObject) o);
+        } else if (o instanceof String) {
+            if (((String) o).length() > MAX_STRING_LENGHT) {
+                return ((String) o).substring(0, CUT_STRING_LENGTH) + "...";
+            }
+        } else {
+            System.out.println("unknown: " + o.getClass().getSimpleName() + " => " + o);
+        }
+        return null;
+    }
+
+    private JsonNode maskVariableParts(final JsonNode jsonNode) {
+        final JSONObject object = jsonNode.getObject();
+
+        final List<String> keys = object.keySet().stream().collect(Collectors.toList());
+        keys.stream().forEach(key -> {
+            if (MASKING_FUNCTIONS.containsKey(key)) {
+                object.put(key, MASKING_FUNCTIONS
+                    .get(key)
+                    .apply(object.get(key)));
+            }
+        });
+        return jsonNode;
+    }
+
+    private Duration roundToNearestMinute(final Duration input) {
+        return input
+            .withNanos(0)
+            .plusMinutes(input.toSecondsPart() > 30 ? 1 : 0)
+            .minusSeconds(input.toSecondsPart());
+    }
+
+    private void appendToFile(final String content) {
         try {
-            FileUtils.writeStringToFile(file, content, StandardCharsets.UTF_8, true);
+            FileUtils.writeStringToFile(tokenLogFile, content, StandardCharsets.UTF_8, true);
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }

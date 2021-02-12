@@ -16,16 +16,18 @@
 
 package de.gematik.idp.server.services;
 
-import static de.gematik.idp.field.ClaimName.*;
-
-import de.gematik.idp.exceptions.RequiredClaimException;
-import de.gematik.idp.field.ClaimName;
+import de.gematik.idp.server.data.DeviceType;
+import de.gematik.idp.server.data.DeviceValidationDto;
 import de.gematik.idp.server.devicevalidation.DeviceValidationData;
 import de.gematik.idp.server.devicevalidation.DeviceValidationRepository;
 import de.gematik.idp.server.devicevalidation.DeviceValidationState;
-import de.gematik.idp.token.JsonWebToken;
+import de.gematik.idp.server.exceptions.oauth2spec.IdpServerInvalidRequestException;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -34,39 +36,54 @@ public class DeviceValidationService {
 
     private final DeviceValidationRepository deviceValidationRepository;
 
+    private final ModelMapper modelMapper;
 
-    public DeviceValidationState assess(final JsonWebToken deviceInformation) {
-        final Optional<DeviceValidationData> deviceValidation = getDeviceValidation(deviceInformation);
-        return deviceValidation.orElse(addUnknownDevice(deviceInformation)).getState();
+    public DeviceValidationState assess(final DeviceType deviceType) {
+        final Optional<DeviceValidationData> deviceValidation = getDeviceValidation(deviceType);
+        return deviceValidation.orElseGet(() -> addNewDevice(deviceType)).getState();
     }
 
-    public Optional<DeviceValidationData> getDeviceValidation(final JsonWebToken deviceInformation) {
-        final DeviceValidationData deviceData = convertJwtToDeviceValidationData(deviceInformation);
+    public Optional<DeviceValidationData> getDeviceValidation(final DeviceType deviceType) {
+        final DeviceValidationData deviceData = convertDeviceTypeToDeviceValidationData(deviceType);
         return deviceValidationRepository
-            .findByManufacturerAndProductAndModelAndOsAndOsVersionAndName(deviceData.getManufacturer(),
-                deviceData.getProduct(), deviceData.getModel(), deviceData.getOs(), deviceData.getOsVersion(),
-                deviceData.getName());
+            .findByManufacturerAndProductAndOsAndOsVersion(deviceData.getManufacturer(),
+                deviceData.getProduct(), deviceData.getOs(), deviceData.getOsVersion());
     }
 
-    private DeviceValidationData addUnknownDevice(final JsonWebToken deviceInformation) {
-        final DeviceValidationData deviceValidationData = convertJwtToDeviceValidationData(deviceInformation);
+    public List<DeviceValidationDto> getAllDeviceValidation() {
+        return deviceValidationRepository.findAll().stream()
+            .map(deviceValidationData -> modelMapper.map(deviceValidationData, DeviceValidationDto.class)).collect(
+                Collectors.toList());
+    }
+
+    public void deleteDeviceValidation(final Long id) {
+        deviceValidationRepository.deleteById(id);
+    }
+
+    public String saveDeviceValidation(final DeviceValidationDto deviceValidation) {
+        return save(modelMapper.map(deviceValidation, DeviceValidationData.class)).getId().toString();
+    }
+
+    private DeviceValidationData addNewDevice(final DeviceType deviceType) {
+        final DeviceValidationData deviceValidationData = convertDeviceTypeToDeviceValidationData(deviceType);
         deviceValidationData.setState(DeviceValidationState.UNKNOWN);
-        return deviceValidationRepository.save(deviceValidationData);
+        return save(deviceValidationData);
     }
 
-    private DeviceValidationData convertJwtToDeviceValidationData(final JsonWebToken deviceInformation) {
+    private DeviceValidationData convertDeviceTypeToDeviceValidationData(final DeviceType deviceType) {
         return DeviceValidationData.builder()
-            .manufacturer(getStringBodyClaim(deviceInformation, DEVICE_MANUFACTURER))
-            .product(getStringBodyClaim(deviceInformation, DEVICE_PRODUCT))
-            .model(getStringBodyClaim(deviceInformation, DEVICE_MODEL))
-            .os(getStringBodyClaim(deviceInformation, DEVICE_OS))
-            .osVersion(getStringBodyClaim(deviceInformation, DEVICE_OS_VERSION))
-            .name(getStringBodyClaim(deviceInformation, DEVICE_NAME))
+            .manufacturer(deviceType.getDeviceManufacturer())
+            .product(deviceType.getDeviceProduct())
+            .os(deviceType.getDeviceOs())
+            .osVersion(deviceType.getDeviceVersion())
             .build();
     }
 
-    private String getStringBodyClaim(final JsonWebToken deviceInformation, final ClaimName claimName) {
-        return deviceInformation.getStringBodyClaim(claimName)
-            .orElseThrow(() -> new RequiredClaimException("Unable to obtain " + claimName.getJoseName() + "!"));
+    private DeviceValidationData save(final DeviceValidationData deviceValidationData) {
+        try {
+            return deviceValidationRepository.save(deviceValidationData);
+        } catch (final DataIntegrityViolationException exp) {
+            throw new IdpServerInvalidRequestException("Duplicate device data", exp);
+        }
     }
 }

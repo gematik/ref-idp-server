@@ -20,7 +20,6 @@ import static de.gematik.idp.field.ClaimName.*;
 import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.PkiKeyResolver;
@@ -50,13 +49,13 @@ public class IdpJwtProcessorTest {
             entry(CLIENT_ID.getJoseName(), "ZXJlemVwdC1hcHA"),
             entry(STATE.getJoseName(), "af0ifjsldkj"),
             entry(REDIRECT_URI.getJoseName(), "https://app.e-rezept.com/authnres"),
+            entry(JWT_ID.getJoseName(), "c3a8f9c8-aa62-11ea-ac15-6b7a3355d0f6"),
             entry(CODE_CHALLENGE_METHOD.getJoseName(), "S256"),
             entry(CODE_CHALLENGE.getJoseName(), "S41HgHxhXL1CIpfGvivWYpbO9b_QKzva-9ImuZbt0Is")
         )))
 
         .addAllHeaderClaims(new HashMap<>(Map.ofEntries(
             // two parts of header are written by library: ("typ", "JWT"),("alg", "ES256")
-            entry(JWT_ID.getJoseName(), "c3a8f9c8-aa62-11ea-ac15-6b7a3355d0f6"),
             entry(SERVER_NONCE.getJoseName(), "sLlxlkskAyuzdDOwe8nZeeQVFBWgscNkRcpgHmKidFc"),
             entry(EXPIRES_AT.getJoseName(),
                 LocalDateTime.now().plusMinutes(TOKEN_VALIDITY_MINUTES).toEpochSecond(ZoneOffset.UTC))
@@ -85,7 +84,7 @@ public class IdpJwtProcessorTest {
         final JsonWebToken jwt = createJwt(ecc);
         jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
         // delete first character
-        final String jwtJasonInvalid = jwt.getJwtRawString().substring(1);
+        final String jwtJasonInvalid = jwt.getRawString().substring(1);
         assertThatThrownBy(() -> jwtProcessor.verifyAndThrowExceptionIfFail(new JsonWebToken(jwtJasonInvalid)))
             .isInstanceOf(RuntimeException.class);
     }
@@ -94,7 +93,7 @@ public class IdpJwtProcessorTest {
     public void verifyInvalidSignature_ecc(final PkiIdentity ecc) {
         final JsonWebToken jwt = createJwt(ecc);
         // delete last character
-        final String jwtJasonInvalid = jwt.getJwtRawString().substring(0, jwt.getJwtRawString().length() - 1);
+        final String jwtJasonInvalid = jwt.getRawString().substring(0, jwt.getRawString().length() - 1);
         assertThatThrownBy(() -> jwtProcessor.verifyAndThrowExceptionIfFail(new JsonWebToken(jwtJasonInvalid)))
             .isInstanceOf(RuntimeException.class);
     }

@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2021 gematik GmbH
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package de.gematik.idp.server.pairing;
 
 import java.util.List;
@@ -8,11 +24,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PairingRepository extends JpaRepository<PairingData, Long> {
 
-    long deleteByKvnr(String kvnr);
+    long deleteByIdNumber(String idNumber);
 
-    long deleteByKvnrAndId(String kvnr, long id);
+    long deleteByIdNumberAndKeyIdentifier(String idNumber, String keyIdentifier);
 
-    List<PairingData> findByKvnr(String kvnr);
+    List<PairingData> findByIdNumber(String idNumber);
 
-    Optional<PairingData> findByKvnrAndDeviceManufacturer(String kvnr, String deviceManufacturer);
+    Optional<PairingData> findByIdNumberAndKeyIdentifier(String idNumber, String keyIdentifier);
 }

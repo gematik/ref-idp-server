@@ -24,12 +24,14 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.Enumeration;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.serenitybdd.rest.SerenityRest;
 import org.apache.commons.io.FileUtils;
@@ -49,40 +51,44 @@ public class DiscoveryDocument {
 
     private static final BouncyCastleProvider BOUNCY_CASTLE_PROVIDER = new BouncyCastleProvider();
 
-    private final JSONObject json;
+    private final JSONObject jsonBody;
+    private final JSONObject jsonHeader;
 
     private JSONObject pukUriToken;
-    // puk_uri_token
     private JSONObject pukUriAuth;
-    // puk_uri_auth
     private JSONObject pukUriDisc;
-    // puk_uri_disc"
     private final String authorizationEndpoint;
-    // authorization_endpoint
     private final String tokenEndpoint;
-    // token_endpoint
+    private final String ssoEndpoint;
+    private final String pairingEndpoint;
     private final String jwksUri;
 
-    public DiscoveryDocument(final JSONObject jso)
+    public DiscoveryDocument(final JSONObject jsoBody, final JSONObject jsoHeader)
         throws JSONException {
-        json = jso;
-        authorizationEndpoint = jso.getString("authorization_endpoint");
-        tokenEndpoint = jso.getString("token_endpoint");
-        jwksUri = jso.getString("jwks_uri");
+        jsonBody = jsoBody;
+        jsonHeader = jsoHeader;
+        authorizationEndpoint = jsoBody.getString("authorization_endpoint");
+        tokenEndpoint = jsoBody.getString("token_endpoint");
+        ssoEndpoint = jsoBody.getString("sso_endpoint");
+        pairingEndpoint = jsoBody.getString("pairing_endpoint");
+        jwksUri = jsoBody.getString("jwks_uri");
     }
 
-    public DiscoveryDocument(final File template)
+    public DiscoveryDocument(final File templateBody, final File templateHeader)
         throws IOException, JSONException {
-        this(new JSONObject(IOUtils.toString(new FileReader(template, StandardCharsets.UTF_8))));
+        this(new JSONObject(IOUtils.toString(new FileReader(templateBody, StandardCharsets.UTF_8))),
+            new JSONObject(IOUtils.toString(new FileReader(templateHeader, StandardCharsets.UTF_8))));
     }
 
     public void readPublicKeysFromURIs()
         throws JSONException, URISyntaxException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
-        pukUriToken = getPuKFromJSONAttribute(json.getString("puk_uri_token"));
+        pukUriToken = getPuKFromJSONAttribute(jsonBody.getString("puk_uri_token"));
         Context.getThreadContext().put(ContextKey.PUK_TOKEN, pukUriToken);
-        pukUriAuth = getPuKFromJSONAttribute(json.getString("puk_uri_auth"));
+        pukUriAuth = getPuKFromJSONAttribute(jsonBody.getString("puk_uri_auth"));
         Context.getThreadContext().put(ContextKey.PUK_AUTH, pukUriAuth);
-        pukUriDisc = getPuKFromJSONAttribute(json.getString("puk_uri_disc"));
+
+        pukUriDisc = new JSONObject();
+        pukUriDisc.put("x5c", jsonHeader.getJSONArray("x5c"));
         Context.getThreadContext().put(ContextKey.PUK_DISC, pukUriDisc);
     }
 
@@ -131,12 +137,22 @@ public class DiscoveryDocument {
     }
 
     // jwks_uri
-    public static X509Certificate getCertificateFromJWK(final JSONObject jwks)
+    public static X509Certificate getCertificateFromJWK(final JSONObject jwk)
         throws JSONException, CertificateException {
-        final String certString = jwks.getJSONArray("x5c").getString(0);
+        final String certString = jwk.getJSONArray("x5c").getString(0);
         final byte[] decode = Base64.getDecoder().decode(certString);
         final CertificateFactory certFactory = CertificateFactory.getInstance("X.509", BOUNCY_CASTLE_PROVIDER);
         final InputStream in = new ByteArrayInputStream(decode);
         return (X509Certificate) certFactory.generateCertificate(in);
+    }
+
+    @SneakyThrows
+    public static PublicKey getPublicKeyFromCertFromJWK(final ContextKey key) {
+        final JSONObject jwk = new JSONObject(String.valueOf(Context.getThreadContext().get(key)));
+        final String certString = jwk.getJSONArray("x5c").getString(0);
+        final byte[] decode = Base64.getDecoder().decode(certString);
+        final CertificateFactory certFactory = CertificateFactory.getInstance("X.509", BOUNCY_CASTLE_PROVIDER);
+        final InputStream in = new ByteArrayInputStream(decode);
+        return certFactory.generateCertificate(in).getPublicKey();
     }
 }

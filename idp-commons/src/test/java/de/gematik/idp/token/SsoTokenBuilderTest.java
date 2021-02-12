@@ -25,6 +25,8 @@ import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
 import java.time.ZonedDateTime;
+import javax.crypto.spec.SecretKeySpec;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,6 +38,7 @@ public class SsoTokenBuilderTest {
     private PkiIdentity serverIdentity;
     private PkiIdentity clientIdentity;
     private SsoTokenBuilder ssoTokenBuilder;
+    private SecretKeySpec encryptionKey;
 
     @BeforeEach
     public void init(final PkiIdentity ecc,
@@ -43,13 +46,16 @@ public class SsoTokenBuilderTest {
         serverIdentity = ecc;
         this.clientIdentity = clientIdentity;
         final IdpJwtProcessor serverJwtProcessor = new IdpJwtProcessor(serverIdentity);
-        ssoTokenBuilder = new SsoTokenBuilder(serverJwtProcessor, uriIdpServer);
+        encryptionKey = new SecretKeySpec(DigestUtils.sha256("fdsfdsafdsafdsafdsarvdfvcxyvcxyvc".getBytes()), "AES");
+        ssoTokenBuilder = new SsoTokenBuilder(serverJwtProcessor, uriIdpServer,
+            encryptionKey);
     }
 
     @Test
     public void ssoTokenShouldContainCnf() {
         final JsonWebToken ssoToken = ssoTokenBuilder
-            .buildSsoToken(clientIdentity.getCertificate(), ZonedDateTime.now());
+            .buildSsoToken(clientIdentity.getCertificate(), ZonedDateTime.now())
+            .decryptNestedJwt(encryptionKey);
 
         assertThat(ssoToken.getBodyClaims())
             .containsKey(ClaimName.CONFIRMATION.getJoseName());
@@ -58,7 +64,8 @@ public class SsoTokenBuilderTest {
     @Test
     public void ssoTokenShouldContainValidClaims() {
         final JsonWebToken ssoToken = ssoTokenBuilder
-            .buildSsoToken(clientIdentity.getCertificate(), ZonedDateTime.now());
+            .buildSsoToken(clientIdentity.getCertificate(), ZonedDateTime.now())
+            .decryptNestedJwt(encryptionKey);
 
         assertThat(ssoToken.getHeaderClaims())
             .containsKeys(
@@ -82,15 +89,28 @@ public class SsoTokenBuilderTest {
     @Test
     public void verifyAuthTime() {
         final JsonWebToken ssoToken = ssoTokenBuilder
-            .buildSsoToken(clientIdentity.getCertificate(), ZonedDateTime.now());
+            .buildSsoToken(clientIdentity.getCertificate(), ZonedDateTime.now())
+            .decryptNestedJwt(encryptionKey);
+
         assertThat(ssoToken.getDateTimeClaim(AUTH_TIME, () -> ssoToken.getBodyClaims()).get())
             .isBetween(ZonedDateTime.now().minusSeconds(5), ZonedDateTime.now());
     }
 
     @Test
+    public void verifyExpClaim() {
+        final JsonWebToken ssoToken = ssoTokenBuilder
+            .buildSsoToken(clientIdentity.getCertificate(), ZonedDateTime.now())
+            .decryptNestedJwt(encryptionKey);
+
+        assertThat(ssoToken.getBodyDateTimeClaim(EXPIRES_AT).get())
+            .isBetween(ZonedDateTime.now().plusHours(12).minusSeconds(10), ZonedDateTime.now().plusHours(12));
+    }
+
+    @Test
     public void verifyCnfDoesNotContainNullValues() {
         final JsonWebToken ssoToken = ssoTokenBuilder
-            .buildSsoToken(clientIdentity.getCertificate(), ZonedDateTime.now());
+            .buildSsoToken(clientIdentity.getCertificate(), ZonedDateTime.now())
+            .decryptNestedJwt(encryptionKey);
 
         assertThat(ssoToken.getBodyClaim(CONFIRMATION).get().toString())
             .doesNotContain("null");

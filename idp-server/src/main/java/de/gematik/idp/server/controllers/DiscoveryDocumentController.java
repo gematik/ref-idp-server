@@ -67,17 +67,17 @@ public class DiscoveryDocumentController {
     @ApiOperation(value = "Endpunkt für Abfrage aller öffentlich verfügbaren Informationen zum IDP Server", notes = "Diese Daten sind mit dem privaten Schlüssel des IDP Servers verschlüsselt.")
     @ValidateClientSystem
     public String getDiscoveryDocument(final HttpServletRequest request, final HttpServletResponse response) {
-        final String serverUrl = serverUrlService.determineServerUrl(request);
         setCacheHeader(response);
         return signDiscoveryDocument(discoveryDocumentBuilder
-            .buildDiscoveryDocument(serverUrl));
+            .buildDiscoveryDocument(serverUrlService.determineServerUrl(request),
+                serverUrlService.getIssuerUrl()));
     }
 
     private String signDiscoveryDocument(final IdpDiscoveryDocument discoveryDocument) {
         try {
             return jwtProcessor
-                .buildJws(objectMapper.writeValueAsString(discoveryDocument), Collections.emptyMap(), false)
-                .getJwtRawString();
+                .buildJws(objectMapper.writeValueAsString(discoveryDocument), Collections.emptyMap(), true)
+                .getRawString();
         } catch (final JsonProcessingException e) {
             throw new IdpServerException("Error during discovery-document serialization", e);
         }

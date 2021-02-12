@@ -17,7 +17,9 @@
 package de.gematik.idp.token;
 
 import static de.gematik.idp.field.ClaimName.CONFIRMATION;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static de.gematik.idp.field.ClaimName.ENCRYPTION_ALGORITHM;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.crypto.model.PkiIdentity;
@@ -28,7 +30,6 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.assertj.core.api.Assertions;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,7 +54,7 @@ public class JsonWebTokenTest {
         final JsonWebToken jsonWebToken = idpJwtProcessor.buildJwt(new JwtBuilder()
             .expiresAt(ZonedDateTime.now().plusMinutes(5)));
 
-        Assertions.assertThat(jsonWebToken.getExpiresAt())
+        assertThat(jsonWebToken.getExpiresAt())
             .isBetween(ZonedDateTime.now().plusMinutes(4),
                 ZonedDateTime.now().plusMinutes(6));
     }
@@ -64,7 +65,7 @@ public class JsonWebTokenTest {
             .addAllBodyClaims(Map.of("foo", "bar"))
             .expiresAt(ZonedDateTime.now().plusMinutes(5)));
 
-        Assertions.assertThat(jsonWebToken.getBodyClaims())
+        assertThat(jsonWebToken.getBodyClaims())
             .containsEntry("foo", "bar");
     }
 
@@ -74,7 +75,7 @@ public class JsonWebTokenTest {
             .addAllHeaderClaims(new HashMap<>(Map.of("foo", "bar")))
             .expiresAt(ZonedDateTime.now().plusMinutes(5)));
 
-        Assertions.assertThat(jsonWebToken.getHeaderClaims())
+        assertThat(jsonWebToken.getHeaderClaims())
             .containsEntry("foo", "bar")
             .containsEntry("alg", "BP256R1");
     }
@@ -94,7 +95,7 @@ public class JsonWebTokenTest {
         final JsonWebToken jsonWebToken = idpJwtProcessor.buildJwt(new JwtBuilder()
             .addAllBodyClaims(Map.of(CONFIRMATION.getJoseName(), now.toEpochSecond())));
 
-        Assertions.assertThat(jsonWebToken.getDateTimeClaim(CONFIRMATION, jsonWebToken::getBodyClaims))
+        assertThat(jsonWebToken.getDateTimeClaim(CONFIRMATION, () -> jsonWebToken.getBodyClaims()))
             .get(InstanceOfAssertFactories.ZONED_DATE_TIME)
             .isEqualToIgnoringNanos(now);
     }
@@ -106,7 +107,7 @@ public class JsonWebTokenTest {
             .buildJwt(new JwtBuilder().addAllBodyClaims(Map.of(CONFIRMATION.getJoseName(), "foobarschmar")));
 
         assertThat(jsonWebToken.encrypt(id.getCertificate().getPublicKey())
-            .decrypt(id.getPrivateKey())
+            .decryptNestedJwt(id.getPrivateKey())
             .getBodyClaim(CONFIRMATION))
             .get()
             .isEqualTo("foobarschmar");
@@ -117,8 +118,18 @@ public class JsonWebTokenTest {
         final JsonWebToken jsonWebToken = idpJwtProcessor
             .buildJwt(new JwtBuilder().addAllBodyClaims(Map.of(CONFIRMATION.getJoseName(), ZonedDateTime.now())));
 
-        assertThat(jsonWebToken.encrypt(aesKey).getRawValue())
+        assertThat(jsonWebToken.encrypt(aesKey).getRawString())
             .matches("(?:.*\\.){4}.*"); // 5 Teile Base64
+    }
+
+    @Test
+    public void encryptJwtWithAes_algorithmShouldBeAes256Gcm() {
+        final JsonWebToken jsonWebToken = idpJwtProcessor
+            .buildJwt(new JwtBuilder().addAllBodyClaims(Map.of(CONFIRMATION.getJoseName(), ZonedDateTime.now())));
+
+        assertThat(jsonWebToken.encrypt(aesKey).getHeaderClaim(ENCRYPTION_ALGORITHM))
+            .get()
+            .isEqualTo("A256GCM");
     }
 
     @Test
@@ -128,17 +139,8 @@ public class JsonWebTokenTest {
 
         assertThat(jsonWebToken
             .encrypt(aesKey)
-            .decrypt(aesKey).getBodyClaim(CONFIRMATION))
+            .decryptNestedJwt(aesKey).getBodyClaim(CONFIRMATION))
             .get()
             .isEqualTo("foobarschmar");
-    }
-
-    public void extractClientCertificate_shouldMatch() {
-        final JsonWebToken jsonWebToken = idpJwtProcessor.buildJwt(new JwtBuilder()
-            .includeSignerCertificateInHeader(true)
-            .expiresAt(ZonedDateTime.now()));
-        Assertions.assertThat(jsonWebToken.getClientCertificateFromHeader())
-            .get()
-            .isEqualTo(identity.getCertificate());
     }
 }

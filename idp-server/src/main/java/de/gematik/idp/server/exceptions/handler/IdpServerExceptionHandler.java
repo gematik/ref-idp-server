@@ -33,6 +33,7 @@ import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolationException;
 import javax.validation.ValidationException;
 import javax.ws.rs.core.UriBuilder;
@@ -61,9 +62,9 @@ public class IdpServerExceptionHandler {
 
     @ExceptionHandler(IdpServerException.class)
     public ResponseEntity<IdpErrorTypeResponse> handleIdpServerException(final IdpServerException exc,
-        final WebRequest request) {
+        final WebRequest request, final HttpServletResponse response) {
         if (isAuthorizationRequest(request)) {
-            return buildForwardingError(exc, request);
+            return buildForwardingError(exc, request, response);
         }
 
         final IdpErrorTypeResponse body = getBody(exc.getErrorType());
@@ -75,18 +76,17 @@ public class IdpServerExceptionHandler {
     }
 
     private ResponseEntity<IdpErrorTypeResponse> buildForwardingError(final IdpServerException exc,
-        final WebRequest request) {
-        final HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.add(HttpHeaders.CACHE_CONTROL, "no-store");
-        responseHeaders.add(HttpHeaders.PRAGMA, "no-cache");
+        final WebRequest request, final HttpServletResponse response) {
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
+        response.setHeader(HttpHeaders.PRAGMA, "no-cache");
         final UriBuilder uriBuilder = UriBuilder.fromPath(serverUrlService.determineServerUrl())
             .queryParam("error", "invalid_request");
         addStateIfAvailable(uriBuilder, request);
         addDescriptionIfAvailable(uriBuilder, exc);
         final URI location = uriBuilder.build();
-        responseHeaders.add(HttpHeaders.LOCATION, location.toString());
+        response.setHeader(HttpHeaders.LOCATION, location.toString());
 
-        return new ResponseEntity<>(responseHeaders, HttpStatus.FOUND);
+        return new ResponseEntity<>(HttpStatus.FOUND);
     }
 
     private void addDescriptionIfAvailable(final UriBuilder uriBuilder, final IdpServerException exc) {
@@ -107,7 +107,7 @@ public class IdpServerExceptionHandler {
             Optional.ofNullable(request.getParameter("signed_challenge"))
                 .filter(Objects::nonNull)
                 .map(IdpJwe::new)
-                .map(jwe -> jwe.decrypt(authKey.getIdentity().getPrivateKey()))
+                .map(jwe -> jwe.decryptNestedJwt(authKey.getIdentity().getPrivateKey()))
                 .flatMap(jwt -> jwt.getStringBodyClaim(ClaimName.NESTED_JWT))
                 .map(JsonWebToken::new)
                 .flatMap(jwt -> jwt.getStringBodyClaim(ClaimName.STATE))
@@ -126,41 +126,42 @@ public class IdpServerExceptionHandler {
         final Path normalizedRequestPath = Path.of(servletWebRequest.getRequest().getRequestURI()).normalize();
         final boolean isForwardingEnpointUrl =
             normalizedRequestPath.equals(Path.of(IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)) ||
-                normalizedRequestPath.equals(Path.of(IdpConstants.SSO_AUTHORIZATION_ENDPOINT));
+                normalizedRequestPath.equals(Path.of(IdpConstants.SSO_ENDPOINT));
         return isForwardingEnpointUrl && servletWebRequest.getHttpMethod() == HttpMethod.POST;
     }
 
     @ExceptionHandler(IdpJoseException.class)
     public ResponseEntity<IdpErrorTypeResponse> handleIdpJoseException(final IdpJoseException exc,
-        final WebRequest request) {
+        final WebRequest request, final HttpServletResponse response) {
         return handleIdpServerException(
-            new IdpServerException("Error during JOSE-operations", exc, IdpErrorType.INVALID_REQUEST,
+            new IdpServerException(exc.getMessageForUntrustedClients(), exc, IdpErrorType.INVALID_REQUEST,
                 HttpStatus.BAD_REQUEST),
-            request);
+            request, response);
     }
 
     @ExceptionHandler({ConstraintViolationException.class, ValidationException.class})
     public ResponseEntity<IdpErrorTypeResponse> handleValidationException(final ValidationException exc,
-        final WebRequest request) {
+        final WebRequest request, final HttpServletResponse response) {
         return handleIdpServerException(
             new IdpServerException(exc.getMessage(), exc, IdpErrorType.INVALID_REQUEST,
-                HttpStatus.BAD_REQUEST), request);
+                HttpStatus.BAD_REQUEST), request, response);
     }
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<IdpErrorTypeResponse> handleRuntimeException(final RuntimeException exc,
-        final WebRequest request) {
+        final WebRequest request, final HttpServletResponse response) {
         return handleIdpServerException(
             new IdpServerException("Invalid Request", exc, IdpErrorType.INTERNAL_SERVER_ERROR,
-                HttpStatus.INTERNAL_SERVER_ERROR), request);
+                HttpStatus.INTERNAL_SERVER_ERROR), request, response);
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<IdpErrorTypeResponse> handleMissingServletRequestParameter(
-        final MissingServletRequestParameterException ex, final WebRequest request) {
+        final MissingServletRequestParameterException ex, final WebRequest request,
+        final HttpServletResponse response) {
         return handleIdpServerException(
             new IdpServerException(ex.getMessage(), ex, IdpErrorType.MISSING_PARAMETERS,
-                HttpStatus.BAD_REQUEST), request);
+                HttpStatus.BAD_REQUEST), request, response);
     }
 
     private void logEntry(final IdpErrorTypeResponse body, final Exception exc) {

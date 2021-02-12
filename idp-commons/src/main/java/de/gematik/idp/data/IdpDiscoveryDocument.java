@@ -31,7 +31,11 @@ import lombok.NoArgsConstructor;
 public class IdpDiscoveryDocument {
 
     private String authorizationEndpoint;
+    private String alternativeAuthorizationEndpoint;
+    private String ssoEndpoint;
+    private String pairingEndpoint;
     private String tokenEndpoint;
+    private String uriDisc;
     private String issuer;
     private String jwksUri;
     private long exp;
@@ -39,7 +43,6 @@ public class IdpDiscoveryDocument {
     private long iat;
     private String pukUriAuth;
     private String pukUriToken;
-    private String pukUriDisc;
     private String[] subjectTypesSupported;
     private String[] idTokenSigningAlgValuesSupported;
     private String[] responseTypesSupported;

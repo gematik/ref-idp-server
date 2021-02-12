@@ -18,10 +18,13 @@ package de.gematik.idp.test.steps.helpers;
 
 import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.nio.file.Path;
+import java.security.Key;
 import java.util.Properties;
+import javax.crypto.spec.SecretKeySpec;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
@@ -29,11 +32,11 @@ public class TestEnvironmentConfigurator {
 
     private static final String DISCOVERY_URL_TEMPLATE = "http://localhost:%d/auth/realms/idp/.well-known/openid-configuration";
     private static String DISCOVERY_URL = null;
-    private static String GET_CHALLENGE_URL = "";
-    private static String POST_SIGNED_CHALLENGE_URL = "";
-    private static String POST_SSOTOKEN_URL = "/../sso_response";
 
-    public static synchronized String getDiscoveryDocumentURL() throws IOException {
+    private static boolean TOKEN_ENCRYPTION_ACTIVE = false;
+    private static String TOKEN_ENCRYPTION_KEY = "";
+
+    public static synchronized String getDiscoveryDocumentURL() {
         // To allow IDE to simply call features/scenarios we do check for missing initialization in this call
         // neither EventListener nor Before did work as expected for both scenarios out of the box: mvn, IDE
         if (DISCOVERY_URL == null) {
@@ -42,28 +45,22 @@ public class TestEnvironmentConfigurator {
         return DISCOVERY_URL;
     }
 
-    public static synchronized String getGetChallengeUrl() throws IOException {
+    public static synchronized boolean isTokenEncryptionActive() {
         if (DISCOVERY_URL == null) {
             initializeTestEnvironment();
         }
-        return GET_CHALLENGE_URL;
+        return TOKEN_ENCRYPTION_ACTIVE;
     }
 
-    public static synchronized String getPostSignedChallengeUrl() throws IOException {
+    public static synchronized Key getSymmetricEncryptionKey() {
         if (DISCOVERY_URL == null) {
             initializeTestEnvironment();
         }
-        return POST_SIGNED_CHALLENGE_URL;
+        return new SecretKeySpec(DigestUtils.sha256(TOKEN_ENCRYPTION_KEY), "AES");
     }
 
-    public static synchronized String getPostSSOTokenUrl() throws IOException {
-        if (DISCOVERY_URL == null) {
-            initializeTestEnvironment();
-        }
-        return POST_SSOTOKEN_URL;
-    }
-
-    public static void initializeTestEnvironment() throws IOException {
+    @SneakyThrows
+    public static void initializeTestEnvironment() {
         // initialize Jose4j to support Gematik specific brainpool curves
         BrainpoolCurves.init();
 
@@ -93,15 +90,10 @@ public class TestEnvironmentConfigurator {
             DISCOVERY_URL = Path.of(idpLocalDiscdoc).toUri().toURL().toExternalForm();
         }
 
-        final String idpServerType = System.getenv("IDP_SERVER_TYPE");
-
-        if (idpServerType != null) {
-            final Properties props = new Properties();
-            props.load(new FileInputStream("testsuite_config.properties"));
-            GET_CHALLENGE_URL = props.getProperty(idpServerType + ".url.auth.getchallenge");
-            POST_SIGNED_CHALLENGE_URL = props.getProperty(idpServerType + ".url.auth.signedchallengeflow");
-            POST_SSOTOKEN_URL = props.getProperty(idpServerType + ".url.auth.ssoflow");
-        }
+        final Properties props = new Properties();
+        props.load(new FileInputStream("testsuite_config.properties"));
+        TOKEN_ENCRYPTION_ACTIVE = props.getProperty("encryption.token.active", "0").equals("1");
+        TOKEN_ENCRYPTION_KEY = props.getProperty("encryption.symmetric.key", "");
 
         log.info("======================================\n\n"
             + "Running Test against Discovery Document " + DISCOVERY_URL

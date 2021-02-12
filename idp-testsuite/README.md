@@ -299,16 +299,34 @@ Wert) um ein Hochfahren des Referenzservers beim Lauf der Testsuite zu unterbind
 export IDP_SERVER=1
 ```
 
-### Abweichende Pfade an den Endpunkten
+~~### Abweichende Pfade an den Endpunkten~~
 
-Sollten die Pfade zu den Anfragen an die Endpunkte vom Standardwert ("") abweichen so können diese in der
-`testsuite_config.properties` Datei im idp-testsuite Ordner angepasst werden.
+~~Sollten die Pfade zu den Anfragen an die Endpunkte vom Standardwert ("") abweichen so können diese in der
+`testsuite_config.properties` Datei im idp-testsuite Ordner angepasst werden.~~
 
-Zum Aktivieren der entsprechenden Settings ist die Umgebungsvariable IDP_SERVER_TYPE zu setzen. Der Wert entspricht dem
-ersten Teil der Properties Gruppe in der property Datei.
+~~Zum Aktivieren der entsprechenden Settings ist die Umgebungsvariable IDP_SERVER_TYPE zu setzen. Der Wert entspricht
+dem ersten Teil der Properties Gruppe in der property Datei.~~
+
+**DEPRECATED since v7.0.0**
 
 ```
 export IDP_SERVER_TYPE=rise
+```
+
+### Deaktivieren der Tokenverschlüsselung
+
+In der aktuellen Version der Referenzimplementierung werden die Tokens bereits verschlüsselt. Die Testsuite ist
+daraufhin abgestimmt und nimmt automatisch die Ver-/Entschlüsselung vor. Um dies abzuschalten, kann im
+testsuite_config.properties folgender Eintrag gesetzt werden.
+
+```
+encryption.token.active=0
+```
+
+Das für die symmetrische Verschlüsselung zu verwendende Passwort wird in folgendem Eintrag gesetzt:
+
+```
+encryption.symmetric.key=geheimerSchluesselDerNochGehashtWird
 ```
 
 ## Remarks

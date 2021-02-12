@@ -41,7 +41,7 @@ public class TokenClaimExtraction {
      * @return Claims as a map of key value strings
      * @desc Implements the extraction of claims from json web tokens
      */
-    public static Map<String, Object> extractClaimsFromTokenBody(final String token) {
+    public static Map<String, Object> extractClaimsFromJwtBody(final String token) {
         final JwtConsumer jwtConsumer = new JwtConsumerBuilder()
             .setSkipSignatureVerification()
             .setSkipDefaultAudienceValidation()
@@ -55,7 +55,7 @@ public class TokenClaimExtraction {
         }
     }
 
-    public static Map<String, Object> extractClaimsFromTokenHeader(final String token) {
+    public static Map<String, Object> extractClaimsFromJwtHeader(final String token) {
         final JsonWebSignature jsonWebSignature = new JsonWebSignature();
         try {
             jsonWebSignature.setCompactSerialization(token);
@@ -65,17 +65,23 @@ public class TokenClaimExtraction {
         }
     }
 
-    public static ZonedDateTime claimToDateTime(final Long claim) {
+    public static ZonedDateTime claimToZonedDateTime(final Long claim) {
         return ZonedDateTime.ofInstant(Instant.ofEpochMilli(claim * 1000), ZoneOffset.UTC);
     }
 
-    public static ZonedDateTime claimToDateTime(final Object claim) {
+    public static long zonedDateTimeToClaim(final ZonedDateTime dateTime) {
+        return dateTime.toEpochSecond();
+    }
+
+    public static ZonedDateTime claimToZonedDateTime(final Object claim) {
         Objects.requireNonNull(claim);
 
         if (claim instanceof String) {
-            return claimToDateTime(Long.parseLong((String) claim));
+            return claimToZonedDateTime(Long.parseLong((String) claim));
         } else if (claim instanceof Long) {
-            return claimToDateTime((Long) claim);
+            return claimToZonedDateTime((Long) claim);
+        } else if (claim instanceof Integer) {
+            return claimToZonedDateTime(Integer.toUnsignedLong((Integer) claim));
         } else {
             throw new IllegalArgumentException("Couldn't convert claim: " + claim.getClass().getSimpleName());
         }

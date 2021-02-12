@@ -16,28 +16,30 @@
 
 package de.gematik.idp.test.steps;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import de.gematik.idp.test.steps.helpers.JsonChecker;
 import de.gematik.idp.test.steps.helpers.SerenityJSONObject;
 import de.gematik.idp.test.steps.model.*;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.DataTableType;
 import io.cucumber.java.ParameterType;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.thucydides.core.annotations.Steps;
-import org.jose4j.jwt.consumer.InvalidJwtException;
-import org.jose4j.lang.JoseException;
-import org.json.JSONException;
+import org.apache.commons.io.IOUtils;
+import org.assertj.core.api.Assertions;
 import org.json.JSONObject;
 
 @Slf4j
@@ -79,14 +81,14 @@ public class StepsGlue {
     // =================================================================================================================
 
     @Given("I initialize scenario from discovery document endpoint")
-    public void iInitializeScenarioFromDiscoveryDocumentEndpoint()
-        throws JSONException, InvalidJwtException, IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, URISyntaxException {
+    @SneakyThrows
+    public void iInitializeScenarioFromDiscoveryDocumentEndpoint() {
         auth.initializeFromDiscoveryDocument();
     }
 
     @Given("I retrieve public keys from URIs")
-    public void iRetrievePublicKeysFromURIs()
-        throws CertificateException, NoSuchAlgorithmException, KeyStoreException, JSONException, URISyntaxException, IOException {
+    @SneakyThrows
+    public void iRetrievePublicKeysFromURIs() {
         Context.getDiscoveryDocument().readPublicKeysFromURIs();
     }
 
@@ -96,7 +98,8 @@ public class StepsGlue {
     }
 
     @When("I request a challenge with")
-    public void iRequestAChallengeWith(final DataTable params) throws JSONException, IOException {
+    @SneakyThrows
+    public void iRequestAChallengeWith(final DataTable params) {
         auth.getChallenge(params, HttpStatus.NOCHECK);
     }
 
@@ -107,13 +110,13 @@ public class StepsGlue {
     // =================================================================================================================
 
     @When("I request a code token with {CodeAuthType}")
-    public void iRequestACodeTokenWith(final CodeAuthType authType) throws URISyntaxException, IOException {
+    @SneakyThrows
+    public void iRequestACodeTokenWith(final CodeAuthType authType) {
         author.getCode(authType, HttpStatus.NOCHECK);
     }
 
     @When("I sign the challenge with {string}")
-    public void iSignTheChallengeWith(final String keyfile)
-        throws UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, JoseException {
+    public void iSignTheChallengeWith(final String keyfile) {
         author.signChallenge(keyfile);
     }
 
@@ -124,12 +127,12 @@ public class StepsGlue {
     // =================================================================================================================
 
     @And("I request an access token with")
-    public void iRequestAnAccessTokenWith(final DataTable params) throws JSONException {
+    public void iRequestAnAccessTokenWith(final DataTable params) {
         access.getToken(HttpStatus.NOCHECK, params);
     }
 
     @And("I request an access token")
-    public void iRequestAnAccessToken() throws JSONException {
+    public void iRequestAnAccessToken() {
         access.getToken(HttpStatus.NOCHECK, null);
     }
 
@@ -141,18 +144,20 @@ public class StepsGlue {
 
 
     @When("I extract the {ClaimLocation} claims")
-    public void iExtractTheClaims(final ClaimLocation claimLocation) throws Throwable {
+    @SneakyThrows
+    public void iExtractTheClaims(final ClaimLocation claimLocation) {
         disc.iExtractTheClaims(claimLocation);
     }
 
     @When("I extract the {ClaimLocation} claims from response field {word}")
-    public void iExtractTheClaims(final ClaimLocation claimLocation, final String jsonName) throws Throwable {
+    @SneakyThrows
+    public void iExtractTheClaims(final ClaimLocation claimLocation, final String jsonName) {
         disc.iExtractTheClaimsFromResponseJsonField(jsonName, claimLocation);
     }
 
     @Given("I request the uri from claim {string} with method {HttpMethods} and status {HttpStatus}")
-    public void iRequestTheUri(final String claimName, final HttpMethods method, final HttpStatus result)
-        throws JSONException {
+    @SneakyThrows
+    public void iRequestTheUri(final String claimName, final HttpMethods method, final HttpStatus result) {
         disc.iRequestTheUriFromClaim(claimName, method, result);
     }
 
@@ -177,41 +182,46 @@ public class StepsGlue {
     }
 
     @And("the response must be signed with cert {ContextKey}")
-    public void theResponseMustBeSignedWithCert(final ContextKey pukKey) throws Throwable {
+    @SneakyThrows
+    public void theResponseMustBeSignedWithCert(final ContextKey pukKey) {
         disc.assertResponseIsSignedWithCert(pukKey);
     }
 
     @And("the context {ContextKey} must be signed with cert {ContextKey}")
-    public void theContextMustBeSignedWithCert(final ContextKey tokenKey, final ContextKey pukKey) throws Throwable {
+    @SneakyThrows
+    public void theContextMustBeSignedWithCert(final ContextKey tokenKey, final ContextKey pukKey) {
         disc.assertContextIsSignedWithCert(tokenKey, pukKey);
     }
 
     @Then("URI in claim {string} exists with method {HttpMethods} and status {HttpStatus}")
-    public void uriInClaimExistsWithMethod(final String claimName, final HttpMethods method, final HttpStatus status)
-        throws JSONException {
+    @SneakyThrows
+    public void uriInClaimExistsWithMethod(final String claimName, final HttpMethods method, final HttpStatus status) {
         disc.assertUriInClaimExistsWithMethodAndStatus(claimName, method, status);
     }
 
     @Then("JSON response has node {string}")
-    public void jSONResponseHasNode(final String path) throws JSONException {
+    @SneakyThrows
+    public void jSONResponseHasNode(final String path) {
         jsoncheck.assertJsonResponseHasNode(path);
     }
 
     @Then("the JSON response should match")
-    public void theJSONResponseShouldMatch(final String toMatchJSON) throws JSONException {
+    @SneakyThrows
+    public void theJSONResponseShouldMatch(final String toMatchJSON) {
         final JSONObject json = new JSONObject(Context.getCurrentResponse().getBody().asString());
         jsoncheck
             .assertJsonShouldMatchInAnyOrder(new SerenityJSONObject(json), new SerenityJSONObject(toMatchJSON));
     }
 
     @Then("JSON response has exactly one node {string} at {string}")
-    public void jSONResponseHasExactlyOneNodeAt(final String node, final String path) throws JSONException {
+    @SneakyThrows
+    public void jSONResponseHasExactlyOneNodeAt(final String node, final String path) {
         jsoncheck.assertJsonResponseHasExactlyOneNodeAt(node, path);
     }
 
     @Then("the {ClaimLocation} claims should match in any order")
-    public void theClaimsShouldMatchInAnyOrder(final ClaimLocation claimLocation, final String toMatchJSON)
-        throws JSONException {
+    @SneakyThrows
+    public void theClaimsShouldMatchInAnyOrder(final ClaimLocation claimLocation, final String toMatchJSON) {
         final JSONObject json;
         if (claimLocation == ClaimLocation.body) {
             json = Context.getCurrentClaims();
@@ -222,9 +232,22 @@ public class StepsGlue {
             .assertJsonShouldMatchInAnyOrder(new SerenityJSONObject(json), new SerenityJSONObject(toMatchJSON));
     }
 
-    @When("I start new interaction keeping only {ContextKey}")
-    public void iStartNewInteractionKeepingOnly(final ContextKey key) {
-        context.iStartNewInteractionKeepingOnly(key);
+    @Then("the {ClaimLocation} claim {string} should match {string}")
+    @SneakyThrows
+    public void theClaimShouldMatch(final ClaimLocation claimLocation, final String claimName, final String regex) {
+        final JSONObject json;
+        if (claimLocation == ClaimLocation.body) {
+            json = Context.getCurrentClaims();
+        } else {
+            json = (JSONObject) Context.getThreadContext().get(ContextKey.HEADER_CLAIMS);
+        }
+        jsoncheck.assertJsonShouldMatch(new SerenityJSONObject(json), claimName, regex);
+    }
+
+
+    @When("I start new interaction keeping only")
+    public void iStartNewInteractionKeepingOnly(final List<ContextKey> keys) {
+        context.iStartNewInteractionKeepingOnly(keys);
     }
 
     @When("I set the context with key {ContextKey} to {string}")
@@ -243,16 +266,15 @@ public class StepsGlue {
     }
 
     @And("the {ClaimLocation} claim {string} contains a date {DateCompareMode} {Duration}")
-    public void theBodyClaimContainsADate(
-        final ClaimLocation claimLocation, final String claim, final DateCompareMode compareMode,
-        final Duration duration)
-        throws JSONException {
+    @SneakyThrows
+    public void theBodyClaimContainsADate(final ClaimLocation claimLocation, final String claim,
+        final DateCompareMode compareMode, final Duration duration) {
         disc.assertDateFromClaimMatches(claimLocation, claim, compareMode, duration);
     }
 
     @When("I extract the {ClaimLocation} claims from token {ContextKey}")
-    public void iExtractTheClaimsFromToken(final ClaimLocation cType, final ContextKey token)
-        throws JoseException, InvalidJwtException, JSONException {
+    @SneakyThrows
+    public void iExtractTheClaimsFromToken(final ClaimLocation cType, final ContextKey token) {
         author.extractClaimsFromToken(cType, token);
     }
 
@@ -273,14 +295,59 @@ public class StepsGlue {
         author.responseIs302ErrorWithMessageMatching(errcode, regex);
     }
 
+    @When("I wait {Duration}")
+    @SneakyThrows
+    public void iWait(final Duration timeout) {
+        auth.wait(timeout);
+    }
+
+    @Then("I store {ContextKey} as text")
+    @SneakyThrows
+    public void iStoreContextKey(final ContextKey key) {
+        final File f = new File("testartefacts" + File.separatorChar +
+            DateTimeFormatter.ofPattern("yyyyMMdd_HH_mm").format(ZonedDateTime.now()));
+
+        if (!f.exists()) {
+            assertThat(f.mkdirs())
+                .withFailMessage("Unable to create testartefact folder " + f.getAbsolutePath())
+                .isTrue();
+        }
+        try (final FileOutputStream fos = new FileOutputStream(
+            f.getAbsolutePath() + File.separatorChar + key + ".txt")) {
+            fos.write(Context.getThreadContext().get(key).toString().getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
+    @When("I load {ContextKey} from folder {string}")
+    @SneakyThrows
+    public void iLoadCOntextKeyFromFolder(final ContextKey key, final String folder) {
+        final File f = new File("testartefacts" + File.separatorChar + folder + File.separatorChar + key + ".txt");
+        final String str = IOUtils.toString(new FileInputStream(f), StandardCharsets.UTF_8);
+        switch (key) {
+            case SSO_TOKEN:
+            case SSO_TOKEN_ENCRYPTED:
+            case ACCESS_TOKEN:
+                Context.getThreadContext().put(key, str);
+                break;
+            //TODO add support for all other keys
+            default:
+                Assertions.fail("Unsupported key (Feel free to implement)");
+        }
+    }
+
+
     // =================================================================================================================
     //
     // C U S T O M P A R A M E T E R T Y P E S
     //
     // =================================================================================================================
+    @DataTableType
+    @SneakyThrows
+    public ContextKey getContextKey(final List<String> row) {
+        return ContextKey.valueOf(row.get(0));
+    }
 
-
-    @ParameterType("failed state|successfully|unsuccessfully|[1-5][0-9]{2}")
+    @ParameterType(HttpStatus.CUCUMBER_REGEX)
     public HttpStatus HttpStatus(final String httpStatusStr) {
         return new HttpStatus(httpStatusStr);
     }
@@ -290,45 +357,27 @@ public class StepsGlue {
         return Duration.parse(durationStr);
     }
 
-    <E extends Enum> io.cucumber.cucumberexpressions.ParameterType<E> fromEnum(final Class<E> enumClass) {
-        final Enum[] enumConstants = enumClass.getEnumConstants();
-        final StringBuilder regexpBuilder = new StringBuilder();
-        for (int i = 0; i < enumConstants.length; i++) {
-            if (i > 0) {
-                regexpBuilder.append("|");
-            }
-            regexpBuilder.append(enumConstants[i].name());
-        }
-        return new io.cucumber.cucumberexpressions.ParameterType<>(
-            enumClass.getSimpleName(),
-            regexpBuilder.toString(),
-            enumClass,
-            (String arg) -> (E) Enum.valueOf(enumClass, arg)
-        );
-    }
-
-
-    @ParameterType("(body|header)")
+    @ParameterType(ClaimLocation.CUCUMBER_REGEX)
     public ClaimLocation ClaimLocation(final String claimLocationStr) {
         return ClaimLocation.valueOf(claimLocationStr);
     }
 
-    @ParameterType(".*")
+    @ParameterType(DateCompareMode.CUCUMBER_REGEX)
     public DateCompareMode DateCompareMode(final String dateCompareModeStr) {
-        return DateCompareMode.valueOf(dateCompareModeStr);
+        return DateCompareMode.fromString(dateCompareModeStr);
     }
 
-    @ParameterType(".*")
+    @ParameterType(ContextKey.CUCUMBER_REGEX)
     public ContextKey ContextKey(final String contextKeyStr) {
         return ContextKey.valueOf(contextKeyStr);
     }
 
-    @ParameterType(".*")
+    @ParameterType(CodeAuthType.CUCUMBER_REGEX)
     public CodeAuthType CodeAuthType(final String codeAuthTypeStr) {
-        return CodeAuthType.valueOf(codeAuthTypeStr);
+        return CodeAuthType.fromString(codeAuthTypeStr);
     }
 
-    @ParameterType(".*")
+    @ParameterType(HttpMethods.CUCUMBER_REGEX)
     public HttpMethods HttpMethods(final String httpMethodsStr) {
         return HttpMethods.valueOf(httpMethodsStr);
     }

@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.IdpJwtProcessor;
+import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
@@ -54,9 +55,12 @@ public class IdTokenBuilderTest {
         bodyClaims.put(FAMILY_NAME.getJoseName(), "family_name");
         bodyClaims.put(JWKS_URI.getJoseName(), "jwks_uri");
         bodyClaims.put(CLIENT_ID.getJoseName(), IdpConstants.CLIENT_ID);
-        authenticationToken = new JsonWebToken("", Map.of("headerNotCopy", "headerNotCopy"),
-            bodyClaims);
-        idTokenBuilder = new IdTokenBuilder(new IdpJwtProcessor(clientIdentity), uriIdpServer);
+        authenticationToken = new JwtBuilder()
+            .replaceAllHeaderClaims(Map.of("headerNotCopy", "headerNotCopy"))
+            .replaceAllBodyClaims(bodyClaims)
+            .setSignerKey(clientIdentity.getPrivateKey())
+            .buildJwt();
+        idTokenBuilder = new IdTokenBuilder(new IdpJwtProcessor(clientIdentity), uriIdpServer, "saltValue");
     }
 
     @Rfc("OpenID Connect Core 1.0 incorporating errata set 1 - 2 ID Token")
@@ -70,8 +74,8 @@ public class IdTokenBuilderTest {
 
         assertThat(idToken.getBodyClaims())
             .containsEntry(ISSUER.getJoseName(), uriIdpServer)
-            .containsEntry(SUBJECT.getJoseName(), IdpConstants.CLIENT_ID)
-            .containsEntry(AUDIENCE.getJoseName(), IdpConstants.AUDIENCE)
+            .containsKey(SUBJECT.getJoseName())
+            .containsEntry(AUDIENCE.getJoseName(), IdpConstants.CLIENT_ID)
             .containsKey(EXPIRES_AT.getJoseName())
             .containsKey(ISSUED_AT.getJoseName())
             .containsEntry(PROFESSION_OID.getJoseName(), "profession")

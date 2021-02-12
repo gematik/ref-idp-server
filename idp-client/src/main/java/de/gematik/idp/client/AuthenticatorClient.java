@@ -25,19 +25,25 @@ import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.authentication.UriUtils;
 import de.gematik.idp.client.data.*;
 import de.gematik.idp.field.IdpScope;
+import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
 import de.gematik.idp.token.TokenClaimExtraction;
+import java.security.PublicKey;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import javax.ws.rs.core.HttpHeaders;
 import kong.unirest.*;
 import kong.unirest.jackson.JacksonObjectMapper;
 import kong.unirest.json.JSONObject;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.HttpStatus;
+import org.jose4j.jwt.JwtClaims;
 import org.springframework.http.MediaType;
 
 public class AuthenticatorClient {
@@ -99,7 +105,7 @@ public class AuthenticatorClient {
 
         final MultipartBody request = Unirest
             .post(authenticationRequest.getAuthenticationEndpointUrl())
-            .field("signed_challenge", authenticationRequest.getSignedChallenge().getRawValue())
+            .field("signed_challenge", authenticationRequest.getSignedChallenge().getRawString())
             .header("Content-Type", "application/x-www-form-urlencoded")
             .header(HttpHeaders.USER_AGENT, USER_AGENT);
 
@@ -132,7 +138,7 @@ public class AuthenticatorClient {
 
         final MultipartBody request = Unirest.post(authenticationRequest.getAuthenticationEndpointUrl())
             .field("sso_token", authenticationRequest.getSsoToken())
-            .field("unsigned_challenge", authenticationRequest.getChallengeToken().getJwtRawString())
+            .field("unsigned_challenge", authenticationRequest.getChallengeToken().getRawString())
             .header(CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .header(HttpHeaders.USER_AGENT, USER_AGENT);
         final HttpResponse<String> loginResponse = beforeAuthenticationCallback.apply(request).asString();
@@ -152,16 +158,21 @@ public class AuthenticatorClient {
         return response.getHeaders().getFirst("Location");
     }
 
-    public IdpTokenResult retrieveAcessToken(
+    public IdpTokenResult retrieveAccessToken(
         final TokenRequest tokenRequest,
         final Function<MultipartBody, MultipartBody> beforeTokenCallback,
         final Consumer<HttpResponse<JsonNode>> afterTokenCallback) {
+        final byte[] tokenKeyBytes = RandomStringUtils.randomAlphanumeric(256 / 8).getBytes();
+        final SecretKey tokenKey = new SecretKeySpec(tokenKeyBytes, "AES");
+        final IdpJwe keyVerifierToken = buildKeyVerifierToken(tokenKeyBytes, tokenRequest.getCodeVerifier(),
+            tokenRequest.getPukToken());
+
         final MultipartBody request = Unirest.post(tokenRequest.getTokenUrl())
             .header(CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .field("grant_type", "authorization_code")
             .field("client_id", tokenRequest.getClientId())
             .field("code", tokenRequest.getCode())
-            .field("code_verifier", tokenRequest.getCodeVerifier())
+            .field("key_verifier", keyVerifierToken.getRawString())
             .field("redirect_uri", tokenRequest.getRedirectUrl())
             .header(HttpHeaders.USER_AGENT, USER_AGENT);
 
@@ -174,24 +185,34 @@ public class AuthenticatorClient {
         }
         final JSONObject jsonObject = tokenResponse.getBody().getObject();
 
-        final JsonWebToken accessToken = Optional.ofNullable(jsonObject.get("access_token"))
-            .filter(String.class::isInstance)
-            .map(String.class::cast)
-            .map(JsonWebToken::new)
-            .orElseThrow(() -> new IdpClientRuntimeException("Unable to extract Access-Token from response!"));
-
-        final String idTokenRawString = jsonObject.get("id_token").toString();
-
         final String tokenType = tokenResponse.getBody().getObject().getString("token_type");
         final int expiresIn = tokenResponse.getBody().getObject().getInt("expires_in");
 
         return IdpTokenResult.builder()
             .tokenType(tokenType)
             .expiresIn(expiresIn)
-            .accessToken(accessToken)
-            .idToken(new JsonWebToken(idTokenRawString))
-            .ssoToken(new JsonWebToken(tokenRequest.getSsoToken()))
+            .accessToken(decryptToken(tokenKey, jsonObject.get("access_token")))
+            .idToken(decryptToken(tokenKey, jsonObject.get("id_token")))
+            .ssoToken(new IdpJwe(tokenRequest.getSsoToken()))
             .build();
+    }
+
+    private JsonWebToken decryptToken(final SecretKey tokenKey, final Object tokenValue) {
+        return Optional.ofNullable(tokenValue)
+            .filter(String.class::isInstance)
+            .map(String.class::cast)
+            .map(IdpJwe::new)
+            .map(jwe -> jwe.decryptNestedJwt(tokenKey))
+            .orElseThrow(() -> new IdpClientRuntimeException("Unable to extract Access-Token from response!"));
+    }
+
+    private IdpJwe buildKeyVerifierToken(final byte[] tokenKeyBytes, final String codeVerifier,
+        final PublicKey pukToken) {
+        final JwtClaims claims = new JwtClaims();
+        claims.setStringClaim(TOKEN_KEY.getJoseName(), new String(Base64.getEncoder().encode(tokenKeyBytes)));
+        claims.setStringClaim(CODE_VERIFIER.getJoseName(), codeVerifier);
+
+        return IdpJwe.createWithPayloadAndEncryptWithKey(claims.toJson(), pukToken);
     }
 
     public DiscoveryDocumentResponse retrieveDiscoveryDocument(final String discoveryDocumentUrl) {
@@ -200,7 +221,7 @@ public class AuthenticatorClient {
             .header(HttpHeaders.USER_AGENT, USER_AGENT)
             .asString();
         final Map<String, Object> discoveryClaims = TokenClaimExtraction
-            .extractClaimsFromTokenBody(discoveryDocumentResponse.getBody());
+            .extractClaimsFromJwtBody(discoveryDocumentResponse.getBody());
 
         final HttpResponse<JsonNode> pukAuthResponse = Unirest
             .get(discoveryClaims.get("puk_uri_auth").toString())

@@ -16,6 +16,7 @@
 
 package de.gematik.idp.server;
 
+import de.gematik.idp.IdpConstants;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
@@ -36,7 +37,15 @@ public class ServerUrlService {
 
     public String determineServerUrl() {
         return getServerUrlOptional()
-            .orElse("https://idp.zentral.idp.splitdns.ti-dienste.de");
+            .orElse(IdpConstants.DEFAULT_SERVER_URL);
+    }
+
+    public String getIssuerUrl() {
+        return Optional.ofNullable(idpConfiguration.getIssuerUrl())
+            .filter(StringUtils::isNotBlank)
+            .or(() -> Optional.ofNullable(idpConfiguration.getServerUrl())
+                .filter(StringUtils::isNotBlank))
+            .orElse(IdpConstants.DEFAULT_SERVER_URL);
     }
 
     private Optional<String> getServerUrlOptional() {

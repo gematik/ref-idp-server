@@ -31,6 +31,9 @@ public class HttpStatus {
     public final static HttpStatus SUCCESS = new HttpStatus(-2);
 
     public final static HttpStatus FAIL = new HttpStatus(-3);
+
+    public final static String CUCUMBER_REGEX = "failed state|successfully|unsuccessfully|[1-5][0-9]{2}";
+
     private int value;
 
     public HttpStatus(final String statusStr) {

@@ -52,7 +52,7 @@ public class KeyRetrievalTest {
     @Test
     public void retrieveTokenKey_ShouldBeAvailable() throws UnirestException, JoseException {
         final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
-        final String pukUriToken = TokenClaimExtraction.extractClaimsFromTokenBody(httpResponse.getBody())
+        final String pukUriToken = TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())
             .get("puk_uri_token").toString();
         final HttpResponse<String> jwk = Unirest.get(pukUriToken).asString();
         final JsonWebKeySet keySet = constructKeySetFromJwkBody(jwk);
@@ -65,7 +65,7 @@ public class KeyRetrievalTest {
     @Test
     public void retrieveAuthKey_ShouldBeAvailable() throws UnirestException, JoseException {
         final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
-        final String pukUriAuth = TokenClaimExtraction.extractClaimsFromTokenBody(httpResponse.getBody())
+        final String pukUriAuth = TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())
             .get("puk_uri_auth").toString();
         final HttpResponse<String> jwk = Unirest.get(pukUriAuth).asString();
         final JsonWebKeySet keySet = constructKeySetFromJwkBody(jwk);
@@ -78,7 +78,7 @@ public class KeyRetrievalTest {
     @Test
     public void retrieveAuthKey_noRsaFieldShouldBePresent() throws UnirestException {
         final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
-        final String pukUriAuth = TokenClaimExtraction.extractClaimsFromTokenBody(httpResponse.getBody())
+        final String pukUriAuth = TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())
             .get("puk_uri_auth").toString();
         final JsonNode jwk = Unirest.get(pukUriAuth).asJson().getBody();
         assertThat(jwk.getObject().has("n")).isFalse();
@@ -92,7 +92,7 @@ public class KeyRetrievalTest {
     @Test
     public void retrieveJwksKeyStore_ShouldBeAvailable() throws UnirestException, JoseException {
         final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
-        final String jwksUri = TokenClaimExtraction.extractClaimsFromTokenBody(httpResponse.getBody())
+        final String jwksUri = TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())
             .get("jwks_uri").toString();
         final HttpResponse<String> jwks = Unirest.get(jwksUri).asString();
         final JsonWebKeySet keySet = new JsonWebKeySet(jwks.getBody());

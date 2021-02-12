@@ -79,7 +79,7 @@
                     <systemPropertyVariables>
                         <IDP_SERVER_PORT>${tomcat.http.port}</IDP_SERVER_PORT>
                         <cucumber.filter.tags>
-                            @Approval and not @OpenBug and not @WiP
+                            @Approval and not @OpenBug and not @WiP and not @LongRunning
                         </cucumber.filter.tags>
                     </systemPropertyVariables>
                     <threadCount>4</threadCount>
@@ -270,7 +270,7 @@
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>6.0.0</version>
+        <version>7.0.0</version>
     </parent>
 
     <profiles>
@@ -328,6 +328,10 @@
                     </plugin>
                     <plugin>
                         <artifactId>spring-boot-maven-plugin</artifactId>
+                        <configuration>
+                            <wait>1000</wait>
+                            <maxAttempts>180</maxAttempts>
+                        </configuration>
                         <executions>
                             <execution>
                                 <configuration>
@@ -402,5 +406,5 @@
         <version.serenity.maven.plugin>2.3.4</version.serenity.maven.plugin>
     </properties>
 
-    <version>6.0.0</version>
+    <version>7.0.0</version>
 </project>

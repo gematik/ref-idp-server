@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet author="idpServer" id="changelog-7.0">
+        <dropIndex tableName="device_validation" schemaName="IDP" indexName="ix_device_validation_all_column"/>
+        <dropColumn tableName="device_validation" schemaName="IDP" columnName="model"/>
+        <dropColumn tableName="device_validation" schemaName="IDP" columnName="name"/>
+        <createIndex indexName="ix_device_validation_search" schemaName="IDP" tableName="device_validation"
+            unique="true">
+            <column name="manufacturer"/>
+            <column name="product"/>
+            <column name="os"/>
+            <column name="os_version"/>
+        </createIndex>
+        <createIndex indexName="ix_device_validation_all_column" schemaName="IDP" tableName="device_validation"
+            unique="true">
+            <column name="manufacturer"/>
+            <column name="product"/>
+            <column name="os"/>
+            <column name="os_version"/>
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

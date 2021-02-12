@@ -16,9 +16,6 @@
 
 package de.gematik.idp.server.services;
 
-import de.gematik.idp.error.IdpErrorType;
-import de.gematik.idp.field.CodeChallengeMethod;
-import de.gematik.idp.server.exceptions.IdpServerException;
 import de.gematik.idp.server.exceptions.oauth2spec.IdpPkceVerificationFailureException;
 import de.gematik.idp.server.exceptions.oauth2spec.IdpServerInvalidGrantException;
 import java.util.Base64;
@@ -28,7 +25,6 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -46,15 +42,9 @@ public class PkceChecker {
         verifyCodeVerifier(codeVerifier, codeChallenge);
     }
 
-    public void checkCodeChallengeMethod(final CodeChallengeMethod codeChallengeMethod) {
-        if (codeChallengeMethod != CodeChallengeMethod.S256) {
-            throw new IdpServerException(IdpErrorType.UNSUPPORTED_TRANSFORM_ALGORITHM, HttpStatus.BAD_REQUEST);
-        }
-    }
-
     private void verifyCodeVerifier(final String codeVerifier, final String codeChallenge) {
         if (!isValidPkceCodeVerifier(codeVerifier)) {
-            throw new IdpPkceVerificationFailureException();
+            throw new IdpPkceVerificationFailureException("Invalid PKCE: '" + codeVerifier + "'");
         }
 
         final String generatedCodeChallenge = generateCodeChallenge(codeVerifier);
@@ -62,7 +52,7 @@ public class PkceChecker {
         if (!codeChallenge.equals(generatedCodeChallenge)) {
             LOGGER.info("Failed PKCE validation: codeVerifier={}, generatedCodeChallenge={}, codeChallenge={}",
                 codeVerifier, generatedCodeChallenge, codeChallenge);
-            throw new IdpPkceVerificationFailureException();
+            throw new IdpPkceVerificationFailureException("Failed PKCE validation");
         } else {
             LOGGER.debug("PKCE verification success. codeVerifierEncoded = {} codeChallenge = {}",
                 generatedCodeChallenge,

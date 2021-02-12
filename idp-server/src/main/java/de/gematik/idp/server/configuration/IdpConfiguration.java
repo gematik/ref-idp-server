@@ -17,6 +17,7 @@
 package de.gematik.idp.server.configuration;
 
 import java.util.List;
+import java.util.Locale;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,11 +33,15 @@ import org.springframework.stereotype.Component;
 @Builder
 public class IdpConfiguration {
 
-    private String authKeyFile;
-    private String tokenKeyFile;
-    private String discoveryKeyFile;
+    private IdpKeyConfiguration authKey;
+    private IdpKeyConfiguration tokenKey;
+    private IdpKeyConfiguration discoveryKey;
+    private String symmetricEncryptionKey;
     private String serverUrl;
+    private String issuerUrl;
     private String version;
     private String redirectUri;
+    private String subjectSaltValue;
     private List<String> blockedClientSystems;
+    private Locale defaultLocale;
 }

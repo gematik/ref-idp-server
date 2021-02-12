@@ -16,6 +16,7 @@
 
 package de.gematik.idp.client;
 
+import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -33,6 +34,6 @@ public class IdpTokenResult {
     private JsonWebToken idToken;
     private int expiresIn;
     private String tokenType;
-    private JsonWebToken ssoToken;
+    private IdpJwe ssoToken;
     private LocalDateTime validUntil;
 }
