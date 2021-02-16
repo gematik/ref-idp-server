@@ -19,9 +19,6 @@ package de.gematik.idp.token;
 import static de.gematik.idp.field.ClaimName.*;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import de.gematik.idp.crypto.CryptoLoader;
@@ -193,14 +190,6 @@ public abstract class IdpJoseObject {
         public void serialize(final IdpJoseObject value, final JsonGenerator gen, final SerializerProvider serializers)
             throws IOException {
             gen.writeString(value.getRawString());
-        }
-    }
-
-    public static class Deserializer extends JsonDeserializer<IdpJoseObject> {
-
-        @Override
-        public IdpJoseObject deserialize(final JsonParser p, final DeserializationContext ctxt) throws IOException {
-            return new JsonWebToken(ctxt.readValue(p, String.class));
         }
     }
 }

@@ -280,20 +280,31 @@ angepasstes Discovery Dokument aus dem Dateisystem der Testsuite zur Verfügung 
 PUK_URIS öffentliche Schlüssel direkt aus dem Dateisystem in die Testumgebung zu laden. Diese Daten müssen natürlich mit
 den Einstellungen des Servers korrelieren, um einen erfolgreichen Lauf der Testsuite sicherzustellen.
 
-Hierfür muss die Umgebungsvariable IDP_LOCAL_DISCDOC auf die JSON Datei, welche den Inhalt des Discovery Dokuments
-enthält verweisen. Für relative Pfade ist als Ausgangsordner idp-testsuite anzusetzen.
+Hierfür muss die Umgebungsvariable IDP_LOCAL_DISCDOC auf ein Set von Dateien, welche den Inhalt des Discovery Dokuments
+enthalten verweisen. Für relative Pfade ist als Ausgangsordner idp-testsuite anzusetzen.
 
-Die Header und zeitlichen Validierungs-Claims (exp, iat, nbf) werden von der Testsuite dynamisch ergänzt.
+Basierend auf dieser Umgebungsvariable werden drei Dateien erwartet:
 
-Im idp-testsuite Ordner gibt es für den Referenzserver ein Beispiel `discover_document.json`, welches die Schlüssel
-lokal vom Dateisystem lädt.
+```
+{IDP_LOCAL_DISCDOC}_body.json
+{IDP_LOCAL_DISCDOC}_header.json
+{IDP_LOCAL_DISCDOC}_pkey.p12
+```
+
+Für die Signierung des Discovery Documents wird ein privater Schlüssel in der p12 Datei erwartet. Das Passwort für den
+Schlüssel kann über die Umgebungsvariable IDP_LOCAL_DISCDOC_PKEY_PWD festgelegt werden.
+
+Die zeitlichen Validierungs-Claims (exp, iat, nbf) werden von der Testsuite dynamisch ergänzt.
+
+Im idp-testsuite Ordner gibt es für den Referenzserver Beispieldateien `discover_document*.*`, welche die Schlüssel vom
+lokal zu startenden Server nutzt.
 
 Das Testszenario "Disc - Die Schlüssel URIs sind erreichbar und enthalten public X509 Schlüssel" scheitert naturgemäß
 bei der Verwendung von dateibasierten Referenzen. Deswegen ist dieses Szenario derzeit mit einer @OpenBug Annotation
 versehen.
 
 Bei der Verwendung der IDP_LOCAL_DISCDOC Funktionalität, ist trotzdem eine IDP_SERVER Umgebungsvariable zu setzen (dummy
-Wert) um ein Hochfahren des Referenzservers beim Lauf der Testsuite zu unterbinden.
+Wert) um ein temporäres Hochfahren des Referenzservers (auf einem anderen Port) beim Lauf der Testsuite zu unterbinden.
 
 ```
 export IDP_SERVER=1

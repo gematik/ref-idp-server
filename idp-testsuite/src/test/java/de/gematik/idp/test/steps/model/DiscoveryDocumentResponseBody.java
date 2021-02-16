@@ -40,32 +40,47 @@ import java.util.Map;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.assertj.core.api.Assertions;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class DiscoveryDocumentResponseBody implements ResponseBody {
 
-    JSONObject jsonContent;
+    JSONObject jsonBody;
+    JSONObject jsonHeader;
 
     String signedContent;
 
-    public DiscoveryDocumentResponseBody(final File template, final String certFile)
+    @SneakyThrows
+    public DiscoveryDocumentResponseBody(final File templateBody, final File templateHeader, final File privateKey)
         throws IOException, JSONException {
-        jsonContent = new JSONObject(IOUtils.toString(new FileReader(template, StandardCharsets.UTF_8)));
+        jsonBody = new JSONObject(IOUtils.toString(new FileReader(templateBody, StandardCharsets.UTF_8)));
 
         final ZonedDateTime now = ZonedDateTime.now();
-        jsonContent.put("nbf", now.toEpochSecond());
-        jsonContent.put("exp", now.plusHours(24).toEpochSecond());
-        jsonContent.put("iat", now.toEpochSecond());
-        final byte[] p12FileContent = FileUtils
-            .readFileToByteArray(new File("src/test/resources/" + certFile));
+        jsonBody.put("nbf", now.toEpochSecond());
+        jsonBody.put("exp", now.plusHours(24).toEpochSecond());
+        jsonBody.put("iat", now.toEpochSecond());
 
-        final PkiIdentity pkiId = CryptoLoader.getIdentityFromP12(p12FileContent, "00");
+        jsonHeader = new JSONObject(IOUtils.toString(new FileReader(templateHeader, StandardCharsets.UTF_8)));
+
+        String keyPwd = System.getenv("IDP_LOCAL_DISCDOC_PKEY_PWD");
+        if (keyPwd == null) {
+            keyPwd = "00";
+        }
+        final byte[] p12FileContent = FileUtils
+            .readFileToByteArray(privateKey);
+        final PkiIdentity pkiId = CryptoLoader.getIdentityFromP12(p12FileContent, keyPwd);
         final IdpJwtProcessor jwtProcessor = new IdpJwtProcessor(pkiId);
         final Map<String, Object> headers = new HashMap<>();
-        headers.put("alg", "BP256R1");
+        jsonHeader.keys().forEachRemaining(key -> {
+            try {
+                headers.put(key.toString(), jsonHeader.get(key.toString()).toString());
+            } catch (final JSONException e) {
+                Assertions.fail("Unable to convert headers for discovery document", e);
+            }
+        });
         signedContent = jwtProcessor
-            .buildJws(jsonContent.toString(), headers, false)
+            .buildJws(jsonBody.toString(), headers, false)
             .getRawString();
     }
 

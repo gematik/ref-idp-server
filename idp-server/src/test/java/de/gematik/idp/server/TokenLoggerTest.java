@@ -36,10 +36,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.security.Key;
 import java.time.Duration;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -55,6 +57,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -76,9 +79,9 @@ public class TokenLoggerTest {
     @Autowired
     private IdpConfiguration idpConfiguration;
     @Autowired
-    private IdpKey authKey;
+    private IdpKey idpSig;
     @Autowired
-    private IdpKey tokenKey;
+    private IdpKey idpEnc;
     @Autowired
     private Key symmetricEncryptionKey;
     private IdpClient idpClient;
@@ -89,13 +92,14 @@ public class TokenLoggerTest {
     private Gson gson;
 
     {
-        MASKING_FUNCTIONS.put("exp", value -> "<Duration of " + roundToNearestMinute(
-            Duration.between(ZonedDateTime.now(), TokenClaimExtraction.claimToZonedDateTime(value))).toString()
+        MASKING_FUNCTIONS.put("exp", value -> "<Gültigkeit des Tokens von " + formatToHumanReadable(
+            Duration.between(ZonedDateTime.now(), TokenClaimExtraction.claimToZonedDateTime(value)))
             + ". Beispiel: '" + value.toString() + "'>");
         MASKING_FUNCTIONS
-            .put("iat", value -> "<Timestamp of the issueing of the token. Beispiel: '" + value.toString() + "'>");
+            .put("iat", value -> "<Zeitpunkt der Ausstellung des Tokens. Beispiel: '" + value.toString() + "'>");
         MASKING_FUNCTIONS
-            .put("nbf", value -> "<token can not used before this timestamp. Beispiel: '" + value.toString() + "'>");
+            .put("nbf",
+                value -> "<Der Token ist erst ab diesem Zeitpunkt gültig. Beispiel: '" + value.toString() + "'>");
 
         MASKING_FUNCTIONS.put("code_challenge",
             v -> "<code_challenge value, Base64URL(SHA256(code_verifier)). Beispiel: " + v.toString() + ">");
@@ -106,26 +110,24 @@ public class TokenLoggerTest {
 
         MASKING_FUNCTIONS.put("state",
             v -> "<OAuth 2.0 state value. Constant over complete flow. Value is a case-sensitive string. Beispiel: '"
-                + v
-                .toString() + "'>");
+                + v.toString() + "'>");
 
         MASKING_FUNCTIONS.put("jti", v ->
             "<A unique identifier for the token, which can be used to prevent reuse of the token. Value is a case-sensitive string. Beispiel: '"
-                + v
-                .toString() + "'>");
+                + v.toString() + "'>");
 
         MASKING_FUNCTIONS.put("given_name",
-            v -> "<'givenName' from given authentication-certificate subject-DN. Beispiel: '" + v.toString() + "'>");
+            v -> "<'givenName' aus dem subject-DN des authentication-Zertifikats. Beispiel: '" + v.toString() + "'>");
         MASKING_FUNCTIONS.put("family_name",
-            v -> "<'surname' from given authentication-certificate subject-DN. Beispiel: '" + v.toString() + "'>");
+            v -> "<'surname' aus dem subject-DN des authentication-Zertifikats. Beispiel: '" + v.toString() + "'>");
         MASKING_FUNCTIONS.put("idNummer",
-            v -> "<KVNR or Telematik-ID from given authentication-certificate. Beispiel: '" + v.toString() + "'>");
+            v -> "<KVNR oder Telematik-ID aus dem authentication-Zertifikats. Beispiel: '" + v.toString() + "'>");
         MASKING_FUNCTIONS.put("professionOID",
-            v -> "<professionOID of HBA from given authentication-certificate. Null if not present. Beispiel: '" + v
-                .toString() + "'>");
+            v -> "<professionOID des HBA aus dem authentication-Zertifikats. Null if not present. Beispiel: '" +
+                v.toString() + "'>");
         MASKING_FUNCTIONS.put("organizationName",
-            v -> "<professionOID of HBA from given authentication-certificate. Null if not present. Beispiel: '" + v
-                .toString() + "'>");
+            v -> "<professionOID des HBA  aus dem authentication-Zertifikats. Null if not present. Beispiel: '" +
+                v.toString() + "'>");
         MASKING_FUNCTIONS.put("auth_time",
             v ->
                 "<timestamp of authentication. Technically this is the time of authentication-token signing. Beispiel: '"
@@ -136,8 +138,8 @@ public class TokenLoggerTest {
             v -> "<confirmation. Authenticated certificate of the client. For details see rfc7800. Beispiel: '" +
                 prettyPrintJsonString(v.toString(), " ".repeat(60)) + "'>");
         MASKING_FUNCTIONS.put("sub",
-            v -> "<subject. Base64(sha256(audClaim + idNummerClaim + serverSubjectSalt)). Beispiel: '" + v
-                .toString() + "'>");
+            v -> "<subject. Base64(sha256(audClaim + idNummerClaim + serverSubjectSalt)). Beispiel: '" +
+                v.toString() + "'>");
         MASKING_FUNCTIONS.put("at_hash",
             v ->
                 "<Erste 16 Bytes des Hash des Authentication Tokens Base64(subarray(Sha256(authentication_token), 0, 16)). Beispiel: '"
@@ -153,6 +155,9 @@ public class TokenLoggerTest {
         MASKING_FUNCTIONS.put("puk_uri_auth", v -> "<URL einer JWK-Struktur des Authorization Public-Keys>");
         MASKING_FUNCTIONS.put("puk_uri_token", v -> "<URL einer JWK-Struktur des Token Public-Keys>");
         MASKING_FUNCTIONS.put("jwks_uri", v -> "<URL einer JWKS-Struktur mit allen vom Server verwendeten Schlüsseln>");
+        MASKING_FUNCTIONS.put("njwt", v -> "<enthält das Ursprüngliche Challenge Token des Authorization Endpunkt>");
+        MASKING_FUNCTIONS.put("Location", v -> formatUrl(v.toString()));
+        MASKING_FUNCTIONS.put("Date", v -> "<Zeitpunkt der Antwort. Beispiel '" + v + "'>");
     }
 
     @BeforeEach
@@ -179,6 +184,15 @@ public class TokenLoggerTest {
             .create();
     }
 
+    @SneakyThrows
+    @AfterEach
+    public void copyTokenFlowToTarget() {
+        final String filename = idpConfiguration.getTokenFlowMdResource().replace("classpath:", "");
+        final java.nio.file.Path copied = Paths.get("target/classes/" + filename);
+        final java.nio.file.Path originalPath = tokenLogFile.toPath();
+        Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
+    }
+
     @Test
     public void writeAllTokensToFile() {
         // Authorization Request
@@ -198,7 +212,7 @@ public class TokenLoggerTest {
                     appendRequestToFile("Authentication Request", getRequest);
 
                     appendMultipartAndDecrypt(getRequest.getBody().get().multiParts(), "signed_challenge",
-                        "Challenge Response", tokenKey.getIdentity().getPrivateKey());
+                        "Challenge Response", idpEnc.getIdentity().getPrivateKey());
                     appendMultipartAndDecrypt(getRequest.getBody().get().multiParts(), "sso_token",
                         "SSO Token", symmetricEncryptionKey);
                     appendMultipartAndDecrypt(getRequest.getBody().get().multiParts(), "unsigned_challenge",
@@ -232,7 +246,7 @@ public class TokenLoggerTest {
                     .findAny().get();
 
                 appendTokenToFile("Key verifier (Encryption Header)", keyVerifier);
-                keyVerifier.setDecryptionKey(tokenKey.getIdentity().getPrivateKey());
+                keyVerifier.setDecryptionKey(idpEnc.getIdentity().getPrivateKey());
 
                 appendToFile(
                     "Key verifier (Body)\n\n" + CODE_SEPERATOR + prettyPrintJsonString(
@@ -296,8 +310,8 @@ public class TokenLoggerTest {
     }
 
     private void createTokenLogFile() throws IOException {
-        tokenLogFile = new File("target/tokenFlow_" + ZonedDateTime.now()
-            .format(DateTimeFormatter.ofPattern("YYYY-MM-dd_HH-mm-SS")) + ".md");
+        tokenLogFile = new File("src/main/resources/" +
+            idpConfiguration.getTokenFlowMdResource().replace("classpath:", ""));
         if (tokenLogFile.isFile()) {
             tokenLogFile.delete();
         }
@@ -311,7 +325,7 @@ public class TokenLoggerTest {
                 .map(part -> part.getName() + "=" + part.getValue())
                 .collect(Collectors.joining("\n", "Multiparts:\n", "\n")))
             .orElse("");
-        appendToFile(CODE_SEPERATOR + formatUrl(request.getUrl()) + "\n\n" + multipartBody + CODE_SEPERATOR + "\n");
+        appendToFile(CODE_SEPERATOR + formatUrl(request.getUrl()) + "\n" + multipartBody + CODE_SEPERATOR + "\n");
     }
 
     @SneakyThrows
@@ -488,11 +502,18 @@ public class TokenLoggerTest {
         return jsonNode;
     }
 
-    private Duration roundToNearestMinute(final Duration input) {
-        return input
+    private String formatToHumanReadable(final Duration input) {
+        final Duration duration = input
             .withNanos(0)
             .plusMinutes(input.toSecondsPart() > 30 ? 1 : 0)
             .minusSeconds(input.toSecondsPart());
+        if (duration.minusMinutes(59).isNegative()) {
+            return duration.toMinutes() + " Minuten";
+        }
+        if (duration.minusHours(23).isNegative()) {
+            return duration.toHours() + " Stunden";
+        }
+        return duration.toString();
     }
 
     private void appendToFile(final String content) {

@@ -20,6 +20,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.*;
 
@@ -30,8 +32,10 @@ import lombok.*;
 @NoArgsConstructor
 public class DeviceInformation {
 
+    @NotBlank
     private String deviceName;
     @NotNull
+    @Valid
     private DeviceType deviceType;
 
     @SneakyThrows

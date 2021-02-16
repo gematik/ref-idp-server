@@ -66,6 +66,13 @@ public class SerenityReportUtils {
                     }
                     curlCmd.append("-X POST \"").append(uri).append("\" ");
                     break;
+                case "DELETE":
+                    curlCmd.append("-X DELETE \"").append(uri).append("\" ");
+                    break;
+                case "PUT":
+                    curlCmd.append("-X PUT -d '").append(createCurlBodyString(getValuesForBlock(lines, "Body")))
+                        .append("' \"").append(uri).append("\" ");
+                    break;
             }
         } else {
             curlCmd.append("Unable to parse log data");
@@ -100,7 +107,17 @@ public class SerenityReportUtils {
 
     private static String getValueFromLogLine(final String line) {
         final int start = line.lastIndexOf("\t");
-        return line.substring(start).trim();
+        if (start == -1) {
+            return line.trim();
+        } else {
+            return line.substring(start).trim();
+        }
+    }
+
+    private static String createCurlBodyString(final List<String> bodyLines) {
+        final StringBuilder bodyStr = new StringBuilder();
+        bodyLines.forEach(line -> bodyStr.append(line).append("\n"));
+        return bodyStr.toString();
     }
 
     private static List<String> getValuesForBlock(final String[] lines, final String blockToken) {
@@ -113,7 +130,9 @@ public class SerenityReportUtils {
                 if ("<none>".equals(v)) {
                     return new ArrayList<>();
                 }
-                values.add(v);
+                if (!line.trim().equals(v)) {
+                    values.add(v);
+                }
             } else if (blockStarted) {
                 final int tab = line.indexOf("\t");
                 final int colon = line.indexOf(":");

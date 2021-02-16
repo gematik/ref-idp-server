@@ -20,14 +20,20 @@ import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
 import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
 import de.gematik.idp.authentication.IdpJwtProcessor;
-import de.gematik.idp.discoveryDocument.DiscoveryDocumentBuilder;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.exceptions.IdpServerStartupException;
+import de.gematik.idp.server.services.DiscoveryDocumentBuilder;
 import de.gematik.idp.token.AccessTokenBuilder;
 import de.gematik.idp.token.IdTokenBuilder;
 import de.gematik.idp.token.SsoTokenBuilder;
+import de.gematik.pki.certificate.CertificateProfile;
+import de.gematik.pki.certificate.CertificateVerifier;
+import de.gematik.pki.tsl.TslInformationProvider;
+import de.gematik.pki.tsl.TslReader;
+import de.gematik.pki.tsl.TspService;
 import java.security.Key;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -40,7 +46,8 @@ import org.springframework.context.annotation.Configuration;
 public class FlowBeanCreation {
 
     private final IdpJwtProcessor idpJwtProcessor;
-    private final IdpKey authKey;
+    private final IdpKey idpEnc;
+    private final IdpKey idpSig;
     private final Key symmetricEncryptionKey;
     private final ServerUrlService serverUrlService;
     private final IdpConfiguration idpConfiguration;
@@ -75,7 +82,7 @@ public class FlowBeanCreation {
     @Bean
     public AuthenticationChallengeBuilder authenticationChallengeBuilder() {
         return AuthenticationChallengeBuilder.builder()
-            .authenticationIdentity(authKey.getIdentity())
+            .authenticationIdentity(idpSig.getIdentity())
             .uriIdpServer(serverUrlService.determineServerUrl())
             .build();
     }
@@ -83,13 +90,29 @@ public class FlowBeanCreation {
     @Bean
     public AuthenticationChallengeVerifier authenticationChallengeVerifier() {
         return AuthenticationChallengeVerifier.builder()
-            .serverIdentity(authKey.getIdentity())
+            .serverIdentity(idpSig.getIdentity())
             .build();
     }
 
     @Bean
     public ModelMapper modelMapper() {
         return new ModelMapper();
+    }
+
+    @Bean
+    public CertificateVerifier certificateVerifier() {
+        final List<TspService> tspServiceTypeList = new TslInformationProvider(
+            new TslReader().getTrustServiceStatusList("TSL_default.xml")
+                .orElseThrow(() -> new IdpServerStartupException("Error while reading TSL")))
+            .getTspServices();
+
+        return CertificateVerifier.builder()
+            .productType(idpConfiguration.getProductTypeDisplayString())
+            .tspServiceList(tspServiceTypeList)
+            .certificateProfiles(List.of(CertificateProfile.C_CH_AUT_RSA, CertificateProfile.C_CH_AUT_ECC,
+                CertificateProfile.C_HCI_AUT_RSA, CertificateProfile.C_HCI_AUT_ECC,
+                CertificateProfile.C_HP_AUT_RSA, CertificateProfile.C_HP_AUT_ECC))
+            .build();
     }
 
     private String getSubjectSaltValue() {

@@ -45,6 +45,8 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
+import net.dracoblue.spring.web.mvc.method.annotation.HttpResponseHeader;
+import net.dracoblue.spring.web.mvc.method.annotation.HttpResponseHeaders;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -58,6 +60,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Api(tags = {
     "Idp-Dienst"}, description = "REST Endpunkte für das Authentifizieren, Authorisieren und die Tokenabfrage")
+@HttpResponseHeaders({
+    @HttpResponseHeader(name = "Cache-Control", value = "no-store"),
+    @HttpResponseHeader(name = "Pragma", value = "no-cache")
+})
 public class IdpController {
 
     private static final String SHA256_AS_BASE64_REGEX = "^[_\\-a-zA-Z0-9]{42,44}[=]{0,2}$";

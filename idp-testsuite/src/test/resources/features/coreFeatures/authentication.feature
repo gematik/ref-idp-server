@@ -149,7 +149,7 @@ Feature: Authentifiziere Anwendung am IDP Server
   ```
   Wir wählen einen gültigen Code verifier und fordern einen Challenge Token an.
 
-  Die Challenge muss mit dem PUK_AUTH signiert sein.
+  Die Challenge muss mit dem PUK_SIGN signiert sein.
 
 
     Given I choose code verifier 'zdrfcvz3iw47fgderuzbq834werb3q84wgrb3zercb8q3wbd834wefb348ch3rq9e8fd9sac'
@@ -157,7 +157,7 @@ Feature: Authentifiziere Anwendung am IDP Server
     When I request a challenge with
       | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state       | nonce     | response_type |
       | eRezeptApp | e-rezept openid | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | code          |
-    Then the context CHALLENGE must be signed with cert PUK_AUTH
+    Then the context CHALLENGE must be signed with cert PUK_SIGN
 
 
   @Afo:A_20740 @Afo:A_20601 @Afo:A_20698

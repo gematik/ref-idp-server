@@ -37,6 +37,7 @@ import java.util.Map;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
+import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,7 +57,7 @@ public class DiscoveryDocumentTest {
     private int localServerPort;
     private String testHostUrl;
     @Autowired
-    private IdpKey discKey;
+    private IdpKey discSig;
     @MockBean
     private ServerUrlService serverUrlService;
 
@@ -108,8 +109,8 @@ public class DiscoveryDocumentTest {
                 "exp",
                 "nbf",
                 "iat",
-                "puk_uri_auth",
-                "puk_uri_token",
+                "uri_puk_idp_enc",
+                "uri_puk_idp_sig",
                 "uri_disc");
     }
 
@@ -229,7 +230,7 @@ public class DiscoveryDocumentTest {
     @Remark("Laut Aussage von Gerriet muss das DiscoveryDocument als JWS signiert werden.")
     public void testDiscoveryDocumentSignature() throws UnirestException {
         retrieveAndParseDiscoveryDocument()
-            .verify(discKey.getIdentity().getCertificate().getPublicKey());
+            .verify(discSig.getIdentity().getCertificate().getPublicKey());
     }
 
     @Test
@@ -257,6 +258,13 @@ public class DiscoveryDocumentTest {
     public void testDiscoveryDocumentSigningCertificateReference() throws UnirestException {
         assertThat(retrieveAndParseDiscoveryDocument()
             .getHeaderClaim(ClaimName.X509_CERTIFICATE_CHAIN)).isPresent();
+    }
+
+    @Test
+    public void postShouldGive405() throws UnirestException {
+        assertThat(Unirest.post(testHostUrl + DISCOVERY_DOCUMENT_ENDPOINT)
+            .asString().getStatus())
+            .isEqualTo(HttpStatus.SC_METHOD_NOT_ALLOWED);
     }
 
     private Map<String, Object> extractClaimMapFromResponse(final HttpResponse<String> httpResponse) {

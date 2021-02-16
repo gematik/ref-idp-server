@@ -29,8 +29,6 @@ public final class IdpConstants {
     public static final String TOKEN_ENDPOINT = "/token";
     public static final String PAIRING_ENDPOINT = "/pairing";
     public static final String DEVICE_VALIDATION_ENDPOINT = "/device_validation";
-    public static final String PUK_URI_AUTH = "/authKey/jwks.json";
-    public static final String PUK_URI_TOKEN = "/tokenKey/jwks.json";
     public static final String CLIENT_ID = "eRezeptApp";
     public static final String AUDIENCE = "https://erp.telematik.de/login";
     public static final String DEFAULT_SERVER_URL = "https://idp.zentral.idp.splitdns.ti-dienste.de";

@@ -33,8 +33,8 @@ public class IdpDiscoveryDocumentSteps extends IdpStepsBase {
 
         final String idpLocalDiscdoc = System.getenv("IDP_LOCAL_DISCDOC");
         if (idpLocalDiscdoc != null) {
-            final DiscoveryDocumentResponse r = new DiscoveryDocumentResponse(new File(idpLocalDiscdoc),
-                "authenticatorModule_idpServer.p12");
+            final DiscoveryDocumentResponse r = new DiscoveryDocumentResponse(new File(idpLocalDiscdoc + "_body.json"),
+                new File(idpLocalDiscdoc + "_header.json"), new File(idpLocalDiscdoc + "_pkey.p12"));
             Context.getThreadContext().put(ContextKey.RESPONSE, r);
         } else {
             Context.getThreadContext().put(ContextKey.RESPONSE,

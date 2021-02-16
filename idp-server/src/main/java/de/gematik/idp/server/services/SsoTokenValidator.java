@@ -36,14 +36,14 @@ import org.springframework.stereotype.Service;
 public class SsoTokenValidator {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(SsoTokenValidator.class);
-    private final IdpKey authKey;
+    private final IdpKey idpSig;
     private final Key tokenEncryptionKey;
 
     public JsonWebToken decryptAndValidateSsoToken(final IdpJwe encryptedSsoToken) {
         final JsonWebToken ssoToken = decryptSsoToken(encryptedSsoToken);
         validateExpiration(encryptedSsoToken.getHeaderDateTimeClaim(EXPIRES_AT)
             .orElseThrow(() -> new IdpServerInvalidRequestException("Invalid SSO-Token given")));
-        final IdpJwtProcessor idpJwtProcessor = new IdpJwtProcessor(authKey.getIdentity());
+        final IdpJwtProcessor idpJwtProcessor = new IdpJwtProcessor(idpSig.getIdentity());
         idpJwtProcessor.verifyAndThrowExceptionIfFail(ssoToken);
         LOGGER.debug("SsoToken validation successful");
         return ssoToken;

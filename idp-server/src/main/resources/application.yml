@@ -1,14 +1,14 @@
 idp:
   version: @project.version@
-  authKey:
+  idpSig:
     fileName: classpath:authenticatorModule_idpServer.p12
-    keyId: authKey
-  tokenKey:
-    fileName: classpath:authenticatorModule_idpServer.p12
-    keyId: tokenKey
-  discoveryKey:
-    fileName: classpath:authenticatorModule_idpServer.p12
-    keyId: discoveryKey
+    keyId: idpSig
+  idpEnc:
+    fileName: classpath:idp-fd-sig-refimpl-2.p12
+    keyId: idpEnc
+  discSig:
+    fileName: classpath:idp-fd-sig-refimpl-3.p12
+    keyId: discSig
   symmetricEncryptionKey: "geheimerSchluesselDerNochGehashtWird"
   redirectUri: http://redirect.gematik.de/erezept
   defaultLocale: US
@@ -17,6 +17,11 @@ idp:
   subjectSaltValue: fkdlsjaviaen4evdsnavaew4vcxo
   blockedClientSystems:
     - "blocked_user_agent"
+  productTypeDisplayString: "IDP"
+  tokenFlowMdResource: "classpath:tokenFlow.md"
+caching:
+  discoveryDocument:
+    cacheControl: "max-age=300"
 logging:
   level:
     org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
@@ -32,9 +37,9 @@ management:
 spring:
   liquibase:
     enabled: true
-    change-log: classpath:db/changelog/idp-changelog-master.xml
+    change-log: "classpath:db/changelog/idp-changelog-master.xml"
   datasource:
-    url: jdbc:h2:mem:idp;INIT=CREATE SCHEMA IF NOT EXISTS IDP;
+    url: "jdbc:h2:mem:idp;INIT=CREATE SCHEMA IF NOT EXISTS IDP;"
     driver-class-name: org.h2.Driver
     username: root
     password: idp

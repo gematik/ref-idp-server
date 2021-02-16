@@ -1,12 +1,9 @@
 package de.gematik.idp.test.steps;
 
 import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
-import de.gematik.idp.test.steps.model.Context;
-import de.gematik.idp.test.steps.model.ContextKey;
-import de.gematik.idp.test.steps.model.HttpMethods;
-import de.gematik.idp.test.steps.model.HttpStatus;
-import io.restassured.response.Response;
+import de.gematik.idp.test.steps.model.*;
 import java.security.Key;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.RSAPrivateKey;
@@ -54,7 +51,8 @@ public class IdpBiometricsSteps extends IdpStepsBase {
             .get(ContextKey.DEVICE_INFO);
         final Map<String, String> devTypeInfo = ctxtDevInfo.entrySet().stream()
             .filter(entry -> !entry.getKey().equals("device_name")).
-                collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                collect(Collectors
+                    .toMap(Map.Entry::getKey, entry -> String.valueOf(entry.getValue())));
         final JSONObject devInfo = new JSONObject();
         devInfo.put("device_name", ctxtDevInfo.get("device_name"));
         devInfo.put("device_type", new JSONObject(devTypeInfo));
@@ -68,10 +66,33 @@ public class IdpBiometricsSteps extends IdpStepsBase {
         headers.put("Authorization", "Bearer " + Context.getThreadContext().get(ContextKey.ACCESS_TOKEN));
         headers.put("User-Agent", "TODO some UA, probably configurable");
 
-        final Response r = requestResponseAndAssertStatus(Context.getDiscoveryDocument().getPairingEndpoint(), headers,
-            HttpMethods.PUT, null, regData.toString(), HttpStatus.NOCHECK);
+        final PublicKey pukEnc = DiscoveryDocument.getPublicKeyFromCertFromJWK(ContextKey.PUK_ENC);
+        Context.getThreadContext().put(ContextKey.RESPONSE,
+            requestResponseAndAssertStatus(Context.getDiscoveryDocument().getPairingEndpoint(), headers,
+                HttpMethods.PUT, null, encrypt(regData.toString(), pukEnc), HttpStatus.NOCHECK));
     }
 
+    @SneakyThrows
+    public void deregisterDeviceWithKey(final String keyVerifier) {
+        final Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "Bearer " + Context.getThreadContext().get(ContextKey.ACCESS_TOKEN));
+        headers.put("User-Agent", "TODO some UA, probably configurable");
+
+        Context.getThreadContext().put(ContextKey.RESPONSE, requestResponseAndAssertStatus(
+            Context.getDiscoveryDocument().getPairingEndpoint() + "/" + keyVerifier, headers,
+            HttpMethods.DELETE, null, null, HttpStatus.NOCHECK));
+    }
+
+    public void requestAllPairings() {
+        final Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "Bearer " + Context.getThreadContext().get(ContextKey.ACCESS_TOKEN));
+        headers.put("User-Agent", "TODO some UA, probably configurable");
+
+        Context.getThreadContext().put(ContextKey.RESPONSE, requestResponseAndAssertStatus(
+            Context.getDiscoveryDocument().getPairingEndpoint(), headers,
+            HttpMethods.GET, null, null, HttpStatus.NOCHECK));
+
+    }
 
     @SneakyThrows
     public String composeRawString(final Map<String, String> bodyClaims, final Key signerKey) {

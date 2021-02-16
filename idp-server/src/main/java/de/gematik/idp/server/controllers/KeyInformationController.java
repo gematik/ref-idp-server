@@ -30,31 +30,31 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class KeyInformationController {
 
-    public static final String PUK_URI_AUTH = "/authKey/jwks.json";
-    public static final String PUK_URI_TOKEN = "/tokenKey/jwks.json";
-    public static final String PUK_URI_DISC = "/discKey/jwks.json";
-    private final IdpKey authKey;
-    private final IdpKey tokenKey;
-    private final IdpKey discKey;
+    public static final String PUK_URI_SIG = "/ipdSig/jwks.json";
+    public static final String PUK_URI_ENC = "/idpEnc/jwks.json";
+    public static final String PUK_URI_DISC = "/discSig/jwks.json";
+    private final IdpKey idpEnc;
+    private final IdpKey idpSig;
+    private final IdpKey discSig;
 
-    @GetMapping(PUK_URI_AUTH)
+    @GetMapping(PUK_URI_SIG)
     @ApiOperation(httpMethod = "GET", value = "Endpunkt für Schlüsselinformationen für den Authentifizierungsprozess", notes = "Verbaut Schlüsselinformationen in ein JwksDocument und liefert dieses zurück.")
     @ValidateClientSystem
-    public IdpKeyDescriptor getAuthJwks() {
-        return authKey.buildJwk();
+    public IdpKeyDescriptor getAuthJwk() {
+        return idpSig.buildJwk();
     }
 
-    @GetMapping(PUK_URI_TOKEN)
+    @GetMapping(PUK_URI_ENC)
     @ApiOperation(httpMethod = "GET", value = "Endpunkt für Schlüsselinformationen für die Tokenabfrage", notes = "Verbaut Schlüsselinformationen in ein JwksDocument und liefert dieses zurück.")
     @ValidateClientSystem
-    public IdpKeyDescriptor getTokenJwks() {
-        return tokenKey.buildJwk();
+    public IdpKeyDescriptor getTokenJwk() {
+        return idpEnc.buildJwk();
     }
 
     @GetMapping(PUK_URI_DISC)
     @ApiOperation(httpMethod = "GET", value = "Endpunkt für Schlüsselinformationen für den öffentlichen Verzeichnisdienst", notes = "Verbaut Schlüsselinformationen in ein JwksDocument und liefert dieses zurück.")
     @ValidateClientSystem
-    public IdpKeyDescriptor getDiscJwks() {
-        return discKey.buildJwk();
+    public IdpKeyDescriptor getDiscJwk() {
+        return discSig.buildJwk();
     }
 }

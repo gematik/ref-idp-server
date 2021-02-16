@@ -17,9 +17,11 @@
 package de.gematik.idp.server;
 
 import de.gematik.idp.server.configuration.IdpConfiguration;
+import de.gematik.idp.server.services.ServerVersionInterceptor;
 import java.util.Locale;
 import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import net.dracoblue.spring.web.mvc.method.annotation.HttpResponseHeaderHandlerInterceptor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.trace.http.HttpTraceRepository;
 import org.springframework.boot.actuate.trace.http.InMemoryHttpTraceRepository;
@@ -28,14 +30,18 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-@SpringBootApplication(scanBasePackages = {"de.gematik"})
+@SpringBootApplication(scanBasePackages = {"de.gematik", "net.dracoblue"})
 @EnableWebMvc
 @RequiredArgsConstructor
 public class IdpServer implements WebMvcConfigurer {
 
     private final IdpConfiguration idpConfiguration;
+    private final HttpResponseHeaderHandlerInterceptor httpResponsHeaderHandlerInterceptor;
+    private final ServerVersionInterceptor serverVersionInterceptor;
 
     @SuppressWarnings("java:S4823")
     public static void main(final String[] args) {
@@ -58,6 +64,17 @@ public class IdpServer implements WebMvcConfigurer {
         if (idpConfiguration.getDefaultLocale() != null) {
             Locale.setDefault(idpConfiguration.getDefaultLocale());
         }
+    }
+
+    @Bean
+    public WebMvcConfigurer headerConfigurer() {
+        return new WebMvcConfigurerAdapter() {
+            @Override
+            public void addInterceptors(final InterceptorRegistry registry) {
+                registry.addInterceptor(httpResponsHeaderHandlerInterceptor);
+                registry.addInterceptor(serverVersionInterceptor);
+            }
+        };
     }
 
     @Bean

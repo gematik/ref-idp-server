@@ -21,18 +21,23 @@ import static de.gematik.idp.field.ClaimName.AUTHENTICATION_CLASS_REFERENCE;
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
 import static de.gematik.idp.field.ClaimName.KEY_IDENTIFIER;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
 import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.crypto.X509ClaimExtraction;
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.field.ClaimName;
+import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.data.DeviceInformation;
 import de.gematik.idp.server.data.PairingDto;
 import de.gematik.idp.server.data.RegistrationData;
 import de.gematik.idp.server.devicevalidation.DeviceValidationState;
 import de.gematik.idp.server.exceptions.IdpServerException;
+import de.gematik.idp.server.exceptions.oauth2spec.IdpServerInvalidRequestException;
 import de.gematik.idp.server.pairing.PairingData;
 import de.gematik.idp.server.pairing.PairingRepository;
+import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
 import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
@@ -54,6 +59,7 @@ public class PairingService {
     private final ModelMapper modelMapper;
     private final DeviceValidationService deviceValidationService;
     private final AuthenticationChallengeVerifier authenticationChallengeVerifier;
+    private final IdpKey idpEnc;
 
 
     public List<PairingDto> validateTokenAndGetPairingList(final JsonWebToken accessToken) {
@@ -83,7 +89,16 @@ public class PairingService {
         pairingRepository.deleteByIdNumber(idNumber);
     }
 
-    public Long validateAndInsertPairingData(final JsonWebToken accessToken, final RegistrationData registrationData) {
+    public Long validateAndInsertPairingData(final JsonWebToken accessToken, final IdpJwe encryptedRegistrationData) {
+        final String payload = encryptedRegistrationData.decryptJweAndReturnPayloadString(
+            idpEnc.getIdentity().getPrivateKey());
+        RegistrationData registrationData = null;
+        try {
+            registrationData = new ObjectMapper().readValue(payload, RegistrationData.class);
+        } catch (final JsonProcessingException e) {
+            throw new IdpServerInvalidRequestException("Invalid Registration Data");
+        }
+
         validateAccessTokenClaims(accessToken);
         final String idNumber = retrieveIdNumberFromAccessToken(accessToken);
         final JsonWebToken signedPairingData = new JsonWebToken(registrationData.getSignedPairingData());
@@ -106,6 +121,11 @@ public class PairingService {
     }
 
     public long insertPairing(final PairingDto pairingData) {
+        if (pairingRepository.findByIdNumberAndKeyIdentifier(pairingData.getIdNumber(), pairingData.getKeyIdentifier())
+            .isPresent()) {
+            throw new IdpServerException("Pairing for this ID/Key-ID combination already in DB",
+                IdpErrorType.INVALID_REQUEST, HttpStatus.CONFLICT);
+        }
         return pairingRepository.save(convertToEntity(pairingData)).getId();
     }
 

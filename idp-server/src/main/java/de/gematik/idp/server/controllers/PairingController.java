@@ -17,30 +17,28 @@
 package de.gematik.idp.server.controllers;
 
 import static de.gematik.idp.IdpConstants.PAIRING_ENDPOINT;
-
 import de.gematik.idp.server.RequestAccessToken;
 import de.gematik.idp.server.data.PairingDto;
-import de.gematik.idp.server.data.RegistrationData;
 import de.gematik.idp.server.services.PairingService;
 import de.gematik.idp.server.validation.accessToken.ValidateAccessToken;
 import de.gematik.idp.server.validation.clientSystem.ValidateClientSystem;
+import de.gematik.idp.token.IdpJwe;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.util.List;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @Transactional
-@Validated
+@Valid
 @Api(tags = {
     "Pairing-Dienst"}, description = "REST Endpunkte Abrufen, Einfügen und löschen von Pairing Daten")
 public class PairingController {
@@ -80,10 +78,9 @@ public class PairingController {
             .validateTokenAndDeleteSelectedPairing(requestAccessToken.getAccessToken(), keyIdentifier);
     }
 
-    @PutMapping(value = PAIRING_ENDPOINT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = PAIRING_ENDPOINT)
     @ApiOperation(httpMethod = "PUT", value = "Endpunkt zum Hinzufügen von Pairingdaten",
-        notes = "Die hier engereichten Pairingdaten werden in der Pairing-DB hinterlegt. Ist dies erfolgreich, wird die ID für den DB-Eintrag zurückgegeben.",
-        response = String.class)
+        notes = "Die hier engereichten Pairingdaten werden in der Pairing-DB hinterlegt. Ist dies erfolgreich, wird die ID für den DB-Eintrag zurückgegeben.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Erfolgreich Pairingdaten hinzugefügt"),
         @ApiResponse(responseCode = "400", description = "Ungültige Anfrage (Parameter fehlen/ungültig)"),
@@ -92,9 +89,8 @@ public class PairingController {
     })
     @ValidateAccessToken
     @ValidateClientSystem
-    public String insertPairing(
-        @RequestBody @ApiParam(value = "Registrierungsdaten") @NotNull final RegistrationData registrationData) {
-        return String.valueOf(
-            pairingService.validateAndInsertPairingData(requestAccessToken.getAccessToken(), registrationData));
+    public void insertPairing(
+        @RequestBody @ApiParam(value = "Registrierungsdaten") @NotNull final String registrationData) {
+        pairingService.validateAndInsertPairingData(requestAccessToken.getAccessToken(), new IdpJwe(registrationData));
     }
 }

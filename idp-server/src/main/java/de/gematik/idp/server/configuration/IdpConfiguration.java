@@ -33,9 +33,10 @@ import org.springframework.stereotype.Component;
 @Builder
 public class IdpConfiguration {
 
-    private IdpKeyConfiguration authKey;
-    private IdpKeyConfiguration tokenKey;
-    private IdpKeyConfiguration discoveryKey;
+    private String tokenFlowMdResource;
+    private IdpKeyConfiguration idpSig;
+    private IdpKeyConfiguration idpEnc;
+    private IdpKeyConfiguration discSig;
     private String symmetricEncryptionKey;
     private String serverUrl;
     private String issuerUrl;
@@ -43,5 +44,6 @@ public class IdpConfiguration {
     private String redirectUri;
     private String subjectSaltValue;
     private List<String> blockedClientSystems;
+    private String productTypeDisplayString;
     private Locale defaultLocale;
 }

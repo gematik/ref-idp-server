@@ -66,7 +66,7 @@ public class MockIdpClient implements IIdpClient {
     private JsonWebToken buildAccessToken(final PkiIdentity clientIdentity) {
         final AuthenticationChallenge challenge = authenticationChallengeBuilder
             .buildAuthenticationChallenge(clientId, "placeholderValue", "foo", "foo",
-                IdpScope.EREZEPT.getJwtValue() + " " + IdpScope.OPENID.getJwtValue(), "nonceValue");
+                IdpScope.OPENID.getJwtValue() + " " + IdpScope.EREZEPT.getJwtValue(), "nonceValue");
         final AuthenticationResponse authenticationResponse = authenticationResponseBuilder
             .buildResponseForChallenge(challenge, clientIdentity);
         final IdpJwe authenticationToken = authenticationTokenBuilder
@@ -110,7 +110,7 @@ public class MockIdpClient implements IIdpClient {
 
     @Override
     public MockIdpClient initialize() {
-        serverIdentity.setKeyId(Optional.of("authKey"));
+        serverIdentity.setKeyId(Optional.of("idpSig"));
         jwtProcessor = new IdpJwtProcessor(serverIdentity);
         accessTokenBuilder = new AccessTokenBuilder(jwtProcessor, uriIdpServer, serverSubSalt);
         authenticationChallengeBuilder = new AuthenticationChallengeBuilder(serverIdentity, uriIdpServer);

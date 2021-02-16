@@ -83,7 +83,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
   #          }
   #          """
 
-  @Afo:A_20699 @Afo:A_20951 @Afo:A_20460 @Afo:A_20699
+  @Afo:A_20699-1 @Afo:A_20951-1 @Afo:A_20460
   @Approval @Todo:ClarifyTokenCodeContentRelevant
   Scenario: Author mit signierter Challenge - Gutfall - Validiere Antwortstruktur
 
@@ -112,7 +112,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And I expect the Context with key STATE to match 'xxxstatexxx'
     And I expect the Context with key SSO_TOKEN to match '.*'
 
-  @Afo:A_20699 @Afo:A_20951 @Afo:A_20460 @Afo:A_20731 @Afo:A_20310 @Afo:A_20377 @Afo:A_20697
+  @Afo:A_20699-1 @Afo:A_20951-1 @Afo:A_20460 @Afo:A_20731 @Afo:A_20310 @Afo:A_20377 @Afo:A_20697 @Afo:A_21317
   @Approval @Todo:ClarifyTokenCodeContentRelevant @Todo:CompareSubjectInfosInTokenAndInCert
   Scenario: Author mit signierter Challenge - Gutfall - Validiere Location Header und Code Token Claims
 
@@ -189,7 +189,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
 
     When I request a code token with signed challenge
-    Then the context TOKEN_CODE must be signed with cert PUK_AUTH
+    Then the context TOKEN_CODE must be signed with cert PUK_SIGN
 
   @Afo:A_20695
   @Approval @Ready
@@ -210,7 +210,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
 
     When I request a code token with signed challenge
-    Then the context SSO_TOKEN must be signed with cert PUK_AUTH
+    Then the context SSO_TOKEN must be signed with cert PUK_SIGN
 
   @Afo:A_20314
   @Approval @Ready
@@ -260,7 +260,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     Then the response is an 302 error with code 'invalid_request' and message matching 'validateChallengeAndGetTokenCode.signedChallenge%3A%20must%20not%20be%20null'
 
 
-  @Afo:A_20951
+  @Afo:A_20951-1
   @Approval @Todo:ErrorMessages
   @OpenBug @issue:IDP-368
   Scenario: Author mit signierter Challenge - Challenge mit abgelaufenem Zertifikat signiert
@@ -281,7 +281,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And I request a code token with signed challenge
     Then the response is an 302 error with code 'invalid_request' and message matching 'TODO'
 
-  @Afo:A_20951 @Afo:A_20318 @Afo:A_20465
+  @Afo:A_20951-1 @Afo:A_20318 @Afo:A_20465
   @Approval @Todo:ErrorMessages
   @OpenBug @issue:IDP-368
   Scenario: Author mit signierter Challenge - Challenge mit gesperrtem Zertifikat signiert
@@ -302,7 +302,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And I request a code token with signed challenge
     Then the response is an 302 error with code 'invalid_request' and message matching 'TODO'
 
-  @Afo:A_20951
+  @Afo:A_20951-1
   @Approval @Todo:ErrorMessages
   @OpenBug @issue:IDP-368
   Scenario: Author mit signierter Challenge - Challenge mit selbst signiertem Zertifikat signiert
@@ -323,7 +323,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And I request a code token with signed challenge
     Then the response is an 302 error with code 'invalid_request' and message matching 'TODO'
 
-  @Afo:A_20951 @Afo:A_20460
+  @Afo:A_20951-1 @Afo:A_20460
   @Approval @Ready
   Scenario: Author mit signierter Challenge - Fehlerhafte Signatur der SIGNED_CHALLENGE (Keine Signatur)
 
@@ -363,7 +363,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And I request a code token with signed challenge
     Then the response is an 302 error with code 'invalid_request' and message matching '.*Error%20during%20JOSE-operations.*'
 
-  @Afo:A_20951 @Afo:A_20460
+  @Afo:A_20951-1 @Afo:A_20460
   @Approval @Ready
   Scenario: Author mit signierter Challenge - Invalide Signatur
 

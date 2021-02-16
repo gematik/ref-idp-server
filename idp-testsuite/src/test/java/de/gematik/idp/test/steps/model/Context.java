@@ -88,6 +88,7 @@ public class Context {
     @Step
     public void iStartNewInteractionKeepingOnly(final List<ContextKey> keys) {
         final Map<ContextKey, Object> ctxt = Context.getThreadContext();
+        assertThat(ctxt.keySet()).containsAll(keys);
         final Map<ContextKey, Object> ctxt2 = keys.stream()
             .map(key -> new AbstractMap.SimpleEntry<>(key, ctxt.get(key)))
             .collect(Collectors.toMap(SimpleEntry::getKey, e -> ctxt.get(e.getKey())));

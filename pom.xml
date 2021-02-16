@@ -70,6 +70,11 @@
                 <groupId>org.bouncycastle</groupId>
                 <version>${version.bouncycastle.bcpkix}</version>
             </dependency>
+            <dependency>
+                <groupId>de.gematik.pki</groupId>
+                <artifactId>gemLibPki</artifactId>
+                <version>0.2.1-73</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <description>IDP</description>
@@ -131,5 +136,5 @@
         <version.test.regex>none</version.test.regex>
     </properties>
 
-    <version>7.0.0</version>
+    <version>8.0.0</version>
 </project>

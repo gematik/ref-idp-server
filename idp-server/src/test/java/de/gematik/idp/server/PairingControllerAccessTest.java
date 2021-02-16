@@ -28,6 +28,7 @@ import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.server.configuration.IdpConfiguration;
+import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.data.DeviceInformation;
 import de.gematik.idp.server.data.DeviceType;
 import de.gematik.idp.server.data.RegistrationData;
@@ -37,19 +38,25 @@ import de.gematik.idp.server.pairing.PairingRepository;
 import de.gematik.idp.server.services.PairingService;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.tests.PkiKeyResolver.Filename;
+import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateEncodingException;
 import java.time.ZonedDateTime;
+import java.util.Base64;
 import java.util.Set;
 import javax.transaction.Transactional;
 import javax.ws.rs.core.HttpHeaders;
 import kong.unirest.HttpResponse;
+import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.lang.JoseException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,6 +72,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @Transactional
 public class PairingControllerAccessTest {
 
+    @Autowired
+    private IdpKey idpEnc;
     @Autowired
     private IdpConfiguration idpConfiguration;
     @Autowired
@@ -100,6 +109,12 @@ public class PairingControllerAccessTest {
             .certificate(rsaIdentity.getCertificate())
             .privateKey(rsaIdentity.getPrivateKey())
             .build();
+    }
+
+    @AfterEach
+    public void cleanUp() {
+        pairingRepository.deleteAll();
+        deviceValidationRepository.deleteAll();
     }
 
     @Test
@@ -146,18 +161,62 @@ public class PairingControllerAccessTest {
     public void insertPairing_correctToken_expect200() throws UnirestException, CertificateEncodingException {
         idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
         accessToken = idpClient.login(egkUserIdentity).getAccessToken();
-
         assertThat(Unirest.put("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
-            .body(createValidRegistrationData("abc"))
+            .body(createIdpJweFromRegistrationData(createValidRegistrationData("123")).getRawString().getBytes(
+                StandardCharsets.UTF_8))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .asString().getStatus())
             .isEqualTo(HttpStatus.OK.value());
 
-        assertThat(pairingService.getPairingDtoForIdNumberAndKeyIdentifier(TEST_KVNR_VALID, "abc"))
+        assertThat(pairingService.getPairingDtoForIdNumberAndKeyIdentifier(TEST_KVNR_VALID, "123"))
             .isPresent()
             .isNotEmpty();
-        cleanUp();
+    }
+
+    @Test
+    public void insertPairing_AlreadyInDb_expect409Conflict() throws UnirestException, CertificateEncodingException {
+        idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
+        accessToken = idpClient.login(egkUserIdentity).getAccessToken();
+
+        Unirest.put("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
+            .body(createIdpJweFromRegistrationData(createValidRegistrationData("abc")).getRawString().getBytes(
+                StandardCharsets.UTF_8))
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
+            .asString().getStatus();
+
+        final HttpResponse<JsonNode> httpResponse = Unirest
+            .put("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
+            .body(createIdpJweFromRegistrationData(createValidRegistrationData("abc")).getRawString().getBytes(
+                StandardCharsets.UTF_8))
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
+            .asJson();
+
+        assertThat(httpResponse.getStatus())
+            .isEqualTo(HttpStatus.CONFLICT.value());
+        assertThat(httpResponse.getBody().getObject().keySet().toArray())
+            .containsAnyOf("error_code", "timestamp", "detail_message");
+    }
+
+    @Test
+    @Disabled
+    public void insertPairing_missingData_expect4xxAndValidIdpError()
+        throws UnirestException, CertificateEncodingException {
+        idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
+        accessToken = idpClient.login(egkUserIdentity).getAccessToken();
+
+        final RegistrationData registrationData = createValidRegistrationData("abc");
+        registrationData.getDeviceInformation().setDeviceName(null);
+
+        final HttpResponse<JsonNode> httpResponse = Unirest
+            .put("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
+            .body(createIdpJweFromRegistrationData(registrationData).getRawString().getBytes(
+                StandardCharsets.UTF_8))
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
+            .asJson();
+        assertThat(httpResponse.getStatus())
+            .isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(httpResponse.getBody().getObject().keySet().toArray())
+            .containsAnyOf("error_code", "timestamp", "detail_message");
     }
 
     @Test
@@ -167,39 +226,47 @@ public class PairingControllerAccessTest {
 
         final HttpResponse<String> httpResponse = Unirest
             .put("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
-            .body(createValidRegistrationData("123"))
+            .body(createIdpJweFromRegistrationData(createValidRegistrationData("123")).getRawString().getBytes(
+                StandardCharsets.UTF_8))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .asString();
         assertThat(httpResponse.getStatus())
             .isEqualTo(HttpStatus.BAD_REQUEST.value());
-        cleanUp();
     }
 
     @Test
     public void deletePairing_valid_expect200() throws UnirestException, CertificateEncodingException {
         idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
         accessToken = idpClient.login(egkUserIdentity).getAccessToken();
+
         pairingService
-            .validateAndInsertPairingData(accessToken, createValidRegistrationData("456"));
+            .validateAndInsertPairingData(accessToken,
+                createIdpJweFromRegistrationData(createValidRegistrationData("456")));
 
         final HttpResponse httpResponse = Unirest
             .delete("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT + "/654321")
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString();
         assertThat(httpResponse.getStatus())
             .isEqualTo(HttpStatus.OK.value());
-        cleanUp();
+    }
+
+    private IdpJwe createIdpJweFromRegistrationData(final RegistrationData registrationData) {
+        return IdpJwe
+            .createWithPayloadAndEncryptWithKey(registrationData.toJSONString(),
+                idpEnc.getIdentity().getCertificate().getPublicKey());
     }
 
     private RegistrationData createValidRegistrationData(final String keyIdentifier)
         throws CertificateEncodingException {
         return RegistrationData.builder()
-            .authenticationCert(java.util.Base64.getEncoder()
+            .authenticationCert(Base64.getEncoder()
                 .encodeToString(egkUserIdentity.getCertificate().getEncoded()))
             .deviceInformation(createDeviceInformation(createTestDeviceValidationData()))
             .signedPairingData(createSignedPairingData(keyIdentifier).getRawString())
             .build();
+
     }
 
     private JsonWebToken createSignedPairingData(final String keyIdentifier) {
@@ -251,10 +318,5 @@ public class PairingControllerAccessTest {
             .os("Android")
             .osVersion("11")
             .build();
-    }
-
-    private void cleanUp() {
-        pairingRepository.deleteAll();
-        deviceValidationRepository.deleteAll();
     }
 }

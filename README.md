@@ -4,6 +4,13 @@
 
 ## Build
 
+### Vorbedingung: GemLibPki
+
+Der IDP-Server greift für den Test von Zertifikaten auf die GemLibPki zurück. Diese Library ist noch NICHT über
+maven-central abrufbar und muss daher lokal gebaut werden (mvn clean install). Dazu muss sie
+unter https://github.com/gematik/ref-GemLibPki
+heruntergeladen werden. Erst danach kann idp-global die notwendige Version der GemLibPki im lokalen Repository finden.
+
 ### Docker Container über docker-compose bauen
 
 Dies ist vor allem für den Server relevant (konstante, saubere Umgebung). Im idp-global root-Verzeichnis bauen mit:

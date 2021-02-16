@@ -86,7 +86,7 @@ public class IdpAccessTokenSteps extends IdpStepsBase {
         final SecretKey tokenKey = new SecretKeySpec(tokenKeyBytes, "AES");
         if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
             Context.getDiscoveryDocument();
-            final PublicKey pukToken = DiscoveryDocument.getPublicKeyFromCertFromJWK(ContextKey.PUK_TOKEN);
+            final PublicKey pukToken = DiscoveryDocument.getPublicKeyFromCertFromJWK(ContextKey.PUK_ENC);
             params.put(
                 "key_verifier",
                 buildKeyVerifierToken(tokenKeyBytes, String.valueOf(ctxt.get(ContextKey.CODE_VERIFIER)), pukToken));

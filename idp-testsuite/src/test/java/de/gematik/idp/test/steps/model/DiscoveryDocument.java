@@ -54,12 +54,14 @@ public class DiscoveryDocument {
     private final JSONObject jsonBody;
     private final JSONObject jsonHeader;
 
-    private JSONObject pukUriToken;
-    private JSONObject pukUriAuth;
+    private JSONObject pukUriEnc;
+    private JSONObject pukUriSign;
     private JSONObject pukUriDisc;
+    private String uriDisc;
+
     private final String authorizationEndpoint;
-    private final String tokenEndpoint;
     private final String ssoEndpoint;
+    private final String tokenEndpoint;
     private final String pairingEndpoint;
     private final String jwksUri;
 
@@ -82,10 +84,10 @@ public class DiscoveryDocument {
 
     public void readPublicKeysFromURIs()
         throws JSONException, URISyntaxException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
-        pukUriToken = getPuKFromJSONAttribute(jsonBody.getString("puk_uri_token"));
-        Context.getThreadContext().put(ContextKey.PUK_TOKEN, pukUriToken);
-        pukUriAuth = getPuKFromJSONAttribute(jsonBody.getString("puk_uri_auth"));
-        Context.getThreadContext().put(ContextKey.PUK_AUTH, pukUriAuth);
+        pukUriEnc = getPuKFromJSONAttribute(jsonBody.getString("uri_puk_idp_enc"));
+        Context.getThreadContext().put(ContextKey.PUK_ENC, pukUriEnc);
+        pukUriSign = getPuKFromJSONAttribute(jsonBody.getString("uri_puk_idp_sig"));
+        Context.getThreadContext().put(ContextKey.PUK_SIGN, pukUriSign);
 
         pukUriDisc = new JSONObject();
         pukUriDisc.put("x5c", jsonHeader.getJSONArray("x5c"));

@@ -18,6 +18,9 @@ package de.gematik.idp.data;
 
 import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
 import java.security.cert.X509Certificate;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,17 +32,17 @@ import lombok.NoArgsConstructor;
 @Data
 public class IdpJwksDocument {
 
-    private IdpKeyDescriptor[] keys;
+    private List<IdpKeyDescriptor> keys;
 
     {
         BrainpoolCurves.init();
     }
 
-    public static IdpJwksDocument constructFromX509Certificate(final X509Certificate certificate) {
+    public static IdpJwksDocument constructFromX509Certificate(final X509Certificate... certificates) {
         return IdpJwksDocument.builder()
-            .keys(new IdpKeyDescriptor[]{
-                IdpKeyDescriptor
-                    .constructFromX509Certificate(certificate)})
+            .keys(Stream.of(certificates)
+                .map(certificate -> IdpKeyDescriptor.constructFromX509Certificate(certificate))
+                .collect(Collectors.toList()))
             .build();
     }
 }

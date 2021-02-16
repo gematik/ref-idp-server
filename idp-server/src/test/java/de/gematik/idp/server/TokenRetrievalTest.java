@@ -20,6 +20,7 @@ import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifie
 import static de.gematik.idp.client.AuthenticatorClient.getAllHeaderElementsAsMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.authentication.IdpJwtProcessor;
@@ -68,7 +69,7 @@ public class TokenRetrievalTest {
     @Autowired
     private IdpConfiguration idpConfiguration;
     @Autowired
-    private IdpKey authKey;
+    private IdpKey idpSig;
     @Autowired
     private Key symmetricEncryptionKey;
     private IdpClient idpClient;
@@ -319,6 +320,19 @@ public class TokenRetrievalTest {
     }
 
     @Test
+    public void verifyNonceClaimCorrectInIdToken() throws UnirestException {
+        final AtomicReference<String> nonceValue = new AtomicReference<>();
+        idpClient.setBeforeAuthorizationCallback(request ->
+            nonceValue.set(UriUtils.extractParameterValue(request.getUrl(), "nonce")));
+
+        final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
+
+        assertThat(tokenResponse.getIdToken().getStringBodyClaim(ClaimName.NONCE).get())
+            .isEqualTo(nonceValue.get())
+            .isNotEmpty();
+    }
+
+    @Test
     public void assertThatTokenIsValid() throws UnirestException {
         final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
 
@@ -529,7 +543,7 @@ public class TokenRetrievalTest {
                     .userConsent(response.getAuthenticationChallenge().getUserConsent())
                     .challenge(response.getAuthenticationChallenge().getChallenge().toJwtDescription()
                         .expiresAt(ZonedDateTime.now().minusMinutes(1))
-                        .setIdentity(authKey.getIdentity())
+                        .setIdentity(idpSig.getIdentity())
                         .buildJwt())
                     .build())
                 .build();
@@ -554,7 +568,7 @@ public class TokenRetrievalTest {
                 .userConsent(response.getAuthenticationChallenge().getUserConsent())
                 .challenge(response.getAuthenticationChallenge().getChallenge().toJwtDescription()
                     .expiresAt(ZonedDateTime.now().minusMinutes(1))
-                    .setIdentity(authKey.getIdentity())
+                    .setIdentity(idpSig.getIdentity())
                     .buildJwt())
                 .build())
             .build());
@@ -579,13 +593,20 @@ public class TokenRetrievalTest {
     }
 
     @Test
+    public void illegalCertificateType_shouldGiveServerError(
+        @Filename("smcb-idp-expired") final PkiIdentity illegalIdentity) throws UnirestException {
+        assertThatThrownBy(() -> idpClient.login(illegalIdentity))
+            .isInstanceOf(IdpClientRuntimeException.class);
+    }
+
+    @Test
     public void expiredAuthenticationToken_shouldGiveValidationError() throws UnirestException {
         idpClient.setAuthenticationResponseMapper(authResponse -> {
             final IdpJoseObject expiredAuthToken = new IdpJwe(authResponse.getCode())
                 .decryptNestedJwt(symmetricEncryptionKey)
                 .toJwtDescription()
                 .expiresAt(ZonedDateTime.now().minusSeconds(1))
-                .setSignerKey(authKey.getIdentity().getPrivateKey())
+                .setSignerKey(idpSig.getIdentity().getPrivateKey())
                 .buildJwt()
                 .encrypt(symmetricEncryptionKey);
             return AuthenticationResponse.builder()
@@ -609,7 +630,7 @@ public class TokenRetrievalTest {
             .decryptNestedJwt(symmetricEncryptionKey)
             .toJwtDescription()
             .expiresAt(ZonedDateTime.now().minusMinutes(10))
-            .setSignerKey(authKey.getIdentity().getPrivateKey())
+            .setSignerKey(idpSig.getIdentity().getPrivateKey())
             .buildJwt()
             .encrypt(symmetricEncryptionKey);
 
@@ -623,7 +644,7 @@ public class TokenRetrievalTest {
             final JsonWebToken expiredChallenge = authResponse.getAuthenticationChallenge().getChallenge()
                 .toJwtDescription()
                 .expiresAt(ZonedDateTime.now().minusSeconds(1))
-                .setSignerKey(authKey.getIdentity().getPrivateKey())
+                .setSignerKey(idpSig.getIdentity().getPrivateKey())
                 .buildJwt();
             return AuthorizationResponse.builder()
                 .authenticationChallenge(AuthenticationChallenge.builder()

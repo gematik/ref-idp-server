@@ -34,11 +34,16 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.thucydides.core.annotations.Steps;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.api.Assertions;
 import org.json.JSONObject;
 
@@ -100,7 +105,7 @@ public class StepsGlue {
     @When("I request a challenge with")
     @SneakyThrows
     public void iRequestAChallengeWith(final DataTable params) {
-        auth.getChallenge(params, HttpStatus.NOCHECK);
+        auth.getChallenge(auth.getMapFromDatatable(params), HttpStatus.NOCHECK);
     }
 
     // =================================================================================================================
@@ -186,6 +191,12 @@ public class StepsGlue {
     public void theResponseMustBeSignedWithCert(final ContextKey pukKey) {
         disc.assertResponseIsSignedWithCert(pukKey);
     }
+
+    @Then("the response is empty")
+    public void theResponseIsEmpty() {
+        assertThat(Context.getCurrentResponse().getBody().asString()).isEmpty();
+    }
+
 
     @And("the context {ContextKey} must be signed with cert {ContextKey}")
     @SneakyThrows
@@ -381,4 +392,62 @@ public class StepsGlue {
     public HttpMethods HttpMethods(final String httpMethodsStr) {
         return HttpMethods.valueOf(httpMethodsStr);
     }
+
+    @ParameterType(AccessTokenType.CUCUMBER_REGEX)
+    public AccessTokenType AccessTokenType(final String accessTokenTypeStr) {
+        return AccessTokenType.fromString(accessTokenTypeStr);
+    }
+
+    @Given("I request an {AccessTokenType} access token with eGK cert {string}")
+    @SneakyThrows
+    public void iRequestAnAccessTokenWitheGK(final AccessTokenType accessType, final String certFile) {
+        final String state = RandomStringUtils.random(16, true, true);
+        final String nonce = RandomStringUtils.random(20, true, true);
+        final String codeVerifier = RandomStringUtils.random(60, true, true);
+        auth.setCodeVerifier(codeVerifier);
+        final Map<String, String> data = Stream.of(new String[][]{
+            {"client_id", "eRezeptApp"},
+            {"scope", accessType.toScope() + " openid"},
+            {"code_challenge", auth.generateCodeChallenge(codeVerifier)},
+            {"code_challenge_method", "S256"},
+            {"redirect_uri", "http://redirect.gematik.de/erezept"},
+            {"state", state},
+            {"nonce", nonce},
+            {"response_type", "code"}
+        }).collect(Collectors.collectingAndThen(
+            Collectors.toMap(d -> d[0], d -> d[1]),
+            Collections::<String, String>unmodifiableMap));
+        auth.getChallenge(data, HttpStatus.NOCHECK);
+        author.signChallenge(certFile);
+        author.getCode(CodeAuthType.SIGNED_CHALLENGE, HttpStatus.NOCHECK);
+        Context.getThreadContext().put(ContextKey.REDIRECT_URI, "http://redirect.gematik.de/erezept");
+        access.getToken(HttpStatus.NOCHECK, null);
+    }
+
+    @Given("I request an {AccessTokenType} access token via SSO token with eGK cert {string}")
+    @SneakyThrows
+    public void iRequestAnAccessTokenViaSsoToken(final AccessTokenType accessType, final String certFile) {
+        iRequestAnAccessTokenWitheGK(accessType, certFile);
+        final String state = RandomStringUtils.random(16, true, true);
+        final String nonce = RandomStringUtils.random(20, true, true);
+        final String codeVerifier = RandomStringUtils.random(60, true, true);
+        auth.setCodeVerifier(codeVerifier);
+        final Map<String, String> data = Stream.of(new String[][]{
+            {"client_id", "eRezeptApp"},
+            {"scope", accessType.toScope() + " openid"},
+            {"code_challenge", auth.generateCodeChallenge(codeVerifier)},
+            {"code_challenge_method", "S256"},
+            {"redirect_uri", "http://redirect.gematik.de/erezept"},
+            {"state", state},
+            {"nonce", nonce},
+            {"response_type", "code"}
+        }).collect(Collectors.collectingAndThen(
+            Collectors.toMap(d -> d[0], d -> d[1]),
+            Collections::<String, String>unmodifiableMap));
+        auth.getChallenge(data, HttpStatus.NOCHECK);
+        author.getCode(CodeAuthType.SSO_TOKEN, HttpStatus.NOCHECK);
+        Context.getThreadContext().put(ContextKey.REDIRECT_URI, "http://redirect.gematik.de/erezept");
+        access.getToken(HttpStatus.NOCHECK, null);
+    }
+
 }

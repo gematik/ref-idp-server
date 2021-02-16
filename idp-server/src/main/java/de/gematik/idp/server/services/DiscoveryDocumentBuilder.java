@@ -14,16 +14,21 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.discoveryDocument;
+package de.gematik.idp.server.services;
 
 import static de.gematik.idp.IdpConstants.*;
 
 import de.gematik.idp.data.IdpDiscoveryDocument;
+import de.gematik.idp.server.controllers.IdpKey;
+import de.gematik.idp.server.controllers.KeyInformationController;
 import java.time.ZonedDateTime;
-import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
-@Data
+@RequiredArgsConstructor
 public class DiscoveryDocumentBuilder {
+
+    private IdpKey idpEnc;
+    private IdpKey idpSig;
 
     public IdpDiscoveryDocument buildDiscoveryDocument(final String serverUrl, final String issuerUrl) {
         final ZonedDateTime currentTime = ZonedDateTime.now();
@@ -47,8 +52,8 @@ public class DiscoveryDocumentBuilder {
             .exp(currentTime.plusHours(24).toEpochSecond())
             .iat(currentTime.toEpochSecond())
             .nbf(currentTime.toEpochSecond())
-            .pukUriAuth(serverUrl + PUK_URI_AUTH)
-            .pukUriToken(serverUrl + PUK_URI_TOKEN)
+            .uriPukIdpEnc(serverUrl + KeyInformationController.PUK_URI_ENC)
+            .uriPukIdpSig(serverUrl + KeyInformationController.PUK_URI_SIG)
             .build();
     }
 }

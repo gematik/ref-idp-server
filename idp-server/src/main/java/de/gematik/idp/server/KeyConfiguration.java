@@ -44,18 +44,18 @@ public class KeyConfiguration {
     private final IdpConfiguration idpConfiguration;
 
     @Bean
-    public IdpKey authKey() {
-        return getIdpKey(idpConfiguration.getAuthKey());
+    public IdpKey idpEnc() {
+        return getIdpKey(idpConfiguration.getIdpEnc());
     }
 
     @Bean
-    public IdpKey tokenKey() {
-        return getIdpKey(idpConfiguration.getTokenKey());
+    public IdpKey idpSig() {
+        return getIdpKey(idpConfiguration.getIdpSig());
     }
 
     @Bean
-    public IdpKey discKey() {
-        return getIdpKey(idpConfiguration.getDiscoveryKey());
+    public IdpKey discSig() {
+        return getIdpKey(idpConfiguration.getDiscSig());
     }
 
     @Bean
@@ -65,7 +65,7 @@ public class KeyConfiguration {
 
     @Bean
     public IdpJwtProcessor idpJwtProcessor() {
-        return new IdpJwtProcessor(authKey().getIdentity());
+        return new IdpJwtProcessor(idpSig().getIdentity());
     }
 
     private IdpKey getIdpKey(final IdpKeyConfiguration keyConfiguration) {

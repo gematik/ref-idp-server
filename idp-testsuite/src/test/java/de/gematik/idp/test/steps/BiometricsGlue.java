@@ -34,4 +34,14 @@ public class BiometricsGlue {
     public void iRegisterTheDeviceWithCert(final String certFile) {
         biosteps.registerDeviceWithCert(certFile);
     }
+
+    @When("I deregister the device with {string}")
+    public void iDeregisterTheDeviceWithThisismykey(final String keyVerifier) {
+        biosteps.deregisterDeviceWithKey(keyVerifier);
+    }
+
+    @And("I request all pairings")
+    public void iRequestAllPairings() {
+        biosteps.requestAllPairings();
+    }
 }

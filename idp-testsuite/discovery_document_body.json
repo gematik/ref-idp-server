@@ -1,35 +1,37 @@
 {
-  "response_types_supported": [
-    "code"
-  ],
-  "puk_uri_token": "http://localhost:8080/tokenKey/jwks.json",
+  "authorization_endpoint": "http://localhost:8080/sign_response",
+  "alternative_authorization_endpoint": "http://localhost:8080/alt_response",
   "sso_endpoint": "http://localhost:8080/sso_response",
-  "grant_types_supported": [
-    "authorization_code"
-  ],
-  "scopes_supported": [
-    "openid",
-    "e-rezept"
-  ],
+  "pairing_endpoint": "http://localhost:8080/pairing",
+  "token_endpoint": "http://localhost:8080/token",
   "uri_disc": "http://localhost:8080/discoveryDocument",
   "issuer": "https://idp.zentral.idp.splitdns.ti-dienste.de",
-  "puk_uri_auth": "http://localhost:8080/authKey/jwks.json",
-  "acr_values_supported": [
-    "urn:eidas:loa:high"
-  ],
-  "authorization_endpoint": "http://localhost:8080/sign_response",
   "jwks_uri": "http://localhost:8080/jwks",
+  "uri_puk_idp_enc": "http://localhost:8080/idpEnc/jwks.json",
+  "uri_puk_idp_sig": "http://localhost:8080/ipdSig/jwks.json",
   "subject_types_supported": [
     "pairwise"
   ],
   "id_token_signing_alg_values_supported": [
     "BP256R1"
   ],
-  "token_endpoint_auth_methods_supported": [
-    "none"
+  "response_types_supported": [
+    "code"
+  ],
+  "scopes_supported": [
+    "openid",
+    "e-rezept"
   ],
   "response_modes_supported": [
     "query"
   ],
-  "token_endpoint": "http://localhost:8080/token"
+  "grant_types_supported": [
+    "authorization_code"
+  ],
+  "acr_values_supported": [
+    "urn:eidas:loa:high"
+  ],
+  "token_endpoint_auth_methods_supported": [
+    "none"
+  ]
 }

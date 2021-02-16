@@ -138,7 +138,7 @@ public class IdpClient implements IIdpClient {
                 .ssoToken(authenticationResponse.getSsoToken())
                 .redirectUrl(redirectUrl)
                 .codeVerifier(codeVerifier)
-                .pukToken(discoveryDocumentResponse.getServerTokenCertificate().getPublicKey())
+                .idpEnc(discoveryDocumentResponse.getIdpEnc().getPublicKey())
                 .build(),
             beforeTokenMapper,
             afterTokenCallback);
@@ -199,7 +199,7 @@ public class IdpClient implements IIdpClient {
                 .ssoToken(ssoToken.getRawString())
                 .redirectUrl(redirectUrl)
                 .codeVerifier(codeVerifier)
-                .pukToken(discoveryDocumentResponse.getServerTokenCertificate().getPublicKey())
+                .idpEnc(discoveryDocumentResponse.getIdpEnc().getPublicKey())
                 .build(),
             beforeTokenMapper,
             afterTokenCallback);
@@ -217,14 +217,12 @@ public class IdpClient implements IIdpClient {
         return AuthenticationResponseBuilder.builder().build()
             .buildResponseForChallenge(authenticationChallenge, idpIdentity)
             .getSignedChallenge()
-            .encrypt(discoveryDocumentResponse.getServerTokenCertificate().getPublicKey());
+            .encrypt(discoveryDocumentResponse.getIdpEnc().getPublicKey());
     }
 
     private void assertThatClientIsInitialized() {
         LOGGER.debug("Verifying IDP-Client initialization...");
         if (discoveryDocumentResponse == null ||
-            StringUtils.isEmpty(discoveryDocumentResponse.getKeyId()) ||
-            StringUtils.isEmpty(discoveryDocumentResponse.getVerificationCertificate()) ||
             StringUtils.isEmpty(discoveryDocumentResponse.getAuthorizationEndpoint()) ||
             StringUtils.isEmpty(discoveryDocumentResponse.getTokenEndpoint())) {
             throw new IdpClientRuntimeException(
@@ -242,7 +240,7 @@ public class IdpClient implements IIdpClient {
 
     public void verifyAuthTokenToken(final IdpTokenResult authToken) {
         authToken.getAccessToken()
-            .verify(discoveryDocumentResponse.getServerTokenCertificate().getPublicKey());
+            .verify(discoveryDocumentResponse.getIdpSig().getPublicKey());
     }
 
     public void setBeforeAuthorizationCallback(final Consumer<GetRequest> callback) {

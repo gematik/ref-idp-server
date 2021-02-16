@@ -38,13 +38,16 @@ import javax.validation.ConstraintViolationException;
 import javax.validation.ValidationException;
 import javax.ws.rs.core.UriBuilder;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.dao.NonTransientDataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -54,11 +57,11 @@ import org.springframework.web.util.UriUtils;
 
 @ControllerAdvice
 @RequiredArgsConstructor
+@Slf4j
 public class IdpServerExceptionHandler {
 
-    private static final Logger LOG = LoggerFactory.getLogger(IdpServerExceptionHandler.class);
     private final ServerUrlService serverUrlService;
-    private final IdpKey authKey;
+    private final IdpKey idpEnc;
 
     @ExceptionHandler(IdpServerException.class)
     public ResponseEntity<IdpErrorTypeResponse> handleIdpServerException(final IdpServerException exc,
@@ -86,6 +89,9 @@ public class IdpServerExceptionHandler {
         final URI location = uriBuilder.build();
         response.setHeader(HttpHeaders.LOCATION, location.toString());
 
+        log.info("Returning error to client: {}", exc.getMessage());
+        log.info(ExceptionUtils.getStackTrace(exc));
+
         return new ResponseEntity<>(HttpStatus.FOUND);
     }
 
@@ -107,7 +113,7 @@ public class IdpServerExceptionHandler {
             Optional.ofNullable(request.getParameter("signed_challenge"))
                 .filter(Objects::nonNull)
                 .map(IdpJwe::new)
-                .map(jwe -> jwe.decryptNestedJwt(authKey.getIdentity().getPrivateKey()))
+                .map(jwe -> jwe.decryptNestedJwt(idpEnc.getIdentity().getPrivateKey()))
                 .flatMap(jwt -> jwt.getStringBodyClaim(ClaimName.NESTED_JWT))
                 .map(JsonWebToken::new)
                 .flatMap(jwt -> jwt.getStringBodyClaim(ClaimName.STATE))
@@ -139,20 +145,29 @@ public class IdpServerExceptionHandler {
             request, response);
     }
 
-    @ExceptionHandler({ConstraintViolationException.class, ValidationException.class})
-    public ResponseEntity<IdpErrorTypeResponse> handleValidationException(final ValidationException exc,
+    @ExceptionHandler({ConstraintViolationException.class, ValidationException.class,
+        MethodArgumentNotValidException.class})
+    public ResponseEntity<IdpErrorTypeResponse> handleValidationException(final Exception exc,
         final WebRequest request, final HttpServletResponse response) {
         return handleIdpServerException(
             new IdpServerException(exc.getMessage(), exc, IdpErrorType.INVALID_REQUEST,
                 HttpStatus.BAD_REQUEST), request, response);
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<IdpErrorTypeResponse> handleRuntimeException(final RuntimeException exc,
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<IdpErrorTypeResponse> handleRuntimeException(final Exception exc,
         final WebRequest request, final HttpServletResponse response) {
         return handleIdpServerException(
             new IdpServerException("Invalid Request", exc, IdpErrorType.INTERNAL_SERVER_ERROR,
                 HttpStatus.INTERNAL_SERVER_ERROR), request, response);
+    }
+
+    @ExceptionHandler(NonTransientDataAccessException.class)
+    public ResponseEntity<IdpErrorTypeResponse> handleDbIntegrityError(final NonTransientDataAccessException exc,
+        final WebRequest request, final HttpServletResponse response) {
+        return handleIdpServerException(
+            new IdpServerException("Invalid Request", exc, IdpErrorType.INVALID_REQUEST,
+                HttpStatus.CONFLICT), request, response);
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
@@ -164,9 +179,18 @@ public class IdpServerExceptionHandler {
                 HttpStatus.BAD_REQUEST), request, response);
     }
 
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<IdpErrorTypeResponse> handleMethodNotSupported(
+        final MissingServletRequestParameterException ex, final WebRequest request,
+        final HttpServletResponse response) {
+        return handleIdpServerException(
+            new IdpServerException(ex.getMessage(), ex, IdpErrorType.INVALID_REQUEST,
+                HttpStatus.METHOD_NOT_ALLOWED), request, response);
+    }
+
     private void logEntry(final IdpErrorTypeResponse body, final Exception exc) {
-        LOG.info("Returning error to client: {}, error_id: {}", exc.getMessage(), body.getErrorUuid());
-        LOG.debug(body.toString(), exc);
+        log.info("Returning error to client: {}, error_id: {}", exc.getMessage(), body.getErrorUuid());
+        log.debug(body.toString(), exc);
     }
 
     private HttpHeaders getHeader() {

@@ -27,9 +27,11 @@ import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.JsonWebToken;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,15 +46,12 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 public class MockIdpClientTokenSynchronTest {
 
     private static final String URI_MOCK_IDP_SERVER = "https://idp.zentral.idp.splitdns.ti-dienste.de";
-    private static final List<String> VOLATILE_CLAIMS = new ArrayList<>() {
-        {
-            add(ClaimName.EXPIRES_AT.getJoseName());
-            add(ClaimName.ISSUED_AT.getJoseName());
-            add(ClaimName.AUTH_TIME.getJoseName());
-            add(ClaimName.SUBJECT.getJoseName());
-            add(ClaimName.JWT_ID.getJoseName());
-        }
-    };
+    private static final Set<String> VOLATILE_CLAIMS = Set.of(ClaimName.EXPIRES_AT.getJoseName(),
+        ClaimName.ISSUED_AT.getJoseName(),
+        ClaimName.AUTH_TIME.getJoseName(),
+        ClaimName.SUBJECT.getJoseName(),
+        ClaimName.SCOPE.getJoseName(),
+        ClaimName.JWT_ID.getJoseName());
     @Autowired
     private IdpConfiguration idpConfiguration;
     private IdpClient idpClient;
@@ -62,12 +61,6 @@ public class MockIdpClientTokenSynchronTest {
     private MockIdpClient mockIdpClient;
     private PkiIdentity clientIdentity;
     private PkiIdentity serverIdentity;
-
-    private static String sortedScope(final Object scope) {
-        final String[] scopeArray = Stream.of(scope).map(String.class::cast).map(a -> a.split(" ")).findAny()
-            .orElse(new String[]{});
-        return Arrays.asList(scopeArray).stream().sorted().collect(Collectors.joining(" "));
-    }
 
     @BeforeEach
     public void startup(@PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity clientIdentity,
@@ -86,6 +79,7 @@ public class MockIdpClientTokenSynchronTest {
 
         this.clientIdentity = clientIdentity;
         this.serverIdentity = serverIdentity;
+        serverIdentity.setKeyId(Optional.of("idpSig"));
         mockIdpClient = MockIdpClient.builder()
             .serverIdentity(serverIdentity)
             .uriIdpServer(URI_MOCK_IDP_SERVER)
@@ -160,28 +154,22 @@ public class MockIdpClientTokenSynchronTest {
             .isEqualTo(accessTokenIdpClient.getBodyClaims().size() + 1);
     }
 
-    private void compareClaimMaps(final Map<String, Object> mockClientClaims,
-        final Map<String, Object> referenceClientClaims) {
-        assertThat(referenceClientClaims.keySet())
-            .as("claims non-mock: \n" + referenceClientClaims + "\nclaims mock: \n" + mockClientClaims)
-            .containsExactlyInAnyOrder(mockClientClaims.keySet().toArray(new String[mockClientClaims.size()]));
-        assertThat(mockClientClaims.keySet())
-            .containsExactlyInAnyOrder(
-                referenceClientClaims.keySet().toArray(new String[referenceClientClaims.size()]));
-
-        mockClientClaims.entrySet().stream().forEach(entry -> {
-            assertThat(referenceClientClaims).containsKey(entry.getKey());
-            compareClaimValue(entry.getKey(), entry.getValue(), referenceClientClaims);
-        });
+    private Map<String, Object> filterVolatileClaims(final Map<String, Object> claimsMap) {
+        return claimsMap.entrySet().stream()
+            .filter(entry -> !VOLATILE_CLAIMS.contains(entry.getKey()))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private void compareClaimValue(final String key, final Object value,
+    private void compareClaimMaps(final Map<String, Object> mockClientClaims,
         final Map<String, Object> referenceClientClaims) {
-        if (key.equals(ClaimName.SCOPE.getJoseName())) {
-            assertThat(sortedScope(value))
-                .isEqualTo(sortedScope(referenceClientClaims.get(key)));
-        } else if (!VOLATILE_CLAIMS.contains(key)) {
-            assertThat(referenceClientClaims).containsValue(value);
+        assertThat(filterVolatileClaims(referenceClientClaims))
+            .as("claims non-mock: \n" + referenceClientClaims + "\nclaims mock: \n" + mockClientClaims)
+            .containsExactlyEntriesOf(filterVolatileClaims(mockClientClaims));
+        if (referenceClientClaims.containsKey(ClaimName.SCOPE.getJoseName())) {
+            assertThat(mockClientClaims.get(ClaimName.SCOPE.getJoseName()).toString().split(" "))
+                .containsExactlyInAnyOrder(referenceClientClaims
+                    .get(ClaimName.SCOPE.getJoseName())
+                    .toString().split(" "));
         }
     }
 }

@@ -85,7 +85,7 @@ public class IdpStepsBase {
             }
         }
         if (body != null) {
-            reqSpec.contentType(ContentType.JSON.withCharset("UTF-8")).body(body);
+            reqSpec.body(body);
         }
         if (headers != null) {
             reqSpec.headers(headers);
@@ -139,9 +139,13 @@ public class IdpStepsBase {
         assertThat(rows.size())
             .withFailMessage("Expected one data row, check your feature file")
             .isEqualTo(1);
+        return parseParams(rows.get(0));
 
+    }
+
+    protected Map<String, String> parseParams(final Map<String, String> params) {
         final Map<String, String> mapParsedParams = new HashMap<>();
-        for (final Map.Entry<String, String> entry : rows.get(0).entrySet()) {
+        for (final Map.Entry<String, String> entry : params.entrySet()) {
             if (!"$REMOVE".equals(entry.getValue())) {
                 if ("$NULL".equals(entry.getValue())) {
                     mapParsedParams.put(entry.getKey(), null);

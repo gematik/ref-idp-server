@@ -45,7 +45,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
           }
         """
 
-  @Afo:A_20731 @Afo:A_20310 @Afo:A_20464 @Afo:A_20952
+  @Afo:A_20731 @Afo:A_20310 @Afo:A_20464 @Afo:A_20952 @Afo:21320 @Afo:A_21321
   @Approval @Todo:AccessTokenContent
   @Todo:CompareSubjectInfosInAccessTokenAndInCert
     # TODO: wollen wir noch den Wert der auth_time gegen den Zeitpunkt der Authentifizierung pruefen
@@ -121,6 +121,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
           }
         """
 
+  @Afo:A_21321
   @Approval @Ready
   Scenario: GetToken Signierte Challenge - Gutfall - Check ID Token - Validiere ID Token Claims
     Given I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
@@ -216,7 +217,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And I set the context with key REDIRECT_URI to 'http://redirect.gematik.de/erezept'
 
     When I request an access token
-    Then the context ACCESS_TOKEN must be signed with cert PUK_TOKEN
+    Then the context ACCESS_TOKEN must be signed with cert PUK_SIGN
 
   @Afo:A_20625 @Afo:A_20327-02
   @Approval @Ready
@@ -232,7 +233,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And I set the context with key REDIRECT_URI to 'http://redirect.gematik.de/erezept'
 
     When I request an access token
-    Then the context ID_TOKEN must be signed with cert PUK_TOKEN
+    Then the context ID_TOKEN must be signed with cert PUK_SIGN
 
     # TODO card specific cases (if user consent claims should be validated)
 

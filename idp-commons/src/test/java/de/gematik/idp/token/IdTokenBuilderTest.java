@@ -42,6 +42,7 @@ public class IdTokenBuilderTest {
 
     private static final String uriIdpServer = "https://idp.zentral.idp.splitdns.ti-dienste.de";
     private static final long maxIdTokenExpirationInSec = 86400;
+    private static final String NONCE_VALUE = "wertDerNonce-superRandom";
     private IdTokenBuilder idTokenBuilder;
     private JsonWebToken authenticationToken;
 
@@ -54,6 +55,7 @@ public class IdTokenBuilderTest {
         bodyClaims.put(GIVEN_NAME.getJoseName(), "given_name");
         bodyClaims.put(FAMILY_NAME.getJoseName(), "family_name");
         bodyClaims.put(JWKS_URI.getJoseName(), "jwks_uri");
+        bodyClaims.put(NONCE.getJoseName(), NONCE_VALUE);
         bodyClaims.put(CLIENT_ID.getJoseName(), IdpConstants.CLIENT_ID);
         authenticationToken = new JwtBuilder()
             .replaceAllHeaderClaims(Map.of("headerNotCopy", "headerNotCopy"))
@@ -83,6 +85,7 @@ public class IdTokenBuilderTest {
             .containsEntry(ID_NUMBER.getJoseName(), "id_number")
             .containsEntry(GIVEN_NAME.getJoseName(), "given_name")
             .containsEntry(FAMILY_NAME.getJoseName(), "family_name")
+            .containsEntry(NONCE.getJoseName(), NONCE_VALUE)
             .doesNotContainKey(JWKS_URI.getJoseName());
         assertThat(idToken.getHeaderClaims())
             .containsKey(ALGORITHM.getJoseName())

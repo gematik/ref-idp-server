@@ -30,7 +30,7 @@ public class DiscoveryDocumentResponse {
 
     private String authorizationEndpoint;
     private String tokenEndpoint;
-    private String keyId;
-    private String verificationCertificate;
-    private X509Certificate serverTokenCertificate;
+    private X509Certificate idpSig;
+    private X509Certificate idpEnc;
+    private X509Certificate discSig;
 }

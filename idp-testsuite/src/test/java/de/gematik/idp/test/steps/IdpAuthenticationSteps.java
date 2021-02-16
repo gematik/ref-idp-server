@@ -20,16 +20,23 @@ import de.gematik.idp.test.steps.model.Context;
 import de.gematik.idp.test.steps.model.ContextKey;
 import de.gematik.idp.test.steps.model.HttpMethods;
 import de.gematik.idp.test.steps.model.HttpStatus;
-import io.cucumber.datatable.DataTable;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Map;
+import lombok.SneakyThrows;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class IdpAuthenticationSteps extends IdpStepsBase {
 
-    public void getChallenge(final DataTable params, final HttpStatus status) throws JSONException {
-        final Map<String, String> mapParsedParams = getMapFromDatatable(params);
+    @SneakyThrows
+    public String generateCodeChallenge(final String codeVerifier) {
+        final byte[] bytes = codeVerifier.getBytes(StandardCharsets.UTF_8);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(DigestUtils.sha256(bytes));
+    }
 
+    public void getChallenge(final Map<String, String> mapParsedParams, final HttpStatus status) throws JSONException {
         final Map<ContextKey, Object> ctxt = Context.getThreadContext();
         if (mapParsedParams.containsKey("client_id")) {
             final String cid = mapParsedParams.get("client_id");

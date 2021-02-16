@@ -151,7 +151,7 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
                 params.put(
                     "signed_challenge",
                     encrypt(params.get("signed_challenge"),
-                        DiscoveryDocument.getPublicKeyFromCertFromJWK(ContextKey.PUK_AUTH))
+                        DiscoveryDocument.getPublicKeyFromCertFromJWK(ContextKey.PUK_ENC))
                 );
                 break;
             case SSO_TOKEN:

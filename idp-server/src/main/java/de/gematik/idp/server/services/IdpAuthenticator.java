@@ -32,6 +32,8 @@ import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
 import de.gematik.idp.token.SsoTokenBuilder;
 import de.gematik.idp.token.TokenClaimExtraction;
+import de.gematik.pki.certificate.CertificateVerifier;
+import de.gematik.pki.exception.GemPkiException;
 import java.net.URISyntaxException;
 import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
@@ -51,9 +53,10 @@ public class IdpAuthenticator {
     private final SsoTokenValidator ssoTokenValidator;
     private final AuthenticationTokenBuilder authenticationTokenBuilder;
     private final IdpConfiguration idpConfiguration;
-    private final IdpKey authKey;
+    private final IdpKey idpSig;
+    private final IdpKey idpEnc;
+    private final CertificateVerifier certificateVerifier;
     private final ChallengeTokenValidationService challengeTokenValidationService;
-
 
     public String getBasicFlowTokenLocation(final IdpJwe signedChallenge, final String serverUrl) {
         try {
@@ -77,7 +80,7 @@ public class IdpAuthenticator {
 
     private JsonWebToken decryptChallenge(final IdpJwe signedChallenge) {
         try {
-            return signedChallenge.decryptNestedJwt(authKey.getIdentity().getPrivateKey());
+            return signedChallenge.decryptNestedJwt(idpEnc.getIdentity().getPrivateKey());
         } catch (final RuntimeException e) {
             throw new IdpServerInvalidRequestException("Error during client-challenge decryption!", e);
         }
@@ -108,6 +111,8 @@ public class IdpAuthenticator {
         final X509Certificate nestedX509ClientCertificate =
             signedChallenge.getClientCertificateFromHeader()
                 .orElseThrow(() -> new IdpServerException("No Certificate given in header of Signed-Challenge!"));
+
+        verifyClientCertificate(nestedX509ClientCertificate);
 
         final String state = Optional.ofNullable(serverChallengeClaims.get(ClaimName.STATE.getJoseName()))
             .map(Object::toString)
@@ -157,6 +162,14 @@ public class IdpAuthenticator {
         locationBuilder.addParameter("state", state);
     }
 
+    private void verifyClientCertificate(final X509Certificate nestedX509ClientCertificate) {
+        try {
+            certificateVerifier.performTucPki18Checks(nestedX509ClientCertificate);
+        } catch (final GemPkiException | RuntimeException e) {
+            throw new IdpServerException("Error while verifying client certificate", e,
+                IdpErrorType.SERVER_ERROR, HttpStatus.BAD_REQUEST);
+        }
+    }
 
     private void buildSsoTokenLocation(final IdpJwe encryptedSsoToken, final JsonWebToken challengeToken,
         final URIBuilder locationBuilder) {
@@ -164,7 +177,7 @@ public class IdpAuthenticator {
             throw new IdpServerInvalidRequestException(
                 "For the use of the SSO-Flow the challengeToken parameter is required");
         }
-        challengeToken.verify(authKey.getIdentity().getCertificate().getPublicKey());
+        challengeToken.verify(idpSig.getIdentity().getCertificate().getPublicKey());
         final JsonWebToken ssoToken = ssoTokenValidator.decryptAndValidateSsoToken(encryptedSsoToken);
 
         locationBuilder.addParameter("code", authenticationTokenBuilder

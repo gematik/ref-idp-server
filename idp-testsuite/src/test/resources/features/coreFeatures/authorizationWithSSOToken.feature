@@ -166,7 +166,7 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
       | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx2 | 3434  | code          |
 
     When I request a code token with sso token
-    Then the context TOKEN_CODE must be signed with cert PUK_AUTH
+    Then the context TOKEN_CODE must be signed with cert PUK_SIGN
 
 
   @Approval @Ready

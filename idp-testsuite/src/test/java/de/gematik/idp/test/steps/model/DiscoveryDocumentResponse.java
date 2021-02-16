@@ -42,9 +42,9 @@ public class DiscoveryDocumentResponse implements Response {
 
     private final DiscoveryDocumentResponseBody body;
 
-    public DiscoveryDocumentResponse(final File template, final String certFile)
+    public DiscoveryDocumentResponse(final File templateBody, final File templateHeader, final File privateKey)
         throws IOException, JSONException {
-        body = new DiscoveryDocumentResponseBody(template, certFile);
+        body = new DiscoveryDocumentResponseBody(templateBody, templateHeader, privateKey);
     }
 
     @Override

@@ -226,7 +226,7 @@ Feature: Fordere Access Token mittels SSO Token an
     And I set the context with key REDIRECT_URI to 'http://redirect.gematik.de/erezept'
 
     When I request an access token
-    Then the context ID_TOKEN must be signed with cert PUK_TOKEN
+    Then the context ID_TOKEN must be signed with cert PUK_SIGN
 
 
   @Approval @Ready

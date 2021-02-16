@@ -15,6 +15,7 @@
 #
 
 @testsuite
+@discoveryDocument
 Feature: Fordere Discovery Dokument an
   Frontends von TI Diensten müssen vom IDP Server über ein HTTP GET an den Discovery Endpoint ein Discovery Dokument
   abfragen können. Welches alle notwendigen Informationen enthält um die IDP Server Endpunkte bedienen zu können.
@@ -52,7 +53,7 @@ Feature: Fordere Discovery Dokument an
     When I request the discovery document
     Then the response must be signed with cert PUK_DISC
 
-  @Afo:A_20458
+  @Afo:A_20591-01
   @Approval @Ready
   Scenario: Disc - Discovery Dokument header claims sind korrekt
 
@@ -76,7 +77,7 @@ Feature: Fordere Discovery Dokument an
         }
         """
 
-  @Afo:A_20297_01 @Afo:A_20505_01 @Afo:A_20506_01 @Afo:A_20698 @Afo:A_20458-01
+  @Afo:A_20297_01 @Afo:A_20505_01 @Afo:A_20506_01 @Afo:A_20698 @Afo:A_20591-01
   @Approval @Ready
   Scenario: Disc - Discovery Dokument body claims sind korrekt
 
@@ -105,9 +106,9 @@ Feature: Fordere Discovery Dokument an
             issuer:                                 "http.*",
             jwks_uri :                              "http.*",
             nbf:                                    "[\\d]*",
-            puk_uri_auth:                           ".*",
+            uri_puk_idp_sig:                        ".*",
+            uri_puk_idp_enc:                        ".*",
             uri_disc:                               ".*",
-            puk_uri_token:                          ".*",
             response_modes_supported :              '["query"]',
             response_types_supported :              '["code"]',
             scopes_supported :                      '["openid","e-rezept"]',
@@ -177,7 +178,7 @@ Feature: Fordere Discovery Dokument an
     And URI in claim "token_endpoint" exists with method GET and status 405
     And URI in claim "token_endpoint" exists with method POST and status 400
 
-  @Afo:A_20732
+  @Afo:A_20732 @Afo:A_20591-01
     @Approval @Todo:KeyChecksOCSP
   #OpenBug: currently not working if we use file based key material
   Scenario Outline: Disc - Die Schlüssel URIs sind erreichbar und enthalten public X509 Schlüssel
@@ -185,8 +186,8 @@ Feature: Fordere Discovery Dokument an
   ```
   Wir fordern das Discovery Dokument an und überprüfen die Inhalte der URIs aus den PUK Claims
 
-  - puk_uri_auth
-  - puk_uri_token
+  - uri_puk_idp_enc
+  - uri_puk_idp_sign
 
   Der PuK_Disc wird aus dem header des Disc Docs gelesen und hier NICHT geprüft.
 
@@ -210,9 +211,9 @@ Feature: Fordere Discovery Dokument an
     # The correct usage is then checked in the workflow scenarios
 
     Examples: Die claims welche Schlüssel URIs enthalten
-      | claim         |
-      | puk_uri_auth  |
-      | puk_uri_token |
+      | claim           |
+      | uri_puk_idp_enc |
+      | uri_puk_idp_sig |
 
   @Approval @Todo:KeyChecksOCSP
   Scenario Outline: Check JWKS URI

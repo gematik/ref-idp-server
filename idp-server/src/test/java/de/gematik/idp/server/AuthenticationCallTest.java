@@ -59,7 +59,7 @@ public class AuthenticationCallTest {
     @Autowired
     private IdpController idpController;
     @Autowired
-    private IdpKey authKey;
+    private IdpKey idpEnc;
     private AuthenticationChallengeBuilder authenticationChallengeBuilderSpy;
     @Autowired
     private IdpConfiguration idpConfiguration;
@@ -132,7 +132,7 @@ public class AuthenticationCallTest {
     @Test
     public void verifySignedChallengeBodyAttribute_njwt() {
         idpClient.setBeforeAuthenticationCallback(request -> assertThat(new IdpJwe(getTokenOfRequest(request))
-            .decryptNestedJwt(authKey.getIdentity().getPrivateKey())
+            .decryptNestedJwt(idpEnc.getIdentity().getPrivateKey())
             .getBodyClaims()).containsKey("njwt"));
         idpClient.login(egkUserIdentity);
     }

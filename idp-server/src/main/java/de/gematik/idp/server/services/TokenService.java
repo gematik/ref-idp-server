@@ -41,7 +41,8 @@ public class TokenService {
     private final IdTokenBuilder idTokenBuilder;
     private final PkceChecker pkceChecker;
     private final AccessTokenBuilder accessTokenBuilder;
-    private final IdpKey tokenKey;
+    private final IdpKey idpSig;
+    private final IdpKey idpEnc;
     private final Key symmetricEncryptionKey;
 
     public TokenResponse getTokenResponse(final IdpJwe encryptedAuthenticationToken, final IdpJwe keyVerifier,
@@ -56,7 +57,7 @@ public class TokenService {
         pkceChecker.checkCodeVerifier(keyVerifier.getStringBodyClaim(ClaimName.CODE_VERIFIER)
             .orElseThrow(() -> new IdpServerInvalidRequestException(
                 "Could not find claim '" + CODE_VERIFIER.getJoseName() + "' in given key_verifier")), codeChallenge);
-        authenticationToken.verify(tokenKey.getIdentity().getCertificate().getPublicKey());
+        authenticationToken.verify(idpSig.getIdentity().getCertificate().getPublicKey());
 
         if (authenticationToken.getBodyClaim(REDIRECT_URI)
             .filter(originalRedirectUri -> originalRedirectUri.equals(redirectUri))
@@ -83,7 +84,7 @@ public class TokenService {
 
     private IdpJoseObject decryptKeyVerifierAndTestStructure(final IdpJwe encryptedKeyVerifier) {
         try {
-            encryptedKeyVerifier.setDecryptionKey(tokenKey.getIdentity().getPrivateKey());
+            encryptedKeyVerifier.setDecryptionKey(idpEnc.getIdentity().getPrivateKey());
             // Provokes an exception in case of malformed structure
             encryptedKeyVerifier.getBodyClaims();
             return encryptedKeyVerifier;

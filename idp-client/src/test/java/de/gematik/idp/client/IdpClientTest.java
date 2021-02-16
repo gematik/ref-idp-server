@@ -42,10 +42,8 @@ public class IdpClientTest {
     public void init(final PkiIdentity ecc) {
         authenticatorClient = mock(AuthenticatorClient.class);
         doReturn(DiscoveryDocumentResponse.builder()
-            .keyId("foo")
-            .verificationCertificate("bar")
             .authorizationEndpoint("fdsa")
-            .serverTokenCertificate(ecc.getCertificate())
+            .idpSig(ecc.getCertificate())
             .tokenEndpoint("fdsafds")
             .build())
             .when(authenticatorClient)

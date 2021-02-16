@@ -1,3 +1,14 @@
+# Release 8.0.0
+- Versionsnummer in den Response-Headern ersichtlich
+- Aktuelles Bespiel für den TokenFlow unter /tokenFlow.html abrufbar
+- Fix für lokales Discovery Document
+- Biometrie Kommunikation verschlüsselt
+- Draft Set Testfälle für Biometrie Registrierungsendpunkt
+- Umstellung Schlüssel AUTH/TOKEN auf SIGN/ENC
+- Einbindung der gemLibPKI
+- ID-Token enthält nonce
+- Fix für lokales Disc Doc in der Testsuite
+
 # Release 7.0.0
 RELEASE 7.0.0
 IDP

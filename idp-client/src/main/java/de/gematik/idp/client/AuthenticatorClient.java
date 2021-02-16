@@ -29,6 +29,7 @@ import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
 import de.gematik.idp.token.TokenClaimExtraction;
 import java.security.PublicKey;
+import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
@@ -135,7 +136,6 @@ public class AuthenticatorClient {
         final AuthenticationRequest authenticationRequest,
         final Function<MultipartBody, MultipartBody> beforeAuthenticationCallback,
         final Consumer<HttpResponse<String>> afterAuthenticationCallback) {
-
         final MultipartBody request = Unirest.post(authenticationRequest.getAuthenticationEndpointUrl())
             .field("sso_token", authenticationRequest.getSsoToken())
             .field("unsigned_challenge", authenticationRequest.getChallengeToken().getRawString())
@@ -165,7 +165,7 @@ public class AuthenticatorClient {
         final byte[] tokenKeyBytes = RandomStringUtils.randomAlphanumeric(256 / 8).getBytes();
         final SecretKey tokenKey = new SecretKeySpec(tokenKeyBytes, "AES");
         final IdpJwe keyVerifierToken = buildKeyVerifierToken(tokenKeyBytes, tokenRequest.getCodeVerifier(),
-            tokenRequest.getPukToken());
+            tokenRequest.getIdpEnc());
 
         final MultipartBody request = Unirest.post(tokenRequest.getTokenUrl())
             .header(CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
@@ -181,7 +181,8 @@ public class AuthenticatorClient {
         afterTokenCallback.accept(tokenResponse);
         if (tokenResponse.getStatus() != HttpStatus.SC_OK) {
             throw new IdpClientRuntimeException(
-                "Unexpected Server-Response " + tokenResponse.getStatus());
+                "Unexpected Server-Response " + tokenResponse.getStatus() + " with detail_message "
+                    + tokenResponse.getBody().getObject().getString("detail_message"));
         }
         final JSONObject jsonObject = tokenResponse.getBody().getObject();
 
@@ -207,12 +208,12 @@ public class AuthenticatorClient {
     }
 
     private IdpJwe buildKeyVerifierToken(final byte[] tokenKeyBytes, final String codeVerifier,
-        final PublicKey pukToken) {
+        final PublicKey idpEnc) {
         final JwtClaims claims = new JwtClaims();
         claims.setStringClaim(TOKEN_KEY.getJoseName(), new String(Base64.getEncoder().encode(tokenKeyBytes)));
         claims.setStringClaim(CODE_VERIFIER.getJoseName(), codeVerifier);
 
-        return IdpJwe.createWithPayloadAndEncryptWithKey(claims.toJson(), pukToken);
+        return IdpJwe.createWithPayloadAndEncryptWithKey(claims.toJson(), idpEnc);
     }
 
     public DiscoveryDocumentResponse retrieveDiscoveryDocument(final String discoveryDocumentUrl) {
@@ -224,7 +225,7 @@ public class AuthenticatorClient {
             .extractClaimsFromJwtBody(discoveryDocumentResponse.getBody());
 
         final HttpResponse<JsonNode> pukAuthResponse = Unirest
-            .get(discoveryClaims.get("puk_uri_auth").toString())
+            .get(discoveryClaims.get("uri_puk_idp_sig").toString())
             .header(HttpHeaders.USER_AGENT, USER_AGENT)
             .asJson();
         final JSONObject keyObject = pukAuthResponse.getBody().getObject();
@@ -236,12 +237,20 @@ public class AuthenticatorClient {
             .authorizationEndpoint(discoveryClaims.get("authorization_endpoint").toString())
             .tokenEndpoint(discoveryClaims.get("token_endpoint").toString())
 
-            .keyId(keyObject.getString("kid"))
-            .verificationCertificate(verificationCertificate)
-
-            .serverTokenCertificate(
-                getCertificateFromPem(Base64.getDecoder().decode(verificationCertificate)))
+            .idpSig(retrieveServerCertFromLocation(discoveryClaims.get("uri_puk_idp_sig").toString()))
+            .idpEnc(retrieveServerCertFromLocation(discoveryClaims.get("uri_puk_idp_enc").toString()))
 
             .build();
+    }
+
+    private X509Certificate retrieveServerCertFromLocation(final String uri) {
+        final HttpResponse<JsonNode> pukAuthResponse = Unirest
+            .get(uri)
+            .header(HttpHeaders.USER_AGENT, USER_AGENT)
+            .asJson();
+        final JSONObject keyObject = pukAuthResponse.getBody().getObject();
+        final String verificationCertificate = keyObject.getJSONArray(X509_CERTIFICATE_CHAIN.getJoseName())
+            .getString(0);
+        return getCertificateFromPem(Base64.getDecoder().decode(verificationCertificate));
     }
 }

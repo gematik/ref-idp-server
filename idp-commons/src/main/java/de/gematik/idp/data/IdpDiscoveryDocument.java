@@ -41,8 +41,8 @@ public class IdpDiscoveryDocument {
     private long exp;
     private long nbf;
     private long iat;
-    private String pukUriAuth;
-    private String pukUriToken;
+    private String uriPukIdpEnc;
+    private String uriPukIdpSig;
     private String[] subjectTypesSupported;
     private String[] idTokenSigningAlgValuesSupported;
     private String[] responseTypesSupported;

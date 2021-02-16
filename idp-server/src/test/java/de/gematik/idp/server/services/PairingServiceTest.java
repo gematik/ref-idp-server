@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import de.gematik.idp.server.data.PairingDto;
 import de.gematik.idp.tests.PkiKeyResolver;
 import java.time.ZonedDateTime;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,12 +38,16 @@ import org.springframework.transaction.annotation.Transactional;
 })
 public class PairingServiceTest {
 
-    @Autowired
-    private PairingService pairingService;
-
     private static final String testIdNumber = "X114428530";
     private static final String testDeviceName = "Peters Fon";
 
+    @Autowired
+    private PairingService pairingService;
+
+    @BeforeEach
+    public void cleanUp() {
+        pairingService.deleteAllPairing(testIdNumber);
+    }
 
     @Test
     public void insertPairingAndFindEntrySuccessfully() {

@@ -142,6 +142,11 @@
             <groupId>commons-io</groupId>
             <version>2.7</version>
         </dependency>
+        <!-- https://github.com/gematik/ref-GemLibPki -->
+        <dependency>
+            <groupId>de.gematik.pki</groupId>
+            <artifactId>gemLibPki</artifactId>
+        </dependency>
 
         <dependency>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -195,7 +200,16 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>8.0.22</version>
         </dependency>
-
+        <dependency>
+            <artifactId>http-response-headers</artifactId>
+            <groupId>net.dracoblue.spring</groupId>
+            <version>0.2.0</version>
+        </dependency>
+        <dependency>
+            <artifactId>markdownpapers-core</artifactId>
+            <groupId>org.tautua.markdownpapers</groupId>
+            <version>1.4.4</version>
+        </dependency>
     </dependencies>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
@@ -204,11 +218,11 @@
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>7.0.0</version>
+        <version>8.0.0</version>
     </parent>
 
     <properties>
         <docker.image.name>idp-server</docker.image.name>
     </properties>
-    <version>7.0.0</version>
+    <version>8.0.0</version>
 </project>

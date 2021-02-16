@@ -53,7 +53,7 @@ public class KeyRetrievalTest {
     public void retrieveTokenKey_ShouldBeAvailable() throws UnirestException, JoseException {
         final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
         final String pukUriToken = TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())
-            .get("puk_uri_token").toString();
+            .get("uri_puk_idp_enc").toString();
         final HttpResponse<String> jwk = Unirest.get(pukUriToken).asString();
         final JsonWebKeySet keySet = constructKeySetFromJwkBody(jwk);
         assertThat(keySet.getJsonWebKeys())
@@ -66,7 +66,7 @@ public class KeyRetrievalTest {
     public void retrieveAuthKey_ShouldBeAvailable() throws UnirestException, JoseException {
         final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
         final String pukUriAuth = TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())
-            .get("puk_uri_auth").toString();
+            .get("uri_puk_idp_sig").toString();
         final HttpResponse<String> jwk = Unirest.get(pukUriAuth).asString();
         final JsonWebKeySet keySet = constructKeySetFromJwkBody(jwk);
         assertThat(keySet.getJsonWebKeys())
@@ -79,7 +79,7 @@ public class KeyRetrievalTest {
     public void retrieveAuthKey_noRsaFieldShouldBePresent() throws UnirestException {
         final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
         final String pukUriAuth = TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())
-            .get("puk_uri_auth").toString();
+            .get("uri_puk_idp_sig").toString();
         final JsonNode jwk = Unirest.get(pukUriAuth).asJson().getBody();
         assertThat(jwk.getObject().has("n")).isFalse();
         assertThat(jwk.getObject().has("e")).isFalse();
