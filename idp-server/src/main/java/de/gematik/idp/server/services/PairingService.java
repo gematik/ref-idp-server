@@ -17,9 +17,7 @@
 package de.gematik.idp.server.services;
 
 import static de.gematik.idp.error.IdpErrorType.MISSING_PARAMETERS;
-import static de.gematik.idp.field.ClaimName.AUTHENTICATION_CLASS_REFERENCE;
-import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
-import static de.gematik.idp.field.ClaimName.KEY_IDENTIFIER;
+import static de.gematik.idp.field.ClaimName.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,11 +39,10 @@ import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
 import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -55,12 +52,15 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PairingService {
 
+    private static final Set<ClaimName> SIGNED_PAIRING_DATA_CLAIMS = Set
+        .of(KEY_DATA, KEY_IDENTIFIER, DEVICE_PRODUCT, CERTIFICATE_SERIALNUMBER, CERTIFICATE_ISSUER,
+            CERTIFICATE_NOT_AFTER, CERTIFICATE_PUBLIC_KEY, SIGNATURE_ALGORITHM_IDENTIFIER);
     private final PairingRepository pairingRepository;
     private final ModelMapper modelMapper;
     private final DeviceValidationService deviceValidationService;
     private final AuthenticationChallengeVerifier authenticationChallengeVerifier;
     private final IdpKey idpEnc;
-
+    private final Validator validator;
 
     public List<PairingDto> validateTokenAndGetPairingList(final JsonWebToken accessToken) {
         validateAccessTokenClaims(accessToken);
@@ -90,14 +90,7 @@ public class PairingService {
     }
 
     public Long validateAndInsertPairingData(final JsonWebToken accessToken, final IdpJwe encryptedRegistrationData) {
-        final String payload = encryptedRegistrationData.decryptJweAndReturnPayloadString(
-            idpEnc.getIdentity().getPrivateKey());
-        RegistrationData registrationData = null;
-        try {
-            registrationData = new ObjectMapper().readValue(payload, RegistrationData.class);
-        } catch (final JsonProcessingException e) {
-            throw new IdpServerInvalidRequestException("Invalid Registration Data");
-        }
+        final RegistrationData registrationData = decryptAndValidateRegistrationData(encryptedRegistrationData);
 
         validateAccessTokenClaims(accessToken);
         final String idNumber = retrieveIdNumberFromAccessToken(accessToken);
@@ -107,17 +100,47 @@ public class PairingService {
             .getCertificateFromPem(Base64.getDecoder().decode(registrationData.getAuthenticationCert()));
         //TODO OCSP-Check(authCert)
         checkIdNumberIntegrity(authCert, idNumber);
+        checkSignedPairingDataClaims(signedPairingData);
         authenticationChallengeVerifier
             .verifyResponseWithCertAndThrowExceptionIfFail(authCert, signedPairingData);
-        final String deviceName = deviceInformation.getDeviceName();
         if (deviceValidationService.assess(deviceInformation.getDeviceType())
             .equals(DeviceValidationState.NOT_ALLOWED)) {
             throw new IdpServerException("Device validation matched with not allowed devices!",
                 IdpErrorType.DEVICE_VALIDATION_NOT_ALLOWED, HttpStatus.BAD_REQUEST);
         }
         final PairingDto data = createPairingDtoFromRegistrationData(signedPairingData, idNumber,
-            deviceName);
+            deviceInformation.getDeviceName());
         return insertPairing(data);
+    }
+
+    private RegistrationData decryptAndValidateRegistrationData(final IdpJwe encryptedRegistrationData) {
+        try {
+            final String payload = encryptedRegistrationData.decryptJweAndReturnPayloadString(
+                idpEnc.getIdentity().getPrivateKey());
+            final RegistrationData registrationData = new ObjectMapper().readValue(payload, RegistrationData.class);
+            final Set<ConstraintViolation<RegistrationData>> validationViolations = validator
+                .validate(registrationData);
+            if (!validationViolations.isEmpty()) {
+                throw new IdpServerException("Validation error found in registration_data",
+                    IdpErrorType.INVALID_REQUEST,
+                    HttpStatus.BAD_REQUEST);
+            }
+            return registrationData;
+        } catch (final JsonProcessingException e) {
+            throw new IdpServerInvalidRequestException("Invalid Registration Data");
+        }
+    }
+
+    private void checkSignedPairingDataClaims(final JsonWebToken signedPairingData) {
+        final Optional<ClaimName> missingClaim = SIGNED_PAIRING_DATA_CLAIMS
+            .stream()
+            .filter(claimName -> signedPairingData.getBodyClaim(claimName).isEmpty())
+            .findAny();
+        if (missingClaim.isPresent()) {
+            throw new IdpServerException(
+                "Unable to find " + missingClaim.get().getJoseName() + " in signed_pairing_data",
+                IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+        }
     }
 
     public long insertPairing(final PairingDto pairingData) {

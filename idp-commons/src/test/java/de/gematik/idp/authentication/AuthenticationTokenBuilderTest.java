@@ -29,6 +29,7 @@ import java.time.ZonedDateTime;
 import java.util.Collections;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,7 +57,7 @@ public class AuthenticationTokenBuilderTest {
 
     @Test
     public void extractClaimsFromClientCertificateTest() {
-        assertThat(authenticationTokenBuilder
+        Assertions.assertThat(authenticationTokenBuilder
             .buildAuthenticationToken(clientIdentity.getCertificate(), Collections.emptyMap(),
                 ZonedDateTime.now())
             .decryptNestedJwt(encryptionKey)

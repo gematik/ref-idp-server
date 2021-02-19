@@ -17,6 +17,21 @@ idp:
   subjectSaltValue: fkdlsjaviaen4evdsnavaew4vcxo
   blockedClientSystems:
     - "blocked_user_agent"
+  userConsent:
+    descriptionTexts:
+      scopes:
+        OPENID: "Zugriff auf den ID-Token."
+        EREZEPT: "Zugriff auf die E-Rezept-Funktionalität."
+        PAIRING: "Zugriff auf die Daten für die biometrischer Authentisierung."
+      claims:
+        GIVEN_NAME: "Zustimmung zur Verarbeitung des Vornamens"
+        PROFESSION_OID: "Zustimmung zur Verarbeitung der Rolle"
+        ORGANIZATION_NAME: "Zustimmung zur Verarbeitung der Organisationszugehörigkeit"
+        FAMILY_NAME: "Zustimmung zur Verarbeitung des Nachnamens"
+        ID_NUMBER: "Zustimmung zur Verarbeitung der Id (z.B. Krankenversichertennummer, Telematik-Id)"
+    claimsToBeIncluded:
+      EREZEPT: [ GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER ]
+      PAIRING: [ ID_NUMBER ]
   productTypeDisplayString: "IDP"
   tokenFlowMdResource: "classpath:tokenFlow.md"
 caching:

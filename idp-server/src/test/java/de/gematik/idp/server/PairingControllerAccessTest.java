@@ -42,7 +42,6 @@ import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateEncodingException;
-import java.time.ZonedDateTime;
 import java.util.Base64;
 import java.util.Set;
 import javax.transaction.Transactional;
@@ -56,7 +55,6 @@ import org.jose4j.jwt.JwtClaims;
 import org.jose4j.lang.JoseException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -162,8 +160,7 @@ public class PairingControllerAccessTest {
         idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
         accessToken = idpClient.login(egkUserIdentity).getAccessToken();
         assertThat(Unirest.put("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
-            .body(createIdpJweFromRegistrationData(createValidRegistrationData("123")).getRawString().getBytes(
-                StandardCharsets.UTF_8))
+            .body(createIdpJweFromRegistrationData(createValidRegistrationData("123")))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
             .asString().getStatus())
             .isEqualTo(HttpStatus.OK.value());
@@ -179,15 +176,13 @@ public class PairingControllerAccessTest {
         accessToken = idpClient.login(egkUserIdentity).getAccessToken();
 
         Unirest.put("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
-            .body(createIdpJweFromRegistrationData(createValidRegistrationData("abc")).getRawString().getBytes(
-                StandardCharsets.UTF_8))
+            .body(createIdpJweFromRegistrationData(createValidRegistrationData("abc")))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
             .asString().getStatus();
 
         final HttpResponse<JsonNode> httpResponse = Unirest
             .put("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
-            .body(createIdpJweFromRegistrationData(createValidRegistrationData("abc")).getRawString().getBytes(
-                StandardCharsets.UTF_8))
+            .body(createIdpJweFromRegistrationData(createValidRegistrationData("abc")))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
             .asJson();
 
@@ -198,7 +193,6 @@ public class PairingControllerAccessTest {
     }
 
     @Test
-    @Disabled
     public void insertPairing_missingData_expect4xxAndValidIdpError()
         throws UnirestException, CertificateEncodingException {
         idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
@@ -209,8 +203,7 @@ public class PairingControllerAccessTest {
 
         final HttpResponse<JsonNode> httpResponse = Unirest
             .put("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
-            .body(createIdpJweFromRegistrationData(registrationData).getRawString().getBytes(
-                StandardCharsets.UTF_8))
+            .body(createIdpJweFromRegistrationData(registrationData))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
             .asJson();
         assertThat(httpResponse.getStatus())
@@ -226,8 +219,7 @@ public class PairingControllerAccessTest {
 
         final HttpResponse<String> httpResponse = Unirest
             .put("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
-            .body(createIdpJweFromRegistrationData(createValidRegistrationData("123")).getRawString().getBytes(
-                StandardCharsets.UTF_8))
+            .body(createIdpJweFromRegistrationData(createValidRegistrationData("123")))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
             .asString();
         assertThat(httpResponse.getStatus())
@@ -239,9 +231,10 @@ public class PairingControllerAccessTest {
         idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
         accessToken = idpClient.login(egkUserIdentity).getAccessToken();
 
-        pairingService
-            .validateAndInsertPairingData(accessToken,
-                createIdpJweFromRegistrationData(createValidRegistrationData("456")));
+        Unirest.put("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
+            .body(createIdpJweFromRegistrationData(createValidRegistrationData("456")))
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
+            .asString();
 
         final HttpResponse httpResponse = Unirest
             .delete("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT + "/654321")
@@ -252,10 +245,12 @@ public class PairingControllerAccessTest {
             .isEqualTo(HttpStatus.OK.value());
     }
 
-    private IdpJwe createIdpJweFromRegistrationData(final RegistrationData registrationData) {
+    private byte[] createIdpJweFromRegistrationData(final RegistrationData registrationData) {
         return IdpJwe
             .createWithPayloadAndEncryptWithKey(registrationData.toJSONString(),
-                idpEnc.getIdentity().getCertificate().getPublicKey());
+                idpEnc.getIdentity().getCertificate().getPublicKey())
+            .getRawString().getBytes(
+                StandardCharsets.UTF_8);
     }
 
     private RegistrationData createValidRegistrationData(final String keyIdentifier)
@@ -266,21 +261,28 @@ public class PairingControllerAccessTest {
             .deviceInformation(createDeviceInformation(createTestDeviceValidationData()))
             .signedPairingData(createSignedPairingData(keyIdentifier).getRawString())
             .build();
-
     }
 
     private JsonWebToken createSignedPairingData(final String keyIdentifier) {
         final JwtClaims claims = new JwtClaims();
-        claims.setClaim(PUK_SE_AUT_PUBLIC_KEY.getJoseName(), java.util.Base64.getEncoder()
-            .encodeToString(rsaUserIdentity.getCertificate().getPublicKey().getEncoded()));
-        claims.setClaim(KEY_IDENTIFIER.getJoseName(), keyIdentifier);
-        claims.setClaim(ALGORITHM.getJoseName(), "SHA256");
+
+        claims.setClaim(KEY_DATA.getJoseName(),
+            java.util.Base64.getEncoder().encodeToString(
+                rsaUserIdentity.getCertificate().getPublicKey().getEncoded()));
+        if (keyIdentifier != null) {
+            claims.setClaim(KEY_IDENTIFIER.getJoseName(), keyIdentifier);
+        }
+        claims.setClaim(CERTIFICATE_SERIALNUMBER.getJoseName(), "fdklsaöfd");
+        claims.setClaim(CERTIFICATE_ISSUER.getJoseName(), "gkropre");
+        claims.setClaim(CERTIFICATE_PUBLIC_KEY.getJoseName(), "htrbfd");
+        claims.setClaim(CERTIFICATE_NOT_AFTER.getJoseName(), "fdsfdsa");
+        claims.setClaim(SIGNATURE_ALGORITHM_IDENTIFIER.getJoseName(), "vjiw");
         claims.setClaim(DEVICE_PRODUCT.getJoseName(), "S8");
-        claims.setClaim(PUK_EGK_AUT_CERT_ID.getJoseName(), "321654");
-        claims.setClaim(PUK_EGK_AUT_CERT_ISSUER.getJoseName(), "testIssuer");
-        claims.setClaim(PUK_EGK_AUT_CERT_NOT_AFTER.getJoseName(), ZonedDateTime.now().plusMinutes(5));
-        claims.setClaim(PUK_EGK_AUT_PUBLIC_KEY.getJoseName(), java.util.Base64.getEncoder()
+        claims.setClaim(CERT_ID.getJoseName(), "321654");
+        claims.setClaim(AUTHORITY_INFO_ACCESS.getJoseName(), "blubblab");
+        claims.setClaim(PUBLIC_KEY.getJoseName(), java.util.Base64.getEncoder()
             .encodeToString(egkUserIdentity.getCertificate().getPublicKey().getEncoded()));
+
         final JsonWebSignature jws = new JsonWebSignature();
         jws.setPayload(claims.toJson());
         jws.setKey(egkUserIdentity.getPrivateKey());
@@ -304,6 +306,7 @@ public class PairingControllerAccessTest {
             .deviceProduct(data.getProduct())
             .deviceOs(data.getOs())
             .deviceVersion(data.getOsVersion())
+            .deviceModel("foobarModel")
             .build();
         return DeviceInformation.builder()
             .deviceType(deviceType)

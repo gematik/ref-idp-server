@@ -20,14 +20,19 @@ import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.json;
 import static net.javacrumbs.jsonunit.jsonpath.JsonPathAdapter.inPath;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 import de.gematik.idp.test.steps.model.Context;
 import java.util.Iterator;
 import lombok.SneakyThrows;
 import net.thucydides.core.annotations.Step;
 import org.apache.commons.collections.IteratorUtils;
+import org.assertj.core.api.Assertions;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.skyscreamer.jsonassert.Customization;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
 public class JsonChecker {
 
@@ -36,32 +41,75 @@ public class JsonChecker {
         assertThatJson(new JSONObject(Context.getCurrentResponse().getBody().asString())).node(path).isNotNull();
     }
 
+
     @Step
-    public void assertJsonShouldMatchInAnyOrder(final SerenityJSONObject json, final SerenityJSONObject oracle)
-        throws JSONException {
+    @SneakyThrows
+    public void assertJsonArrayShouldMatchInAnyOrder(final String json, final String oracle) {
+        JSONAssert.assertEquals(json, oracle, new CustomComparator(
+            JSONCompareMode.LENIENT, new Customization("***", (oracleJson, testJson) -> {
+            if (testJson instanceof JSONObject) {
+                assertJsonShouldMatchInAnyOrder(testJson.toString(), oracleJson.toString());
+                return true;
+            } else if (testJson instanceof JSONArray) {
+                assertJsonArrayShouldMatchInAnyOrder(testJson.toString(), oracleJson.toString());
+                return true;
+            } else {
+                if ("${json-unit.ignore}".equals(oracleJson) ||
+                    testJson.toString().equals(oracleJson.toString())) {
+                    return true;
+                }
+                return testJson.toString().matches(oracleJson.toString());
+            }
+        })));
+    }
+
+    @Step
+    @SneakyThrows
+    public void assertJsonShouldMatchInAnyOrder(final String jsonStr, final String oracleStr) {
+        final JSONObject json = new JSONObject(jsonStr);
+        final JSONObject oracle = new JSONObject(oracleStr);
         try {
             assertThat(IteratorUtils.toArray(json.keys()))
                 .containsExactlyInAnyOrder(IteratorUtils.toArray(oracle.keys()));
 
-            @SuppressWarnings("unchecked") final Iterator<String> keyIt = oracle.keys();
+            final Iterator<String> keyIt = oracle.keys();
             while (keyIt.hasNext()) {
                 final String key = keyIt.next();
-                final String oracleValue = oracle.getString(key);
-                if ("${json-unit.ignore}".equals(oracleValue)) {
-                    continue;
-                }
-                final String jsoValue = json.get(key).toString();
-                if (!jsoValue.equals(oracleValue)) {
-                    assertThat(jsoValue)
-                        .withFailMessage(
-                            String.format(
-                                "JSON object does not match at key '%s'\nExpected:\n%s\n\n--------\n\nReceived:\n%s",
-                                key, oracleValue, jsoValue))
-                        .matches(oracleValue);
+                final String oracleValue = oracle.get(key).toString();
+                if (!"${json-unit.ignore}".equals(oracleValue)) {
+                    if (json.get(key) instanceof JSONObject) {
+                        assertJsonShouldMatchInAnyOrder(json.get(key).toString(), oracle.get(key).toString());
+                    } else if (json.get(key) instanceof JSONArray) {
+                        JSONAssert
+                            .assertEquals(json.get(key).toString(), oracle.get(key).toString(), new CustomComparator(
+                                JSONCompareMode.LENIENT, new Customization("***", (oracleJson, testJson) -> {
+                                if (oracleJson.toString().equals("${json-unit.ignore}") ||
+                                    testJson.toString().equals(oracleJson.toString())) {
+                                    return true;
+                                }
+                                return testJson.toString().matches(oracleJson.toString());
+                            })));
+                    } else {
+                        final String jsoValue = json.get(key).toString();
+                        if (!jsoValue.equals(oracleValue)) {
+                            try {
+                                assertThat(jsoValue)
+                                    .withFailMessage(
+                                        String.format(
+                                            "JSON object does not match at key '%s'\nExpected:\n%s\n\n--------\n\nReceived:\n%s",
+                                            key, oracleValue, jsoValue))
+                                    .matches(oracleValue);
+                            } catch (final Exception ex) {
+                                Assertions.fail(String.format(
+                                    "JSON object does differ at key '%s'\nExpected:\n%s\n\n--------\n\nReceived:\n%s",
+                                    key, oracleValue, jsoValue));
+                            }
+                        }
+                    }
                 }
             }
         } catch (final NoSuchMethodError nsme) {
-            fail(String.format("JSON does not match!\nExpected:\n%s\n\n--------\n\nReceived:\n%s",
+            Assertions.fail(String.format("JSON does not match!\nExpected:\n%s\n\n--------\n\nReceived:\n%s",
                 oracle.toString(2), json.toString(2)), nsme);
         }
     }

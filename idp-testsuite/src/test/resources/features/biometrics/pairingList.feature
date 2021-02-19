@@ -40,5 +40,6 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
 
   Scenario: Biometrie Pairingliste - Fordere Pairingliste an mit eRezept SSO Token
 
-  Scenario: Biometrie Pairingliste - Fordere Pairingliste an mit Zertifikat ohne IDNummer
+  # obsolet da wir keinen access token kriegen
+  # Scenario: Biometrie Pairingliste - Fordere Pairingliste an mit Zertifikat ohne IDNummer
 

@@ -658,6 +658,19 @@ public class TokenRetrievalTest {
             .isInstanceOf(IdpClientRuntimeException.class);
     }
 
+    @Test
+    public void verifyUserConsent() throws UnirestException {
+        idpClient.setAfterAuthorizationCallback(
+            response -> {
+                assertThat(response.getBody().getUserConsent().getRequestedScopes())
+                    .containsOnlyKeys("e-rezept", "openid");
+                assertThat(response.getBody().getUserConsent().getRequestedClaims())
+                    .containsOnlyKeys("organizationName", "professionOID", "idNummer", "given_name", "family_name");
+            });
+
+        idpClient.login(egkUserIdentity);
+    }
+
     private JsonWebToken extractAuthenticationTokenFromResponse(final kong.unirest.HttpResponse<String> response,
         final String parameterName) {
         return Optional.ofNullable(response.getHeaders().getFirst("Location"))

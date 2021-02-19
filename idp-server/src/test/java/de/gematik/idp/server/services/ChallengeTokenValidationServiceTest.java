@@ -148,16 +148,14 @@ public class ChallengeTokenValidationServiceTest {
 
     private JsonWebToken createSignedPairingData() {
         final JwtClaims claims = new JwtClaims();
-        claims.setClaim(PUK_SE_AUT_PUBLIC_KEY.getJoseName(), java.util.Base64.getEncoder()
+        claims.setClaim(KEY_DATA.getJoseName(), java.util.Base64.getEncoder()
             .encodeToString(altIdentity.getCertificate().getPublicKey().getEncoded()));
         claims.setClaim(KEY_IDENTIFIER.getJoseName(), "654321");
         claims.setClaim(ALGORITHM.getJoseName(), "SHA256");
         claims.setClaim(DEVICE_PRODUCT.getJoseName(), "S8");
-        claims.setClaim(PUK_EGK_AUT_CERT_ID.getJoseName(),
+        claims.setClaim(CERT_ID.getJoseName(),
             "1.2.840.10045.4.3.2347338df949aad79ed9db17cad14ad2658c5f2b1c2a1b026b30d324a8b7d4c84115d4e3bd55896bc257423680229794");
-        claims.setClaim(PUK_EGK_AUT_CERT_ISSUER.getJoseName(), "testIssuer");
-        claims.setClaim(PUK_EGK_AUT_CERT_NOT_AFTER.getJoseName(), ZonedDateTime.now().plusMinutes(5));
-        claims.setClaim(PUK_EGK_AUT_PUBLIC_KEY.getJoseName(), java.util.Base64.getEncoder()
+        claims.setClaim(PUBLIC_KEY.getJoseName(), java.util.Base64.getEncoder()
             .encodeToString(egkIdentity.getCertificate().getPublicKey().getEncoded()));
         return buildSignedJwt(claims.toJson(), egkIdentity);
     }

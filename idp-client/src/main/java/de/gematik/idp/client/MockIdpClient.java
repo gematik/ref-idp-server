@@ -19,6 +19,8 @@ package de.gematik.idp.client;
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.*;
 import de.gematik.idp.crypto.model.PkiIdentity;
+import de.gematik.idp.data.UserConsentConfiguration;
+import de.gematik.idp.data.UserConsentDescriptionTexts;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.token.AccessTokenBuilder;
@@ -45,12 +47,12 @@ public class MockIdpClient implements IIdpClient {
     private final boolean produceOnlyExpiredTokens;
     @Builder.Default
     private final String uriIdpServer = IdpConstants.DEFAULT_SERVER_URL;
+    private final String serverSubSalt = "someArbitrarySubSaltValue";
     private AccessTokenBuilder accessTokenBuilder;
     private AuthenticationResponseBuilder authenticationResponseBuilder;
     private AuthenticationTokenBuilder authenticationTokenBuilder;
     private AuthenticationChallengeBuilder authenticationChallengeBuilder;
     private IdpJwtProcessor jwtProcessor;
-    private final String serverSubSalt = "someArbitrarySubSaltValue";
     private SecretKeySpec encryptionKey;
 
     @Override
@@ -113,7 +115,21 @@ public class MockIdpClient implements IIdpClient {
         serverIdentity.setKeyId(Optional.of("idpSig"));
         jwtProcessor = new IdpJwtProcessor(serverIdentity);
         accessTokenBuilder = new AccessTokenBuilder(jwtProcessor, uriIdpServer, serverSubSalt);
-        authenticationChallengeBuilder = new AuthenticationChallengeBuilder(serverIdentity, uriIdpServer);
+        authenticationChallengeBuilder = AuthenticationChallengeBuilder.builder()
+            .authenticationIdentity(serverIdentity)
+            .uriIdpServer(uriIdpServer)
+            .userConsentConfiguration(UserConsentConfiguration.builder()
+                .claimsToBeIncluded(Map.of(IdpScope.OPENID, List.of(),
+                    IdpScope.EREZEPT, List.of(),
+                    IdpScope.PAIRING, List.of()))
+                .descriptionTexts(UserConsentDescriptionTexts.builder()
+                    .claims(Collections.emptyMap())
+                    .scopes(Map.of(IdpScope.OPENID, "openid",
+                        IdpScope.PAIRING, "pairing",
+                        IdpScope.EREZEPT, "erezept"))
+                    .build())
+                .build())
+            .build();
         authenticationResponseBuilder = new AuthenticationResponseBuilder();
         encryptionKey = new SecretKeySpec(DigestUtils.sha256("fdsa"), "AES");
         authenticationTokenBuilder = AuthenticationTokenBuilder.builder()

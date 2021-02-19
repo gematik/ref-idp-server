@@ -25,7 +25,7 @@ Feature: Authentifiziere Anwendung am IDP Server
 
   @Afo:A_20601 @Afo:A_20740 @Afo:A_20698
   @Approval @Ready
-  Scenario: Auth - Gutfall - Validiere Antwortstruktur
+  Scenario: Core Auth - Gutfall - Validiere Antwortstruktur
 
   ```
   Wir wählen einen gültigen Code verifier und fordern einen Challenge Token an.
@@ -46,20 +46,27 @@ Feature: Authentifiziere Anwendung am IDP Server
     Then the response status is 200
     And the response http headers match
         """
-          Content-Type=application/json
+          Content-Type=application/json.*
           Cache-Control=no-store
           Pragma=no-cache
         """
     And the JSON response should match
         """
-          { challenge:     "ey[A-Za-z0-9\\\-_\\\.]*",
-            user_consent:  [
-              "given_name",
-              "family_name",
-              "organizationName",
-              "professionOID",
-              "idNummer"
-            ]
+          {
+            "challenge":     "ey[A-Za-z0-9\\-_\\.]*",
+            "user_consent":  {
+              "requested_scopes" : {
+                "e-rezept" : ".*E-Rezept.*",
+                "openid" : ".*ID\\-Token.*"
+              },
+              "requested_claims" : {
+                "given_name" : ".*Vorname.*",
+                "professionOID" : ".*Rolle.*",
+                "organizationName" : ".*Organisationszugehörigkeit.*",
+                "family_name" : ".*Nachname.*",
+                "idNummer" : ".*Id.*Krankenversichertennummer.*Telematik\\-Id.*"
+              }
+            }
           }
         """
 

@@ -16,6 +16,7 @@
 
 package de.gematik.idp.server.configuration;
 
+import de.gematik.idp.data.UserConsentConfiguration;
 import java.util.List;
 import java.util.Locale;
 import lombok.AllArgsConstructor;
@@ -46,4 +47,5 @@ public class IdpConfiguration {
     private List<String> blockedClientSystems;
     private String productTypeDisplayString;
     private Locale defaultLocale;
+    private UserConsentConfiguration userConsent;
 }

@@ -18,6 +18,7 @@ package de.gematik.idp.server.data;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import javax.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,9 +31,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DeviceType {
 
+    @NotBlank
     private String deviceManufacturer;
+    @NotBlank
     private String deviceProduct;
+    @NotBlank
     private String deviceModel;
+    @NotBlank
     private String deviceOs;
+    @NotBlank
     private String deviceVersion;
 }

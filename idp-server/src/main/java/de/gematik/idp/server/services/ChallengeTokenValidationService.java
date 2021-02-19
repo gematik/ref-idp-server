@@ -94,11 +94,11 @@ public class ChallengeTokenValidationService {
                 IdpErrorType.DEVICE_VALIDATION_PAIRING_EXPIRED, HttpStatus.BAD_REQUEST);
         }
         final JsonWebToken signedPairingDataFromDto = new JsonWebToken(pairingData.getSignedPairingData());
-        signedPairingDataFromDto.verify(retrieveKeyFromPairingDto(pairingData, PUK_EGK_AUT_PUBLIC_KEY));
-        validateCertId(authDataCert, signedPairingDataFromDto.getStringBodyClaim(PUK_EGK_AUT_CERT_ID)
+        signedPairingDataFromDto.verify(retrieveKeyFromPairingDto(pairingData, PUBLIC_KEY));
+        validateCertId(authDataCert, signedPairingDataFromDto.getStringBodyClaim(CERT_ID)
             .orElseThrow(() -> new IdpServerException("CertID not found in pairing data",
                 RESOURCE_NOT_FOUND, HttpStatus.BAD_REQUEST)));
-        signedAuthData.verify(retrieveKeyFromPairingDto(pairingData, PUK_SE_AUT_PUBLIC_KEY));
+        signedAuthData.verify(retrieveKeyFromPairingDto(pairingData, KEY_DATA));
     }
 
     private void validateCertId(final X509Certificate authDataCert, final String pairingCertId) {

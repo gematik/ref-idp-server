@@ -19,11 +19,17 @@ package de.gematik.idp.authentication;
 import static de.gematik.idp.field.ClaimName.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import de.gematik.idp.crypto.model.PkiIdentity;
+import de.gematik.idp.data.UserConsentConfiguration;
+import de.gematik.idp.data.UserConsentDescriptionTexts;
+import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.tests.Remark;
 import de.gematik.idp.tests.Rfc;
 import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
@@ -41,13 +47,24 @@ public class AuthenticationChallengeBuilderTest {
     public void init(@PkiKeyResolver.Filename("rsa") final PkiIdentity serverIdentity) {
         authenticationChallengeBuilder = AuthenticationChallengeBuilder.builder()
             .authenticationIdentity(serverIdentity)
+            .userConsentConfiguration(UserConsentConfiguration.builder()
+                .claimsToBeIncluded(Map.of(IdpScope.OPENID, List.of(),
+                    IdpScope.EREZEPT, List.of(),
+                    IdpScope.PAIRING, List.of()))
+                .descriptionTexts(UserConsentDescriptionTexts.builder()
+                    .claims(Collections.emptyMap())
+                    .scopes(Map.of(IdpScope.OPENID, "openid",
+                        IdpScope.PAIRING, "pairing",
+                        IdpScope.EREZEPT, "erezept"))
+                    .build())
+                .build())
             .build();
     }
 
     @Test
     public void authenticationChallengeTest() {
         assertThat(authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue"))
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue"))
             .isNotNull();
     }
 
@@ -55,7 +72,7 @@ public class AuthenticationChallengeBuilderTest {
     public void challengeAttributeIsJwtAndSignedByCertificate(
         @PkiKeyResolver.Filename("rsa") final PkiIdentity serverIdentity) throws InvalidJwtException {
         final AuthenticationChallenge response = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
 
         final JwtConsumer jwtConsumer = new JwtConsumerBuilder()
             .setVerificationKey(serverIdentity.getCertificate().getPublicKey())
@@ -70,7 +87,7 @@ public class AuthenticationChallengeBuilderTest {
     @Test
     public void challengeWithClaims() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
 
         assertThat(response.getChallenge().getBodyClaims())
             .containsEntry(CODE_CHALLENGE_METHOD.getJoseName(), "S256");
@@ -80,7 +97,7 @@ public class AuthenticationChallengeBuilderTest {
     @Remark("Ticket IDP-93: typ == JWT")
     public void challengeHeaderClaimItemTyp() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
 
         assertThat(response.getChallenge().getHeaderClaims())
             .containsEntry(TYPE.getJoseName(), "JWT");
@@ -90,7 +107,7 @@ public class AuthenticationChallengeBuilderTest {
     @Remark("Ticket IDP-93: typ == JWT")
     public void challengeBodyTokenType() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
 
         assertThat(response.getChallenge().getBodyClaim(TOKEN_TYPE))
             .get().asString()
@@ -102,7 +119,7 @@ public class AuthenticationChallengeBuilderTest {
     @Rfc("7519 4.1.4.  \"exp\" (Expiration Time) Claim")
     public void challengeBodyClaimItemExp() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
 
         assertThat(response.getChallenge().getExpiresAt())
             .isBetween(ZonedDateTime.now().plusMinutes(CHALLENGE_TOKEN_VALIDITY_IN_MINUTES).minusSeconds(5),
@@ -113,7 +130,7 @@ public class AuthenticationChallengeBuilderTest {
     @Rfc("7519 4.1.6.  \"iat\" (Issued At) Claim")
     public void challengeBodyClaimItemIat() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
 
         assertThat(response.getChallenge().getBodyDateTimeClaim(ISSUED_AT).get())
             .isBetween(ZonedDateTime.now().minusSeconds(5), ZonedDateTime.now());
@@ -124,7 +141,7 @@ public class AuthenticationChallengeBuilderTest {
     @Rfc("7519 4.1.7.  \"jti\" (JWT ID) Claim")
     public void challengeBodyClaimItemJti() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
 
         assertThat(response.getChallenge().getBodyClaim(JWT_ID).get())
             .asString()
@@ -135,18 +152,15 @@ public class AuthenticationChallengeBuilderTest {
     @Afo("A_20440")
     public void challengeWithConsent() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
         assertThat(response.getUserConsent()).isNotNull();
-        assertThat(response.getUserConsent()).hasSize(5);
-        assertThat(response.getUserConsent())
-            .containsExactlyInAnyOrder(GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER);
+        assertThat(response.getUserConsent()).isNotNull();
     }
-
 
     @Test
     public void verifyThatAuthenticationChallengeCarriesExpButNotIatNbfClaimInHeader() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
         assertThat(response.getChallenge().getHeaderClaims().keySet())
             .contains(EXPIRES_AT.getJoseName())
             .doesNotContain(NOT_BEFORE.getJoseName(), ISSUED_AT.getJoseName());

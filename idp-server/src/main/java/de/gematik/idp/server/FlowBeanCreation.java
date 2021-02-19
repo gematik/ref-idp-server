@@ -28,7 +28,7 @@ import de.gematik.idp.token.AccessTokenBuilder;
 import de.gematik.idp.token.IdTokenBuilder;
 import de.gematik.idp.token.SsoTokenBuilder;
 import de.gematik.pki.certificate.CertificateProfile;
-import de.gematik.pki.certificate.CertificateVerifier;
+import de.gematik.pki.certificate.TucPki018Verifier;
 import de.gematik.pki.tsl.TslInformationProvider;
 import de.gematik.pki.tsl.TslReader;
 import de.gematik.pki.tsl.TspService;
@@ -84,6 +84,7 @@ public class FlowBeanCreation {
         return AuthenticationChallengeBuilder.builder()
             .authenticationIdentity(idpSig.getIdentity())
             .uriIdpServer(serverUrlService.determineServerUrl())
+            .userConsentConfiguration(idpConfiguration.getUserConsent())
             .build();
     }
 
@@ -100,13 +101,13 @@ public class FlowBeanCreation {
     }
 
     @Bean
-    public CertificateVerifier certificateVerifier() {
+    public TucPki018Verifier certificateVerifier() {
         final List<TspService> tspServiceTypeList = new TslInformationProvider(
             new TslReader().getTrustServiceStatusList("TSL_default.xml")
                 .orElseThrow(() -> new IdpServerStartupException("Error while reading TSL")))
             .getTspServices();
 
-        return CertificateVerifier.builder()
+        return TucPki018Verifier.builder()
             .productType(idpConfiguration.getProductTypeDisplayString())
             .tspServiceList(tspServiceTypeList)
             .certificateProfiles(List.of(CertificateProfile.C_CH_AUT_RSA, CertificateProfile.C_CH_AUT_ECC,

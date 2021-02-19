@@ -35,7 +35,7 @@ Feature: Fordere Discovery Dokument an
 
     When I request the discovery document
     Then the response status is 200
-    And the response content type is 'application/json'
+    And the response content type matches 'application/json.*'
 
   @Afo:A_20614 @Afo:A_20623 @Afo:A_20591-01
   @Approval @Ready

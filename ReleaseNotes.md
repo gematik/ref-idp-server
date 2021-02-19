@@ -1,3 +1,10 @@
+# Release 8.1.0
+- User consent angepasst
+- Validierung von device und pairing Daten implementiert
+- Testsuite um Token Verschlüsselung für den Pairing Endpunkt erweitert
+- gemlibPKI Version update 
+-- fix https://github.com/gematik/ref-idp-server/issues/2
+
 # Release 8.0.0
 - Versionsnummer in den Response-Headern ersichtlich
 - Aktuelles Bespiel für den TokenFlow unter /tokenFlow.html abrufbar

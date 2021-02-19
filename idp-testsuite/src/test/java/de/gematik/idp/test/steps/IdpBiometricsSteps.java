@@ -2,6 +2,7 @@ package de.gematik.idp.test.steps;
 
 import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
 import de.gematik.idp.test.steps.model.*;
+import io.restassured.response.Response;
 import java.security.Key;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
@@ -9,7 +10,6 @@ import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.thucydides.core.annotations.Step;
@@ -49,10 +49,8 @@ public class IdpBiometricsSteps extends IdpStepsBase {
 
         final Map<String, String> ctxtDevInfo = (Map<String, String>) Context.getThreadContext()
             .get(ContextKey.DEVICE_INFO);
-        final Map<String, String> devTypeInfo = ctxtDevInfo.entrySet().stream()
-            .filter(entry -> !entry.getKey().equals("device_name")).
-                collect(Collectors
-                    .toMap(Map.Entry::getKey, entry -> String.valueOf(entry.getValue())));
+        final Map<String, String> devTypeInfo = new HashMap<>(ctxtDevInfo);
+        devTypeInfo.remove("device_name");
         final JSONObject devInfo = new JSONObject();
         devInfo.put("device_name", ctxtDevInfo.get("device_name"));
         devInfo.put("device_type", new JSONObject(devTypeInfo));
@@ -73,14 +71,20 @@ public class IdpBiometricsSteps extends IdpStepsBase {
     }
 
     @SneakyThrows
-    public void deregisterDeviceWithKey(final String keyVerifier) {
+    public void deregisterDeviceWithKey(String keyVerifier) {
         final Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", "Bearer " + Context.getThreadContext().get(ContextKey.ACCESS_TOKEN));
         headers.put("User-Agent", "TODO some UA, probably configurable");
 
-        Context.getThreadContext().put(ContextKey.RESPONSE, requestResponseAndAssertStatus(
+        if (keyVerifier.equals("$NULL")) {
+            keyVerifier = null;
+        } else if (keyVerifier.equals("$REMOVE")) {
+            keyVerifier = "";
+        }
+        final Response r = requestResponseAndAssertStatus(
             Context.getDiscoveryDocument().getPairingEndpoint() + "/" + keyVerifier, headers,
-            HttpMethods.DELETE, null, null, HttpStatus.NOCHECK));
+            HttpMethods.DELETE, null, null, HttpStatus.NOCHECK);
+        Context.getThreadContext().put(ContextKey.RESPONSE, r);
     }
 
     public void requestAllPairings() {

@@ -22,14 +22,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import de.gematik.idp.crypto.model.PkiIdentity;
+import de.gematik.idp.data.UserConsentConfiguration;
+import de.gematik.idp.data.UserConsentDescriptionTexts;
 import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.field.ClaimName;
+import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.JsonWebToken;
 import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import org.assertj.core.api.Assertions;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jose4j.jwt.consumer.InvalidJwtException;
@@ -61,10 +67,20 @@ public class AuthenticationResponseBuilderTest {
 
         final AuthenticationChallengeBuilder authenticationChallengeBuilder = AuthenticationChallengeBuilder.builder()
             .authenticationIdentity(serverIdentity)
+            .userConsentConfiguration(UserConsentConfiguration.builder()
+                .claimsToBeIncluded(Map.of(IdpScope.OPENID, List.of(),
+                    IdpScope.EREZEPT, List.of(),
+                    IdpScope.PAIRING, List.of()))
+                .descriptionTexts(UserConsentDescriptionTexts.builder()
+                    .claims(Collections.emptyMap())
+                    .scopes(Map.of(IdpScope.OPENID, "openid",
+                        IdpScope.PAIRING, "pairing",
+                        IdpScope.EREZEPT, "erezept"))
+                    .build())
+                .build())
             .build();
         authenticationResponseBuilder = AuthenticationResponseBuilder.builder()
             .build();
-
         serverJwtConsumer = new JwtConsumerBuilder()
             .setVerificationKey(clientIdentity.getCertificate().getPublicKey())
             .build();
@@ -72,8 +88,9 @@ public class AuthenticationResponseBuilderTest {
         authenticationChallengeVerifier = AuthenticationChallengeVerifier.builder()
             .serverIdentity(serverIdentity)
             .build();
+
         challenge = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
     }
 
     @Test
@@ -81,7 +98,7 @@ public class AuthenticationResponseBuilderTest {
         final AuthenticationResponse authenticationResponse =
             authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
 
-        assertThat(authenticationResponse.getSignedChallenge().getHeaderClaims())
+        Assertions.assertThat(authenticationResponse.getSignedChallenge().getHeaderClaims())
             .extractingByKey(X509_CERTIFICATE_CHAIN.getJoseName(), InstanceOfAssertFactories.LIST)
             .contains(Base64.getEncoder().encodeToString(clientIdentity.getCertificate().getEncoded()));
     }
@@ -109,7 +126,7 @@ public class AuthenticationResponseBuilderTest {
         final AuthenticationResponse authenticationResponse =
             authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
 
-        assertThat(authenticationResponse.getSignedChallenge().getBodyClaims())
+        Assertions.assertThat(authenticationResponse.getSignedChallenge().getBodyClaims())
             .extractingByKey(ClaimName.NESTED_JWT.getJoseName())
             .isEqualTo(challenge.getChallenge().getRawString());
     }
@@ -131,7 +148,7 @@ public class AuthenticationResponseBuilderTest {
         final AuthenticationResponse authenticationResponse =
             authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
 
-        assertThat(authenticationResponse.getSignedChallenge()
+        Assertions.assertThat(authenticationResponse.getSignedChallenge()
             .getStringBodyClaim(ClaimName.NESTED_JWT)
             .map(JsonWebToken::new)
             .map(token -> token.getHeaderDateTimeClaim(ClaimName.EXPIRES_AT)))

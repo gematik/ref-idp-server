@@ -1,25 +1,23 @@
-# Basic FLOW
+# Basic FLOW 
+Log-In attempt using egk with DN 'CN=Juna Fuchs, GIVENNAME=Juna, SURNAME=Fuchs, OU=X114428530, OU=109500969, O=AOK Plus, C=DE'
 
-Log-In attempt using egk with DN 'CN=Juna Fuchs, GIVENNAME=Juna, SURNAME=Fuchs, OU=X114428530, OU=109500969, O=AOK Plus,
-C=DE'
 
-## Authorization Request
+## Authorization Request 
 
 ```
 https://<FQDN Server>/<AUTHORIZATION_ENDPOINT>
     ?client_id=eRezeptApp
     &response_type=code
     &redirect_uri=http://redirect.gematik.de/erezept
-    &state=<OAuth 2.0 state value. Constant over complete flow. Value is a case-sensitive string. Beispiel: 'BZIujYHEfFOovLtHXp5m'>
-    &code_challenge=<code_challenge value, Base64URL(SHA256(code_verifier)). Beispiel: ZENecT-NhaIMxSVMryKwltah7JPatqv7JDZ4q4BUTpk>
+    &state=<OAuth 2.0 state value. Constant over complete flow. Value is a case-sensitive string. Beispiel: 'UazzivrHoMGsMinyLFO4'>
+    &code_challenge=<code_challenge value, Base64URL(SHA256(code_verifier)). Beispiel: TnbuPTLYhE-mQxSQHRDNn9xARlnLaEhNjZq8M5u_uuw>
     &code_challenge_method=S256
     &scope=e-rezept+openid
-    &nonce=<String value used to associate a Client session with an ID Token, and to mitigate replay attacks. Beispiel: '8RqsW7ICuFkZJFPSWZke'>
-
+    &nonce=<String value used to associate a Client session with an ID Token, and to mitigate replay attacks. Beispiel: '6o2FRVBiSQdOslqQtBw4'>
 
 ```
 
-## Authorization Response
+## Authorization Response 
 
 ```
 200
@@ -28,17 +26,18 @@ Pragma=no-cache,
 Version=0.1-SNAPSHOT,
 Content-Type=application/json,
 Transfer-Encoding=chunked,
-Date=Mon, 15 Feb 2021 16:58:29 GMT,
+Date=<Zeitpunkt der Antwort. Beispiel 'Wed, 17 Feb 2021 08:16:08 GMT'>,
 Keep-Alive=timeout=60,
 Connection=keep-alive
 ```
+
 
 Response-Body:
 
 ```
 {
   "challenge": {
-    "rawString": "eyJhbGciOiJCUDI1NlIxIiwidHlwIjoiSldUIiwiZXhwIjoxNjEzNDA4NDg5fQ.eyJpc3MiOiJodHRwczovL2lkcC56ZW50cmFsLmlkcC5zcGxpdGRucy50aS1kaWVuc3RlLmRlIiwiZXhwIjoxNjEzNDA4NDg5LCJpYXQiOjE2MTM0MDgzMDksInJlc3BvbnNlX3R5cGUiOiJjb2RlIiwic2NvcGUiOiJlLXJlemVwdCBvcGVuaWQiLCJjbGllbnRfaWQiOiJlUmV6ZXB0QXBwIiwic3RhdGUiOiJCWkl1allIRWZGT292THRIWHA1bSIsInJlZGlyZWN0X3VyaSI6Imh0dHA6Ly9yZWRpcmVjdC5nZW1hdGlrLmRlL2VyZXplcHQiLCJjb2RlX2NoYWxsZW5nZV9tZXRob2QiOiJTMjU2IiwiY29kZV9jaGFsbGVuZ2UiOiJaRU5lY1QtTmhhSU14U1ZNcnlLd2x0YWg3SlBhdHF2N0pEWjRxNEJVVHBrIiwidG9rZW5fdHlwZSI6ImNoYWxsZW5nZSIsIm5vbmNlIjoiOFJxc1c3SUN1RmtaSkZQU1daa2UiLCJzbmMiOiIxRTdBMC9EREx3WGd5bmI5dHluSXpTQzJlREo4bDl0UGcvSndXZ2tVb0tnPSIsImp0aSI6IjA2ZDlkZjg2M2M4MGU0NzMifQ.GgaLdEooqBn9Re9XURFY6OFQZ5EDsfBEn7preiCVQ98Oy6fyEFAxiv36AKjfPRrNPt1zJvaLb-M6mrV25mpz4A"
+    "rawString": "eyJhbGciOiJCUDI1NlIxIiwidHlwIjoiSldUIiwiZXhwIjoxNjEzNTQ5OTQ4fQ.eyJpc3MiOiJodHRwczovL2lkcC56ZW50cmFsLmlkcC5zcGxpdGRucy50aS1kaWVuc3RlLmRlIiwiZXhwIjoxNjEzNTQ5OTQ4LCJpYXQiOjE2MTM1NDk3NjgsInJlc3BvbnNlX3R5cGUiOiJjb2RlIiwic2NvcGUiOiJlLXJlemVwdCBvcGVuaWQiLCJjbGllbnRfaWQiOiJlUmV6ZXB0QXBwIiwic3RhdGUiOiJVYXp6aXZySG9NR3NNaW55TEZPNCIsInJlZGlyZWN0X3VyaSI6Imh0dHA6Ly9yZWRpcmVjdC5nZW1hdGlrLmRlL2VyZXplcHQiLCJjb2RlX2NoYWxsZW5nZV9tZXRob2QiOiJTMjU2IiwiY29kZV9jaGFsbGVuZ2UiOiJUbmJ1UFRMWWhFLW1ReFNRSFJETm45eEFSbG5MYUVoTmpacThNNXVfdXV3IiwidG9rZW5fdHlwZSI6ImNoYWxsZW5nZSIsIm5vbmNlIjoiNm8yRlJWQmlTUWRPc2xxUXRCdzQiLCJzbmMiOiJSc2ZTTnBneGRsVUJOMjRkM0E1SVVKa213QmUwalhNYUJFdDRCdSs2RDRNPSIsImp0aSI6IjY2ZGEzYjcxZTRhN2ViZDYifQ.aSop-v2UiMflkjAcmza3y4tBuryhm8SfBzqF_dtyI9GIF4rg_beLvgrfvHgyCAstbk0OgGjuX3StcBSp0pD2hg"
   },
   "userConsent": [
     "GIVEN_NAME",
@@ -50,39 +49,40 @@ Response-Body:
 }
 ```
 
+
 ### Challenge Token:
 
 ```
 {
   "alg": "BP256R1",
   "typ": "JWT",
-  "exp": "<Duration of PT3M. Beispiel: '1613408489'>"
+  "exp": "<Gültigkeit des Tokens von 3 Minuten. Beispiel: '1613549948'>"
 }
 {
   "iss": "https://idp.zentral.idp.splitdns.ti-dienste.de",
-  "exp": "<Duration of PT3M. Beispiel: '1613408489'>",
-  "iat": "<Timestamp of the issueing of the token. Beispiel: '1613408309'>",
+  "exp": "<Gültigkeit des Tokens von 3 Minuten. Beispiel: '1613549948'>",
+  "iat": "<Zeitpunkt der Ausstellung des Tokens. Beispiel: '1613549768'>",
   "response_type": "code",
   "scope": "e-rezept openid",
   "client_id": "eRezeptApp",
-  "state": "<OAuth 2.0 state value. Constant over complete flow. Value is a case-sensitive string. Beispiel: 'BZIujYHEfFOovLtHXp5m'>",
+  "state": "<OAuth 2.0 state value. Constant over complete flow. Value is a case-sensitive string. Beispiel: 'UazzivrHoMGsMinyLFO4'>",
   "redirect_uri": "http://redirect.gematik.de/erezept",
   "code_challenge_method": "S256",
-  "code_challenge": "<code_challenge value, Base64URL(SHA256(code_verifier)). Beispiel: ZENecT-NhaIMxSVMryKwltah7JPatqv7JDZ4q4BUTpk>",
+  "code_challenge": "<code_challenge value, Base64URL(SHA256(code_verifier)). Beispiel: TnbuPTLYhE-mQxSQHRDNn9xARlnLaEhNjZq8M5u_uuw>",
   "token_type": "challenge",
-  "nonce": "<String value used to associate a Client session with an ID Token, and to mitigate replay attacks. Beispiel: '8RqsW7ICuFkZJFPSWZke'>",
-  "snc": "<server-nonce. Used to introduce noise. Beispiel: '1E7A0/DDLwXgynb9tynIzSC2eDJ8l9tPg/JwWgkUoKg='>",
-  "jti": "<A unique identifier for the token, which can be used to prevent reuse of the token. Value is a case-sensitive string. Beispiel: '06d9df863c80e473'>"
+  "nonce": "<String value used to associate a Client session with an ID Token, and to mitigate replay attacks. Beispiel: '6o2FRVBiSQdOslqQtBw4'>",
+  "snc": "<server-nonce. Used to introduce noise. Beispiel: 'RsfSNpgxdlUBN24d3A5IUJkmwBe0jXMaBEt4Bu+6D4M='>",
+  "jti": "<A unique identifier for the token, which can be used to prevent reuse of the token. Value is a case-sensitive string. Beispiel: '66da3b71e4a7ebd6'>"
 }
 ```
 
-## Authentication Request
+
+## Authentication Request 
 
 ```
 https://<FQDN Server>/<AUTHORIZATION_ENDPOINT>
-
 Multiparts:
-signed_challenge=eyJhbGciOiJFQ0RILUVTK0EyNTZLVyIsImVuYyI6IkEyNTZHQ00iLCJlcGsiOnsia3R5IjoiRUMiLCJ4IjoiTEU1amg4cHRxVm03eGYzbEZYWW5La0gyNnVUQlVLZEZNQVNNcTk3TnctTSIsInkiOiJhRWprWTZtT19fTDhYOFZHTndtWUNWWmFKSUpJRXhoQmV3QWFmTlZFQWJvIiwiY3J2IjoiQlAtMjU2In19.tb9EU657jocxarBG2o_l7pOQq0Ij4uxmFRtkVevXkf5Jev0AdOw1bw.cBK9JmpdxTro_2MT.TrJ19IU3mMUG3K7tmYCZTzRqWplbwj16EJN9-zU3DovTn3I_NNgqdKcbLUlybpGaG7ZdBtdD9kkWH-S2aph-9ET7gfoLw9I6DaTL-Onjc94d71d04eM6J4v79K_ANjH7HEzDcf0pqOCyIk3eu7qnUBJc-pQtYoxhd2ja_jcgltifRJchi0wlSllXpi476VcZrwc_C-hjGHht8xxUDsKwTMl8_-f2OuSMhNYZfP7g72O0Ne4LwgeMhgCDsitxb791gBZnuNa2-dYzG81VSCzzMODAHz8Ska6Rp4JVC6_3uTluWKosOSjEMzCjqGxh77dBuawGgEly5i1wTvcXybfr2hplEsIZWntRnYZMIFrpBXiGKIt-C2hy4t_JTfFjyySTamvhwZkjND73jRTXccLXKmBur3aXYQIV1y7IPTuuN4GRJN4nDGm6w_zQ1lClkG9RYKoS2j6Q4ZKWgrqqsvAVUm4D2ED6dB6hDnk23TagqeF3C2tJxKbFliT6p4zzAzfVAIU54GsaAHs1x3Iks8EXjQ_H2NjhxoFDP_ecrNvsx2a6Ui8Rn7hX7PosK0Z0zVCmVNZ5-VVHChmBTGeCgC2fqmnAgu9SPUIV9cQsEcoItoWqCrk9HcdIJQFP1EkSw-ZwzN1reO1wkU7791tByIOy771r7-_wrwm7lE_sdhMh5F82KUwRa_i8BoFR1T8YWQ-veGYKoZeNccL7vLv-1lARWn1vGgPZryIv3hn5bqY43w8mnB_x5h2Zu8vj3_ao81QkNy7D2kRo_Id7LrN5VbhAiCU24o2H1ENiSH2YPHKHjUNy7vPa8trOjGsJaiZGQTwy0CU_dygutuEFdSGo70JSTJuzssmi6TQ_qCxlWCpLUr3RcidMwrJGz7BMzh1LXccRgSXW7dbdY0xfPbieM19i-IjzCpHN5innXsCpxWWLD6q6UkRB7V30lYMsYAbfZWB4r_jPmIoRp71dLGQsbqA34TRtTsiagIlCKDRyXZCWIwoGAxZNFDvtoRyRkJGD_MZ-Qa3DuU7FDK3-B1zg6CpqAOTwVdKyzC3gavu4Zhy9SMcNIXP-eNXO8Zb9Ot12EacMi35wGFbLnaIbrpQVUSi2pwShMzGocMwHwx1qr5tVAk5lW8zguTCmNN6vO-5zUZaxkA1205SXEx3yF4UFC2_MP9uddpIleLKm-5qYrrmRHyBeMlbcqFGfqbq3OBgnE1IA_USpEzpAFvQ2ZUDhyU4epi4OiVHBaHd-NyvKdiMJv5DCGdj7bPbrU2L2W3yrvzs0LJJ-zOfwdZOhPHCKIUW6bmBf62blnXmxT_gIHijl3ZZ68QrM2x2hWgy-S06cjIZEoSAWxvi3G-K06I8Y3lNXg58-Ekp2zH8TUekm7jv2QbBu7uIqMzMplQr2YOs8bevu_hxq_TbbPuMTh6XAsiYcvrr8pZKeplgHOos8UL4SVgEf07Mg7WN3z1ez3JJVkK5MY0orqfg7jKvSIHOZrhiGLSIRtd3TDcMiFFTN4ZG9yJ0TLj0k3K74xLa0I6i9Ob_iJaB0lTi6JqrRdO59pTQGNP3hNThs2j1KIcmz6t1fsAC2NHHYC-27MYa0A56-wiKMJq1xWm_YpbWB2EmV7_jtqWXdqqXuSZg8ZyIeHVFPPx_L-QqRNxjF9PUF7gjd3jH_xG1-Os7ZFRObh6UnjGv3N8F_tOwKmSkSWcBRvjpzAdMWmbRjfunx19vzvoPaT71xHXq6lqmkgVTJSup3CPll1Lgv7F10MiW68tOyPv2j4_ePAy5giud1M68hozSsAV66MXtSz2LxMViIzBUxHSA0-kSTne7fZ7MSagZU5jCoPDC3ejZI-saAJrG0VLkZ9Rp6d70k2Tx4xlJDi2N44nUnSoXGiVTb9Ft1YOLqc-wKi_1Uq6JZFr4a9ZOZS99pUPrDai0KkPMh3DUld9XNJE8eOHsMTeevt-PhupLaTH8J0tAdFMx8GerMyQjag3MCc-8k_9PINtDK3LvOIMwpa-szs0SVLMgj4qA11c0ZqUO_Vsh6U_inUMR5_1nbGIWSQRTHB0rrVMtDCkL5tC9gUQBxIDpb1XffYqxUK4lI52r3ZFwYQyRus3uHjQrKwhS6htTQb6tqVXgJNA4baaJHlLyJRlUyqbf3960urnDH8lF6K5X6E-LcwMpPONZTgr0rY1-5l6xIGK3nVaSjUev_PoTZXvSJAkP4kTW9krFFtJEln-rBrbORhoylrHKx4BOQSAZ8XuvzAuekpvupVQ45ad_tH7DhPRTAZXEZrXKsfC9wWGlMMbW7AW7uQLtXeIP3NlC9PITMHZCpt4yb-s5kg0E-JL0fRWnLa7a9dgQqzXBIP_UYej3RXvIP95fOD2gf0Yq8ZISN6FOO_d4Iyu4FvuSic-7ooujWyoebHeIYtvL9NfWvc6dnvlfJWn8ahsFerHbypYosChlIDfOpy4bBM7Od5WscKpks3sb1HFgcHDxv8MZwyx9Vg8mLPuoO99qWWhMAL_rThrKcJthZ0EWV8NwPpHMwvknDp5U6zHUXp50F9Z_V51hu-nY5FJeZVJd2cXHiNQHYI80Vr3v7d1Pu8PvJtUNuUdX3Z0cJXGYIenfZOB3G38QbnCNadrvKyv6eXNBo08hdNpz9lzFeLyamcRx2tbUxSsQ_jOarYz4C6rHVpoyGWcqsFu0wb2v6_Vc6Wjt62ymhztX8nxUtM9WMPcN-j_KdmuXPuEV_P71AYD8DNzk0KmrN7nU31RHHjsjILK2-MIjWCTRaDqTGHfx59TQZPzvlLOGxQTVQy-RsXUVCyWX3uPGZsBpunrmDygnlwcZbfoTtNs7DmdlAMvEeEkYVbGoHnbYzg6JK8gLQd691UIryd3_NLt6ykZ15D2O4fSiskHKOzRZdn5y7OWP9Eif0wJu2lOuNMgW232b683BZaRGF23OpkCpPd_Wfh0l17V-w8t3GS7gYbs6VryXOXP3lj-yB2PHAr9I8JAaQgoqeCMb_sfr0_3WvZM-0kwQRCnDox7jCkewXggDnJhEWiKd4QlKCsVETf8uNw6w5y-s4ROO5GClvh5uhPDNht8wT1oBtjp-iTaszfsO8z0AGIa7yhoIy-jtKQvb_9sgUjYMNc8jNythWNbDXpDK1323M1eGTNro47YNu6bKwRLZlJfRpKOTPCK4UWihSx_xDVDu4gX6KpgSPl51yI-BQ9mtayCt-NqJrF8bsJR0PCZ-NTt7gqttkt_y9J1d-Y7Uhv8peKeYDkv0TRsA-3rayGpsmMab59cAdR4fThp29tcXUIER3bSKp7xpVZmy7RWr_D7Qt2HtlCR6p5F9yuAC727vPiphoZygmqMoIwbaamyafW7MigUdba42BzMxgCkedz8Z-ZfxNEcc05kyrvYl5EoVHtrPjaBUiAOiaX43Nwtv-9Af_PoVGaptZk-pfvLnqf2tLsnfCNpR5b04laA.Muk01-_iBLMLDp4Zzvkv9w
+signed_challenge=eyJhbGciOiJFQ0RILUVTK0EyNTZLVyIsImVuYyI6IkEyNTZHQ00iLCJlcGsiOnsia3R5IjoiRUMiLCJ4IjoiUkFvM0t4aEdwdDd5WXhXX1RtOElBUG94OHg3Y0NGZ2M3eWFzcnNPcEpaQSIsInkiOiJZN0NOdHlDbHNhbWs4bnRuOGlyeXMybGhDU1gzdEFmbTVMUGw1VEJqWjlVIiwiY3J2IjoiQlAtMjU2In19.5wTIyqt6p9w4SSmYrPcJIwQxhw4lBi1brlBvN9xetNJlJjOqxDLZqQ.1lTL4jBcCP1Xbm2L.83icinzfgPQ1Vi_Gyq4BxYRdXUj8E2Q6jNwvZzJFdI3L6Zlq7DvBWuFd-1qcqIPPRo8kwNx7K375Z8-XdzmCeNTB8lB6EqSTfKKfbX-feQF3l7Atv_EiV9POFbxOjKd1eyvAVqPk1l23DZ8-oHAFCXUhf8ENxSL-sAKwELqT-y4AERhgoRa4J4QEz6c2E5Sp6w1ftbNUXNtnVDoJ_VN1nBKe70ztMKawz3g5bEiFu1PkjZbYluPOBZRAckqt0BW_16m-vsSLhbAQKcjYJ7mCl-4elMWwVda7VIsTsxGOQydeQfgFaAVVVMdsS0giWkLAJ7r8Fgnui3Flrjaw5it-CQoesN78hHiEiTTR_I9Z1uTgPl4TGppiZTkgwB9K8vYrrgEAz8jmQSKJXtDjpH_J5A3_UU7kXkJtO_uKaY3gb9zyPFsB1kF9WRFlckZ1H6vucnF3eLdfVp9kdIF5aNXdCycpgBMemKwrnumU2yr-7xSJoqTZFXiSGsTGGLmEhyDYRH8SKC3knhunNvKlthKbcGr7MVKHp23lBGjBr6fVpY-5sQuGwkRhripS4hbdDYhDIyQND6MExFcUOrRHahGpLrdfWr5QSwqjAaZFtO2oZuWJy2EC3igGi4wH6HkQIm13hNxl2cngErODawOeJ84nLalAvBDk5B0UhNBDs8NEYuQwEdVaxyNN6-oIW1JNRdYcx9K057zT1qLy-I-L6htIYxPEdJaREhcP5hMh1CcwKD4idM76UAf4K4YoLFcR9RpyREmaPcjoGRmwy5oiqsNCUa0NsrcAmwtKGmqmwV7X59csPR8Rpd20Rwytg3Tlo5NkJia-6zsFUBRqEFYOTedGbu7pNlFcYb1G4PM_6gNM68MXjSUvGJf3Hf_7N1cQ8K5guFDjN_tcr3p7nTnzAY10gGR5-lpllAaXFVmMTCvzYy8pIu1PzV09LDE5HrGg3cV5-7b1xAZ4TylTMt2ud0mp0Vfc-tpa_1_j5wj0ebXy7ldfTRLOQNGNCLQmZI5Lo5y4dlL_zpDgj93iPlV0TIlBn7aBnE59_BXDjqMQBYzUn0awgXyNjoRpoc44SV6PNYf56dVjyD7fQ9gaOMMjO51QVd-Ezg0mnys1c1jAvSIX3wEuXBGuEIe2xqJVtPfLfyfaYA-r5nQWlz2L89jXwujNaxYXHf-d2j6HQ8CmKIIgLvywbZVXJbj-mUml74A3atnulfu0P9PdZO-W3sL--Ze9akhum5Yrx0YOVLHR5_535DKTG-bCmbUOgkUWzHsN0mGG-P2QGzssOAV3aHfCI6pf-te9qgsoS2GmKx-xllsS8-psFN7PH6s_dClkbBfhEqZeT04_8USS_LAVIrOIaJR0j4ZSo0eYakjl2wDjwaYuzCBXqbK18umU8Bc_a_oU5bUIV0RsdtOf282jsEE5nByU6Thpp4jbk_eHtOLnCLByw_F2orNCbiCUvbyVvU_hHjxXAHicEh4q-gCnIg5S6TOiicWHGGKVsBpjcCbH6eF7EzN3XkCKaOu9OPq5Fpo2j1bhppaS9_cqOHDHCFXj2ULPEWG-f4CKnAmHY21PXxzouSnyyNkPIgEYLZodmcAXvGWGQKJPNnGRiCaIkPcR5LUFXmIUKjS9eOor_ebE99zy6LsYSPDLAS5AphyF67UrQS9Oc7mVjUEVIg2aDQYPt0ELpTVBKcXZ6V96WIJ0rhmhassXZ5xOsdgvyhBA0dUOmVCM_VexityAs20VkoIcOtD86DJVGUYFl469nOzrxJ0PFr7J4NqHfpOuHDmCw8eOo1q1ZXZsK3riVIH_M7OWbGlIPSZAFtmWMKbumViSxTRjFZ-7uAD0QLEUmyOCtPEiULz8xG7S3mBXhpSfKmMLnydLUPwqOhw0LrJ6x53_VHEBl0EIi5q81GRdDV7ISdR2wamP9uzHxUghQcdDwe2ZN0QKIZkPX2Bp1cM8wAxBN56mel32n8koAHoglNcz6oCY5hXklm_nATMpUkWLBWqNjtQYrXbtHmULSzMP52w-oLViok-VxDB9dcoosVEetN6TQs82cEQKrF8nc7G60KF4vIS29zgtBis6hyzmHR4O-Ukj30bxnMY0YDN8ucY3yZdb7PHCaYNGfddLOQSPn5sJ7ICQUd3wSA5yx92qSYHUEX_QjhOeH5TyGa2HjradqfJ4Vk0tm15UmY7weTs6aTtG3JXi5tj7sN98tQZ-URYaUZji00Xi_TriEHdTXZKVhsqo0u57RB3_iFDQ5W_wnlyPKzibkYWBMZNb6Ay16eY5LZ92S2_yOiSISvDCnlMl7b8GWpDCnKxz819RBHmDAPci47qU57QB3WThCPvihECa9Z44FUN26W1JwRGUHIUsmFRy_kP4w-lRnMzuNNWjyXGIoAeygoCdKvEOgekfKwv91C9dG_gvYw22efzmfuQH4jE2dBQsKCrOAwgo-UoXbSNNuhB6dqx4Ix7hSGlfPXJRJVFmYvfemcZFpFuNftuHLt-G2bsC-NmuSKyzC37XYPXiPQCClsoihvV6e3pxAMGbqo-K4nBIkEk93smspyuGHR7F8nu1iedlnK9SHNXUvu-yVCLkO0-yuMrcSsRWTX9zKph_H_jLRb2ihX7J-Z7v-4mT3z6jPP-BiRHvYRupq2EUP-_tQLpesXmjOWD-s6p8Lh79NN4Vh8pySdEvjIXujp8CrfEOWqgEseFr-lJgiYvW4d2znwub_YaHRtHCs4hYGzW0C4k5A-h0boo1ntP1ZujKyHNbtt6qK0SfBbumhdvwQBKI3A72WxnRX5bn-h0sEzapMHWn5OmNeZUuu4_KYQbfjLRWX1K4a-6MEPpucY4WwFh10oYStNHB5IHREXAr9NrdCgDLjSDStnUdBHj_lDxl_rL_5bcMEaZrInDyZMjvKsAYWetL-3k8b_8QwcopRDvWnyRX7vC4J3GkM0qhzOi5Hdk5jHiS-B6jWJgzdY9mqp7ViXgR9i47IBGzaOX9B7XgSxqrhNry74FHzurteCi5qvw0P0xlUnCXbvhaP0-CpI-eyRLPewcav9wI3HKcGt3ium2uAiC-fJWNvkdMO4zesB6Uk_gz4RGnaKFMW5wKp_1zekKoh1FS9oveJ2qSvIN8fZ7xaoQ-jeX6SvPnGP5hfgKF-fpt8PQfOYEA440sbT-dqbZE3ZLnjNL6WNYq4G-QsL2j0dq0wnv5GpxeP_1ZlOnp8gKdIxgyGYvvf5WX54w9XOXyZmZWRdnAcGHz2ZhREXmhdYqkLFIcnFf8UdsmOvy3rfq3F7Su-M5Ryh0D3IzfcIMRlEGrCI2OzJWxkQP67QjfJ1o5R6Hlpwh1wCdMpTnxf0s-Scdl4NkGHDvx6fYUgPDOFBvlRSJivlnZt8cfRxSC26Lljsc6e1ZpSohZPowtdzatfJ3SyHd5HP2CNnwrvQLXF-IjQ-Nuuh2n8voGVC25Nia_0Ig0EQ.I6zApuSkF8RBezDE3PGSTw
 
 ```
 
@@ -94,12 +94,13 @@ signed_challenge=eyJhbGciOiJFQ0RILUVTK0EyNTZLVyIsImVuYyI6IkEyNTZHQ00iLCJlcGsiOns
   "enc": "A256GCM",
   "epk": {
     "kty": "EC",
-    "x": "LE5jh8ptqVm7xf3lFXYnKkH26uTBUKdFMASMq97Nw-M",
-    "y": "aEjkY6mO__L8X8VGNwmYCVZaJIJIExhBewAafNVEAbo",
+    "x": "RAo3KxhGpt7yYxW_Tm8IAPox8x7cCFgc7yasrsOpJZA",
+    "y": "Y7CNtyClsamk8ntn8irys2lhCSX3tAfm5LPl5TBjZ9U",
     "crv": "BP-256"
   }
 }
 ```
+
 
 ### Challenge Response (Decrypted):
 
@@ -113,11 +114,12 @@ signed_challenge=eyJhbGciOiJFQ0RILUVTK0EyNTZLVyIsImVuYyI6IkEyNTZHQ00iLCJlcGsiOns
                                                             ]'>"
 }
 {
-  "njwt": "eyJhbGciOiJCUDI1NlIxIiwidHlwIjoiSldUIiwiZXhwIjoxNjEzNDA4NDg5fQ.eyJpc3MiOiJodHRwczovL2lkcC56ZW50cmFsLmlkcC5zcGxpdGRucy50aS1kaWVuc3RlLmRlIiwiZXhwIjoxNjEzNDA4NDg5LCJpYXQiOjE2MTM0MDgzMDksInJlc3BvbnNlX3R5cGUiOiJjb2RlIiwic2NvcGUiOiJlLXJlemVwdCBvcGVuaWQiLCJjbGllbnRfaWQiOiJlUmV6ZXB0QXBwIiwic3RhdGUiOiJCWkl1allIRWZGT292THRIWHA1bSIsInJlZGlyZWN0X3VyaSI6Imh0dHA6Ly9yZWRpcmVjdC5nZW1hdGlrLmRlL2VyZXplcHQiLCJjb2RlX2NoYWxsZW5nZV9tZXRob2QiOiJTMjU2IiwiY29kZV9jaGFsbGVuZ2UiOiJaRU5lY1QtTmhhSU14U1ZNcnlLd2x0YWg3SlBhdHF2N0pEWjRxNEJVVHBrIiwidG9rZW5fdHlwZSI6ImNoYWxsZW5nZSIsIm5vbmNlIjoiOFJxc1c3SUN1RmtaSkZQU1daa2UiLCJzbmMiOiIxRTdBMC9EREx3WGd5bmI5dHluSXpTQzJlREo4bDl0UGcvSndXZ2tVb0tnPSIsImp0aSI6IjA2ZDlkZjg2M2M4MGU0NzMifQ.GgaLdEooqBn9Re9XURFY6OFQZ5EDsfBEn7preiCVQ98Oy6fyEFAxiv36AKjfPRrNPt1zJvaLb-M6mrV25mpz4A"
+  "njwt": "<enthält das Ursprüngliche Challenge Token des Authorization Endpunkt>"
 }
 ```
 
-## Authentication Response
+
+## Authentication Response 
 
 ```
 302
@@ -125,14 +127,15 @@ Cache-Control=no-store,
 Pragma=no-cache,
 Version=0.1-SNAPSHOT,
 Location=https://<FQDN Server>/<TOKEN_ENDPOINT>
-    ?code=eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwiZXhwIjoxNjEzNDA4MzY5fQ..crbSNJLpMXFomdC3.Wnit3hsYzecWsRpJapUsSTDC38Up2Dbox313vhh8BdGMjnS_jHGO4R2wfXjBpuzHL-Fb4U0c6-0RG6F8Qk8P0fn-AYkHmZYpXmacehU7NHH05iBoD1bqAEPLIgTtVOuafDvr09izAq3hBaTsLhNAehFFrS-pKQybRLn9fDiD-lvEXxqbPtWhE-LVsoN-Lr7eYjWCBc1QnhwCdpXAadilNu9Zs6vNC3-slgcPxs-JiMTUE3ZR37OmNTL_MAIc4rCttBUJIarPUEUTxoRJs1Cx9Gv93c7AWeqCE5j6yo6HkkiCkfunaF8JUTop29GDs35mp-uqJOSsfErTUAYL1-LrQbLfvY0lsQXDf0x39rK5b_EuXtrD7nJIsxmoRSmr4Z3R2gmsP2P_u6A6XR3aK29pgJEhsD4p-DnhQrvxUior_7fkDpU1SMeUhu7NhX60pwDX_3Tl4vi0sqHCFzf-_IGiW_LFRVWDxJUlPg25QFqIp4nEQdFT0Xh-fz_TFv9QxgN1-m6j8vCvWZRgGDepQsjLYpCWjSrc_4H9n1E4R0MhaXOa94J26ZVA3fHh_xtsQBGL9d3xzV8YjhKZ5iuswoEjtw4eFAB1mCP9cGdMwZqkjhVa_18BpKWD1-k1BO-7lCfATnlTuU0AEtEpMrCoBrs8y9M-t8aTZxmXvFPYwHSGmqpe-Wx_CvGekiPGnrY3EByDswGLR4b0e08-6exmJLjp3Qg4uh2IQVXPG399h_7oSlzRigUJ2ogHth1lACaPlQZUA50ytbcc293MmhjUiwRV6tD-jcqn2KHM5VONNBYqw1QlhefANtPjdlJxlBhyPzOW-AXOythHYLq1V4uS5HZ8ON-vySGZNU_-G0GKmM4F054OnOr-lQNrpdwrsLE-jWhCYIZzFl1yHIr9pZKH2ET3-c5MGFwazXGzlqqv2S2ByyqtsmjWcdb62ehGVS-bBf0B_DFOAsS9uk1TAB9VxuDCX5FCoCpshitefIU6h2hOyhMP3cZrbxVVjXw3_pNzReeWFavvT1WUNCBkzbh92Crh2zOujp8pEoNVikgFU85Pl3qzHaNcmishfC-l4g0BH_lmD8lXV5TEOEkd15NoC-vKmKvo2xjYjeQeK2SOCAFeT6rm_u-IsfoN-SZWAUpyINACoE4YDntOoHWp1a_C-i-Q3WHtZwnYOu-e4vN0V6Rdhp1kw8sB_qZUq4TMNlcWucLawTzg7E3UrKkR9FaJrndUN25Awzbg0XPP1Xh0oJALAYmA7jA52dIgNeNgfQOy5Po5z7rqEhtHEm7XHBOjk-jrzUYYzuAkS1Y54FkcmEHmJATEf_ILGlO-TNP7fcRC5YLDUn7AMiUw.phmXJSb8hnRrrPq6PkmfxQ
-    &sso_token=eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwiZXhwIjoxNjEzNDUxNTA5fQ..S5yDG4wXp38V__v1.MDUx7GKdeGFcJwWZS2QjsyIbBQVqs8TqZStdpHAne7Ar6CtjKNufbTyBe1Fz-1HnVnR3CaA-wKV6jaRlzM0ytQaF4r55SvTTKZgX8TxxOpLnUFcSy8RamAfafWPGpRlUY_CCDWEOMWFVapqNxR33Yj0VHjwlKHwf3KCXsiw59UsqK0oGLdM5fjAb2tcekzhqfYtNIzrHZY0XVKMuKENVekMBe53G8OZCgeEpnoRtocKCrHijvgWpJHY6aB6_hLTe8dg4-ub0DUUdztdaPPZWlpFvLJFW_hDTDN0FJB910RFIOdBqYy_ZJgauPd0y8ZIYcWySiHY2B7YJJw37WiQbuwVeYxrQAjbaLHYZjLqMJjQ0f8BbeE2UriJ8r30C9AmqAu5oQimNZPKZfzkVpNoD1xgJc0TCroV_2bKh0N3wq_1hz6sNtr1nsVFipegen91kU6Y3zx4ymgYw1hlax5RbMNOlgUxPgS8v5KvgEykaUAmErKa94AB7Vr0H0uQCf9q1dOtqkewtPSgcpkxelC4gazgj180aLb3jO2uM7y66YCoS8zD1ylOb81LGE5l-cUOMN6NluRZKaoq68VSvGYW24CEOCDGmknbMfnEIsxYWkFnODfWZ3Q7Ss04iAWiEZn5-QlwgQhweqhs-87ZynNCPH8N9U-Mi6LCFQ1uTlvWz3yTA8J3-6lu-YZa8H5NfjdCHf4CKoil-qLAo7_2KJB4LQdFH5QpIkJ4_etj7X-3BBBETiIFQQa8y0AGZH3CH7bJLOaxlNuHiQ39AL0Y5qWlnEXML9fm4HlegALDQyUM98pkxuDZYIXL-vqtTN3Uj1H3Nk77RrsN8kewaz0M9RsxAwvRJyDfpX-a6b62dYZpsKEkY6HPlCG4ejHJkYhCwKS3A39PVNpM4XfKu7KTruuavMCXlqTUiPAH-GDGItkOMufDHibYLdQPRY9Nb3avZyrOVJ4b-0Kz-bkIh4rtMhSfjpuJKaXlhhve4z7xZkjnB00x4tOVSt1hduFoZ93jaFEyEJWovglMI-dBMKnl6FQycjvo7pHotWoQqUg1gWBevXQ8rC0SqOr1jp-FzXdwLXYflNGJZFn6CL2_fyjC7zNDkiyQjM6rUCL2xF2XOvbFm1YJr5SUBPkulCl1tfD3HGZ3Y5gt62C9TsVjALwImC_YUIok1EtDdZOrAo_nbgzqDuF0MAiWZbiU4BbwglrslwXbLFXvRH1cy_0suxvqQrh8e4Up5jSPJ4Efe-6yGSaSeqK5F3E_Q0DKOjcszqeJ6YUGa9wrLiC_6bAICaoWFw4RC9ioAOm0xn59dLmJb-_6BiHQhLawNp9lgM12UYF5jYj4X6Zw_wUEIqY2CbxnkaHyWcB3XpL96nVCDU7LXY3B6K57iIgk9sIg1gaGYAyLzxB49IlftqSO_j9EfDMkse5zd9pt0i1DQvTqZzNyf09g5UKkBETaV6g0Nn11tkFC6y74NCXOk8_HgfSfAgR4Ydx8GgfhpHDVXPHtCkzIIQsweRi2jD6VXimDvJedqR_7vQlTeXNCfh4c0XjcKdZJQthUIngmRRtQCX-XW0rtXT35d_soShYh4c06cVtdXPwzEgeIFFcjCIb7liAIgmASGo9YxN_T9Gqy1WcTW0GQuEjhSCP3xc7Zh9D82TvAG6xTG08n42hE7p9DSjKQcYUFf5JXXWNHZFWj6y6WU8b-9G6euHLstb5YOWcWXECIG0PZD7yFNqcpb0Jhx_0yT0zIWyhezD0S-Mh_G5KLSaerJ3uk4P-a0vHORmM-lBWg1mTCZV1R0_DQjC0Vaw-31YAEMSFml_DnMUiI3izxL_dLu5SMYrZCDxXmbdqT-GSXAYs7qCpOjq_4-PKkt3RQahB_YLcW-sLyAqLTolL00gSSFUVx6ytbpybKxzL6R5rHJu7cDoeF8_mdjnu7_W_Nt-rv7fxfpUyRlKVBYjfjNCD02oTI7_vhJIYocnzAzojNY39svJsWGa9bbnCNtbvphpty23za5wxcLevUdfUiAdmc3yOZ_SgNjYl0M-I1Vikt6CuSkHQWHjJNM8VBLap-26MqqL0HBV1Oo2x2LeJbn642-noQjutlO8Khxz59Gpf7Pvz0pds0EZ7zKo0xinGIbfcP9QMCCf2hBptOBU6HZEgC15rHJzieSeARJvEyhA64UOWBLoSBpb5tDUmE3F39AFHDiVSYZmpi-I4Am1f_TnCsXIJimtjdpa8HPpQSawRQQFZwYhJLZXsN95bTA7Sf5mU9Z1a8ylbMBSYfxt69HISzFAk0A7qGbkJpfwkY8nFsaKHO7FVbpylklH5gxEBQm-hlkJ05s97tff-ySoRwkVscY-SK3ZXB366yLuoWNoyS4KS2I68qg3yZqZoPmpwCRYpOOGT1-hjA-JuJOm5jTPVfckPO0vjgsfpTj5S2N9xgFuUxP5n87chbmI94_yUA8RmKukJYkFB0hfAApeksPY8zemdXD5fmIWDsD2owIUNLeKaiUXVPQX6OleyNybHx-Kqdws4gmU-zLMBIUbqBZJndAdxj2eXNg-n6yAOkZgPmCS2vT12qeOESlnH8-aSq30aF5EtnTeGAfNykzNwsU93mCjCTS7p_c5tiQidC5WhGos9-JHbbMku3in14W-irk_k84DqczcIAbi1Bc5CqgJXDJ1OLLBjBsftmJsPowYUbwnOiL0pupv39VCFTaMOTXOQ0Lv2b5FdzTq8F82ZvF0y49W2bhH5X8z9GM_tzZISjy9Qtk9XSbsrDf9Bzy_A2q7uMaUhm40R7H_D9sOqv6GfwfOsAcVXeDulkuzrh6R4yN-06JCyCNvG9Hf7luIsm-qyrKUz8qWiBW2gDz.rJMqZXqGCd4C77bZYKM47Q
-    &state=<OAuth 2.0 state value. Constant over complete flow. Value is a case-sensitive string. Beispiel: 'BZIujYHEfFOovLtHXp5m'>,
+    ?code=eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwiZXhwIjoxNjEzNTQ5ODI4fQ..WxiSpfV8eqSd0GM-.0n-72HKxzqFRwzx1Oc3DIg06WHg-2eIjKQPlWhPi8MssadiwRRrklCakwXxB87Z74D_RFAG3mtjaRIoQism_GH5BZgA_ktrw9WyFsZ0SHdRKxCY-DMGRRaNmoLtHM-HWHsxOGx71lQm-BGaxYXxkwsxUqddVl8Yy0ES7vlNUWKDbO1ISZd7nhS0sk1nbqVpXCWKk38voFJMYrtW7V_Yf_OVtTaFJa2PhBlmcDfx66vJYwR-c03zmcFqAujApA2UnHQJQ-W1-kXIAcn04BHLj7bmFR0BGKrVkrYvJMdxotM84qKYTY-Vc7e_7CsbXF4BXHAzInG-JmVGnuSsrA08-wAO2nMjlCg2-jXy6M9P6BUE-7O4zTYxvPurgKmUUHuCzlA3R9KXRlQJA4ULppClTkbsankZ8bWOIchv4bv79ZMHlshf5JzB9XFAboUHUcg0SV6pPIiidegof6TnrTw6BCep3Ma9JYSfuJiwmgfYdER7E80m4npAT_h0R4sze1O2suPPxb0PWXnxj2SvYTgypnNeKFFzfIIQKzboEGfFOTSTq3zC7vknT9IAZ7skS7jcT0HGwRuy71WQ4gSYgToi9wQqseAj_qOT5uDeQr1QRdi8oejUbEzML47nUrAQLyB4Jc3a610S7HMFOt_sKQDjehz0ahUqYPxIVCAjS3El2wsQEZuZeFBxokiFBYTfvjyiKdXK-pW3XYt_CUkJ7P0DLPsvmp2RK_NKhXnUP4FVirhfFaZ09ZZLxBVrElHeLD_zWhKpuhsO1ll3fqdXWpdmOdB4p26y_nZbNEx6MAUQd1hS7MT_rNE-Xf1bv5U6UQI4z5MuNRV1o30xJDwVnZbcGJWLY_YjQCo1pXignpSkVhGWa8pbbEGk0eUDtKQzsQF4NU9O8kWq9s_BU3hwqvBN20zT5R8fltRQG02oi_NYLKfaU3-yvo85ug-EvpYcXRxu_bLzgmiFmZvXLsb3Y_AyIVf-W1rPn5qIsXyU6NKRWwZjRjUMtsLJW3Plny8kasqqQkhTeLNiyuCABIeR-6aF8DO64TIndDTOroLDLEABgDmIwG9shaW0Oo6FKSyEkTfSjt-7KyY6a1pn4f0ZwT2AJvclX-jYFl7qrmwnIPyKmbRab-Ywf_o6GmRXKdsxpdSUoJ9F3UqmecgzG1FztcjlATcq4mVFTkxiChE9vi-f5RdPK1vbrIyE2sDdsVoZqTARE-qhvSS2CXTjIyAs8R3GFRw8XEU7X7DaudMR6mx7ijDOgccx5orc_zCj04y12-wUwm-Gp7PAXl-CCyzeQTe1pYbyfFs9BDZTXIgIu7k-VCRDhgNe-ta9Xjv3BJgzcKwWfRoCVzjU.iuwrMPyAYR3qVzlidbJFaw
+    &sso_token=eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwiZXhwIjoxNjEzNTkyOTY4fQ..NR-rMXAjauh98AIt.BXMEJpyBdtcO0OVFK35g8LqFWdlHpQH6ZuomSaDRnylTfeZyg3MT-FSK2koDIZZZKVEq-lobi_7fRrvfiRQNGz4_6tmfqahpa-FC3ZZinMoopWr_9vY5obxDfBWSOFRu274mwxgFrikHkWxEGDwMG2u7BKU5zIvXNipDT5IxoTMAsbnUPeQuQNc8-uUKR4PC30xp_Waz_msckco3Yd4RJtb2nELpc_dc7nm5hpoaQ6-kVND2QnNBp_mQctPyo9Zcnmjra49oq_MU_9ij7KU2wId_eMMRdMiuQX5g57Iw_0TmUxYkP7JRf1Xlh4TxhfoLACVr3fOtzy6V_IU5mIWkxqkK8b5xXZC8VxQ7iL01ARSiYVxzBrmrOb56dOYPRcV9YdRwxKps1g2EFORoq5xGO-a3au78JtTH9MUnGKOx7grGkeG3LLc-Mf1N3vKFvjEdbDkwpmeqeNfte9Z2wW6MWolMYaQUsPq1gEz8sojjeaXl7QzPg1lIrJDdy96o4mQxlz43VEJEs4XcjpaMageuB1jNRPR8B5yanM5wGUmK-NqncSb45WHLDBa4pSsaMUlBqMO4nZY4MR_rBIvR4qntE9cxzLMdUP7V40fkMZG4MBIod18CjWnn-Rmwwg9eEAHw7uCwKbuSRQnEfMEnwq1V_LMjEsZXeYinWpA11WZF29rwrsClV9jmBd_8lqW0EIxhGHz_R5yZG92jAvs7vIaW-QifQTcygxZI8YOmBX2-sD53c6Vdr6KC3D9lEWA6c2uDHlOMvo284lcsgGGD240VfDCufba-yeBQjbppTtKC9O2yyF8gNRR83uVk4zPWI8OOCn7FnS7CEaDWJiJF74nMEttHN6nOBmirAPd9mxvWd2aISA9RvsrgMGbO75FVw4D8OXTTh9i9secA1AA57PcKdNqNqQDUVJlQqLpcdm6W7j1HCQzpJceClD7HXYdomaI2ZOdkQ72sPrERZfOIPGz6P0U2sIT_xv90xkurDxBo3pZGIYmF1vrb49gdjvP7UD7u5nD1VyYooyE60vGxhLM7IGTceI-B0iQi1Rx6JKNNi_erJFliKbZYcR61gLlR_QiM0nP87lPpMoPJp9iOqmxcqvLRvDASLPMD2DNS6VauSHPXhTbnpAScfvq0nwG5tV0s4y2lJDRTGBC4XQ3uIoDTMVCwqmoMHv3gDGmDhIbuV-FlWFL9eD0i0UT9ndcWYquWT6iCsfAqgbb75bVHSd3VOP2oMSTUT3UL7wrP9mJmG7cE_Ghtzj-oHh1FqQswCyPl-DVJoQNudiE4yqkxv2LhtCeFbZw1MfbJML0t-uXQ5sFSmy5IDOPUK-rxCPg7oS_YQ2BckkuYeYnnBa1IBuWcWb6nkAHYfZrJFEopylUgNkcZCH0AqP563pxjQv6NMhxJLN9cRog1uMRAmWXpe-N1ruUzGNvIAmS0TKFkKH7LojzWTmTPnOEQUWlIkvnXy_eA_cG-k5jtWjJOQ3h8ijhtMfSYTSSsXAIAmNL7Yru8P33x0Ahxd1M7Q2LbjJPazV0iAcbPOx1F0uLcTzDqGz2G_EyiPSHdixCb3g-8A6wmWKdbaAvV8_mz-JGKKe1qIPBjzeew6Ewj2dTA0BZetVqFm_wnYh3s-2tqiGZszsEhyAH-OA9I9teh2trAmc7RjYSQQDmW1YjNA9K0m4hjYi5BG0uFtGCTlC_zGrdzfTYLDTz5BGVNkazr5-rcUCiDZktcwYzJ9lCpWruFijtk5t-bbtSyYryRajUfF3t3_Egsm7wlU00oNJBveqRI4aKHyCL4y3PJj7czasGUK1o6v2-wQlRVAun_eYHzbS0ymzhnvAmPgZ1Ap39w0OpEvng5Y5casnSTaUM9-G5BYDQDOmfM05hjjHAVlbXlVqPtN4GA0KnylJcKujQO5Gtrpy0Gosdbr5lUP6GqMuB0vyiMUyrXR-iwp7rPfuiZIp9Dgy5-6PHfNeMIP4Z2X_HDjXS_27QLRlCfUURM74mgFfqbXdroeqUqcckVV_-NpCvv0udyflgSykiNizAcVWHk7UYxeGrZfnlDkkjJRGQEWwarbh5tiWuQtaxtruqORvC5FXmVAIYW9Hs0VNPEBaWgbLSpgOVlqnGxn-D6dY14M-6St9vxoNkQ-OtOvxnIOTL9KW8F2SJbZC9jP_h80MFwjlZLEeDJsgmCbgcOrDV1GEpSdd0cVaY1IgspIdqBuFs45TyvZkg7lFYjPEJ_XeN4ABbF5TYWfPtVUcH_xh6i1vWiFZJh9nQB7C2pjPjk3HS7rmlfQKn0UyJ7_3WKJk4CvN8dLSoRnkqr6GplHooINBhucki3g7XXH8O6c3D_yXfMynNmosZrAdsfBsE8M1WCOsSye2Li2KDomIhleQ0c_qR0jPfrmSZ-AkQaVYVYtf50_2OVcY6BwM36KOkPhRCf6Mf2YfW4_9-BukZUhmzT6LpJ20YelLuyG-17YZHDiPpIqTY0aBuKqmtB0avGYBCaw0oUxfpUkl5wS8mVgyJFBcYLIz4_bipqaWH6NNCVb24pO5GJg7yd6wkHyHvnjaaEhL43oWoij5gmuBDl9oUhtSfGFE5Di7BU2kX9GDlp4qhjSnq6JaaES0xEmbdpCdczafs_BZQ4CFb4zhswXpin1z-ZR47hnX6zH0jMQSay5WPpL5hbAgQM8kCK9VhXxCInGjbLfKOX0u6xg6ljv8nJtCJfmBgbZKN0xm6IeXfTwZOZavuUPSsWSN5o-gSmmdaGIKGywkEuQL6ziwVtE7iUJRERI-A328vuPWQFHIKV_3IidUTXl_EmUYjeoI24K0yNv1HUATg997-XidjWAOdyPJGzmaWY9UTNbbk.ThAsgW4o3Pb9poaNxb3zNg
+    &state=<OAuth 2.0 state value. Constant over complete flow. Value is a case-sensitive string. Beispiel: 'UazzivrHoMGsMinyLFO4'>,
 Content-Length=0,
-Date=Mon, 15 Feb 2021 16:58:29 GMT,
+Date=<Zeitpunkt der Antwort. Beispiel 'Wed, 17 Feb 2021 08:16:08 GMT'>,
 Keep-Alive=timeout=60,
 Connection=keep-alive
 ```
+
 
 ### Authorization Code (Encryption Header):
 
@@ -140,43 +143,45 @@ Connection=keep-alive
 {
   "alg": "dir",
   "enc": "A256GCM",
-  "exp": "<Duration of PT1M. Beispiel: '1613408369'>"
+  "exp": "<Gültigkeit des Tokens von 1 Minuten. Beispiel: '1613549828'>"
 }
 ```
+
 
 ### Authorization Code (Decrypted):
 
 ```
 {
   "alg": "BP256R1",
-  "exp": "<Duration of PT1M. Beispiel: '1613408369'>",
+  "exp": "<Gültigkeit des Tokens von 1 Minuten. Beispiel: '1613549828'>",
   "typ": "JWT",
-  "kid": "authKey"
+  "kid": "idpSig"
 }
 {
-  "organizationName": "<professionOID of HBA from given authentication-certificate. Null if not present. Beispiel: 'gematik GmbH NOT-VALID'>",
-  "professionOID": "<professionOID of HBA from given authentication-certificate. Null if not present. Beispiel: '1.2.276.0.76.4.49'>",
-  "idNummer": "<KVNR or Telematik-ID from given authentication-certificate. Beispiel: 'X114428530'>",
+  "organizationName": "<professionOID des HBA  aus dem authentication-Zertifikats. Null if not present. Beispiel: 'gematik GmbH NOT-VALID'>",
+  "professionOID": "<professionOID des HBA aus dem authentication-Zertifikats. Null if not present. Beispiel: '1.2.276.0.76.4.49'>",
+  "idNummer": "<KVNR oder Telematik-ID aus dem authentication-Zertifikats. Beispiel: 'X114428530'>",
   "iss": "https://idp.zentral.idp.splitdns.ti-dienste.de",
   "response_type": "code",
-  "snc": "<server-nonce. Used to introduce noise. Beispiel: 'UOJmkgxxIpzACDopiUcL'>",
+  "snc": "<server-nonce. Used to introduce noise. Beispiel: 'va4QyNmrg9R9rC01aDGJ'>",
   "code_challenge_method": "S256",
-  "given_name": "<'givenName' from given authentication-certificate subject-DN. Beispiel: 'Juna'>",
+  "given_name": "<'givenName' aus dem subject-DN des authentication-Zertifikats. Beispiel: 'Juna'>",
   "token_type": "code",
-  "nonce": "<String value used to associate a Client session with an ID Token, and to mitigate replay attacks. Beispiel: '8RqsW7ICuFkZJFPSWZke'>",
+  "nonce": "<String value used to associate a Client session with an ID Token, and to mitigate replay attacks. Beispiel: '6o2FRVBiSQdOslqQtBw4'>",
   "client_id": "eRezeptApp",
-  "nbf": "<token can not used before this timestamp. Beispiel: '1613408309'>",
+  "nbf": "<Der Token ist erst ab diesem Zeitpunkt gültig. Beispiel: '1613549768'>",
   "scope": "e-rezept openid",
-  "auth_time": "<timestamp of authentication. Technically this is the time of authentication-token signing. Beispiel: '1613408309'>",
+  "auth_time": "<timestamp of authentication. Technically this is the time of authentication-token signing. Beispiel: '1613549768'>",
   "redirect_uri": "http://redirect.gematik.de/erezept",
-  "state": "<OAuth 2.0 state value. Constant over complete flow. Value is a case-sensitive string. Beispiel: 'BZIujYHEfFOovLtHXp5m'>",
-  "exp": "<Duration of PT1M. Beispiel: '1613408369'>",
-  "family_name": "<'surname' from given authentication-certificate subject-DN. Beispiel: 'Fuchs'>",
-  "iat": "<Timestamp of the issueing of the token. Beispiel: '1613408309'>",
-  "code_challenge": "<code_challenge value, Base64URL(SHA256(code_verifier)). Beispiel: ZENecT-NhaIMxSVMryKwltah7JPatqv7JDZ4q4BUTpk>",
-  "jti": "<A unique identifier for the token, which can be used to prevent reuse of the token. Value is a case-sensitive string. Beispiel: '782379886fc60a68'>"
+  "state": "<OAuth 2.0 state value. Constant over complete flow. Value is a case-sensitive string. Beispiel: 'UazzivrHoMGsMinyLFO4'>",
+  "exp": "<Gültigkeit des Tokens von 1 Minuten. Beispiel: '1613549828'>",
+  "family_name": "<'surname' aus dem subject-DN des authentication-Zertifikats. Beispiel: 'Fuchs'>",
+  "iat": "<Zeitpunkt der Ausstellung des Tokens. Beispiel: '1613549768'>",
+  "code_challenge": "<code_challenge value, Base64URL(SHA256(code_verifier)). Beispiel: TnbuPTLYhE-mQxSQHRDNn9xARlnLaEhNjZq8M5u_uuw>",
+  "jti": "<A unique identifier for the token, which can be used to prevent reuse of the token. Value is a case-sensitive string. Beispiel: '148417917973edaa'>"
 }
 ```
+
 
 ### SSO Token (Encryption Header):
 
@@ -184,9 +189,10 @@ Connection=keep-alive
 {
   "alg": "dir",
   "enc": "A256GCM",
-  "exp": "<Duration of PT12H. Beispiel: '1613451509'>"
+  "exp": "<Gültigkeit des Tokens von 12 Stunden. Beispiel: '1613592968'>"
 }
 ```
+
 
 ### SSO Token (Decrypted):
 
@@ -194,15 +200,15 @@ Connection=keep-alive
 {
   "alg": "BP256R1",
   "typ": "JWT",
-  "exp": "<Duration of PT12H. Beispiel: '1613451509'>",
-  "kid": "authKey"
+  "exp": "<Gültigkeit des Tokens von 12 Stunden. Beispiel: '1613592968'>",
+  "kid": "idpSig"
 }
 {
-  "nbf": "<token can not used before this timestamp. Beispiel: '1613408309'>",
-  "organizationName": "<professionOID of HBA from given authentication-certificate. Null if not present. Beispiel: 'gematik GmbH NOT-VALID'>",
-  "professionOID": "<professionOID of HBA from given authentication-certificate. Null if not present. Beispiel: '1.2.276.0.76.4.49'>",
-  "auth_time": "<timestamp of authentication. Technically this is the time of authentication-token signing. Beispiel: '1613408309'>",
-  "idNummer": "<KVNR or Telematik-ID from given authentication-certificate. Beispiel: 'X114428530'>",
+  "nbf": "<Der Token ist erst ab diesem Zeitpunkt gültig. Beispiel: '1613549768'>",
+  "organizationName": "<professionOID des HBA  aus dem authentication-Zertifikats. Null if not present. Beispiel: 'gematik GmbH NOT-VALID'>",
+  "professionOID": "<professionOID des HBA aus dem authentication-Zertifikats. Null if not present. Beispiel: '1.2.276.0.76.4.49'>",
+  "auth_time": "<timestamp of authentication. Technically this is the time of authentication-token signing. Beispiel: '1613549768'>",
+  "idNummer": "<KVNR oder Telematik-ID aus dem authentication-Zertifikats. Beispiel: 'X114428530'>",
   "iss": "https://idp.zentral.idp.splitdns.ti-dienste.de",
   "cnf": "<confirmation. Authenticated certificate of the client. For details see rfc7800. Beispiel: '{
                                                               "x5c": [
@@ -214,23 +220,23 @@ Connection=keep-alive
                                                               "x": "dTXa6yPKCjIr9MbVFxeaLEu82xSCsRrfwcIrLpFqBCs=",
                                                               "y": "AJGsJ1cCyGEpCH0ss8JvD4OAHJS8IMm1/rM59jliS+1O"
                                                             }'>",
-  "given_name": "<'givenName' from given authentication-certificate subject-DN. Beispiel: 'Juna'>",
-  "exp": "<Duration of PT12H. Beispiel: '1613451509'>",
-  "iat": "<Timestamp of the issueing of the token. Beispiel: '1613408309'>",
-  "family_name": "<'surname' from given authentication-certificate subject-DN. Beispiel: 'Fuchs'>"
+  "given_name": "<'givenName' aus dem subject-DN des authentication-Zertifikats. Beispiel: 'Juna'>",
+  "exp": "<Gültigkeit des Tokens von 12 Stunden. Beispiel: '1613592968'>",
+  "iat": "<Zeitpunkt der Ausstellung des Tokens. Beispiel: '1613549768'>",
+  "family_name": "<'surname' aus dem subject-DN des authentication-Zertifikats. Beispiel: 'Fuchs'>"
 }
 ```
 
-## Token Request
+
+## Token Request 
 
 ```
 https://<FQDN Server>/<TOKEN_ENDPOINT>
-
 Multiparts:
 client_id=eRezeptApp
-code=eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwiZXhwIjoxNjEzNDA4MzY5fQ..crbSNJLpMXFomdC3.Wnit3hsYzecWsRpJapUsSTDC38Up2Dbox313vhh8BdGMjnS_jHGO4R2wfXjBpuzHL-Fb4U0c6-0RG6F8Qk8P0fn-AYkHmZYpXmacehU7NHH05iBoD1bqAEPLIgTtVOuafDvr09izAq3hBaTsLhNAehFFrS-pKQybRLn9fDiD-lvEXxqbPtWhE-LVsoN-Lr7eYjWCBc1QnhwCdpXAadilNu9Zs6vNC3-slgcPxs-JiMTUE3ZR37OmNTL_MAIc4rCttBUJIarPUEUTxoRJs1Cx9Gv93c7AWeqCE5j6yo6HkkiCkfunaF8JUTop29GDs35mp-uqJOSsfErTUAYL1-LrQbLfvY0lsQXDf0x39rK5b_EuXtrD7nJIsxmoRSmr4Z3R2gmsP2P_u6A6XR3aK29pgJEhsD4p-DnhQrvxUior_7fkDpU1SMeUhu7NhX60pwDX_3Tl4vi0sqHCFzf-_IGiW_LFRVWDxJUlPg25QFqIp4nEQdFT0Xh-fz_TFv9QxgN1-m6j8vCvWZRgGDepQsjLYpCWjSrc_4H9n1E4R0MhaXOa94J26ZVA3fHh_xtsQBGL9d3xzV8YjhKZ5iuswoEjtw4eFAB1mCP9cGdMwZqkjhVa_18BpKWD1-k1BO-7lCfATnlTuU0AEtEpMrCoBrs8y9M-t8aTZxmXvFPYwHSGmqpe-Wx_CvGekiPGnrY3EByDswGLR4b0e08-6exmJLjp3Qg4uh2IQVXPG399h_7oSlzRigUJ2ogHth1lACaPlQZUA50ytbcc293MmhjUiwRV6tD-jcqn2KHM5VONNBYqw1QlhefANtPjdlJxlBhyPzOW-AXOythHYLq1V4uS5HZ8ON-vySGZNU_-G0GKmM4F054OnOr-lQNrpdwrsLE-jWhCYIZzFl1yHIr9pZKH2ET3-c5MGFwazXGzlqqv2S2ByyqtsmjWcdb62ehGVS-bBf0B_DFOAsS9uk1TAB9VxuDCX5FCoCpshitefIU6h2hOyhMP3cZrbxVVjXw3_pNzReeWFavvT1WUNCBkzbh92Crh2zOujp8pEoNVikgFU85Pl3qzHaNcmishfC-l4g0BH_lmD8lXV5TEOEkd15NoC-vKmKvo2xjYjeQeK2SOCAFeT6rm_u-IsfoN-SZWAUpyINACoE4YDntOoHWp1a_C-i-Q3WHtZwnYOu-e4vN0V6Rdhp1kw8sB_qZUq4TMNlcWucLawTzg7E3UrKkR9FaJrndUN25Awzbg0XPP1Xh0oJALAYmA7jA52dIgNeNgfQOy5Po5z7rqEhtHEm7XHBOjk-jrzUYYzuAkS1Y54FkcmEHmJATEf_ILGlO-TNP7fcRC5YLDUn7AMiUw.phmXJSb8hnRrrPq6PkmfxQ
+code=eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwiZXhwIjoxNjEzNTQ5ODI4fQ..WxiSpfV8eqSd0GM-.0n-72HKxzqFRwzx1Oc3DIg06WHg-2eIjKQPlWhPi8MssadiwRRrklCakwXxB87Z74D_RFAG3mtjaRIoQism_GH5BZgA_ktrw9WyFsZ0SHdRKxCY-DMGRRaNmoLtHM-HWHsxOGx71lQm-BGaxYXxkwsxUqddVl8Yy0ES7vlNUWKDbO1ISZd7nhS0sk1nbqVpXCWKk38voFJMYrtW7V_Yf_OVtTaFJa2PhBlmcDfx66vJYwR-c03zmcFqAujApA2UnHQJQ-W1-kXIAcn04BHLj7bmFR0BGKrVkrYvJMdxotM84qKYTY-Vc7e_7CsbXF4BXHAzInG-JmVGnuSsrA08-wAO2nMjlCg2-jXy6M9P6BUE-7O4zTYxvPurgKmUUHuCzlA3R9KXRlQJA4ULppClTkbsankZ8bWOIchv4bv79ZMHlshf5JzB9XFAboUHUcg0SV6pPIiidegof6TnrTw6BCep3Ma9JYSfuJiwmgfYdER7E80m4npAT_h0R4sze1O2suPPxb0PWXnxj2SvYTgypnNeKFFzfIIQKzboEGfFOTSTq3zC7vknT9IAZ7skS7jcT0HGwRuy71WQ4gSYgToi9wQqseAj_qOT5uDeQr1QRdi8oejUbEzML47nUrAQLyB4Jc3a610S7HMFOt_sKQDjehz0ahUqYPxIVCAjS3El2wsQEZuZeFBxokiFBYTfvjyiKdXK-pW3XYt_CUkJ7P0DLPsvmp2RK_NKhXnUP4FVirhfFaZ09ZZLxBVrElHeLD_zWhKpuhsO1ll3fqdXWpdmOdB4p26y_nZbNEx6MAUQd1hS7MT_rNE-Xf1bv5U6UQI4z5MuNRV1o30xJDwVnZbcGJWLY_YjQCo1pXignpSkVhGWa8pbbEGk0eUDtKQzsQF4NU9O8kWq9s_BU3hwqvBN20zT5R8fltRQG02oi_NYLKfaU3-yvo85ug-EvpYcXRxu_bLzgmiFmZvXLsb3Y_AyIVf-W1rPn5qIsXyU6NKRWwZjRjUMtsLJW3Plny8kasqqQkhTeLNiyuCABIeR-6aF8DO64TIndDTOroLDLEABgDmIwG9shaW0Oo6FKSyEkTfSjt-7KyY6a1pn4f0ZwT2AJvclX-jYFl7qrmwnIPyKmbRab-Ywf_o6GmRXKdsxpdSUoJ9F3UqmecgzG1FztcjlATcq4mVFTkxiChE9vi-f5RdPK1vbrIyE2sDdsVoZqTARE-qhvSS2CXTjIyAs8R3GFRw8XEU7X7DaudMR6mx7ijDOgccx5orc_zCj04y12-wUwm-Gp7PAXl-CCyzeQTe1pYbyfFs9BDZTXIgIu7k-VCRDhgNe-ta9Xjv3BJgzcKwWfRoCVzjU.iuwrMPyAYR3qVzlidbJFaw
 grant_type=authorization_code
-key_verifier=eyJhbGciOiJFQ0RILUVTK0EyNTZLVyIsImVuYyI6IkEyNTZHQ00iLCJlcGsiOnsia3R5IjoiRUMiLCJ4IjoiVXViSVdseWptT0R5YUNndXFJbWhnY3RzSVFWaGxFdnd1d1VVNzZrR1BJayIsInkiOiJOTVY3ZXVQaTQ2b3ZyZUMwc1psT2dSUDhsTENLWkNJbF9MRnZUcTF6NEVvIiwiY3J2IjoiQlAtMjU2In19.dHvo9TT9e-3uKkiE8exUsy5j0v2ulLiSei3vlJsPAG6oe0CnABghSQ.8raatFpcwmNEqM6G.8GmGi5zoUdxdae9_sChMDyIp_BqqbUs5kbGmWUCeOu_hrIK9VQp-5vD4zlD6JWNLLzL0TSsVcAuG3N1o_h84qHLKn6tJWslvXaHuewlcmEv3WY96zX35H1qvn3aK_mCnSwRPwjQ8V1FdfHPxKtL3hO_7-Z3hHTevb_s.GxymxuOJYMDw9gIbirxSwg
+key_verifier=eyJhbGciOiJFQ0RILUVTK0EyNTZLVyIsImVuYyI6IkEyNTZHQ00iLCJlcGsiOnsia3R5IjoiRUMiLCJ4IjoiUUp1QzVSZHlIMVJzbGZsTFNwdVdORG8xVUdmV3pJNnRjMFVIVGhWQWlROCIsInkiOiJBWXZ3RjdwTzlkb1R4WUR1akJpQkRsNUV4WUZFaG82a09lY0g5eElpS2M0IiwiY3J2IjoiQlAtMjU2In19.wLWFwuGzlRWl1T3mIBnRZX0cNJ2Z0HM0fjHBZSWOI4yjCbadgdOkDQ._ccIr2H41DQFzXX7.1O9aglSdqFc51EP3rHmT_Dh-LX5rpB52dc36Rgnxcc01DzZhrU8MnBOOKzdC6ySH_VaUPganHHcpm1mChw9VUpG19pT-ItIQMdirU7qCIH4GcXVi7bgfmlhjKWO0G0mYx5mq4gEfRmOGU3QUSt36Z9R__Njdu-gfgxI.pB0kwXFC46kJfXjwHRLdjw
 redirect_uri=http://redirect.gematik.de/erezept
 
 ```
@@ -243,23 +249,25 @@ redirect_uri=http://redirect.gematik.de/erezept
   "enc": "A256GCM",
   "epk": {
     "kty": "EC",
-    "x": "UubIWlyjmODyaCguqImhgctsIQVhlEvwuwUU76kGPIk",
-    "y": "NMV7euPi46ovreC0sZlOgRP8lLCKZCIl_LFvTq1z4Eo",
+    "x": "QJuC5RdyH1RslflLSpuWNDo1UGfWzI6tc0UHThVAiQ8",
+    "y": "AYvwF7pO9doTxYDujBiBDl5ExYFEho6kOecH9xIiKc4",
     "crv": "BP-256"
   }
 }
 ```
 
+
 Key verifier (Body)
+
 
 ```
 {
-  "token_key": "TUdiaFV3RlkwdmhJQnBsN1J6Uzd1Vk42SjhXUXJtTUU=",
-  "code_verifier": "RHhjt4dICTUI_9iySdEUQTmitKccjo8_P0iCfBjMKLg"
+  "token_key": "VUtvbU93MHMwanZCN2ZkWG1lUG5vOFZocjFEakEyY28=",
+  "code_verifier": "bWDMar78epMWI8yuDql_yCdckKpitLhHnQLzghRRN0I"
 }
 ```
 
-## Token Response
+## Token Response 
 
 ```
 200
@@ -268,10 +276,11 @@ Pragma=no-cache,
 Version=0.1-SNAPSHOT,
 Content-Type=application/json,
 Transfer-Encoding=chunked,
-Date=Mon, 15 Feb 2021 16:58:29 GMT,
+Date=<Zeitpunkt der Antwort. Beispiel 'Wed, 17 Feb 2021 08:16:08 GMT'>,
 Keep-Alive=timeout=60,
 Connection=keep-alive
 ```
+
 
 Response-Body:
 
@@ -279,10 +288,11 @@ Response-Body:
 {
   "expires_in": 300,
   "token_type": "Bearer",
-  "id_token": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwiZXhwIjoxNjEzNDA4NjA5fQ..aXZCxGvYQ3FZWxAl.fFQ8xIMJZtIKpUY8DgsL5Q8IcsrG_2c76izWPBgwf8UliKBEuGGD_IB1I7tnRFohJEtXr1h4X2xSxefrVsUyBsyh0vWW1z21gxiAwyuGH3RPS8NnoCBRtqRVb49i892ZreMoWTwAmljebVBnsiwnS8hAUxXx4bEI9yvpCN5TviztQseijV5yMx04u6yjJ6ZP5DiVdV5HbmTf9CUKmwpD80o5TctRMgI1mWkWGdOG-cZUcof7bmKv_W1Uu_K472KfOyYAXGVDVShk7mGd76EV2goRgPMCEj0SPXVUBu2MjnVcZrNS-RC5ALzkq1CHjduRKqYnfJaZOX3NgcVq0p0qNl5dUL3MZ8B0bAuJwssb0H4nRi0UgMpQzETptgwIsy63Z6NPACQ1ytOJPXniRKB-xUT76Nf8907U69QSgp0Szf4HHoIlBf4BJA05bsj3wZGYKTto3i2LjoR5ItmIAOo8ZZkFMDjPEgwaIsal9dmB0NTSw0RCY2rNQRurtRH1vae8ofJ4umTh506m8ymKq8gyz4xGluxoqJFyfvH-olTJajZfYj-hLL49c7kdJw23X2PAfshSAM3o8BeVXdKTGBJ-IDNbFjFHFQY3gOZbaBzOjw6S0q8w2PJHsbsEx708FFA8rMN7YEW48SVjMg8b4pT99GWmcc9ShO6HxYoN4VcXooiv7BSi559VMrhlz_jTYxJqAyS0nt79vznNhdIZ_LrajOGcVct_ONsWPmIOu5dkw3EkMppPrfB6ebIMHe7CZRrSyB8A0ejy9UgsQok09Ud3T8fuKm101Ztzsj-FY5Xj5A61fJ55eZLDgRW-0pf1LsI-O9ECR65OJl9nTDR5X_NKsvOnSt02UYgLozMwV4E-WJ89lnbyhRXjTG1pVokRsUmhdM-FFowH-5B1GorqymBcE9PSZeWE40drrQIM6cA1drikKbTE0SH6ce9K0UmUfWo163RdH7I-Uxtr11MnNFX3rzqH6gerIa68RGZMs3McvWTyRqVg0LrV53ynH7-JpQFyKDV8UKeP3AzyO-qFt4ALus6YRAqJxWkSxst2DzUMhMbe7Fbdkg.MPXIbMkINFWQzRmsfB_pvw",
-  "access_token": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwiZXhwIjoxNjEzNDA4NjA5fQ..k9bgBFIU1joIQNsV.jCU2DMvNepqmSYf9eLdhVjYmqi0cakCGMYPOtZIN8S6SPRA2WiqbvKI1-qJt9o-vpELGDuzSzt3OerUSQfT13M7pE_czh66a7ITSnj_oDcJRtNngjLCx5i9WnoFpJ85OcU1rOwHTOMybVe4w9zb2OcsOBUut51U9cH-UpcMdpn0SeKUlOwJE3BLQR5XNKoQjxbaxlkEqwlftTPh1xPUOVWUz85IV1ld-6N1AIH_6Va96xmkjSykXH3e-eigFoe0iQt8R7ZuZqzruQkaADvcXO5bwkG0qgVVHpA6MlC2tTD27jcdBGWz_RDuGm_S_KT8iblthGUFYP3_z4NFyJSabAR-qPzBHthj-ujJ-laKUfvSliQ6EsFmQ26OWvn5THxqD-nFQx_zWV6D9AWuQVrt3v5NSkHcTDD1K8ThyTmic90qoVzvm5mCimn6dZjlHmNPFEiJhxasb64NcWPNLT54fCk0czCkGDENJOClyUq2V6VDSLUC7a3j-KtE1iSdJuW2_K0OBknlZ8ADzPjrmqmLtKfyDOtdIK8ugfD7lQU_DQ0U4IJMDxNa_2usA99OgqKxVW8W-0RqAR2snkqaCu-CoQi5VUOwMArPeB3djClEd2RdaW189_nLTXOA5dli6pqwKXDrTGSLgBawWNoK2dvqJCK8Z4qZd0s5y8d2DQA2zHzTvZmp6xDpGNAmWZvRHvv1jqas7wQ5Og6iyf6CS21PoRiKL4xW1O4LNm42ath8RUQgIjLo6NpyZoOolze97ENCaSZL8l624LtZs0-eEVkYFZ8VzKdGlmMkMPp_chi0wtzHSBEwFBxIEXOwv3Zml--sk_HY9ptY50oklF-gzAmTh2PgHPCvqPG3TdmQ3E6w_0G9WdYJPLgpgV7oTKfaAAspKbL7R-VeV7g6lZhoeoLD2FfgRw_c7zb3TDprxK8cYrpRn46SsigLUkzjz2w8RI5TFJw9pjT0vj-voYAL-zJz_Wz9vzEmZJR9oleYnERkB2aWVut0igrQu5jBs9-QNunw8Zf7K-KimcKU1tDbBVsll6GtcNTqXCukNxQXCvbVBIqNoYUDk5H8kQw2RA4LuvwzDDDQltx0Uk11d-7hM__FNqsGBhZ3ealBDqRzx0DFF.5ckGTIr9xku4-lnuFHZ4sw"
+  "id_token": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwiZXhwIjoxNjEzNTUwMDY4fQ..Ha3eAjKvZpPuc3K1.RXch1ZCKqWEy9UfEN3BXKXAxBhghYGAQO18Pb1ea0gyuk__bIzZ_jYCtKXr3YtPgemCO7mKyrYavi8xOp-KrFkHm2HtcyiCl6-fk5gGLPliXYRcSQnMwJhpOq-20T2ElEBPqm6aeJRaQ0fZ5Xhb-OQc2d1iwfczQFgYr8iULf40LFlKfDbdtkgckoIR461qCN-dM5q3MdGUtu9hH4xVV-0W-G1uFQ0Yc6isrPvwz9ffiML8zznSMo_eVV1zzuCTreVGyEdie6ln2XBXp3EEaJIW3LkNKq8yM4ePn-28szJISIV7nPJi8TPIembAyVrJtDw9bpteDS7MkaB-rmtXUusT1QLgyBKLacZBPEbJYthgTABaN-VuMxJvR7hX7EGcg-wSdTFpMrp93K0NJcMYaehTjnsr1bRw6mHYARJaMDCn4qXEdLEnY3vlfioB25VytaP5X-YcO2Ifj7G3X7gJBAd8RTweTFqhBmXBRp8niqfIQ2VBJwQ5nWdiYMEPU229yTxCLlNIyE27VPDyATy6k2yu4GCVXl8FkZYUytp5HCtKP3wqZQS335c7Z0wPSrAm_H1PhRSS3FNCGof9MzeragnxjXFZxtlH26pjktXWu9rFDiUIPfkj8_nHgbZaYGHD-bCGifHw5vrQo_EyTAMsnCZrr4lzOAmCLBI5u3KEorGd5IcCyZBFqBjcrZh5cxl9N0DkqycjmlLh6AUOjQHzhe11fx6-C8z88KGfPdxb4p0Le29hinVV5-5Y6bxZFtQ09bgz8cdYOzf1eMoDpA_y3KS0hP8bHQcyCOHo1oy3uqm27CXWa4gXjwJ9d4sRiL2ib1pcDSBLwXUadxTSHha8Zq4JxDfAKPgH7Z-0bENKrZB5FvQfPsVw5nL2fUjcTA5zQxh0xzqbvERqz9zBCfWwEr7kNftraH3NIFxaEhrmNMj1q2SY5K7_rvmdQNxYrIE4IObADIFwmsEMJ_-fqUYRoZLH8U0wsrUxu3ofRUr6W8S3-17Q3_61FnKVyEKj5wTeak01GKsY7cLlD-ODI8_MjQJt6kP0qLpSHe5AQkSDl3RKYtgjL.lhSZsmMEXpxYSd6XaQCm0w",
+  "access_token": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwiZXhwIjoxNjEzNTUwMDY4fQ..xdsZi5ID4ufFmlFX.AR-iCeyJ6mRSmYmVnOOUhcD8ZQfhUiRDSQex4oY7XEwQPFFgBL9wLAmBHIVDoSHH9ILAhvwg7OQy0y4UynaSCs8TUQsDMB9luLsodDjRtiIvYJQ_MbCJ6BcQyPvvVIUxFea4Qam1S8C1bkPMH_O-uwXPSmE1i6H3IWDZafdzT30Hg7VT6RuhG7DKRNTF9JK_UsuSQByyikhkt-ss_sXoSAqlG_lnBhdof_PLfHaqPN-7TSoXIzMjLDsLFERcATlKr5RAm2X0TS2KMraz2Qln1P6BWdvCwXMnspp1MtqwWbh5MlWzY4vMdR24oRQMdNIOnP3kwDYof6VnfTixm-BruY0U_ryt0e6QwF1aAIXiahF9pW6KLY3E-Ue04ZayQ5s9_-XHqy3WD5GwKglLCEdMgIdKM75umZwZRIXaEKUSpAhAgHgKboCjPwTWsyAw7HQEwEuV0aM_aC2Yyk7qMLuhVwV1MXvZPcn-IrmkOFGmQMxQmBrojveAVZ0-ZzKe5lGavSnKsWu7nbzrKhUN4IVNox9InvxOxoLSaNc_UujsrgYzY-0CKnlwOTyDBvosu_dr-rJEM8RT3svoDh583wPNWRlUcOWnchl0YFGtlpXw-1NhG2dN5pcBTjhRdReExBy7uOBoKirKlZ3WdL3Urs3TWITuh_8NQp5HPXx--ucDfR61_Tcf6N9ibzuvWyyWrfBYgCkH8OsKRS_PYumehtg5RZ1dyS30lLvhWujV4bfhXhrkmTAjTfgtCso5x_k_Awl15NfLOLsE1RhuOyDIRVnhs3Q7VDUDqgxpSQ-AN80kT-pCm6wiMPWKA6uWEbQQ_NrU-cfTTAEID8WSUYbpGYQ2XapggizOdO6I8dI_F5ozM1j3g_dZJe4MvpUoZUpLJXZKnr_TcfyX9liuI3D9WdsRfccUWq8u_AIdR99hxUUGRMPcNDxc8bTZ9kuUVuz3auCxjrDMrtfQMIVSSrWrMxRJP65EF7eXS_zK4BAoUgSFwZt_DgcCsLyqgH-XuU-rmsf_EqXMnEtAATaxZNMZLxI0fKz5tQ2iUEPTJMqcynRtVmYwfOernB7ajFGOv9LUYw1PBR7jHvbKsBsaHZTO8gJ20TKAtDGNRKA8HcXWcEM.G9Z3CtvaJxHWUk6HmSnDyw"
 }
 ```
+
 
 ### Access Token (Encryption Header):
 
@@ -290,39 +300,41 @@ Response-Body:
 {
   "alg": "dir",
   "enc": "A256GCM",
-  "exp": "<Duration of PT5M. Beispiel: '1613408609'>"
+  "exp": "<Gültigkeit des Tokens von 5 Minuten. Beispiel: '1613550068'>"
 }
 ```
+
 
 ### Access Token (Decrypted):
 
 ```
 {
   "alg": "BP256R1",
-  "exp": "<Duration of PT5M. Beispiel: '1613408609'>",
+  "exp": "<Gültigkeit des Tokens von 5 Minuten. Beispiel: '1613550068'>",
   "typ": "at+JWT",
-  "kid": "authKey"
+  "kid": "idpSig"
 }
 {
   "sub": "<subject. Base64(sha256(audClaim + idNummerClaim + serverSubjectSalt)). Beispiel: 'qDAmiQOl5_rJ5-ok48lbjSs6QH9oya7VuxUJ-_E1HCw'>",
-  "professionOID": "<professionOID of HBA from given authentication-certificate. Null if not present. Beispiel: '1.2.276.0.76.4.49'>",
-  "organizationName": "<professionOID of HBA from given authentication-certificate. Null if not present. Beispiel: 'gematik GmbH NOT-VALID'>",
-  "idNummer": "<KVNR or Telematik-ID from given authentication-certificate. Beispiel: 'X114428530'>",
+  "professionOID": "<professionOID des HBA aus dem authentication-Zertifikats. Null if not present. Beispiel: '1.2.276.0.76.4.49'>",
+  "organizationName": "<professionOID des HBA  aus dem authentication-Zertifikats. Null if not present. Beispiel: 'gematik GmbH NOT-VALID'>",
+  "idNummer": "<KVNR oder Telematik-ID aus dem authentication-Zertifikats. Beispiel: 'X114428530'>",
   "amr": "["mfa", "sc", "pin"]",
   "iss": "https://idp.zentral.idp.splitdns.ti-dienste.de",
-  "given_name": "<'givenName' from given authentication-certificate subject-DN. Beispiel: 'Juna'>",
+  "given_name": "<'givenName' aus dem subject-DN des authentication-Zertifikats. Beispiel: 'Juna'>",
   "client_id": "eRezeptApp",
   "aud": "https://erp.telematik.de/login",
   "acr": "eidas-loa-high",
   "azp": "eRezeptApp",
   "scope": "e-rezept openid",
-  "auth_time": "<timestamp of authentication. Technically this is the time of authentication-token signing. Beispiel: '1613408309'>",
-  "exp": "<Duration of PT5M. Beispiel: '1613408609'>",
-  "family_name": "<'surname' from given authentication-certificate subject-DN. Beispiel: 'Fuchs'>",
-  "iat": "<Timestamp of the issueing of the token. Beispiel: '1613408309'>",
-  "jti": "<A unique identifier for the token, which can be used to prevent reuse of the token. Value is a case-sensitive string. Beispiel: '1e8946a864b19201'>"
+  "auth_time": "<timestamp of authentication. Technically this is the time of authentication-token signing. Beispiel: '1613549768'>",
+  "exp": "<Gültigkeit des Tokens von 5 Minuten. Beispiel: '1613550068'>",
+  "family_name": "<'surname' aus dem subject-DN des authentication-Zertifikats. Beispiel: 'Fuchs'>",
+  "iat": "<Zeitpunkt der Ausstellung des Tokens. Beispiel: '1613549768'>",
+  "jti": "<A unique identifier for the token, which can be used to prevent reuse of the token. Value is a case-sensitive string. Beispiel: 'eaaf7c9bd29bacf1'>"
 }
 ```
+
 
 ### ID Token (Encryption Header):
 
@@ -330,58 +342,58 @@ Response-Body:
 {
   "alg": "dir",
   "enc": "A256GCM",
-  "exp": "<Duration of PT5M. Beispiel: '1613408609'>"
+  "exp": "<Gültigkeit des Tokens von 5 Minuten. Beispiel: '1613550068'>"
 }
 ```
+
 
 ### ID Token (Decrypted):
 
 ```
 {
   "alg": "BP256R1",
-  "exp": "<Duration of PT5M. Beispiel: '1613408609'>",
+  "exp": "<Gültigkeit des Tokens von 5 Minuten. Beispiel: '1613550068'>",
   "typ": "JWT",
-  "kid": "authKey"
+  "kid": "idpSig"
 }
 {
-  "at_hash": "<Erste 16 Bytes des Hash des Authentication Tokens Base64(subarray(Sha256(authentication_token), 0, 16)). Beispiel: 'guDkFj06eF4WkTeP88BtFg=='>",
+  "at_hash": "<Erste 16 Bytes des Hash des Authentication Tokens Base64(subarray(Sha256(authentication_token), 0, 16)). Beispiel: 'cHLbwloDPO7v7E+qyE42bA=='>",
   "sub": "<subject. Base64(sha256(audClaim + idNummerClaim + serverSubjectSalt)). Beispiel: 'qDAmiQOl5_rJ5-ok48lbjSs6QH9oya7VuxUJ-_E1HCw'>",
-  "professionOID": "<professionOID of HBA from given authentication-certificate. Null if not present. Beispiel: '1.2.276.0.76.4.49'>",
-  "organizationName": "<professionOID of HBA from given authentication-certificate. Null if not present. Beispiel: 'gematik GmbH NOT-VALID'>",
-  "idNummer": "<KVNR or Telematik-ID from given authentication-certificate. Beispiel: 'X114428530'>",
+  "professionOID": "<professionOID des HBA aus dem authentication-Zertifikats. Null if not present. Beispiel: '1.2.276.0.76.4.49'>",
+  "organizationName": "<professionOID des HBA  aus dem authentication-Zertifikats. Null if not present. Beispiel: 'gematik GmbH NOT-VALID'>",
+  "idNummer": "<KVNR oder Telematik-ID aus dem authentication-Zertifikats. Beispiel: 'X114428530'>",
   "amr": "["mfa", "sc", "pin"]",
   "iss": "https://idp.zentral.idp.splitdns.ti-dienste.de",
-  "given_name": "<'givenName' from given authentication-certificate subject-DN. Beispiel: 'Juna'>",
-  "nonce": "<String value used to associate a Client session with an ID Token, and to mitigate replay attacks. Beispiel: '8RqsW7ICuFkZJFPSWZke'>",
+  "given_name": "<'givenName' aus dem subject-DN des authentication-Zertifikats. Beispiel: 'Juna'>",
+  "nonce": "<String value used to associate a Client session with an ID Token, and to mitigate replay attacks. Beispiel: '6o2FRVBiSQdOslqQtBw4'>",
   "aud": "eRezeptApp",
   "acr": "eidas-loa-high",
   "azp": "eRezeptApp",
-  "auth_time": "<timestamp of authentication. Technically this is the time of authentication-token signing. Beispiel: '1613408309'>",
-  "exp": "<Duration of PT5M. Beispiel: '1613408609'>",
-  "iat": "<Timestamp of the issueing of the token. Beispiel: '1613408309'>",
-  "family_name": "<'surname' from given authentication-certificate subject-DN. Beispiel: 'Fuchs'>"
+  "auth_time": "<timestamp of authentication. Technically this is the time of authentication-token signing. Beispiel: '1613549768'>",
+  "exp": "<Gültigkeit des Tokens von 5 Minuten. Beispiel: '1613550068'>",
+  "iat": "<Zeitpunkt der Ausstellung des Tokens. Beispiel: '1613549768'>",
+  "family_name": "<'surname' aus dem subject-DN des authentication-Zertifikats. Beispiel: 'Fuchs'>"
 }
 ```
 
-# SSO Flow
 
-## Authorization Request
+# SSO Flow 
+## Authorization Request 
 
 ```
 https://<FQDN Server>/<AUTHORIZATION_ENDPOINT>
     ?client_id=eRezeptApp
     &response_type=code
     &redirect_uri=http://redirect.gematik.de/erezept
-    &state=<OAuth 2.0 state value. Constant over complete flow. Value is a case-sensitive string. Beispiel: 'HranHeLxF3yeH5Nl3sNc'>
-    &code_challenge=<code_challenge value, Base64URL(SHA256(code_verifier)). Beispiel: Z14tfFD3krqsyC-eaFf1aqxbPLCQ4sTcbjVYsvSVy74>
+    &state=<OAuth 2.0 state value. Constant over complete flow. Value is a case-sensitive string. Beispiel: 'IItEg1rBi0ByTtYk1ZjK'>
+    &code_challenge=<code_challenge value, Base64URL(SHA256(code_verifier)). Beispiel: St4BNLgZDQpe_oHx_Xf6eOy3fNv0nM_8kP1b91Dk3bk>
     &code_challenge_method=S256
     &scope=e-rezept+openid
-    &nonce=<String value used to associate a Client session with an ID Token, and to mitigate replay attacks. Beispiel: 'yb0mMrEos1wn5A6GfP6L'>
-
+    &nonce=<String value used to associate a Client session with an ID Token, and to mitigate replay attacks. Beispiel: 'gleet1znYrHEkFf5J7N0'>
 
 ```
 
-## Authorization Response
+## Authorization Response 
 
 ```
 200
@@ -390,17 +402,18 @@ Pragma=no-cache,
 Version=0.1-SNAPSHOT,
 Content-Type=application/json,
 Transfer-Encoding=chunked,
-Date=Mon, 15 Feb 2021 16:58:29 GMT,
+Date=<Zeitpunkt der Antwort. Beispiel 'Wed, 17 Feb 2021 08:16:08 GMT'>,
 Keep-Alive=timeout=60,
 Connection=keep-alive
 ```
+
 
 Response-Body:
 
 ```
 {
   "challenge": {
-    "rawString": "eyJhbGciOiJCUDI1NlIxIiwidHlwIjoiSldUIiwiZXhwIjoxNjEzNDA4NDg5fQ.eyJpc3MiOiJodHRwczovL2lkcC56ZW50cmFsLmlkcC5zcGxpdGRucy50aS1kaWVuc3RlLmRlIiwiZXhwIjoxNjEzNDA4NDg5LCJpYXQiOjE2MTM0MDgzMDksInJlc3BvbnNlX3R5cGUiOiJjb2RlIiwic2NvcGUiOiJlLXJlemVwdCBvcGVuaWQiLCJjbGllbnRfaWQiOiJlUmV6ZXB0QXBwIiwic3RhdGUiOiJIcmFuSGVMeEYzeWVINU5sM3NOYyIsInJlZGlyZWN0X3VyaSI6Imh0dHA6Ly9yZWRpcmVjdC5nZW1hdGlrLmRlL2VyZXplcHQiLCJjb2RlX2NoYWxsZW5nZV9tZXRob2QiOiJTMjU2IiwiY29kZV9jaGFsbGVuZ2UiOiJaMTR0ZkZEM2tycXN5Qy1lYUZmMWFxeGJQTENRNHNUY2JqVllzdlNWeTc0IiwidG9rZW5fdHlwZSI6ImNoYWxsZW5nZSIsIm5vbmNlIjoieWIwbU1yRW9zMXduNUE2R2ZQNkwiLCJzbmMiOiJtR2cwQUsvd2paUW1KOU1seGQydXNMVGVyeUxyS2MwSmhYMXlIYWV0VVZNPSIsImp0aSI6IjU4ZTViNWMwODE0NGI5YzcifQ.CEhdpb4j1yAP74-9109eCRBgNnreE1LgJBJy__zuysEnvC9Tc8LKCLNW3Hpk9gvfRb6yQmwQC_0xE8dXNqBRTQ"
+    "rawString": "eyJhbGciOiJCUDI1NlIxIiwidHlwIjoiSldUIiwiZXhwIjoxNjEzNTQ5OTQ4fQ.eyJpc3MiOiJodHRwczovL2lkcC56ZW50cmFsLmlkcC5zcGxpdGRucy50aS1kaWVuc3RlLmRlIiwiZXhwIjoxNjEzNTQ5OTQ4LCJpYXQiOjE2MTM1NDk3NjgsInJlc3BvbnNlX3R5cGUiOiJjb2RlIiwic2NvcGUiOiJlLXJlemVwdCBvcGVuaWQiLCJjbGllbnRfaWQiOiJlUmV6ZXB0QXBwIiwic3RhdGUiOiJJSXRFZzFyQmkwQnlUdFlrMVpqSyIsInJlZGlyZWN0X3VyaSI6Imh0dHA6Ly9yZWRpcmVjdC5nZW1hdGlrLmRlL2VyZXplcHQiLCJjb2RlX2NoYWxsZW5nZV9tZXRob2QiOiJTMjU2IiwiY29kZV9jaGFsbGVuZ2UiOiJTdDRCTkxnWkRRcGVfb0h4X1hmNmVPeTNmTnYwbk1fOGtQMWI5MURrM2JrIiwidG9rZW5fdHlwZSI6ImNoYWxsZW5nZSIsIm5vbmNlIjoiZ2xlZXQxem5ZckhFa0ZmNUo3TjAiLCJzbmMiOiJUbTVUNWQvR0tPUXBPdXlXQzZ3RXQ1NGxxQ2ZvM281WTVSbCthY2dlSklVPSIsImp0aSI6IjQ4NzI3NzMxNWQ5MWE3ZDUifQ.Slhhl5s37S3Fxh3_zNhF1AT2NO3inMBdJYBpNzHhabBS40-S__Qj8nlco7czvVMvDKq4hIAqTWAUftf2S9gpfw"
   },
   "userConsent": [
     "GIVEN_NAME",
@@ -412,40 +425,41 @@ Response-Body:
 }
 ```
 
+
 ### Challenge Token:
 
 ```
 {
   "alg": "BP256R1",
   "typ": "JWT",
-  "exp": "<Duration of PT3M. Beispiel: '1613408489'>"
+  "exp": "<Gültigkeit des Tokens von 3 Minuten. Beispiel: '1613549948'>"
 }
 {
   "iss": "https://idp.zentral.idp.splitdns.ti-dienste.de",
-  "exp": "<Duration of PT3M. Beispiel: '1613408489'>",
-  "iat": "<Timestamp of the issueing of the token. Beispiel: '1613408309'>",
+  "exp": "<Gültigkeit des Tokens von 3 Minuten. Beispiel: '1613549948'>",
+  "iat": "<Zeitpunkt der Ausstellung des Tokens. Beispiel: '1613549768'>",
   "response_type": "code",
   "scope": "e-rezept openid",
   "client_id": "eRezeptApp",
-  "state": "<OAuth 2.0 state value. Constant over complete flow. Value is a case-sensitive string. Beispiel: 'HranHeLxF3yeH5Nl3sNc'>",
+  "state": "<OAuth 2.0 state value. Constant over complete flow. Value is a case-sensitive string. Beispiel: 'IItEg1rBi0ByTtYk1ZjK'>",
   "redirect_uri": "http://redirect.gematik.de/erezept",
   "code_challenge_method": "S256",
-  "code_challenge": "<code_challenge value, Base64URL(SHA256(code_verifier)). Beispiel: Z14tfFD3krqsyC-eaFf1aqxbPLCQ4sTcbjVYsvSVy74>",
+  "code_challenge": "<code_challenge value, Base64URL(SHA256(code_verifier)). Beispiel: St4BNLgZDQpe_oHx_Xf6eOy3fNv0nM_8kP1b91Dk3bk>",
   "token_type": "challenge",
-  "nonce": "<String value used to associate a Client session with an ID Token, and to mitigate replay attacks. Beispiel: 'yb0mMrEos1wn5A6GfP6L'>",
-  "snc": "<server-nonce. Used to introduce noise. Beispiel: 'mGg0AK/wjZQmJ9Mlxd2usLTeryLrKc0JhX1yHaetUVM='>",
-  "jti": "<A unique identifier for the token, which can be used to prevent reuse of the token. Value is a case-sensitive string. Beispiel: '58e5b5c08144b9c7'>"
+  "nonce": "<String value used to associate a Client session with an ID Token, and to mitigate replay attacks. Beispiel: 'gleet1znYrHEkFf5J7N0'>",
+  "snc": "<server-nonce. Used to introduce noise. Beispiel: 'Tm5T5d/GKOQpOuyWC6wEt54lqCfo3o5Y5Rl+acgeJIU='>",
+  "jti": "<A unique identifier for the token, which can be used to prevent reuse of the token. Value is a case-sensitive string. Beispiel: '487277315d91a7d5'>"
 }
 ```
 
-## Authentication Request
+
+## Authentication Request 
 
 ```
 https://<FQDN Server>/<SSO_ENDPOINT>
-
 Multiparts:
-sso_token=eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwiZXhwIjoxNjEzNDUxNTA5fQ..S5yDG4wXp38V__v1.MDUx7GKdeGFcJwWZS2QjsyIbBQVqs8TqZStdpHAne7Ar6CtjKNufbTyBe1Fz-1HnVnR3CaA-wKV6jaRlzM0ytQaF4r55SvTTKZgX8TxxOpLnUFcSy8RamAfafWPGpRlUY_CCDWEOMWFVapqNxR33Yj0VHjwlKHwf3KCXsiw59UsqK0oGLdM5fjAb2tcekzhqfYtNIzrHZY0XVKMuKENVekMBe53G8OZCgeEpnoRtocKCrHijvgWpJHY6aB6_hLTe8dg4-ub0DUUdztdaPPZWlpFvLJFW_hDTDN0FJB910RFIOdBqYy_ZJgauPd0y8ZIYcWySiHY2B7YJJw37WiQbuwVeYxrQAjbaLHYZjLqMJjQ0f8BbeE2UriJ8r30C9AmqAu5oQimNZPKZfzkVpNoD1xgJc0TCroV_2bKh0N3wq_1hz6sNtr1nsVFipegen91kU6Y3zx4ymgYw1hlax5RbMNOlgUxPgS8v5KvgEykaUAmErKa94AB7Vr0H0uQCf9q1dOtqkewtPSgcpkxelC4gazgj180aLb3jO2uM7y66YCoS8zD1ylOb81LGE5l-cUOMN6NluRZKaoq68VSvGYW24CEOCDGmknbMfnEIsxYWkFnODfWZ3Q7Ss04iAWiEZn5-QlwgQhweqhs-87ZynNCPH8N9U-Mi6LCFQ1uTlvWz3yTA8J3-6lu-YZa8H5NfjdCHf4CKoil-qLAo7_2KJB4LQdFH5QpIkJ4_etj7X-3BBBETiIFQQa8y0AGZH3CH7bJLOaxlNuHiQ39AL0Y5qWlnEXML9fm4HlegALDQyUM98pkxuDZYIXL-vqtTN3Uj1H3Nk77RrsN8kewaz0M9RsxAwvRJyDfpX-a6b62dYZpsKEkY6HPlCG4ejHJkYhCwKS3A39PVNpM4XfKu7KTruuavMCXlqTUiPAH-GDGItkOMufDHibYLdQPRY9Nb3avZyrOVJ4b-0Kz-bkIh4rtMhSfjpuJKaXlhhve4z7xZkjnB00x4tOVSt1hduFoZ93jaFEyEJWovglMI-dBMKnl6FQycjvo7pHotWoQqUg1gWBevXQ8rC0SqOr1jp-FzXdwLXYflNGJZFn6CL2_fyjC7zNDkiyQjM6rUCL2xF2XOvbFm1YJr5SUBPkulCl1tfD3HGZ3Y5gt62C9TsVjALwImC_YUIok1EtDdZOrAo_nbgzqDuF0MAiWZbiU4BbwglrslwXbLFXvRH1cy_0suxvqQrh8e4Up5jSPJ4Efe-6yGSaSeqK5F3E_Q0DKOjcszqeJ6YUGa9wrLiC_6bAICaoWFw4RC9ioAOm0xn59dLmJb-_6BiHQhLawNp9lgM12UYF5jYj4X6Zw_wUEIqY2CbxnkaHyWcB3XpL96nVCDU7LXY3B6K57iIgk9sIg1gaGYAyLzxB49IlftqSO_j9EfDMkse5zd9pt0i1DQvTqZzNyf09g5UKkBETaV6g0Nn11tkFC6y74NCXOk8_HgfSfAgR4Ydx8GgfhpHDVXPHtCkzIIQsweRi2jD6VXimDvJedqR_7vQlTeXNCfh4c0XjcKdZJQthUIngmRRtQCX-XW0rtXT35d_soShYh4c06cVtdXPwzEgeIFFcjCIb7liAIgmASGo9YxN_T9Gqy1WcTW0GQuEjhSCP3xc7Zh9D82TvAG6xTG08n42hE7p9DSjKQcYUFf5JXXWNHZFWj6y6WU8b-9G6euHLstb5YOWcWXECIG0PZD7yFNqcpb0Jhx_0yT0zIWyhezD0S-Mh_G5KLSaerJ3uk4P-a0vHORmM-lBWg1mTCZV1R0_DQjC0Vaw-31YAEMSFml_DnMUiI3izxL_dLu5SMYrZCDxXmbdqT-GSXAYs7qCpOjq_4-PKkt3RQahB_YLcW-sLyAqLTolL00gSSFUVx6ytbpybKxzL6R5rHJu7cDoeF8_mdjnu7_W_Nt-rv7fxfpUyRlKVBYjfjNCD02oTI7_vhJIYocnzAzojNY39svJsWGa9bbnCNtbvphpty23za5wxcLevUdfUiAdmc3yOZ_SgNjYl0M-I1Vikt6CuSkHQWHjJNM8VBLap-26MqqL0HBV1Oo2x2LeJbn642-noQjutlO8Khxz59Gpf7Pvz0pds0EZ7zKo0xinGIbfcP9QMCCf2hBptOBU6HZEgC15rHJzieSeARJvEyhA64UOWBLoSBpb5tDUmE3F39AFHDiVSYZmpi-I4Am1f_TnCsXIJimtjdpa8HPpQSawRQQFZwYhJLZXsN95bTA7Sf5mU9Z1a8ylbMBSYfxt69HISzFAk0A7qGbkJpfwkY8nFsaKHO7FVbpylklH5gxEBQm-hlkJ05s97tff-ySoRwkVscY-SK3ZXB366yLuoWNoyS4KS2I68qg3yZqZoPmpwCRYpOOGT1-hjA-JuJOm5jTPVfckPO0vjgsfpTj5S2N9xgFuUxP5n87chbmI94_yUA8RmKukJYkFB0hfAApeksPY8zemdXD5fmIWDsD2owIUNLeKaiUXVPQX6OleyNybHx-Kqdws4gmU-zLMBIUbqBZJndAdxj2eXNg-n6yAOkZgPmCS2vT12qeOESlnH8-aSq30aF5EtnTeGAfNykzNwsU93mCjCTS7p_c5tiQidC5WhGos9-JHbbMku3in14W-irk_k84DqczcIAbi1Bc5CqgJXDJ1OLLBjBsftmJsPowYUbwnOiL0pupv39VCFTaMOTXOQ0Lv2b5FdzTq8F82ZvF0y49W2bhH5X8z9GM_tzZISjy9Qtk9XSbsrDf9Bzy_A2q7uMaUhm40R7H_D9sOqv6GfwfOsAcVXeDulkuzrh6R4yN-06JCyCNvG9Hf7luIsm-qyrKUz8qWiBW2gDz.rJMqZXqGCd4C77bZYKM47Q
-unsigned_challenge=eyJhbGciOiJCUDI1NlIxIiwidHlwIjoiSldUIiwiZXhwIjoxNjEzNDA4NDg5fQ.eyJpc3MiOiJodHRwczovL2lkcC56ZW50cmFsLmlkcC5zcGxpdGRucy50aS1kaWVuc3RlLmRlIiwiZXhwIjoxNjEzNDA4NDg5LCJpYXQiOjE2MTM0MDgzMDksInJlc3BvbnNlX3R5cGUiOiJjb2RlIiwic2NvcGUiOiJlLXJlemVwdCBvcGVuaWQiLCJjbGllbnRfaWQiOiJlUmV6ZXB0QXBwIiwic3RhdGUiOiJIcmFuSGVMeEYzeWVINU5sM3NOYyIsInJlZGlyZWN0X3VyaSI6Imh0dHA6Ly9yZWRpcmVjdC5nZW1hdGlrLmRlL2VyZXplcHQiLCJjb2RlX2NoYWxsZW5nZV9tZXRob2QiOiJTMjU2IiwiY29kZV9jaGFsbGVuZ2UiOiJaMTR0ZkZEM2tycXN5Qy1lYUZmMWFxeGJQTENRNHNUY2JqVllzdlNWeTc0IiwidG9rZW5fdHlwZSI6ImNoYWxsZW5nZSIsIm5vbmNlIjoieWIwbU1yRW9zMXduNUE2R2ZQNkwiLCJzbmMiOiJtR2cwQUsvd2paUW1KOU1seGQydXNMVGVyeUxyS2MwSmhYMXlIYWV0VVZNPSIsImp0aSI6IjU4ZTViNWMwODE0NGI5YzcifQ.CEhdpb4j1yAP74-9109eCRBgNnreE1LgJBJy__zuysEnvC9Tc8LKCLNW3Hpk9gvfRb6yQmwQC_0xE8dXNqBRTQ
+sso_token=eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwiZXhwIjoxNjEzNTkyOTY4fQ..NR-rMXAjauh98AIt.BXMEJpyBdtcO0OVFK35g8LqFWdlHpQH6ZuomSaDRnylTfeZyg3MT-FSK2koDIZZZKVEq-lobi_7fRrvfiRQNGz4_6tmfqahpa-FC3ZZinMoopWr_9vY5obxDfBWSOFRu274mwxgFrikHkWxEGDwMG2u7BKU5zIvXNipDT5IxoTMAsbnUPeQuQNc8-uUKR4PC30xp_Waz_msckco3Yd4RJtb2nELpc_dc7nm5hpoaQ6-kVND2QnNBp_mQctPyo9Zcnmjra49oq_MU_9ij7KU2wId_eMMRdMiuQX5g57Iw_0TmUxYkP7JRf1Xlh4TxhfoLACVr3fOtzy6V_IU5mIWkxqkK8b5xXZC8VxQ7iL01ARSiYVxzBrmrOb56dOYPRcV9YdRwxKps1g2EFORoq5xGO-a3au78JtTH9MUnGKOx7grGkeG3LLc-Mf1N3vKFvjEdbDkwpmeqeNfte9Z2wW6MWolMYaQUsPq1gEz8sojjeaXl7QzPg1lIrJDdy96o4mQxlz43VEJEs4XcjpaMageuB1jNRPR8B5yanM5wGUmK-NqncSb45WHLDBa4pSsaMUlBqMO4nZY4MR_rBIvR4qntE9cxzLMdUP7V40fkMZG4MBIod18CjWnn-Rmwwg9eEAHw7uCwKbuSRQnEfMEnwq1V_LMjEsZXeYinWpA11WZF29rwrsClV9jmBd_8lqW0EIxhGHz_R5yZG92jAvs7vIaW-QifQTcygxZI8YOmBX2-sD53c6Vdr6KC3D9lEWA6c2uDHlOMvo284lcsgGGD240VfDCufba-yeBQjbppTtKC9O2yyF8gNRR83uVk4zPWI8OOCn7FnS7CEaDWJiJF74nMEttHN6nOBmirAPd9mxvWd2aISA9RvsrgMGbO75FVw4D8OXTTh9i9secA1AA57PcKdNqNqQDUVJlQqLpcdm6W7j1HCQzpJceClD7HXYdomaI2ZOdkQ72sPrERZfOIPGz6P0U2sIT_xv90xkurDxBo3pZGIYmF1vrb49gdjvP7UD7u5nD1VyYooyE60vGxhLM7IGTceI-B0iQi1Rx6JKNNi_erJFliKbZYcR61gLlR_QiM0nP87lPpMoPJp9iOqmxcqvLRvDASLPMD2DNS6VauSHPXhTbnpAScfvq0nwG5tV0s4y2lJDRTGBC4XQ3uIoDTMVCwqmoMHv3gDGmDhIbuV-FlWFL9eD0i0UT9ndcWYquWT6iCsfAqgbb75bVHSd3VOP2oMSTUT3UL7wrP9mJmG7cE_Ghtzj-oHh1FqQswCyPl-DVJoQNudiE4yqkxv2LhtCeFbZw1MfbJML0t-uXQ5sFSmy5IDOPUK-rxCPg7oS_YQ2BckkuYeYnnBa1IBuWcWb6nkAHYfZrJFEopylUgNkcZCH0AqP563pxjQv6NMhxJLN9cRog1uMRAmWXpe-N1ruUzGNvIAmS0TKFkKH7LojzWTmTPnOEQUWlIkvnXy_eA_cG-k5jtWjJOQ3h8ijhtMfSYTSSsXAIAmNL7Yru8P33x0Ahxd1M7Q2LbjJPazV0iAcbPOx1F0uLcTzDqGz2G_EyiPSHdixCb3g-8A6wmWKdbaAvV8_mz-JGKKe1qIPBjzeew6Ewj2dTA0BZetVqFm_wnYh3s-2tqiGZszsEhyAH-OA9I9teh2trAmc7RjYSQQDmW1YjNA9K0m4hjYi5BG0uFtGCTlC_zGrdzfTYLDTz5BGVNkazr5-rcUCiDZktcwYzJ9lCpWruFijtk5t-bbtSyYryRajUfF3t3_Egsm7wlU00oNJBveqRI4aKHyCL4y3PJj7czasGUK1o6v2-wQlRVAun_eYHzbS0ymzhnvAmPgZ1Ap39w0OpEvng5Y5casnSTaUM9-G5BYDQDOmfM05hjjHAVlbXlVqPtN4GA0KnylJcKujQO5Gtrpy0Gosdbr5lUP6GqMuB0vyiMUyrXR-iwp7rPfuiZIp9Dgy5-6PHfNeMIP4Z2X_HDjXS_27QLRlCfUURM74mgFfqbXdroeqUqcckVV_-NpCvv0udyflgSykiNizAcVWHk7UYxeGrZfnlDkkjJRGQEWwarbh5tiWuQtaxtruqORvC5FXmVAIYW9Hs0VNPEBaWgbLSpgOVlqnGxn-D6dY14M-6St9vxoNkQ-OtOvxnIOTL9KW8F2SJbZC9jP_h80MFwjlZLEeDJsgmCbgcOrDV1GEpSdd0cVaY1IgspIdqBuFs45TyvZkg7lFYjPEJ_XeN4ABbF5TYWfPtVUcH_xh6i1vWiFZJh9nQB7C2pjPjk3HS7rmlfQKn0UyJ7_3WKJk4CvN8dLSoRnkqr6GplHooINBhucki3g7XXH8O6c3D_yXfMynNmosZrAdsfBsE8M1WCOsSye2Li2KDomIhleQ0c_qR0jPfrmSZ-AkQaVYVYtf50_2OVcY6BwM36KOkPhRCf6Mf2YfW4_9-BukZUhmzT6LpJ20YelLuyG-17YZHDiPpIqTY0aBuKqmtB0avGYBCaw0oUxfpUkl5wS8mVgyJFBcYLIz4_bipqaWH6NNCVb24pO5GJg7yd6wkHyHvnjaaEhL43oWoij5gmuBDl9oUhtSfGFE5Di7BU2kX9GDlp4qhjSnq6JaaES0xEmbdpCdczafs_BZQ4CFb4zhswXpin1z-ZR47hnX6zH0jMQSay5WPpL5hbAgQM8kCK9VhXxCInGjbLfKOX0u6xg6ljv8nJtCJfmBgbZKN0xm6IeXfTwZOZavuUPSsWSN5o-gSmmdaGIKGywkEuQL6ziwVtE7iUJRERI-A328vuPWQFHIKV_3IidUTXl_EmUYjeoI24K0yNv1HUATg997-XidjWAOdyPJGzmaWY9UTNbbk.ThAsgW4o3Pb9poaNxb3zNg
+unsigned_challenge=eyJhbGciOiJCUDI1NlIxIiwidHlwIjoiSldUIiwiZXhwIjoxNjEzNTQ5OTQ4fQ.eyJpc3MiOiJodHRwczovL2lkcC56ZW50cmFsLmlkcC5zcGxpdGRucy50aS1kaWVuc3RlLmRlIiwiZXhwIjoxNjEzNTQ5OTQ4LCJpYXQiOjE2MTM1NDk3NjgsInJlc3BvbnNlX3R5cGUiOiJjb2RlIiwic2NvcGUiOiJlLXJlemVwdCBvcGVuaWQiLCJjbGllbnRfaWQiOiJlUmV6ZXB0QXBwIiwic3RhdGUiOiJJSXRFZzFyQmkwQnlUdFlrMVpqSyIsInJlZGlyZWN0X3VyaSI6Imh0dHA6Ly9yZWRpcmVjdC5nZW1hdGlrLmRlL2VyZXplcHQiLCJjb2RlX2NoYWxsZW5nZV9tZXRob2QiOiJTMjU2IiwiY29kZV9jaGFsbGVuZ2UiOiJTdDRCTkxnWkRRcGVfb0h4X1hmNmVPeTNmTnYwbk1fOGtQMWI5MURrM2JrIiwidG9rZW5fdHlwZSI6ImNoYWxsZW5nZSIsIm5vbmNlIjoiZ2xlZXQxem5ZckhFa0ZmNUo3TjAiLCJzbmMiOiJUbTVUNWQvR0tPUXBPdXlXQzZ3RXQ1NGxxQ2ZvM281WTVSbCthY2dlSklVPSIsImp0aSI6IjQ4NzI3NzMxNWQ5MWE3ZDUifQ.Slhhl5s37S3Fxh3_zNhF1AT2NO3inMBdJYBpNzHhabBS40-S__Qj8nlco7czvVMvDKq4hIAqTWAUftf2S9gpfw
 
 ```
 
@@ -455,9 +469,10 @@ unsigned_challenge=eyJhbGciOiJCUDI1NlIxIiwidHlwIjoiSldUIiwiZXhwIjoxNjEzNDA4NDg5f
 {
   "alg": "dir",
   "enc": "A256GCM",
-  "exp": "<Duration of PT12H. Beispiel: '1613451509'>"
+  "exp": "<Gültigkeit des Tokens von 12 Stunden. Beispiel: '1613592968'>"
 }
 ```
+
 
 ### SSO Token (Decrypted):
 
@@ -465,15 +480,15 @@ unsigned_challenge=eyJhbGciOiJCUDI1NlIxIiwidHlwIjoiSldUIiwiZXhwIjoxNjEzNDA4NDg5f
 {
   "alg": "BP256R1",
   "typ": "JWT",
-  "exp": "<Duration of PT12H. Beispiel: '1613451509'>",
-  "kid": "authKey"
+  "exp": "<Gültigkeit des Tokens von 12 Stunden. Beispiel: '1613592968'>",
+  "kid": "idpSig"
 }
 {
-  "nbf": "<token can not used before this timestamp. Beispiel: '1613408309'>",
-  "organizationName": "<professionOID of HBA from given authentication-certificate. Null if not present. Beispiel: 'gematik GmbH NOT-VALID'>",
-  "professionOID": "<professionOID of HBA from given authentication-certificate. Null if not present. Beispiel: '1.2.276.0.76.4.49'>",
-  "auth_time": "<timestamp of authentication. Technically this is the time of authentication-token signing. Beispiel: '1613408309'>",
-  "idNummer": "<KVNR or Telematik-ID from given authentication-certificate. Beispiel: 'X114428530'>",
+  "nbf": "<Der Token ist erst ab diesem Zeitpunkt gültig. Beispiel: '1613549768'>",
+  "organizationName": "<professionOID des HBA  aus dem authentication-Zertifikats. Null if not present. Beispiel: 'gematik GmbH NOT-VALID'>",
+  "professionOID": "<professionOID des HBA aus dem authentication-Zertifikats. Null if not present. Beispiel: '1.2.276.0.76.4.49'>",
+  "auth_time": "<timestamp of authentication. Technically this is the time of authentication-token signing. Beispiel: '1613549768'>",
+  "idNummer": "<KVNR oder Telematik-ID aus dem authentication-Zertifikats. Beispiel: 'X114428530'>",
   "iss": "https://idp.zentral.idp.splitdns.ti-dienste.de",
   "cnf": "<confirmation. Authenticated certificate of the client. For details see rfc7800. Beispiel: '{
                                                               "x5c": [
@@ -485,12 +500,13 @@ unsigned_challenge=eyJhbGciOiJCUDI1NlIxIiwidHlwIjoiSldUIiwiZXhwIjoxNjEzNDA4NDg5f
                                                               "x": "dTXa6yPKCjIr9MbVFxeaLEu82xSCsRrfwcIrLpFqBCs=",
                                                               "y": "AJGsJ1cCyGEpCH0ss8JvD4OAHJS8IMm1/rM59jliS+1O"
                                                             }'>",
-  "given_name": "<'givenName' from given authentication-certificate subject-DN. Beispiel: 'Juna'>",
-  "exp": "<Duration of PT12H. Beispiel: '1613451509'>",
-  "iat": "<Timestamp of the issueing of the token. Beispiel: '1613408309'>",
-  "family_name": "<'surname' from given authentication-certificate subject-DN. Beispiel: 'Fuchs'>"
+  "given_name": "<'givenName' aus dem subject-DN des authentication-Zertifikats. Beispiel: 'Juna'>",
+  "exp": "<Gültigkeit des Tokens von 12 Stunden. Beispiel: '1613592968'>",
+  "iat": "<Zeitpunkt der Ausstellung des Tokens. Beispiel: '1613549768'>",
+  "family_name": "<'surname' aus dem subject-DN des authentication-Zertifikats. Beispiel: 'Fuchs'>"
 }
 ```
+
 
 ### Unsigned Challenge:
 
@@ -498,27 +514,28 @@ unsigned_challenge=eyJhbGciOiJCUDI1NlIxIiwidHlwIjoiSldUIiwiZXhwIjoxNjEzNDA4NDg5f
 {
   "alg": "BP256R1",
   "typ": "JWT",
-  "exp": "<Duration of PT3M. Beispiel: '1613408489'>"
+  "exp": "<Gültigkeit des Tokens von 3 Minuten. Beispiel: '1613549948'>"
 }
 {
   "iss": "https://idp.zentral.idp.splitdns.ti-dienste.de",
-  "exp": "<Duration of PT3M. Beispiel: '1613408489'>",
-  "iat": "<Timestamp of the issueing of the token. Beispiel: '1613408309'>",
+  "exp": "<Gültigkeit des Tokens von 3 Minuten. Beispiel: '1613549948'>",
+  "iat": "<Zeitpunkt der Ausstellung des Tokens. Beispiel: '1613549768'>",
   "response_type": "code",
   "scope": "e-rezept openid",
   "client_id": "eRezeptApp",
-  "state": "<OAuth 2.0 state value. Constant over complete flow. Value is a case-sensitive string. Beispiel: 'HranHeLxF3yeH5Nl3sNc'>",
+  "state": "<OAuth 2.0 state value. Constant over complete flow. Value is a case-sensitive string. Beispiel: 'IItEg1rBi0ByTtYk1ZjK'>",
   "redirect_uri": "http://redirect.gematik.de/erezept",
   "code_challenge_method": "S256",
-  "code_challenge": "<code_challenge value, Base64URL(SHA256(code_verifier)). Beispiel: Z14tfFD3krqsyC-eaFf1aqxbPLCQ4sTcbjVYsvSVy74>",
+  "code_challenge": "<code_challenge value, Base64URL(SHA256(code_verifier)). Beispiel: St4BNLgZDQpe_oHx_Xf6eOy3fNv0nM_8kP1b91Dk3bk>",
   "token_type": "challenge",
-  "nonce": "<String value used to associate a Client session with an ID Token, and to mitigate replay attacks. Beispiel: 'yb0mMrEos1wn5A6GfP6L'>",
-  "snc": "<server-nonce. Used to introduce noise. Beispiel: 'mGg0AK/wjZQmJ9Mlxd2usLTeryLrKc0JhX1yHaetUVM='>",
-  "jti": "<A unique identifier for the token, which can be used to prevent reuse of the token. Value is a case-sensitive string. Beispiel: '58e5b5c08144b9c7'>"
+  "nonce": "<String value used to associate a Client session with an ID Token, and to mitigate replay attacks. Beispiel: 'gleet1znYrHEkFf5J7N0'>",
+  "snc": "<server-nonce. Used to introduce noise. Beispiel: 'Tm5T5d/GKOQpOuyWC6wEt54lqCfo3o5Y5Rl+acgeJIU='>",
+  "jti": "<A unique identifier for the token, which can be used to prevent reuse of the token. Value is a case-sensitive string. Beispiel: '487277315d91a7d5'>"
 }
 ```
 
-## Authentication Response
+
+## Authentication Response 
 
 ```
 302
@@ -526,13 +543,14 @@ Cache-Control=no-store,
 Pragma=no-cache,
 Version=0.1-SNAPSHOT,
 Location=https://<FQDN Server>/<TOKEN_ENDPOINT>
-    ?code=eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwiZXhwIjoxNjEzNDExOTA5fQ..6YgI4Eotckq2vE4Q.Z9yNC4beYeO3a_PHI4IvcnluW5HeyFE9iI2-qDzyXLzWA16T1VuvIN3NqfGAV3zIYv31M50ANhe8dPFif6xWmUsF3MnTNb8JMb6fgyiv2LORZQn7m047nprZ6v__1Bkv_rh1hG5qC-qMKn58UJbdFqq6eFEOXBk--dljm9fGc2pltxaRfC_xslfSvIyWLDcYk1dHerL9bIUZKNEAt0cwvb3PeaXriExjReJhn58uZMz82ng1yn26MRyORp8wQ2GKj-Mu3Qoi6HNecxxcL1dGxPzdp-07wRDWLooF5g7FUMeziAVxIKMyJF8TFUQgUQWuVt8cKp_53pQM4hJ8JtMggZy-D-wD5Jbn5CbOq6X_qF7v0ndqjWExa1j_5smHYckRCseqw5P1pjg18jRtoukW0UXy2dwDkfWPXIDoxXYAg9VB1F5N6kQCICn24BY3ruEwMR13_DZDjlTNre2UR6KQAQucSUlFflN83-LBH5JIL4ZPKPWp8EKIXp2rPwMSvjKtDH9sAcCCF9t5xWA5aRAGw-iziP_xlfsgEKJNH9yL_rzqX2idGAyC8R1Q5enPG4wSepuj5HtSNfGtXGFyEAmjptHPW7NLkoP8sYrxiRoRuugQZMq7d5EvE6JbRXioKKwN-Lm1nfDNvkuveATQx8ksELXGlmb1URCwIXvRrcXXlJC8ioHE-YJ_vpAqhzbf5k7WIGi13JeTaqpVSNB51lh3EyGBNJr5sHfDN-FIiOM-nody7cauVBA-32wqTgpvi8PnpuhULuMnO4EP6ZRRUSKWkHDcsbOdCGKxa7WTMfiO0-Vru4nJfAvf5yjopYHgKgUHX0anGDwUn7PVgAKCmdM3cuWYyC1xnazG7Gwn5C7lH-PXpSWMyEPwg6ZzRcxBsXDScscy_8EzIKb-VcXUG4A5ndJ98jZx20Uf6n1tQmXxE5rSWih3OzN81wAAstYqMYgD9kvVEwn5yxa6VGDFaInG0J_Tll3Lx5VM994Tfk04ckOMVSxGqJpzNliTg5gc3J5nVN3HRRg7Tbe1vLQA4Nv3VHrDxt8tVOiufkOu6Q9bl4vj4s1iB_UNc4PeDT58qDrDUM4uSgnV-j-lWShSBxiJsJHI1OzZRibbBrRPRDE7WClWjDYlS1Ltvcm1Tg3ByWeksWK_J85wm8RLbIcIqA9vFABIKaB3Sm8mh_N8cBcdbM5priCvrZuPmStVnTEGttvtwoWPPUci9jK_dHASnm2a5uaSCzxz5XkzCE1tymNX_dC_Je8zYjJ8wl2_f4Ep40MZh5Ir4cXAuELJ.RcXhHWrYAaPrH9hNw7vGXA
-    &state=<OAuth 2.0 state value. Constant over complete flow. Value is a case-sensitive string. Beispiel: 'HranHeLxF3yeH5Nl3sNc'>,
+    ?code=eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwiZXhwIjoxNjEzNTUzMzY4fQ..epkB5NXxl9wAJUOY.J0jakh3OqjfdbcaqqEFrGFUQd35UEsZtD02TS5CtQBc2ha6-enpCR33dFwFIHrz8KIXtBh22tZDnbucH9DfyMN3Un8rTofMEV7FwyvFWaHFoVoyCjvWPbObFJF2bLd4V0Ol1j3FKtj9qsmfpG1XcxA4lTT1WUih40xv9sO3m28doKOLWNgbRzaOHRarYDPRPnIz5N36pvqABFiXiFJYlg5PkTwFrlpsYVtvdPtjStEqMjPuBATK3FEPqdipv_3Th8BDNlx5lhs79WQ2Hr74Ssa-EF4HkAYyt-6OfwpcOQyqhLVmrQBhb1ShWSmcuaATLfWaxpF6hOTz91tj_1vdPavkdapmw780gRDG--av5N3LnsIf4MYBk9bigejCyg-D-fsB6PdAeOUZwxxfbG4VwFNLeYCQGpEX3WOljiPjrA37zvwRkuqhzJ5ghELCBy-QJ3rm9WAF1PP-RfzTjli5kM-0nKE0eevC5Kr3CiEtGcRXTgcQxU1Kiqjj9p_BLG3J7xTx7x-lQ2aF3aLEFKihrjVHmUJb-4sR4YTNRsLC7oI0BGV0RY6fjzmJMrtdP40_ZdzuMj9Mz0jAu5ntP5u5gthLwQboLIb807kA6oSS_juU9lloD5yOvvA53ngP6BW7RZvFz53B9Yn9KocWZvnlKr-llEyrX6K9dj7PTfoyfuGOgwCx_QZxfwK6Kxmo58UXgS2ToQYCTaiIqrtLN3wODrEYmDmIaQG_D7LLLIqUy6mf1LazESRwWEv3JKw1SNEHXBqBfq9wL-lDQTBZuFfT6f0e2g8ntSnpvrH1lftqhslE19-pUWeWAgNBPIbJvg9a63WV_5e9sZZ90IAZRr_gVeFOqLNm2XNOwmrVi5cqMzaT9wrkvnhBtEZ4JJ8KrmuVmt3UDXKg5bHmOiTSXmLCyeF5xNwDpnGw4mzVO8FSD2TFsLdyAYgujws0aMMtsnQhaKBQQRmCsxAffwHGXfBvP6ayeX9INJBrUAqXvrNXGYRWdFh2b-f91Liqt4Jf5sFK9rG15bAjj3MAPsDTQjPBJbwtQnxi9rtaPvm3JYf6ENwWLF7tkZpk4AOm-Xnal8_ZWt49Vo8jybcVwuJ7KOeDfhhg5NKx5y-yYTzIHcNzQJX5D9S7sS4deTu7ePjM9dbPPs4MXtZoK_Zo-9wvtsOXRD7o3Fb61epiJz7ZPQEeVtirKeLlHqCFJbKvfzPNWrC64P2VGninxaXFABZaGeu9ncHf4VTnr6jKimZaIgr-Xis-S1t2qUP5v3h9bGxw9QZLzVtmb6J-a22o.wIMaZRHOYQKZsfcN8Lvyaw
+    &state=<OAuth 2.0 state value. Constant over complete flow. Value is a case-sensitive string. Beispiel: 'IItEg1rBi0ByTtYk1ZjK'>,
 Content-Length=0,
-Date=Mon, 15 Feb 2021 16:58:29 GMT,
+Date=<Zeitpunkt der Antwort. Beispiel 'Wed, 17 Feb 2021 08:16:08 GMT'>,
 Keep-Alive=timeout=60,
 Connection=keep-alive
 ```
+
 
 ### Authorization Code (Encryption Header):
 
@@ -540,9 +558,10 @@ Connection=keep-alive
 {
   "alg": "dir",
   "enc": "A256GCM",
-  "exp": "<Duration of PT1H. Beispiel: '1613411909'>"
+  "exp": "<Gültigkeit des Tokens von 1 Stunden. Beispiel: '1613553368'>"
 }
 ```
+
 
 ### Authorization Code (Decrypted):
 
@@ -550,42 +569,42 @@ Connection=keep-alive
 {
   "alg": "BP256R1",
   "typ": "JWT",
-  "exp": "<Duration of PT1H. Beispiel: '1613411909'>",
-  "kid": "authKey"
+  "exp": "<Gültigkeit des Tokens von 1 Stunden. Beispiel: '1613553368'>",
+  "kid": "idpSig"
 }
 {
-  "organizationName": "<professionOID of HBA from given authentication-certificate. Null if not present. Beispiel: 'gematik GmbH NOT-VALID'>",
-  "professionOID": "<professionOID of HBA from given authentication-certificate. Null if not present. Beispiel: '1.2.276.0.76.4.49'>",
-  "idNummer": "<KVNR or Telematik-ID from given authentication-certificate. Beispiel: 'X114428530'>",
+  "organizationName": "<professionOID des HBA  aus dem authentication-Zertifikats. Null if not present. Beispiel: 'gematik GmbH NOT-VALID'>",
+  "professionOID": "<professionOID des HBA aus dem authentication-Zertifikats. Null if not present. Beispiel: '1.2.276.0.76.4.49'>",
+  "idNummer": "<KVNR oder Telematik-ID aus dem authentication-Zertifikats. Beispiel: 'X114428530'>",
   "iss": "https://idp.zentral.idp.splitdns.ti-dienste.de",
   "response_type": "code",
-  "snc": "<server-nonce. Used to introduce noise. Beispiel: 'wUFBw4v9jy0czcKP0BGF'>",
+  "snc": "<server-nonce. Used to introduce noise. Beispiel: 'Bbaf5AYKToVKFBaDDECk'>",
   "code_challenge_method": "S256",
-  "given_name": "<'givenName' from given authentication-certificate subject-DN. Beispiel: 'Juna'>",
+  "given_name": "<'givenName' aus dem subject-DN des authentication-Zertifikats. Beispiel: 'Juna'>",
   "token_type": "code",
-  "nonce": "<String value used to associate a Client session with an ID Token, and to mitigate replay attacks. Beispiel: 'yb0mMrEos1wn5A6GfP6L'>",
+  "nonce": "<String value used to associate a Client session with an ID Token, and to mitigate replay attacks. Beispiel: 'gleet1znYrHEkFf5J7N0'>",
   "client_id": "eRezeptApp",
   "scope": "e-rezept openid",
-  "auth_time": "<timestamp of authentication. Technically this is the time of authentication-token signing. Beispiel: '1613408309'>",
+  "auth_time": "<timestamp of authentication. Technically this is the time of authentication-token signing. Beispiel: '1613549768'>",
   "redirect_uri": "http://redirect.gematik.de/erezept",
-  "state": "<OAuth 2.0 state value. Constant over complete flow. Value is a case-sensitive string. Beispiel: 'HranHeLxF3yeH5Nl3sNc'>",
-  "exp": "<Duration of PT1H. Beispiel: '1613411909'>",
-  "family_name": "<'surname' from given authentication-certificate subject-DN. Beispiel: 'Fuchs'>",
-  "code_challenge": "<code_challenge value, Base64URL(SHA256(code_verifier)). Beispiel: Z14tfFD3krqsyC-eaFf1aqxbPLCQ4sTcbjVYsvSVy74>",
-  "jti": "<A unique identifier for the token, which can be used to prevent reuse of the token. Value is a case-sensitive string. Beispiel: '0e44a4c9940c04bb'>"
+  "state": "<OAuth 2.0 state value. Constant over complete flow. Value is a case-sensitive string. Beispiel: 'IItEg1rBi0ByTtYk1ZjK'>",
+  "exp": "<Gültigkeit des Tokens von 1 Stunden. Beispiel: '1613553368'>",
+  "family_name": "<'surname' aus dem subject-DN des authentication-Zertifikats. Beispiel: 'Fuchs'>",
+  "code_challenge": "<code_challenge value, Base64URL(SHA256(code_verifier)). Beispiel: St4BNLgZDQpe_oHx_Xf6eOy3fNv0nM_8kP1b91Dk3bk>",
+  "jti": "<A unique identifier for the token, which can be used to prevent reuse of the token. Value is a case-sensitive string. Beispiel: '5c1f47eacca66ef8'>"
 }
 ```
 
-## Token Request
+
+## Token Request 
 
 ```
 https://<FQDN Server>/<TOKEN_ENDPOINT>
-
 Multiparts:
 client_id=eRezeptApp
-code=eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwiZXhwIjoxNjEzNDExOTA5fQ..6YgI4Eotckq2vE4Q.Z9yNC4beYeO3a_PHI4IvcnluW5HeyFE9iI2-qDzyXLzWA16T1VuvIN3NqfGAV3zIYv31M50ANhe8dPFif6xWmUsF3MnTNb8JMb6fgyiv2LORZQn7m047nprZ6v__1Bkv_rh1hG5qC-qMKn58UJbdFqq6eFEOXBk--dljm9fGc2pltxaRfC_xslfSvIyWLDcYk1dHerL9bIUZKNEAt0cwvb3PeaXriExjReJhn58uZMz82ng1yn26MRyORp8wQ2GKj-Mu3Qoi6HNecxxcL1dGxPzdp-07wRDWLooF5g7FUMeziAVxIKMyJF8TFUQgUQWuVt8cKp_53pQM4hJ8JtMggZy-D-wD5Jbn5CbOq6X_qF7v0ndqjWExa1j_5smHYckRCseqw5P1pjg18jRtoukW0UXy2dwDkfWPXIDoxXYAg9VB1F5N6kQCICn24BY3ruEwMR13_DZDjlTNre2UR6KQAQucSUlFflN83-LBH5JIL4ZPKPWp8EKIXp2rPwMSvjKtDH9sAcCCF9t5xWA5aRAGw-iziP_xlfsgEKJNH9yL_rzqX2idGAyC8R1Q5enPG4wSepuj5HtSNfGtXGFyEAmjptHPW7NLkoP8sYrxiRoRuugQZMq7d5EvE6JbRXioKKwN-Lm1nfDNvkuveATQx8ksELXGlmb1URCwIXvRrcXXlJC8ioHE-YJ_vpAqhzbf5k7WIGi13JeTaqpVSNB51lh3EyGBNJr5sHfDN-FIiOM-nody7cauVBA-32wqTgpvi8PnpuhULuMnO4EP6ZRRUSKWkHDcsbOdCGKxa7WTMfiO0-Vru4nJfAvf5yjopYHgKgUHX0anGDwUn7PVgAKCmdM3cuWYyC1xnazG7Gwn5C7lH-PXpSWMyEPwg6ZzRcxBsXDScscy_8EzIKb-VcXUG4A5ndJ98jZx20Uf6n1tQmXxE5rSWih3OzN81wAAstYqMYgD9kvVEwn5yxa6VGDFaInG0J_Tll3Lx5VM994Tfk04ckOMVSxGqJpzNliTg5gc3J5nVN3HRRg7Tbe1vLQA4Nv3VHrDxt8tVOiufkOu6Q9bl4vj4s1iB_UNc4PeDT58qDrDUM4uSgnV-j-lWShSBxiJsJHI1OzZRibbBrRPRDE7WClWjDYlS1Ltvcm1Tg3ByWeksWK_J85wm8RLbIcIqA9vFABIKaB3Sm8mh_N8cBcdbM5priCvrZuPmStVnTEGttvtwoWPPUci9jK_dHASnm2a5uaSCzxz5XkzCE1tymNX_dC_Je8zYjJ8wl2_f4Ep40MZh5Ir4cXAuELJ.RcXhHWrYAaPrH9hNw7vGXA
+code=eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwiZXhwIjoxNjEzNTUzMzY4fQ..epkB5NXxl9wAJUOY.J0jakh3OqjfdbcaqqEFrGFUQd35UEsZtD02TS5CtQBc2ha6-enpCR33dFwFIHrz8KIXtBh22tZDnbucH9DfyMN3Un8rTofMEV7FwyvFWaHFoVoyCjvWPbObFJF2bLd4V0Ol1j3FKtj9qsmfpG1XcxA4lTT1WUih40xv9sO3m28doKOLWNgbRzaOHRarYDPRPnIz5N36pvqABFiXiFJYlg5PkTwFrlpsYVtvdPtjStEqMjPuBATK3FEPqdipv_3Th8BDNlx5lhs79WQ2Hr74Ssa-EF4HkAYyt-6OfwpcOQyqhLVmrQBhb1ShWSmcuaATLfWaxpF6hOTz91tj_1vdPavkdapmw780gRDG--av5N3LnsIf4MYBk9bigejCyg-D-fsB6PdAeOUZwxxfbG4VwFNLeYCQGpEX3WOljiPjrA37zvwRkuqhzJ5ghELCBy-QJ3rm9WAF1PP-RfzTjli5kM-0nKE0eevC5Kr3CiEtGcRXTgcQxU1Kiqjj9p_BLG3J7xTx7x-lQ2aF3aLEFKihrjVHmUJb-4sR4YTNRsLC7oI0BGV0RY6fjzmJMrtdP40_ZdzuMj9Mz0jAu5ntP5u5gthLwQboLIb807kA6oSS_juU9lloD5yOvvA53ngP6BW7RZvFz53B9Yn9KocWZvnlKr-llEyrX6K9dj7PTfoyfuGOgwCx_QZxfwK6Kxmo58UXgS2ToQYCTaiIqrtLN3wODrEYmDmIaQG_D7LLLIqUy6mf1LazESRwWEv3JKw1SNEHXBqBfq9wL-lDQTBZuFfT6f0e2g8ntSnpvrH1lftqhslE19-pUWeWAgNBPIbJvg9a63WV_5e9sZZ90IAZRr_gVeFOqLNm2XNOwmrVi5cqMzaT9wrkvnhBtEZ4JJ8KrmuVmt3UDXKg5bHmOiTSXmLCyeF5xNwDpnGw4mzVO8FSD2TFsLdyAYgujws0aMMtsnQhaKBQQRmCsxAffwHGXfBvP6ayeX9INJBrUAqXvrNXGYRWdFh2b-f91Liqt4Jf5sFK9rG15bAjj3MAPsDTQjPBJbwtQnxi9rtaPvm3JYf6ENwWLF7tkZpk4AOm-Xnal8_ZWt49Vo8jybcVwuJ7KOeDfhhg5NKx5y-yYTzIHcNzQJX5D9S7sS4deTu7ePjM9dbPPs4MXtZoK_Zo-9wvtsOXRD7o3Fb61epiJz7ZPQEeVtirKeLlHqCFJbKvfzPNWrC64P2VGninxaXFABZaGeu9ncHf4VTnr6jKimZaIgr-Xis-S1t2qUP5v3h9bGxw9QZLzVtmb6J-a22o.wIMaZRHOYQKZsfcN8Lvyaw
 grant_type=authorization_code
-key_verifier=eyJhbGciOiJFQ0RILUVTK0EyNTZLVyIsImVuYyI6IkEyNTZHQ00iLCJlcGsiOnsia3R5IjoiRUMiLCJ4IjoibDluYm40VTgybzY1RFA5Y185TlVvZ1VoWmJiMTFzRjAzcFpMaWRKSU9NMCIsInkiOiJCS053akc4eE9fcmlLeWVJX0Q1RnkyNFhYUlFRMEFKYjBEVnB0UWRSTnNnIiwiY3J2IjoiQlAtMjU2In19.buPkAdurfObrn7Y0o0ZjK13dQPHXRFW4UTt3evh3SrrtWh9rhgwYBA.JYtLfYfJdAQG_kUB.IbtuQIwHCv6fPkfq8Nce_6z2APLD91Z8S4nrTbWe5PtiTY6kn3HyhsowLuoA1_0lMpU55IckTTBrns8MxS0iDnN4gP0K5Wh6th96DvR0ynN8yqnv4jqX-Nb5ZgSz77dpKFqY8iyY8MnvDQq3MjBmmFNf2BFBAH2-E_4.ZQ3Vd5EeIP92IKGaaF_z_A
+key_verifier=eyJhbGciOiJFQ0RILUVTK0EyNTZLVyIsImVuYyI6IkEyNTZHQ00iLCJlcGsiOnsia3R5IjoiRUMiLCJ4IjoiQ2QwaEdMNmVkMm1LQkZ3RVlqcUNQMlg0RlpZaDdMM3NST3lSVW1YMXBHayIsInkiOiJYMGdIZVZJRDczX29vb05wd1hqckNwVUFKTFBvbm50blVFUTd0MkJ6QWNvIiwiY3J2IjoiQlAtMjU2In19.XEQeiYTjmpGrrFe9E_MZPPS6Z7G4HvzLLKD-lXFbw5_nG2ovYIyDIA.jVvgDADdHdYLf80B.M4ShA9JvylPujVkkQlh0o1lREy7e94AWzP9xCS2i0lZi5M4nPSuXEh2vUPrAfszOdPJKer0PpVaY8geIiD-Hy0Ktk7raoluJj9F1vApB6rIR1nZrwTMmWOP_ugVEn1AQ8T2fS6TfB8O_PrdicH8YmkNPAn2zJrj1LMk.2v9Zdk0LipCWvGcVA_bLcw
 redirect_uri=http://redirect.gematik.de/erezept
 
 ```
@@ -598,23 +617,25 @@ redirect_uri=http://redirect.gematik.de/erezept
   "enc": "A256GCM",
   "epk": {
     "kty": "EC",
-    "x": "l9nbn4U82o65DP9c_9NUogUhZbb11sF03pZLidJIOM0",
-    "y": "BKNwjG8xO_riKyeI_D5Fy24XXRQQ0AJb0DVptQdRNsg",
+    "x": "Cd0hGL6ed2mKBFwEYjqCP2X4FZYh7L3sROyRUmX1pGk",
+    "y": "X0gHeVID73_oooNpwXjrCpUAJLPonntnUEQ7t2BzAco",
     "crv": "BP-256"
   }
 }
 ```
 
+
 Key verifier (Body)
+
 
 ```
 {
-  "token_key": "RDhMU1MyZEhIU0xLWEUxUUlPMkFHMzBQbzN4V3k3TWw=",
-  "code_verifier": "KknMOThTedG_MdTe3IQ1dM8sq7_fAWfJpZlz4aPYaM8"
+  "token_key": "SXk4eHNSN1hUTmljSzlYbUlKREtZUmVjVFpuN1U0M1k=",
+  "code_verifier": "Fj9R_YN-sxB13zvOfRGcfbEng2oewH57PyJv7K-v_5I"
 }
 ```
 
-## Token Response
+## Token Response 
 
 ```
 200
@@ -623,10 +644,11 @@ Pragma=no-cache,
 Version=0.1-SNAPSHOT,
 Content-Type=application/json,
 Transfer-Encoding=chunked,
-Date=Mon, 15 Feb 2021 16:58:29 GMT,
+Date=<Zeitpunkt der Antwort. Beispiel 'Wed, 17 Feb 2021 08:16:08 GMT'>,
 Keep-Alive=timeout=60,
 Connection=keep-alive
 ```
+
 
 Response-Body:
 
@@ -634,10 +656,11 @@ Response-Body:
 {
   "expires_in": 300,
   "token_type": "Bearer",
-  "id_token": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwiZXhwIjoxNjEzNDA4NjA5fQ..C2D6X-7N1PAQ2JM0.mAO9W6kfFwHIo8lFQtfmd1tEjl3AEjrHjq-dss_6_Wbkmml_rrWj6E0sh4AfvlNrkPK3GP5cyzU71c-HBYyllFZE01TQcq8Pghe8u6Y7SPCgf5LcWzb1JUrfXG8J2BDbiLrvj013Ec2geaUTda3FVradpY3QkkEKU9v0jFEU4ERUbPZMO6KCFAXbZNounxpUzx7yZvoZlXrSQEtqfawsC7B985oKU5o8TN2Ju7eFPiHy0ICyfUjhmk-TfnahcfMmSAVrKeqU5pF1Bo_fZsl_QnaYho0XigdkfrqiQknFNk124nAhJgOllftR2eAp30rkBrW-x-DnvgPLH1vTokB1TTDu0pt2U4BjCiR9FZocpxa2paRkHLH2oXfZeVqGM2jvlaRprYUU6YBrZSu_QxRaUOMdBSXl-5QQ_JDbPCbHuI6iNkA-0KqGoCP959ciEsNoMdC0HcULgtkjRESYPHVqsp6AqF-l6PsiRwHJ2t4LifUVxPw-RnMhBtrTfEjXHAt5ObIBPNYyN0aNg-tH_LTlEBRgcwALsX1QDeRJHVCnau42N-HpauOAE8Gzb_XPszQLj49CNX6HA-fzDddLfW5UtDRC3x7tmHwKYheZ9Z0JDTwPsi43ZjVhNbjDaIjMOmwJDEtFyBc-XKcnWvGf4EiVouJKL5Df3hinZXYu3pdDw9Hd5gNf4kHwy4OUPf3A4ecoP3gVp7w3RDAcXNja0ureLNeEWXzdslDbEu4A6GH3ke_ldM8fOXllWHAADKIRbVpTd-6Q_KwTgHjk2tI0M-EIOEZn_jPa2bWt5Dc48WdShKUJ3fr68TQDvQmmNdImq1IBrzmicvEfzEDmxYLsarJqmeqfFSBdNmCyL0CM-toblsOkdOjnSK1WPsk3LlrUev6lJdDqpuX0pvJr_s00Qlz0FAoFjx_aw8tOf2cxItFTm1Sp4Ipm5VMuO8Al-EgqFnuRyohVDLObsfIRrd7z5RoF0R5P-vYux5odTbne6GvfLXQFXQf-p5nR65OAWbt_e5selH7kD1oeVDaDZFw7Y6gFbveqKxm8Yj4EJ7biir2Alh3EPTd7aA.MQ9NTVNvW-J8CPBKj380ew",
-  "access_token": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwiZXhwIjoxNjEzNDA4NjA5fQ..6NCDirPP6IrbfWcG.GBbFsd72PlaIJgpLMc-6yPDF9ketS3duA7zhbTiManKRQj4qt-8gaSLu8vxUjUm5ZpLYTVtFsUirVaT6Jg3O3T8S859_-9H__jdK0GT8mwZLtjniHYUDMsBl2csQOtYpjVyZXETLrcxOh_B05ahE2axGPPPJbEEmJSvguIkQIoHVRck0jrkZe8jTxFfhnTlg5hUGUSj_yUV4DpGy-WkKXfCGbGVpCXce3uvJlrZqRArY29bd8nn3SMjQzChlUnYRVBP18sHFqS5TdJmRDQVz8FntU8I_WxCeg2qniTOy-u-wPpaI38NSxK1W0qPgvtf0IDPq_RiFlBifALc_WYsVojPSyf27CMr7Rbaac2Oja-2nTnVUFPDs7_TfMP5NOQ1WNwCjQfsjMLZQBB4P_NAlE9WzeW1d7HpDACI6dhc2MbpakQmvl3wAuulLCJXK6ZZEDgG0F6gxysy2627Dy4cyx8YuEde77iHZ2Y38Xyq-b-Q2yxwqCF_NjEhhzcyr1KN_TJF7oD0vEkrrXNRX0QTSuOXO7N5WATu5lzxuuRvhINPX34OFZ3mdgvwFVjLmodi6KwRF0AD5BaX5pK6RLivaovE9vqNw5bYmWbLid0-vg-CJJOdSU4zJ0AKF0jG2uAcBYxbHS7YFRR8mr_txFXTf6x_ZCb6pktCjqwURjOhf8-9W08LI9M_IN6z2ct6XT1JQSycc2Q-ZXLLXV8tvoLKxI7Vlss77dw3cYoXF5KYfzvGrl_c2tTQ4zcYP90MwRHh3ey2GpOl6fkwxOpaN_VujcMdwEuIzti7pX7iJ6-76doGDn8-QgJ69ugAOfQvGvNugCgGlD8f69kOYajg1rER2NIFfOxaxMe7qEtPIntrL7iLEkby2IW6xiecSOzk3HREyKIKWRVHAQmxykTnlRPVygrpy_EFOMLTqDMM5-9I2PBmvE1iydx9QRrE-TBm8vCTLOcG2UqCrB7Z3njp7hWI7JbxOnrKZ02K4kSlm86AmKDV-HTaNSG5_SFLlPp_pDStF9-2LsGVJIBXHjgZgMumgIly0FUXcAVNHZz85WzAXO1YowsdSsZIaMy1vDW4EDJ7Xn54xcxzeBg3mIxNZQfUn4jzKbFPKbEo0CtSAPIY-.OQCGwqpplZyMEUm3ySM6iw"
+  "id_token": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwiZXhwIjoxNjEzNTUwMDY4fQ..Xh59sEDEPF-9e6HW.e9uTgNEBvANui6msCtcpGWu3ETYt3qLrMMCnYYrJTkurhszSdjz-WbKD3KEt5VmWdGkp8Qg3-fNuIejN_xy38AtfYofF_4w9Ardsojj13VEyd-nR_YCkPC5LYmOE8YmEjilZ9kJnQhc6p5zPb6fDQq41V6cR-Cc_2C4sOYPmFDabHF4IHwAXC3XMHX1rzi7cJqP4BgXXVb9KIoxDbG7pP1Elac4KsEuSaQlIYIMhDTEkzBdekQE2ZrmR5AZpoYQpWIQO6rfHROqjCTFm9-eK3C3w0qDNCc1HFxSGmk8kEbmpoMTT2BloB-y3Y7MrngSgg4CakaeGCxPJgZ6zulIKsEuGM95j2zwiXlLHC2dXCEfvYlq680jL53ohSIMeOdu-PSbxdkXWaf6HOcOtSNjyW2_Yry0RTKYpTFVxoDUp9c9JnhUGmmMWO5kwUWum_ZSNneTGTr8ERnHGFzDC9PK8qSaDovu6VigAWQvuXmEmektiWda_jYNdGYzpdYEmJcmyzj9d9qR7DecCgf7lIKDEtKAIfES8Cm-fOvtEMrj-Z-nvyTxe7MPqV2FawmxAe2IksGIFvjrCg-7MTJmeygF39Tll75YKZiFl9_LwUSiATXZNpC8kzY3earju6h5YALn3f3lMoxWnzlBF-E16zUY-YIv0IBOaWpIdi-WLA_g0jpgcdWmU0QA4Rzc82397txXfAxkO4CmxMt00pE5Dmgi_fxS_08opjz_1e3Lawppw_23tvJv7-JQMdyzw4INbiYfatjSdtn1kLWRRn_JNlcmLpYNXlxYX4SIwBgfKINWS3cMlZMRLYbzUDZwHEkkFDnu95dJwQZPdzviBNCD5INAJ2Td2ay6VPg5dbzsUMndBS0QtdCKpipoOx1IFfBWoWRgsy6gC_GSZfshUs2FUxIPtb6lC_JNOY_SfNAMwz2EiElSJlSXb96ddB_vWMN3buulOa9I1FxUxIlyA73OBGGqaZEuDDQs7FAeo_zITsZL-7XUqni33r6rongJBQS7s6stIRu69a6sT36pMw3HpxJv8vlbB5q9kpJ_MKWqOwHNerUqeVSuo.TVu2ikdLXgs1jdyicX3JJQ",
+  "access_token": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwiZXhwIjoxNjEzNTUwMDY4fQ..P7tgMSK88mjyzfDe.ip5sCg8qZty0oR0dnWkCB8qQfSdq7XWIpYkDvOvlM8zoyaD1B0w7OFfVbNSH2JeTKtkLrqqwXgFSzKA-g45LFMIjpt4JrngBkMp55L63mss4GSSpSxY3FCMt8f9ytT9ifEbSy5Db6nwSqnQ-1DENstGULdlSowKQ6MyaVgOPajvDB1UOAmw_EyVrX94zgb1PASPWqNgqtCLnCyq_JF9m_un8x8AxqCLiAM_BQftsncsQqpx_eDsFVoW7hVxSjMRlzyAVNO2gAmgOUdpFexLXfbpecqx1XrcWrvKEs6JXrHu6WRCrdsql60rMOzkL4rtqW6uxk0YQvXJspldSFPJUrzMUb4EyeCJz-ZbcDo8Bz7PHlfRyiO79_aJsXqOqJbqYJOHozUvaHrGI3BhU6zgW5JRpoiPOGNXGw7NCm1HPyXvlB_GutTp-O-8WPKQgcHaq4RWSV0P8OCDXymv9I_XKhHXPB2zl8TG_bLI40pHXGHWBjHdEz503N6ZkRsQIVubfIuZF8OJy0SLeKZTBCSlrOMsizNJ_2ja5hFfiHMH-DodbyUexpnew-94ypWJZTREaycojeEv_wEJ5KLBpTnOuXjy9fueg2oKT73tdixbJ75vt_paZkDd9lLvjrgE0NTUCc7xpeq4rrEhRzG7JpC7OmNXRUp4oQGSlqR91W7UDB3aIJlIUboF46AOkD1j5MjnvUftR39GapDm5ruEbi1NWlgarwnYg7c17tsn7zhbMYHCb5u43CjV9lwyIfwYxekUDV9xXvK7-Mrvf_DCrWa1N89yaN6yWaEKbvYNPtxv8Y_Th1suyDHbOq_yg3T37-zRgO1v2s3ezFC70BP0BsgcjqAux5I2o0S_c-LlbCs2uKgCY5qYs-GUL-6V-RKqzwy7kFNUipVfITEc-25Jlc2F-bYciUdd67l4pwic5wsZRRvd6MnGjaluy0n9m6D4aYjuN5WQfw8A6hW4uerecFa7wdvEoQyNPF16bZw-CJcPG5WjhcfQ67TT2WCPq8rhSznFbZD4nuj63W9cACwQ7ELs4PjcvQxXuOUkOKZSpW0Qvv4wc703tqtkjejcIdVxpIccDGENeCcJxvkhY0FhiZcjaa6DkSk-C4IarzFzHSYA.yfEc4BECljO2iLUvg6kJJA"
 }
 ```
+
 
 ### Access Token (Encryption Header):
 
@@ -645,39 +668,41 @@ Response-Body:
 {
   "alg": "dir",
   "enc": "A256GCM",
-  "exp": "<Duration of PT5M. Beispiel: '1613408609'>"
+  "exp": "<Gültigkeit des Tokens von 5 Minuten. Beispiel: '1613550068'>"
 }
 ```
+
 
 ### Access Token (Decrypted):
 
 ```
 {
   "alg": "BP256R1",
-  "exp": "<Duration of PT5M. Beispiel: '1613408609'>",
+  "exp": "<Gültigkeit des Tokens von 5 Minuten. Beispiel: '1613550068'>",
   "typ": "at+JWT",
-  "kid": "authKey"
+  "kid": "idpSig"
 }
 {
   "sub": "<subject. Base64(sha256(audClaim + idNummerClaim + serverSubjectSalt)). Beispiel: 'qDAmiQOl5_rJ5-ok48lbjSs6QH9oya7VuxUJ-_E1HCw'>",
-  "professionOID": "<professionOID of HBA from given authentication-certificate. Null if not present. Beispiel: '1.2.276.0.76.4.49'>",
-  "organizationName": "<professionOID of HBA from given authentication-certificate. Null if not present. Beispiel: 'gematik GmbH NOT-VALID'>",
-  "idNummer": "<KVNR or Telematik-ID from given authentication-certificate. Beispiel: 'X114428530'>",
+  "professionOID": "<professionOID des HBA aus dem authentication-Zertifikats. Null if not present. Beispiel: '1.2.276.0.76.4.49'>",
+  "organizationName": "<professionOID des HBA  aus dem authentication-Zertifikats. Null if not present. Beispiel: 'gematik GmbH NOT-VALID'>",
+  "idNummer": "<KVNR oder Telematik-ID aus dem authentication-Zertifikats. Beispiel: 'X114428530'>",
   "amr": "["mfa", "sc", "pin"]",
   "iss": "https://idp.zentral.idp.splitdns.ti-dienste.de",
-  "given_name": "<'givenName' from given authentication-certificate subject-DN. Beispiel: 'Juna'>",
+  "given_name": "<'givenName' aus dem subject-DN des authentication-Zertifikats. Beispiel: 'Juna'>",
   "client_id": "eRezeptApp",
   "aud": "https://erp.telematik.de/login",
   "acr": "eidas-loa-high",
   "azp": "eRezeptApp",
   "scope": "e-rezept openid",
-  "auth_time": "<timestamp of authentication. Technically this is the time of authentication-token signing. Beispiel: '1613408309'>",
-  "exp": "<Duration of PT5M. Beispiel: '1613408609'>",
-  "family_name": "<'surname' from given authentication-certificate subject-DN. Beispiel: 'Fuchs'>",
-  "iat": "<Timestamp of the issueing of the token. Beispiel: '1613408309'>",
-  "jti": "<A unique identifier for the token, which can be used to prevent reuse of the token. Value is a case-sensitive string. Beispiel: '4ce26b4e5a38e319'>"
+  "auth_time": "<timestamp of authentication. Technically this is the time of authentication-token signing. Beispiel: '1613549768'>",
+  "exp": "<Gültigkeit des Tokens von 5 Minuten. Beispiel: '1613550068'>",
+  "family_name": "<'surname' aus dem subject-DN des authentication-Zertifikats. Beispiel: 'Fuchs'>",
+  "iat": "<Zeitpunkt der Ausstellung des Tokens. Beispiel: '1613549768'>",
+  "jti": "<A unique identifier for the token, which can be used to prevent reuse of the token. Value is a case-sensitive string. Beispiel: 'f371bd29a1b4e579'>"
 }
 ```
+
 
 ### ID Token (Encryption Header):
 
@@ -685,63 +710,65 @@ Response-Body:
 {
   "alg": "dir",
   "enc": "A256GCM",
-  "exp": "<Duration of PT5M. Beispiel: '1613408609'>"
+  "exp": "<Gültigkeit des Tokens von 5 Minuten. Beispiel: '1613550068'>"
 }
 ```
+
 
 ### ID Token (Decrypted):
 
 ```
 {
   "alg": "BP256R1",
-  "exp": "<Duration of PT5M. Beispiel: '1613408609'>",
+  "exp": "<Gültigkeit des Tokens von 5 Minuten. Beispiel: '1613550068'>",
   "typ": "JWT",
-  "kid": "authKey"
+  "kid": "idpSig"
 }
 {
-  "at_hash": "<Erste 16 Bytes des Hash des Authentication Tokens Base64(subarray(Sha256(authentication_token), 0, 16)). Beispiel: 'igxKRbtgjkpktVY/aySyrQ=='>",
+  "at_hash": "<Erste 16 Bytes des Hash des Authentication Tokens Base64(subarray(Sha256(authentication_token), 0, 16)). Beispiel: 'DfnPdQp2zd122eD1qe9oGQ=='>",
   "sub": "<subject. Base64(sha256(audClaim + idNummerClaim + serverSubjectSalt)). Beispiel: 'qDAmiQOl5_rJ5-ok48lbjSs6QH9oya7VuxUJ-_E1HCw'>",
-  "professionOID": "<professionOID of HBA from given authentication-certificate. Null if not present. Beispiel: '1.2.276.0.76.4.49'>",
-  "organizationName": "<professionOID of HBA from given authentication-certificate. Null if not present. Beispiel: 'gematik GmbH NOT-VALID'>",
-  "idNummer": "<KVNR or Telematik-ID from given authentication-certificate. Beispiel: 'X114428530'>",
+  "professionOID": "<professionOID des HBA aus dem authentication-Zertifikats. Null if not present. Beispiel: '1.2.276.0.76.4.49'>",
+  "organizationName": "<professionOID des HBA  aus dem authentication-Zertifikats. Null if not present. Beispiel: 'gematik GmbH NOT-VALID'>",
+  "idNummer": "<KVNR oder Telematik-ID aus dem authentication-Zertifikats. Beispiel: 'X114428530'>",
   "amr": "["mfa", "sc", "pin"]",
   "iss": "https://idp.zentral.idp.splitdns.ti-dienste.de",
-  "given_name": "<'givenName' from given authentication-certificate subject-DN. Beispiel: 'Juna'>",
-  "nonce": "<String value used to associate a Client session with an ID Token, and to mitigate replay attacks. Beispiel: 'yb0mMrEos1wn5A6GfP6L'>",
+  "given_name": "<'givenName' aus dem subject-DN des authentication-Zertifikats. Beispiel: 'Juna'>",
+  "nonce": "<String value used to associate a Client session with an ID Token, and to mitigate replay attacks. Beispiel: 'gleet1znYrHEkFf5J7N0'>",
   "aud": "eRezeptApp",
   "acr": "eidas-loa-high",
   "azp": "eRezeptApp",
-  "auth_time": "<timestamp of authentication. Technically this is the time of authentication-token signing. Beispiel: '1613408309'>",
-  "exp": "<Duration of PT5M. Beispiel: '1613408609'>",
-  "iat": "<Timestamp of the issueing of the token. Beispiel: '1613408309'>",
-  "family_name": "<'surname' from given authentication-certificate subject-DN. Beispiel: 'Fuchs'>"
+  "auth_time": "<timestamp of authentication. Technically this is the time of authentication-token signing. Beispiel: '1613549768'>",
+  "exp": "<Gültigkeit des Tokens von 5 Minuten. Beispiel: '1613550068'>",
+  "iat": "<Zeitpunkt der Ausstellung des Tokens. Beispiel: '1613549768'>",
+  "family_name": "<'surname' aus dem subject-DN des authentication-Zertifikats. Beispiel: 'Fuchs'>"
 }
 ```
 
-# Discovery Document
+
+# Discovery Document 
 
 ```
 {
   "alg": "BP256R1",
-  "kid": "discoveryKey",
+  "kid": "discSig",
   "x5c": "<Enthält das verwendete Signer-Zertifikat. Beispiel: '[
                                                               "MIICsTCCAligAwIBAgIH..."
                                                             ]'>"
 }
 {
   "authorization_endpoint": "<URL des Authorization Endpunkts.>",
-  "alternative_authorization_endpoint": "http://localhost:56557/alt_response",
+  "alternative_authorization_endpoint": "http://localhost:55567/alt_response",
   "sso_endpoint": "<URL des Authorization Endpunkts.>",
-  "pairing_endpoint": "http://localhost:56557/pairing",
+  "pairing_endpoint": "http://localhost:55567/pairing",
   "token_endpoint": "<URL des Authorization Endpunkts.>",
   "uri_disc": "<URL des Discovery-Dokuments>",
   "issuer": "https://idp.zentral.idp.splitdns.ti-dienste.de",
   "jwks_uri": "<URL einer JWKS-Struktur mit allen vom Server verwendeten Schlüsseln>",
-  "exp": "<Duration of PT24H. Beispiel: '1613494709'>",
-  "nbf": "<token can not used before this timestamp. Beispiel: '1613408309'>",
-  "iat": "<Timestamp of the issueing of the token. Beispiel: '1613408309'>",
-  "puk_uri_auth": "<URL einer JWK-Struktur des Authorization Public-Keys>",
-  "puk_uri_token": "<URL einer JWK-Struktur des Token Public-Keys>",
+  "exp": "<Gültigkeit des Tokens von PT24H. Beispiel: '1613636168'>",
+  "nbf": "<Der Token ist erst ab diesem Zeitpunkt gültig. Beispiel: '1613549768'>",
+  "iat": "<Zeitpunkt der Ausstellung des Tokens. Beispiel: '1613549768'>",
+  "uri_puk_idp_enc": "http://localhost:55567/idpEnc/jwks.json",
+  "uri_puk_idp_sig": "http://localhost:55567/ipdSig/jwks.json",
   "subject_types_supported": [
     "pairwise"
   ],

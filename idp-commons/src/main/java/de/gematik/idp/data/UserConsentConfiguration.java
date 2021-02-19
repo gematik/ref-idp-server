@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.authentication;
+package de.gematik.idp.data;
 
-import com.fasterxml.jackson.annotation.*;
-import de.gematik.idp.data.*;
-import de.gematik.idp.token.*;
-import io.swagger.annotations.*;
-import lombok.*;
+import de.gematik.idp.field.ClaimName;
+import de.gematik.idp.field.IdpScope;
+import java.util.List;
+import java.util.Map;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ApiModel("Antwort des Gematik IDP Servers auf Anfragen via getAuthenticationChallenge().")
-public class AuthenticationChallenge {
+@Builder
+public class UserConsentConfiguration {
 
-    @ApiModelProperty(value = "Am IDP Server erzeugte Challenge")
-    private JsonWebToken challenge;
-    @JsonProperty(value = "user_consent")
-    @ApiModelProperty(value = "Die vom Benutzer einzuholende Zustimmung.")
-    private UserConsent userConsent;
+    private Map<IdpScope, List<ClaimName>> claimsToBeIncluded;
+    private UserConsentDescriptionTexts descriptionTexts;
 }

@@ -16,15 +16,21 @@
 
 package de.gematik.idp.authentication;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import de.gematik.idp.crypto.model.PkiIdentity;
+import de.gematik.idp.data.UserConsentConfiguration;
+import de.gematik.idp.data.UserConsentDescriptionTexts;
 import de.gematik.idp.field.ClaimName;
+import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.JsonWebToken;
 import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,6 +44,7 @@ public class AuthenticationChallengeVerifierTest {
     private AuthenticationChallengeVerifier authenticationChallengeVerifier;
     private PkiIdentity clientIdentity;
     private PkiIdentity serverIdentity;
+    private Map<String, Map<String, String>> userConsentConfiguration;
 
     @BeforeEach
     public void init(
@@ -45,9 +52,19 @@ public class AuthenticationChallengeVerifierTest {
         @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc.p12") final PkiIdentity clientIdentity) {
         this.clientIdentity = clientIdentity;
         this.serverIdentity = serverIdentity;
-
         authenticationChallengeBuilder = AuthenticationChallengeBuilder.builder()
             .authenticationIdentity(serverIdentity)
+            .userConsentConfiguration(UserConsentConfiguration.builder()
+                .claimsToBeIncluded(Map.of(IdpScope.OPENID, List.of(),
+                    IdpScope.EREZEPT, List.of(),
+                    IdpScope.PAIRING, List.of()))
+                .descriptionTexts(UserConsentDescriptionTexts.builder()
+                    .claims(Collections.emptyMap())
+                    .scopes(Map.of(IdpScope.OPENID, "openid",
+                        IdpScope.PAIRING, "pairing",
+                        IdpScope.EREZEPT, "erezept"))
+                    .build())
+                .build())
             .build();
         authenticationResponseBuilder = AuthenticationResponseBuilder.builder()
             .build();
@@ -55,8 +72,7 @@ public class AuthenticationChallengeVerifierTest {
             .serverIdentity(serverIdentity)
             .build();
         authenticationChallenge = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
-
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid pairing", "nonceValue");
     }
 
     @Test
@@ -80,7 +96,7 @@ public class AuthenticationChallengeVerifierTest {
             authenticationResponseBuilder.buildResponseForChallenge(authenticationChallenge,
                 clientIdentity);
 
-        assertThat(authenticationResponse.getSignedChallenge().getStringBodyClaim(ClaimName.NESTED_JWT)
+        Assertions.assertThat(authenticationResponse.getSignedChallenge().getStringBodyClaim(ClaimName.NESTED_JWT)
             .map(Objects::toString)
             .map(JsonWebToken::new)
             .map(JsonWebToken::getBodyClaims).get())
@@ -95,9 +111,20 @@ public class AuthenticationChallengeVerifierTest {
         @PkiKeyResolver.Filename("833621999741600_c.hci.aut-apo-ecc.p12") final PkiIdentity otherServerIdentity) {
         authenticationChallengeBuilder = AuthenticationChallengeBuilder.builder()
             .authenticationIdentity(otherServerIdentity)
+            .userConsentConfiguration(UserConsentConfiguration.builder()
+                .claimsToBeIncluded(Map.of(IdpScope.OPENID, List.of(),
+                    IdpScope.EREZEPT, List.of(),
+                    IdpScope.PAIRING, List.of()))
+                .descriptionTexts(UserConsentDescriptionTexts.builder()
+                    .claims(Collections.emptyMap())
+                    .scopes(Map.of(IdpScope.OPENID, "openid",
+                        IdpScope.PAIRING, "pairing",
+                        IdpScope.EREZEPT, "erezept"))
+                    .build())
+                .build())
             .build();
         authenticationChallenge = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
 
         final AuthenticationResponse authenticationResponse =
             authenticationResponseBuilder.buildResponseForChallenge(authenticationChallenge,
@@ -124,7 +151,7 @@ public class AuthenticationChallengeVerifierTest {
     @Test
     public void checkSignatureNjwt_challengeOutdated() {
         authenticationChallenge = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid", "nonceValue");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
         final JsonWebToken jsonWebToken = authenticationChallenge.getChallenge();
         final IdpJwtProcessor reSignerProcessor = new IdpJwtProcessor(serverIdentity);
         final JwtBuilder jwtDescription = jsonWebToken.toJwtDescription();

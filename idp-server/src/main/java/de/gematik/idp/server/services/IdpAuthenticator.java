@@ -32,7 +32,7 @@ import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
 import de.gematik.idp.token.SsoTokenBuilder;
 import de.gematik.idp.token.TokenClaimExtraction;
-import de.gematik.pki.certificate.CertificateVerifier;
+import de.gematik.pki.certificate.TucPki018Verifier;
 import de.gematik.pki.exception.GemPkiException;
 import java.net.URISyntaxException;
 import java.security.cert.X509Certificate;
@@ -55,7 +55,7 @@ public class IdpAuthenticator {
     private final IdpConfiguration idpConfiguration;
     private final IdpKey idpSig;
     private final IdpKey idpEnc;
-    private final CertificateVerifier certificateVerifier;
+    private final TucPki018Verifier tucPki018Verifier;
     private final ChallengeTokenValidationService challengeTokenValidationService;
 
     public String getBasicFlowTokenLocation(final IdpJwe signedChallenge, final String serverUrl) {
@@ -164,7 +164,7 @@ public class IdpAuthenticator {
 
     private void verifyClientCertificate(final X509Certificate nestedX509ClientCertificate) {
         try {
-            certificateVerifier.performTucPki18Checks(nestedX509ClientCertificate);
+            tucPki018Verifier.performTucPki18Checks(nestedX509ClientCertificate);
         } catch (final GemPkiException | RuntimeException e) {
             throw new IdpServerException("Error while verifying client certificate", e,
                 IdpErrorType.SERVER_ERROR, HttpStatus.BAD_REQUEST);

@@ -239,8 +239,11 @@ public class IdpStepsBase {
     }
 
     @Step
-    public void assertResponseContentTypeIs(final String contentType) {
-        assertThat(Context.getCurrentResponse().getContentType()).isEqualTo(contentType);
+    public void assertResponseContentTypeMatches(final String contentType) {
+        final String cty = Context.getCurrentResponse().getContentType();
+        if (!cty.equals(contentType)) {
+            assertThat(cty).matches(contentType);
+        }
     }
 
     // =================================================================================================================
@@ -314,7 +317,7 @@ public class IdpStepsBase {
         assertThat(IteratorUtils.toArray(claims.keys())).contains(claimName);
 
         final ZonedDateTime d = ZonedDateTime
-            .ofInstant(Instant.ofEpochSecond(Long.parseLong(claims.getString(claimName))),
+            .ofInstant(Instant.ofEpochSecond(claims.getLong(claimName)),
                 ZoneId.of("UTC"));
 
         final ZonedDateTime expectedDate = ZonedDateTime

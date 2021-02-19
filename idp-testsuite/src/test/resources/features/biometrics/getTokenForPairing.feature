@@ -45,20 +45,22 @@ Feature: Fordere Access Token für Pairing an
     Then the response status is 200
     And the response http headers match
             """
-            Content-Type=application/json
+            Content-Type=application/json.*
             Cache-Control=no-store
             Pragma=no-cache
             """
     And the JSON response should match
             """
-              { challenge: "ey[A-Za-z0-9\\\-_\\\.]*",
-                user_consent:  [
-                  "given_name",
-                  "family_name",
-                  "organizationName",
-                  "professionOID",
-                  "idNummer"
-                ]
+              { challenge: "ey[A-Za-z0-9\\-_\\.]*",
+                user_consent:  {
+                  requested_claims: {
+                    idNummer: ".*Id.*Krankenversichertennummer.*Telematik\\-Id.*"
+                  },
+                  requested_scopes: {
+                    pairing: ".*biometrische.*Authentisierung.*",
+                    openid:  ".*ID\\-Token.*"
+                  }
+                }
               }
             """
     When I extract the header claims from response field challenge

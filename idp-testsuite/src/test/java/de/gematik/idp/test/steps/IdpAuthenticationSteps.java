@@ -53,7 +53,7 @@ public class IdpAuthenticationSteps extends IdpStepsBase {
         } else {
             final JSONObject json = new JSONObject(Context.getCurrentResponse().getBody().asString());
             ctxt.put(ContextKey.CHALLENGE, json.getString("challenge"));
-            ctxt.put(ContextKey.USER_CONSENT, json.getJSONArray("user_consent"));
+            ctxt.put(ContextKey.USER_CONSENT, json.getJSONObject("user_consent"));
         }
     }
 }

@@ -77,12 +77,16 @@ public enum ClaimName {
     DEVICE_OS_VERSION("device_version"),
     SIGNED_PAIRING_DATA("signed_pairing_data"),
     PAIRING_DATA("pairing_data"),
-    PUK_SE_AUT_PUBLIC_KEY("key_data"),
-    PUK_EGK_AUT_PUBLIC_KEY("public_key"),
-    PUK_EGK_AUT_CERT_ID("cert_id"),
-    PUK_EGK_AUT_CERT_ISSUER("issuer"),
-    PUK_EGK_AUT_CERT_NOT_AFTER("not_after"),
-    ENCRYPTION_ALGORITHM("enc");
+    KEY_DATA("key_data"),
+    PUBLIC_KEY("public_key"),
+    CERT_ID("cert_id"),
+    AUTHORITY_INFO_ACCESS("authority_info_access"),
+    ENCRYPTION_ALGORITHM("enc"),
+    CERTIFICATE_SERIALNUMBER("serialnumber"),
+    CERTIFICATE_ISSUER("issuer"),
+    CERTIFICATE_NOT_AFTER("not_after"),
+    CERTIFICATE_PUBLIC_KEY("public_key"),
+    SIGNATURE_ALGORITHM_IDENTIFIER("signature_algorithm_identifier");
 
     @JsonValue
     private final String joseName;

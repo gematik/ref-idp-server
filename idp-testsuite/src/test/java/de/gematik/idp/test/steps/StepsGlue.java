@@ -171,9 +171,9 @@ public class StepsGlue {
         disc.assertResponseStatusIs(status);
     }
 
-    @Then("the response content type is {string}")
-    public void theResponseContentTypeIs(final String contentType) {
-        disc.assertResponseContentTypeIs(contentType);
+    @Then("the response content type matches {string}")
+    public void theResponseContentTypeMatches(final String contentType) {
+        disc.assertResponseContentTypeMatches(contentType);
     }
 
     @Then("the response http headers match")
@@ -216,13 +216,26 @@ public class StepsGlue {
         jsoncheck.assertJsonResponseHasNode(path);
     }
 
+    @And("the response should match")
+    public void theResponseShouldMatch(final String toMatch) {
+        final String bodyStr = Context.getCurrentResponse().getBody().asString();
+        if (!bodyStr.equals(toMatch)) {
+            assertThat(bodyStr).matches(toMatch);
+        }
+    }
+
     @Then("the JSON response should match")
     @SneakyThrows
     public void theJSONResponseShouldMatch(final String toMatchJSON) {
-        final JSONObject json = new JSONObject(Context.getCurrentResponse().getBody().asString());
-        jsoncheck
-            .assertJsonShouldMatchInAnyOrder(new SerenityJSONObject(json), new SerenityJSONObject(toMatchJSON));
+        jsoncheck.assertJsonShouldMatchInAnyOrder(Context.getCurrentResponse().getBody().asString(), toMatchJSON);
     }
+
+    @Then("the JSON Array response should match")
+    public void theJSONArrayResponseShouldMatch(final String toMatchJSON) {
+        jsoncheck
+            .assertJsonArrayShouldMatchInAnyOrder(Context.getCurrentResponse().getBody().asString(), toMatchJSON);
+    }
+
 
     @Then("JSON response has exactly one node {string} at {string}")
     @SneakyThrows
@@ -240,7 +253,7 @@ public class StepsGlue {
             json = (JSONObject) Context.getThreadContext().get(ContextKey.HEADER_CLAIMS);
         }
         jsoncheck
-            .assertJsonShouldMatchInAnyOrder(new SerenityJSONObject(json), new SerenityJSONObject(toMatchJSON));
+            .assertJsonShouldMatchInAnyOrder(json.toString(), toMatchJSON);
     }
 
     @Then("the {ClaimLocation} claim {string} should match {string}")
@@ -449,5 +462,4 @@ public class StepsGlue {
         Context.getThreadContext().put(ContextKey.REDIRECT_URI, "http://redirect.gematik.de/erezept");
         access.getToken(HttpStatus.NOCHECK, null);
     }
-
 }

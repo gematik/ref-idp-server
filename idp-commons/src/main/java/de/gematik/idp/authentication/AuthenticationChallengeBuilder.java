@@ -24,16 +24,23 @@ import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.crypto.model.PkiIdentity;
+import de.gematik.idp.data.UserConsent;
+import de.gematik.idp.data.UserConsentConfiguration;
 import de.gematik.idp.exceptions.IdpJoseException;
+import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.token.JsonWebToken;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.lang.JoseException;
@@ -47,6 +54,7 @@ public class AuthenticationChallengeBuilder {
     private static final int NONCE_BYTE_AMOUNT = 32;
     private final PkiIdentity authenticationIdentity;
     private final String uriIdpServer;
+    private final UserConsentConfiguration userConsentConfiguration;
 
     public AuthenticationChallenge buildAuthenticationChallenge(
         final String clientId,
@@ -78,9 +86,34 @@ public class AuthenticationChallengeBuilder {
         headerClaims
             .put(EXPIRES_AT.getJoseName(), now.plusMinutes(CHALLENGE_TOKEN_VALIDITY_IN_MINUTES).toEpochSecond());
 
+        final UserConsent userConsent = getUserConsent(scope, clientId);
         return AuthenticationChallenge.builder()
             .challenge(buildJwt(claims.toJson(), headerClaims))
-            .userConsent(Arrays.asList(GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER))
+            .userConsent(userConsent)
+            .build();
+    }
+
+    private UserConsent getUserConsent(final String scopes, final String clientId) {
+        final List<IdpScope> requestedScopes = Stream.of(scopes.split(" "))
+            .map(IdpScope::fromJwtValue)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toList());
+        final Map<String, String> scopeMap = requestedScopes.stream()
+            .map(s -> Pair
+                .of(s.getJwtValue(), userConsentConfiguration.getDescriptionTexts().getScopes().get(s)))
+            .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+        final Map<String, String> clientMap = requestedScopes.stream()
+            .filter(id -> userConsentConfiguration.getClaimsToBeIncluded().containsKey(id))
+            .map(id -> userConsentConfiguration.getClaimsToBeIncluded().get(id))
+            .flatMap(List::stream)
+            .distinct()
+            .map(s -> Pair
+                .of(s.getJoseName(), userConsentConfiguration.getDescriptionTexts().getClaims().get(s)))
+            .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+        return UserConsent.builder()
+            .requestedScopes(scopeMap)
+            .requestedClaims(clientMap)
             .build();
     }
 
