@@ -21,7 +21,6 @@ import static de.gematik.idp.field.ClaimName.ISSUER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import de.gematik.idp.IdpConstants;
 import de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.Afo;
@@ -39,6 +38,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 public class MockIdpClientTest {
 
     private static final String URI_IDP_SERVER = "https://idp.zentral.idp.splitdns.ti-dienste.de";
+    private static final String CLIENT_ID_E_REZEPT_APP = "eRezeptApp";
     private MockIdpClient mockIdpClient;
     private PkiIdentity serverIdentity;
     private PkiIdentity rsaClientIdentity;
@@ -53,7 +53,7 @@ public class MockIdpClientTest {
         mockIdpClient = MockIdpClient.builder()
             .serverIdentity(serverIdentity)
             .uriIdpServer(URI_IDP_SERVER)
-            .clientId(IdpConstants.CLIENT_ID)
+            .clientId(CLIENT_ID_E_REZEPT_APP)
             .build();
 
         mockIdpClient.initialize();
@@ -79,7 +79,7 @@ public class MockIdpClientTest {
         final IdpTokenResult authToken = MockIdpClient.builder()
             .serverIdentity(serverIdentity)
             .produceTokensWithInvalidSignature(true)
-            .clientId(IdpConstants.CLIENT_ID)
+            .clientId(CLIENT_ID_E_REZEPT_APP)
             .build()
             .initialize()
             .login(rsaClientIdentity);
@@ -105,7 +105,7 @@ public class MockIdpClientTest {
         final IdpTokenResult authToken = MockIdpClient.builder()
             .serverIdentity(serverIdentity)
             .produceOnlyExpiredTokens(true)
-            .clientId(IdpConstants.CLIENT_ID)
+            .clientId(CLIENT_ID_E_REZEPT_APP)
             .build()
             .initialize()
             .login(rsaClientIdentity);
@@ -138,7 +138,7 @@ public class MockIdpClientTest {
         mockIdpClient = MockIdpClient.builder()
             .serverIdentity(rsaIdentity)
             .uriIdpServer(URI_IDP_SERVER)
-            .clientId(IdpConstants.CLIENT_ID)
+            .clientId(CLIENT_ID_E_REZEPT_APP)
             .build();
         mockIdpClient.initialize();
 

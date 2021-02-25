@@ -57,10 +57,10 @@ public class DiscoveryDocument {
     private JSONObject pukUriEnc;
     private JSONObject pukUriSign;
     private JSONObject pukUriDisc;
-    private String uriDisc;
 
     private final String authorizationEndpoint;
     private final String ssoEndpoint;
+    private final String altAuthEndpoint;
     private final String tokenEndpoint;
     private final String pairingEndpoint;
     private final String jwksUri;
@@ -70,8 +70,9 @@ public class DiscoveryDocument {
         jsonBody = jsoBody;
         jsonHeader = jsoHeader;
         authorizationEndpoint = jsoBody.getString("authorization_endpoint");
-        tokenEndpoint = jsoBody.getString("token_endpoint");
         ssoEndpoint = jsoBody.getString("sso_endpoint");
+        altAuthEndpoint = jsoBody.getString("alternative_authorization_endpoint");
+        tokenEndpoint = jsoBody.getString("token_endpoint");
         pairingEndpoint = jsoBody.getString("pairing_endpoint");
         jwksUri = jsoBody.getString("jwks_uri");
     }

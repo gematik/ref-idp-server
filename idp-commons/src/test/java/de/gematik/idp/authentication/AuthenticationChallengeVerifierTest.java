@@ -53,7 +53,7 @@ public class AuthenticationChallengeVerifierTest {
         this.clientIdentity = clientIdentity;
         this.serverIdentity = serverIdentity;
         authenticationChallengeBuilder = AuthenticationChallengeBuilder.builder()
-            .authenticationIdentity(serverIdentity)
+            .serverSigner(new IdpJwtProcessor(serverIdentity))
             .userConsentConfiguration(UserConsentConfiguration.builder()
                 .claimsToBeIncluded(Map.of(IdpScope.OPENID, List.of(),
                     IdpScope.EREZEPT, List.of(),
@@ -110,7 +110,7 @@ public class AuthenticationChallengeVerifierTest {
     public void checkSignatureNjwt_certMismatch(
         @PkiKeyResolver.Filename("833621999741600_c.hci.aut-apo-ecc.p12") final PkiIdentity otherServerIdentity) {
         authenticationChallengeBuilder = AuthenticationChallengeBuilder.builder()
-            .authenticationIdentity(otherServerIdentity)
+            .serverSigner(new IdpJwtProcessor(otherServerIdentity))
             .userConsentConfiguration(UserConsentConfiguration.builder()
                 .claimsToBeIncluded(Map.of(IdpScope.OPENID, List.of(),
                     IdpScope.EREZEPT, List.of(),

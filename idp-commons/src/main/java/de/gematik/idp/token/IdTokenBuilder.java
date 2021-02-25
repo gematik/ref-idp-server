@@ -21,6 +21,7 @@ import static de.gematik.idp.token.TokenBuilderUtil.buildSubjectClaim;
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtBuilder;
+import de.gematik.idp.crypto.*;
 import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.field.ClaimName;
 import java.time.ZonedDateTime;
@@ -76,6 +77,7 @@ public class IdTokenBuilder {
                 authenticationToken.getStringBodyClaim(ID_NUMBER)
                     .orElseThrow(() -> new IdpJoseException("Missing '" + ID_NUMBER.getJoseName() + "' claim!")),
                 serverSubjectSalt));
+        claimsMap.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
 
         final Map<String, Object> headerClaims = new HashMap<>();
         headerClaims.put(TYPE.getJoseName(), "JWT");

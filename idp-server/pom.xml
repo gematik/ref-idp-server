@@ -23,7 +23,6 @@
                     </execution>
                 </executions>
                 <groupId>org.springframework.boot</groupId>
-
                 <version>2.3.4.RELEASE</version>
             </plugin>
             <plugin>
@@ -218,11 +217,11 @@
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>8.1.0</version>
+        <version>9.0.0</version>
     </parent>
 
     <properties>
         <docker.image.name>idp-server</docker.image.name>
     </properties>
-    <version>8.1.0</version>
+    <version>9.0.0</version>
 </project>

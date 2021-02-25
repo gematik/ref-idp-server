@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import de.gematik.idp.IdpConstants;
+import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
 import de.gematik.idp.authentication.IdpJwtProcessor;
@@ -67,7 +68,9 @@ public class AccessTokenBuilderTest {
             .encryptionKey(encryptionKey)
             .build();
         authenticationToken = authenticationTokenBuilder
-            .buildAuthenticationToken(clientIdentity.getCertificate(), Map.of("acr", "foobar"), ZonedDateTime.now())
+            .buildAuthenticationToken(clientIdentity.getCertificate(),
+                Map.of("acr", "foobar", CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP),
+                ZonedDateTime.now())
             .decryptNestedJwt(encryptionKey);
     }
 

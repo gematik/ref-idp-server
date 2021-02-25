@@ -17,7 +17,6 @@
 package de.gematik.idp.server.controllers;
 
 import de.gematik.idp.crypto.model.PkiIdentity;
-import de.gematik.idp.data.IdpJwksDocument;
 import de.gematik.idp.data.IdpKeyDescriptor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -29,10 +28,6 @@ public class IdpKey {
     private final PkiIdentity identity;
 
     public IdpKeyDescriptor buildJwk() {
-        return IdpKeyDescriptor.constructFromX509Certificate(identity.getCertificate());
-    }
-
-    public IdpJwksDocument buildJwks() {
-        return IdpJwksDocument.constructFromX509Certificate(identity.getCertificate());
+        return IdpKeyDescriptor.constructFromX509Certificate(identity.getCertificate(), identity.getKeyId());
     }
 }

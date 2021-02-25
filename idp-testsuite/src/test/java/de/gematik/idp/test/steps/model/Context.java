@@ -17,6 +17,7 @@
 package de.gematik.idp.test.steps.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import de.gematik.idp.test.steps.helpers.TestEnvironmentConfigurator;
 import io.restassured.response.Response;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import net.thucydides.core.annotations.Step;
+import org.assertj.core.util.Lists;
 import org.json.JSONObject;
 
 public class Context {
@@ -88,6 +90,9 @@ public class Context {
     @Step
     public void iStartNewInteractionKeepingOnly(final List<ContextKey> keys) {
         final Map<ContextKey, Object> ctxt = Context.getThreadContext();
+        if (!TestEnvironmentConfigurator.isTokenEncryptionActive()) {
+            keys.removeAll(Lists.list(ContextKey.ENCRYPTED_KEYS));
+        }
         assertThat(ctxt.keySet()).containsAll(keys);
         final Map<ContextKey, Object> ctxt2 = keys.stream()
             .map(key -> new AbstractMap.SimpleEntry<>(key, ctxt.get(key)))

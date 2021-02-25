@@ -21,7 +21,6 @@ import static de.gematik.idp.crypto.KeyAnalysis.isEcKey;
 import static de.gematik.idp.field.ClaimName.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
-
 import de.gematik.idp.crypto.X509ClaimExtraction;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.IdpJoseException;
@@ -153,8 +152,7 @@ public class ChallengeTokenValidationServiceTest {
         claims.setClaim(KEY_IDENTIFIER.getJoseName(), "654321");
         claims.setClaim(ALGORITHM.getJoseName(), "SHA256");
         claims.setClaim(DEVICE_PRODUCT.getJoseName(), "S8");
-        claims.setClaim(CERT_ID.getJoseName(),
-            "1.2.840.10045.4.3.2347338df949aad79ed9db17cad14ad2658c5f2b1c2a1b026b30d324a8b7d4c84115d4e3bd55896bc257423680229794");
+        claims.setClaim(CERTIFICATE_SERIALNUMBER.getJoseName(), "257423680229794");
         claims.setClaim(PUBLIC_KEY.getJoseName(), java.util.Base64.getEncoder()
             .encodeToString(egkIdentity.getCertificate().getPublicKey().getEncoded()));
         return buildSignedJwt(claims.toJson(), egkIdentity);

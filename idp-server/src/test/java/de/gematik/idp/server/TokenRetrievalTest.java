@@ -16,12 +16,12 @@
 
 package de.gematik.idp.server;
 
+import static de.gematik.idp.TestConstants.*;
 import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
 import static de.gematik.idp.client.AuthenticatorClient.getAllHeaderElementsAsMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import de.gematik.idp.IdpConstants;
+import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.UriUtils;
@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
+import org.apache.http.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -81,9 +82,9 @@ public class TokenRetrievalTest {
     public void startup(
         @Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity) {
         idpClient = IdpClient.builder()
-            .clientId(IdpConstants.CLIENT_ID)
+            .clientId(TestConstants.CLIENT_ID_E_REZEPT_APP)
             .discoveryDocumentUrl("http://localhost:" + localServerPort + "/discoveryDocument")
-            .redirectUrl(idpConfiguration.getRedirectUri())
+            .redirectUrl(REDIRECT_URI_E_REZEPT_APP)
             .build();
 
         idpClient.initialize();
@@ -132,7 +133,7 @@ public class TokenRetrievalTest {
     public void authenticationForwardShouldContainSsoToken() throws UnirestException {
         idpClient.setAfterAuthenticationCallback(response ->
             assertThat(response.getHeaders().getFirst("Location"))
-                .contains("sso_token="));
+                .contains("ssotoken="));
 
         idpClient.login(egkUserIdentity);
     }
@@ -214,12 +215,12 @@ public class TokenRetrievalTest {
         final AtomicReference<String> ssoToken = new AtomicReference();
         idpClient.setAfterAuthenticationCallback(response ->
             Optional.ofNullable(
-                UriUtils.extractParameterValue(response.getHeaders().getFirst("Location"), "sso_token"))
+                UriUtils.extractParameterValue(response.getHeaders().getFirst("Location"), "ssotoken"))
                 .ifPresent(token -> ssoToken.set(token)));
 
         assertThatThrownBy(() -> idpClient.loginWithSsoToken(idpClient.login(egkUserIdentity).getSsoToken()))
             .isInstanceOf(RuntimeException.class)
-            .hasMessageContaining("sso_token");
+            .hasMessageContaining("ssotoken");
     }
 
     @Test
@@ -290,7 +291,7 @@ public class TokenRetrievalTest {
 
         assertThat(tokenResponse.getAccessToken().getBodyClaim(ClaimName.AUTHENTICATION_CLASS_REFERENCE))
             .get()
-            .isEqualTo("eidas-loa-high");
+            .isEqualTo("gematik-ehealth-loa-high");
     }
 
     @Test
@@ -487,7 +488,7 @@ public class TokenRetrievalTest {
     public void getAuthorizationToken_testBodyClaims() throws UnirestException {
         idpClient.setAuthenticationResponseMapper(response -> {
             assertThat(new IdpJwe(response.getCode()).decryptNestedJwt(symmetricEncryptionKey).getBodyClaims())
-                .containsEntry(ClaimName.CLIENT_ID.getJoseName(), IdpConstants.CLIENT_ID)
+                .containsEntry(ClaimName.CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP)
                 .containsEntry(ClaimName.TOKEN_TYPE.getJoseName(), "code")
                 .containsKeys(ClaimName.SERVER_NONCE.getJoseName(),
                     ClaimName.NONCE.getJoseName())
@@ -581,8 +582,8 @@ public class TokenRetrievalTest {
     public void authenticationWithSso_missingParameter_shouldGiveFound() throws UnirestException {
         final IdpJwe ssoToken = idpClient.login(egkUserIdentity).getSsoToken();
         idpClient.setBeforeAuthenticationMapper(request -> Unirest.post(request.getUrl())
-            .multiPartContent().field("sso_token", request.multiParts().stream()
-                .filter(part -> part.getName().equals("sso_token"))
+            .multiPartContent().field("ssotoken", request.multiParts().stream()
+                .filter(part -> part.getName().equals("ssotoken"))
                 .findAny().get().getValue().toString())
         );
         idpClient.setAfterAuthenticationCallback(response -> assertThat(response.getStatus())
@@ -678,5 +679,18 @@ public class TokenRetrievalTest {
             .map(code -> new IdpJwe(code))
             .map(jwe -> jwe.decryptNestedJwt(symmetricEncryptionKey))
             .get();
+    }
+
+    @Test
+    public void locationFrom_AuthenticationResponseHeader_should_startsWith_RedirectUri() throws UnirestException {
+        idpClient.setAfterAuthenticationCallback(response -> {
+            assertThat(response.getStatus())
+                .isEqualTo(302);
+            assertThat(response.getHeaders().get(HttpHeaders.LOCATION).stream().iterator())
+                .hasNext();
+            assertThat(response.getHeaders().get(HttpHeaders.LOCATION).stream().iterator().next()).
+                startsWith(REDIRECT_URI_E_REZEPT_APP);
+        });
+        idpClient.login(egkUserIdentity);
     }
 }

@@ -18,13 +18,14 @@ package de.gematik.idp.server.services;
 
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
 import static de.gematik.idp.error.IdpErrorType.MISSING_PARAMETERS;
-import static de.gematik.idp.field.ClaimName.CHALLENGE_TOKEN;
+import static de.gematik.idp.field.ClaimName.*;
 
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.field.ClaimName;
-import de.gematik.idp.server.configuration.IdpConfiguration;
+import de.gematik.idp.server.configuration.*;
 import de.gematik.idp.server.controllers.IdpKey;
+import de.gematik.idp.server.data.IdpClientConfiguration;
 import de.gematik.idp.server.exceptions.IdpServerException;
 import de.gematik.idp.server.exceptions.authentication.IdpServerLocationBuildException;
 import de.gematik.idp.server.exceptions.oauth2spec.IdpServerInvalidRequestException;
@@ -40,6 +41,7 @@ import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.client.utils.URIBuilder;
 import org.springframework.http.HttpStatus;
@@ -57,22 +59,19 @@ public class IdpAuthenticator {
     private final IdpKey idpEnc;
     private final TucPki018Verifier tucPki018Verifier;
     private final ChallengeTokenValidationService challengeTokenValidationService;
+    private final ClientRegistrationService clientRegistrationService;
 
-    public String getBasicFlowTokenLocation(final IdpJwe signedChallenge, final String serverUrl) {
+    public String getBasicFlowTokenLocation(final IdpJwe signedChallenge) {
         try {
-            final URIBuilder locationBuilder = new URIBuilder(serverUrl + TOKEN_ENDPOINT);
-            buildBasicFlowTokenLocation(decryptChallenge(signedChallenge), locationBuilder);
-            return locationBuilder.build().toString();
+            return buildBasicFlowTokenLocation(decryptChallenge(signedChallenge)).build().toString();
         } catch (final URISyntaxException e) {
             throw new IdpServerLocationBuildException(e);
         }
     }
 
-    public String getAlternateFlowTokenLocation(final IdpJwe signedAuthData, final String serverUrl) {
+    public String getAlternateFlowTokenLocation(final IdpJwe signedAuthData) {
         try {
-            final URIBuilder locationBuilder = new URIBuilder(serverUrl + TOKEN_ENDPOINT);
-            buildAlternateFlowTokenLocation(decryptChallenge(signedAuthData), locationBuilder);
-            return locationBuilder.build().toString();
+            return buildAlternateFlowTokenLocation(decryptChallenge(signedAuthData)).build().toString();
         } catch (final URISyntaxException e) {
             throw new IdpServerLocationBuildException(e);
         }
@@ -86,10 +85,11 @@ public class IdpAuthenticator {
         }
     }
 
-    public String getSsoTokenLocation(final IdpJwe ssoToken, final JsonWebToken challengeToken,
-        final String serverUrl) {
+    public String getSsoTokenLocation(final IdpJwe ssoToken, final JsonWebToken challengeToken) {
         try {
-            final URIBuilder locationBuilder = new URIBuilder(serverUrl + TOKEN_ENDPOINT);
+            final String redirectUrl = challengeToken.getBodyClaims().get(REDIRECT_URI.getJoseName())
+                .toString();
+            final URIBuilder locationBuilder = new URIBuilder(redirectUrl + TOKEN_ENDPOINT);
             buildSsoTokenLocation(ssoToken, challengeToken, locationBuilder);
             return locationBuilder.build().toString();
         } catch (final URISyntaxException e) {
@@ -97,9 +97,7 @@ public class IdpAuthenticator {
         }
     }
 
-    private void buildBasicFlowTokenLocation(
-        final JsonWebToken signedChallenge,
-        final URIBuilder locationBuilder) {
+    private URIBuilder buildBasicFlowTokenLocation(final JsonWebToken signedChallenge) {
         final Map<String, Object> serverChallengeClaims = signedChallenge
             .getStringBodyClaim(ClaimName.NESTED_JWT)
             .map(TokenClaimExtraction::extractClaimsFromJwtBody)
@@ -119,12 +117,23 @@ public class IdpAuthenticator {
             .orElseThrow(() ->
                 new IdpServerException(IdpErrorType.STATE_MISSING_IN_NESTED_CHALLENGE,
                     HttpStatus.BAD_REQUEST));
-        buildLocationUri(locationBuilder, nestedX509ClientCertificate, serverChallengeClaims, state);
+        String redirectUrl = serverChallengeClaims.get(REDIRECT_URI.getJoseName()).toString();
+        return Stream.of(redirectUrl + TOKEN_ENDPOINT)
+            .map(param -> {
+                try {
+                    return new URIBuilder(param);
+                } catch (Exception ex) {
+                    throw new IdpServerLocationBuildException(ex);
+                }
+            })
+            .map(param -> {
+                buildLocationUri(param, nestedX509ClientCertificate, serverChallengeClaims, state);
+                return param;
+            })
+            .findFirst().get();
     }
 
-    private void buildAlternateFlowTokenLocation(
-        final JsonWebToken signedAuthData,
-        final URIBuilder locationBuilder) {
+    private URIBuilder buildAlternateFlowTokenLocation(final JsonWebToken signedAuthData) {
         final Map<String, Object> authDataClaims = addAllClaimsFromAuthDataAndChallenge(signedAuthData);
         challengeTokenValidationService.validateChallengeToken(signedAuthData);
         final X509Certificate nestedX509ClientCertificate = signedAuthData.getAuthenticationCertificate()
@@ -138,7 +147,19 @@ public class IdpAuthenticator {
             .orElseThrow(() ->
                 new IdpServerException(IdpErrorType.STATE_MISSING_IN_NESTED_CHALLENGE,
                     HttpStatus.BAD_REQUEST));
-        buildLocationUri(locationBuilder, nestedX509ClientCertificate, authDataClaims, state);
+        return Stream.of(authDataClaims.get(REDIRECT_URI.getJoseName()) + TOKEN_ENDPOINT)
+            .map(param -> {
+                try {
+                    return new URIBuilder(param);
+                } catch (Exception ex) {
+                    throw new IdpServerLocationBuildException(ex);
+                }
+            })
+            .map(param -> {
+                buildLocationUri(param, nestedX509ClientCertificate, authDataClaims, state);
+                return param;
+            })
+            .findFirst().get();
     }
 
     private Map<String, Object> addAllClaimsFromAuthDataAndChallenge(final JsonWebToken signedAuthData) {
@@ -156,9 +177,15 @@ public class IdpAuthenticator {
         locationBuilder.addParameter("code", authenticationTokenBuilder
             .buildAuthenticationToken(certificate, claimsMap, authTime)
             .getRawString());
-        locationBuilder.addParameter("sso_token", ssoTokenBuilder
-            .buildSsoToken(certificate, authTime)
-            .getRawString());
+
+        final Optional<Boolean> addSsoToken = clientRegistrationService
+            .getClientConfiguration(claimsMap.get(CLIENT_ID.getJoseName()).toString())
+            .map(IdpClientConfiguration::isReturnSsoToken);
+        if (addSsoToken.orElse(false)) {
+            locationBuilder
+                .addParameter("ssotoken", ssoTokenBuilder.buildSsoToken(certificate, authTime).getRawString());
+        }
+
         locationBuilder.addParameter("state", state);
     }
 
@@ -193,9 +220,11 @@ public class IdpAuthenticator {
                             HttpStatus.BAD_REQUEST)));
     }
 
-    public void validateRedirectUri(final String redirectUri) {
-        if (Objects.isNull(redirectUri) || !idpConfiguration.getRedirectUri().equals(redirectUri)) {
-            throw new IdpServerException(IdpErrorType.REDIRECT_URI_DEFUNCT, HttpStatus.BAD_REQUEST);
-        }
+    public void validateRedirectUri(final String clientId, final String redirectUri) {
+        clientRegistrationService.getClientConfiguration(clientId)
+            .map(clientRegistration -> clientRegistration.getRedirectUri())
+            .filter(Objects::nonNull)
+            .filter(value -> value.equals(redirectUri))
+            .orElseThrow(() -> new IdpServerException(IdpErrorType.REDIRECT_URI_DEFUNCT, HttpStatus.BAD_REQUEST));
     }
 }

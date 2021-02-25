@@ -21,7 +21,7 @@ import static de.gematik.idp.client.AuthenticatorClient.getAllHeaderElementsAsMa
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
-import de.gematik.idp.IdpConstants;
+import de.gematik.idp.TestConstants;
 import de.gematik.idp.client.IdpClient;
 import de.gematik.idp.client.IdpClientRuntimeException;
 import de.gematik.idp.client.IdpTokenResult;
@@ -61,9 +61,9 @@ public class PkceServerTest {
     public void startup(
         @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity) {
         idpClient = IdpClient.builder()
-            .clientId(IdpConstants.CLIENT_ID)
+            .clientId(TestConstants.CLIENT_ID_E_REZEPT_APP)
             .discoveryDocumentUrl("http://localhost:" + localServerPort + "/discoveryDocument")
-            .redirectUrl(idpConfiguration.getRedirectUri())
+            .redirectUrl(TestConstants.REDIRECT_URI_E_REZEPT_APP)
             .build();
 
         idpClient.initialize();

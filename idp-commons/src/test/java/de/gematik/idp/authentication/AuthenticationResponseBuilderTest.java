@@ -66,7 +66,7 @@ public class AuthenticationResponseBuilderTest {
         this.serverIdentity = serverIdentity;
 
         final AuthenticationChallengeBuilder authenticationChallengeBuilder = AuthenticationChallengeBuilder.builder()
-            .authenticationIdentity(serverIdentity)
+            .serverSigner(new IdpJwtProcessor(serverIdentity))
             .userConsentConfiguration(UserConsentConfiguration.builder()
                 .claimsToBeIncluded(Map.of(IdpScope.OPENID, List.of(),
                     IdpScope.EREZEPT, List.of(),

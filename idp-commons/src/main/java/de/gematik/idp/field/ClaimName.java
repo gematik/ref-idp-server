@@ -79,7 +79,6 @@ public enum ClaimName {
     PAIRING_DATA("pairing_data"),
     KEY_DATA("key_data"),
     PUBLIC_KEY("public_key"),
-    CERT_ID("cert_id"),
     AUTHORITY_INFO_ACCESS("authority_info_access"),
     ENCRYPTION_ALGORITHM("enc"),
     CERTIFICATE_SERIALNUMBER("serialnumber"),

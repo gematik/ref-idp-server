@@ -17,12 +17,13 @@
 package de.gematik.idp.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
-import de.gematik.idp.IdpConstants;
+import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
 import de.gematik.idp.authentication.UriUtils;
 import de.gematik.idp.client.IdpClient;
@@ -30,6 +31,7 @@ import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpController;
 import de.gematik.idp.server.controllers.IdpKey;
+import de.gematik.idp.server.data.IdpClientConfiguration;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.IdpJwe;
 import kong.unirest.MultipartBody;
@@ -67,9 +69,9 @@ public class AuthenticationCallTest {
     @BeforeEach
     public void startup(@PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity) {
         idpClient = IdpClient.builder()
-            .clientId(IdpConstants.CLIENT_ID)
+            .clientId(TestConstants.CLIENT_ID_E_REZEPT_APP)
             .discoveryDocumentUrl("http://localhost:" + localServerPort + "/discoveryDocument")
-            .redirectUrl(idpConfiguration.getRedirectUri())
+            .redirectUrl(TestConstants.REDIRECT_URI_E_REZEPT_APP)
             .build();
 
         idpClient.initialize();
@@ -88,8 +90,8 @@ public class AuthenticationCallTest {
     public void verifyTokenAlgorithm() throws UnirestException {
         idpClient.login(egkUserIdentity);
         verify(authenticationChallengeBuilderSpy)
-            .buildAuthenticationChallenge(eq(IdpConstants.CLIENT_ID), anyString(),
-                eq(idpConfiguration.getRedirectUri()),
+            .buildAuthenticationChallenge(eq(TestConstants.CLIENT_ID_E_REZEPT_APP), anyString(),
+                eq(TestConstants.REDIRECT_URI_E_REZEPT_APP),
                 anyString(), anyString(), anyString());
     }
 
@@ -110,9 +112,32 @@ public class AuthenticationCallTest {
     @Test
     public void verifyResponseAttribute_sso_token() {
         idpClient.setAfterAuthenticationCallback(response -> assertThat(UriUtils.extractParameterValue(
-            response.getHeaders().get("Location").get(0), "sso_token")).isNotEmpty());
+            response.getHeaders().get("Location").get(0), "ssotoken")).isNotEmpty());
         idpClient.login(egkUserIdentity);
     }
+
+
+    @Test
+    public void verifyResponseAttribute_sso_token_forPsNotExists() {
+        idpConfiguration.getRegisteredClient().put(
+            TestConstants.CLIENT_ID_GEAMTIK_TEST_PS,
+            IdpClientConfiguration.builder().redirectUri(TestConstants.REDIRECT_URI_GEAMTIK_TEST_PS).returnSsoToken(false).build());
+        idpClient = IdpClient.builder()
+            .clientId(TestConstants.CLIENT_ID_GEAMTIK_TEST_PS)
+            .discoveryDocumentUrl("http://localhost:" + localServerPort + "/discoveryDocument")
+            .redirectUrl(TestConstants.REDIRECT_URI_GEAMTIK_TEST_PS)
+            .build();
+        idpClient.initialize();
+
+        idpClient.setAfterAuthenticationCallback(response ->
+            assertThat(UriUtils.extractParameterValueOptional(
+                response.getHeaders().get("Location").get(0), "ssotoken")).isEmpty());
+
+        assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessageContaining("Could not find 'ssotoken' parameter in");
+    }
+
 
     @Test
     public void verifyAttribute_content_type() {

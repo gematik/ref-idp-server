@@ -19,7 +19,7 @@ package de.gematik.idp.token;
 import static de.gematik.idp.field.ClaimName.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import de.gematik.idp.IdpConstants;
+import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.crypto.model.PkiIdentity;
@@ -56,7 +56,7 @@ public class IdTokenBuilderTest {
         bodyClaims.put(FAMILY_NAME.getJoseName(), "family_name");
         bodyClaims.put(JWKS_URI.getJoseName(), "jwks_uri");
         bodyClaims.put(NONCE.getJoseName(), NONCE_VALUE);
-        bodyClaims.put(CLIENT_ID.getJoseName(), IdpConstants.CLIENT_ID);
+        bodyClaims.put(CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP);
         authenticationToken = new JwtBuilder()
             .replaceAllHeaderClaims(Map.of("headerNotCopy", "headerNotCopy"))
             .replaceAllBodyClaims(bodyClaims)
@@ -71,13 +71,13 @@ public class IdTokenBuilderTest {
     @Test
     public void checkIdTokenClaims() {
         final JsonWebToken idToken = idTokenBuilder
-            .buildIdToken(IdpConstants.CLIENT_ID, authenticationToken, "fdsjkfldsöaf".getBytes(
+            .buildIdToken(TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, "fdsjkfldsöaf".getBytes(
                 StandardCharsets.UTF_8));
 
         assertThat(idToken.getBodyClaims())
             .containsEntry(ISSUER.getJoseName(), uriIdpServer)
             .containsKey(SUBJECT.getJoseName())
-            .containsEntry(AUDIENCE.getJoseName(), IdpConstants.CLIENT_ID)
+            .containsEntry(AUDIENCE.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP)
             .containsKey(EXPIRES_AT.getJoseName())
             .containsKey(ISSUED_AT.getJoseName())
             .containsEntry(PROFESSION_OID.getJoseName(), "profession")
@@ -98,7 +98,7 @@ public class IdTokenBuilderTest {
     @Test
     public void checkIdTokenClaimTimestamps() {
         final JsonWebToken idToken = idTokenBuilder
-            .buildIdToken(IdpConstants.CLIENT_ID, authenticationToken, "fdsjkfldsöaf".getBytes(
+            .buildIdToken(TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, "fdsjkfldsöaf".getBytes(
                 StandardCharsets.UTF_8));
 
         final long now = ZonedDateTime.now().toEpochSecond();
@@ -117,7 +117,7 @@ public class IdTokenBuilderTest {
     public void checkIdTokenClaimAtHash() {
         final byte[] accesTokenHash = DigestUtils.sha256("fdsjkfldsöaf");
         final JsonWebToken idToken = idTokenBuilder
-            .buildIdToken(IdpConstants.CLIENT_ID, authenticationToken, accesTokenHash);
+            .buildIdToken(TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, accesTokenHash);
 
         assertThat(Base64.getDecoder().decode(idToken.getStringBodyClaim(ACCESS_TOKEN_HASH).get()))
             .isEqualTo(ArrayUtils.subarray(accesTokenHash, 0, (128 / 8)))

@@ -107,10 +107,39 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
         Cache-Control=no-store
         Pragma=no-cache
         Content-Length=0
-        Location=http.*code=.*
+        Location=http://redirect.gematik.de/erezept/token[?]code=.*
         """
     And I expect the Context with key STATE to match 'xxxstatexxx'
     And I expect the Context with key SSO_TOKEN to match '.*'
+
+  @WiP
+  @ToDo:ServerConfiguration
+  Scenario: Author mit signierter Challenge für Client ohne SSL Token - Gutfall - Validiere Antwortstruktur
+
+  ```
+  Wir wählen einen gültigen Code verifier für einen registrierten Client der kein SSL Token zurückbekommen darf.
+  Wir fordern einen Challenge Token an, signieren diesen und fordern einen TOKEN_CODE mit der signierten Challenge an.
+
+  Die TOKEN_CODE Antwort muss den Code 302, die richtigen HTTP Header und keinen SSO Token haben.
+
+
+    Given I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+    And I request a challenge with
+      | client_id     | scope           | code_challenge                              | code_challenge_method | redirect_uri                      | state       | nonce | response_type |
+      | gematikTestPs | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://test-ps.gematik.de/erezept | xxxstatexxx | 12345 | code          |
+    And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+
+    When I request a code token with signed challenge
+    Then the response status is 302
+    And the response http headers match
+        """
+        Cache-Control=no-store
+        Pragma=no-cache
+        Content-Length=0
+        Location=http.*code=.*
+        """
+    And I expect the Context with key STATE to match 'xxxstatexxx'
+    And I expect the Context with key SSO_TOKEN to match '$NULL'
 
   @Afo:A_20699-1 @Afo:A_20951-1 @Afo:A_20460 @Afo:A_20731 @Afo:A_20310 @Afo:A_20377 @Afo:A_20697 @Afo:A_21317
   @Approval @Todo:ClarifyTokenCodeContentRelevant @Todo:CompareSubjectInfosInTokenAndInCert
@@ -262,7 +291,6 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
 
   @Afo:A_20951-1
   @Approval @Todo:ErrorMessages
-  @OpenBug @issue:IDP-368
   Scenario: Author mit signierter Challenge - Challenge mit abgelaufenem Zertifikat signiert
 
   ```
@@ -279,11 +307,11 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
 
     When I sign the challenge with '/certs/invalid/smcb-idp-expired.p12'
     And I request a code token with signed challenge
-    Then the response is an 302 error with code 'invalid_request' and message matching 'TODO'
+    Then the response is an 302 error with code 'invalid_request' and message matching 'Error%20while%20verifying%20client%20certificate'
 
   @Afo:A_20951-1 @Afo:A_20318 @Afo:A_20465
-  @Approval @Todo:ErrorMessages
-  @OpenBug @issue:IDP-368
+  @OpenBug @TODO:OCSPChecks
+  @Approval
   Scenario: Author mit signierter Challenge - Challenge mit gesperrtem Zertifikat signiert
 
   ```
@@ -303,8 +331,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     Then the response is an 302 error with code 'invalid_request' and message matching 'TODO'
 
   @Afo:A_20951-1
-  @Approval @Todo:ErrorMessages
-  @OpenBug @issue:IDP-368
+  @Approval
   Scenario: Author mit signierter Challenge - Challenge mit selbst signiertem Zertifikat signiert
 
   ```
@@ -321,7 +348,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
 
     When I sign the challenge with '/certs/invalid/smcb-idp-selfsigned.p12'
     And I request a code token with signed challenge
-    Then the response is an 302 error with code 'invalid_request' and message matching 'TODO'
+    Then the response is an 302 error with code 'invalid_request' and message matching 'Error%20while%20verifying%20client%20certificate'
 
   @Afo:A_20951-1 @Afo:A_20460
   @Approval @Ready

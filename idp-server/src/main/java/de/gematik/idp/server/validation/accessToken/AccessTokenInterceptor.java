@@ -68,7 +68,7 @@ public class AccessTokenInterceptor implements HandlerInterceptor, WebMvcConfigu
         }
 
         if (!accessToken.getScopesBodyClaim().contains(IdpScope.PAIRING)) {
-            throw new IdpServerAccessDeniedException("Scope missing :" + IdpScope.PAIRING);
+            throw new IdpServerAccessDeniedException("Scope missing: " + IdpScope.PAIRING.getJwtValue());
         }
 
         requestAccessToken.setAccessToken(accessToken);

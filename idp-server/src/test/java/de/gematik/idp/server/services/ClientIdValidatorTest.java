@@ -18,13 +18,27 @@ package de.gematik.idp.server.services;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import de.gematik.idp.IdpConstants;
+import de.gematik.idp.server.configuration.IdpConfiguration;
+import de.gematik.idp.server.data.IdpClientConfiguration;
 import de.gematik.idp.server.validation.parameterConstraints.ClientIdValidator;
+import java.util.HashMap;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class ClientIdValidatorTest {
 
-    private final ClientIdValidator clientIdValidator = new ClientIdValidator();
+    private ClientIdValidator clientIdValidator;
+    public static final String CLIENT_ID = "eRezeptApp";
+
+    @BeforeEach
+    public void init() {
+        final IdpConfiguration configuration = new IdpConfiguration();
+        final Map<String, IdpClientConfiguration> clientRegistration = new HashMap<>();
+        clientRegistration.put(CLIENT_ID, IdpClientConfiguration.builder().build());
+        configuration.setRegisteredClient(clientRegistration);
+        clientIdValidator = new ClientIdValidator(new ClientRegistrationService(configuration));
+    }
 
     @Test
     public void validateClientIdWithNullValue_ExpectCorrectError() {
@@ -40,7 +54,7 @@ class ClientIdValidatorTest {
 
     @Test
     public void validateClientIdIsERezeptApp() {
-        assertThat(clientIdValidator.isValid(IdpConstants.CLIENT_ID, null))
+        assertThat(clientIdValidator.isValid(CLIENT_ID, null))
             .isTrue();
     }
 }

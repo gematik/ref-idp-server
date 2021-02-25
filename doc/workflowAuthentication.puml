@@ -63,10 +63,10 @@ alt : request token code WITHOUT SSO Token
     IDPAuth -> IDPAuth : generateCode()
     note left #lightgreen : sign with PrK for certificate\nof type FD.SIG
     IDPAuth -> IDPAuth : generateSSOToken()
-    IDPAuth --> AnwFE -- : send 302 redirect to token end point with code as query param and sso_token
+    IDPAuth --> AnwFE -- : send 302 redirect to token end point with code as query param and ssotoken
     note right : Laut spec wird der SSO Token \nhier zurückgeliefert, noch nicht implementiert
 else : request token code WITH SSO Token
-    AnwFE -> IDPAuth ++ : validateSSOTokenAndGetTokenCode()\n POST /authentication sso_token
+    AnwFE -> IDPAuth ++ : validateSSOTokenAndGetTokenCode()\n POST /authentication ssotoken
     deactivate AnwFE
     IDPAuth -> IDPAuth : validateSSOToken()
     IDPAuth -> IDPAuth: generateCode()

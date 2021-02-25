@@ -61,7 +61,7 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
         Cache-Control=no-store
         Pragma=no-cache
         Content-Length=0
-        Location=http.*code=.*
+        Location=http://redirect.gematik.de/erezept/token[?]code=.*
         """
     And I expect the Context with key SSO_TOKEN to match '$NULL'
     And I expect the Context with key STATE to match 'xxxstatexxx2'

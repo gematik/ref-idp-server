@@ -19,6 +19,7 @@ package de.gematik.idp.server;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import de.gematik.idp.IdpConstants;
+import de.gematik.idp.TestConstants;
 import de.gematik.idp.client.IdpClient;
 import de.gematik.idp.client.IdpTokenResult;
 import de.gematik.idp.client.MockIdpClient;
@@ -52,8 +53,6 @@ public class MockIdpClientTokenSynchronTest {
         ClaimName.SUBJECT.getJoseName(),
         ClaimName.SCOPE.getJoseName(),
         ClaimName.JWT_ID.getJoseName());
-    @Autowired
-    private IdpConfiguration idpConfiguration;
     private IdpClient idpClient;
     private PkiIdentity egkUserIdentity;
     @LocalServerPort
@@ -66,9 +65,9 @@ public class MockIdpClientTokenSynchronTest {
     public void startup(@PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity clientIdentity,
         @PkiKeyResolver.Filename("ecc") final PkiIdentity serverIdentity) {
         idpClient = IdpClient.builder()
-            .clientId(IdpConstants.CLIENT_ID)
+            .clientId(TestConstants.CLIENT_ID_E_REZEPT_APP)
             .discoveryDocumentUrl("http://localhost:" + localServerPort + IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT)
-            .redirectUrl(idpConfiguration.getRedirectUri())
+            .redirectUrl(TestConstants.REDIRECT_URI_E_REZEPT_APP)
             .build();
         idpClient.initialize();
 
@@ -83,7 +82,7 @@ public class MockIdpClientTokenSynchronTest {
         mockIdpClient = MockIdpClient.builder()
             .serverIdentity(serverIdentity)
             .uriIdpServer(URI_MOCK_IDP_SERVER)
-            .clientId(IdpConstants.CLIENT_ID)
+            .clientId(TestConstants.CLIENT_ID_E_REZEPT_APP)
             .build().initialize();
     }
 
@@ -102,7 +101,7 @@ public class MockIdpClientTokenSynchronTest {
         final JsonWebToken accessTokenMockIdpClient = MockIdpClient.builder()
             .serverIdentity(serverIdentity)
             .produceOnlyExpiredTokens(true)
-            .clientId(IdpConstants.CLIENT_ID)
+            .clientId(TestConstants.CLIENT_ID_E_REZEPT_APP)
             .build()
             .initialize()
             .login(clientIdentity)
@@ -119,7 +118,7 @@ public class MockIdpClientTokenSynchronTest {
         final JsonWebToken accessTokenMockIdpClient = MockIdpClient.builder()
             .serverIdentity(serverIdentity)
             .produceTokensWithInvalidSignature(true)
-            .clientId(IdpConstants.CLIENT_ID)
+            .clientId(TestConstants.CLIENT_ID_E_REZEPT_APP)
             .build()
             .initialize()
             .login(clientIdentity)

@@ -19,18 +19,22 @@ package de.gematik.idp.server;
 import static de.gematik.idp.IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.Rfc;
 import de.gematik.idp.token.TokenClaimExtraction;
+import java.util.stream.Collectors;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
+import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKeySet;
 import org.jose4j.lang.JoseException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -41,6 +45,12 @@ public class KeyRetrievalTest {
 
     @LocalServerPort
     private int localServerPort;
+    @Autowired
+    private IdpKey idpEnc;
+    @Autowired
+    private IdpKey idpSig;
+    @Autowired
+    private IdpKey discSig;
     private String testHostUrl;
 
     @BeforeEach
@@ -99,6 +109,30 @@ public class KeyRetrievalTest {
         assertThat(keySet.getJsonWebKeys())
             .extracting(k -> k.getKey())
             .isNotEmpty();
+        assertThat(keySet.getJsonWebKeys())
+            .hasSize(3);
+        assertThat(keySet.getJsonWebKeys().stream()
+            .map(JsonWebKey::getKeyId)
+            .collect(Collectors.toList()))
+            .containsExactlyInAnyOrder(discSig.getIdentity().getKeyId().get(),
+                idpSig.getIdentity().getKeyId().get(),
+                idpEnc.getIdentity().getKeyId().get());
+    }
+
+    @Afo("A_20458")
+    @Test
+    public void keyIdsShouldMatchAcrossSources() throws UnirestException, JoseException {
+        final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
+        final String pukUriAuth = TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())
+            .get("uri_puk_idp_sig").toString();
+        final String jwksUri = TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())
+            .get("jwks_uri").toString();
+
+        final JsonWebKeySet keySet = new JsonWebKeySet(Unirest.get(jwksUri).asString().getBody());
+        final String keyIdFromIndividual = Unirest.get(pukUriAuth).asJson().getBody().getObject().getString("kid");
+
+        assertThat(keySet.findJsonWebKey(keyIdFromIndividual, null, null, null))
+            .isNotNull();
     }
 
     private JsonWebKeySet constructKeySetFromJwkBody(final HttpResponse<String> jwks) throws JoseException {

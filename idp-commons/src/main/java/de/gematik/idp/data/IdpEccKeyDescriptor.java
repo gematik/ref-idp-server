@@ -49,11 +49,11 @@ public class IdpEccKeyDescriptor extends IdpKeyDescriptor {
         this.eccPointYValue = eccPointYValue;
     }
 
-    public static IdpKeyDescriptor constructFromX509Certificate(final X509Certificate certificate) {
+    public static IdpKeyDescriptor constructFromX509Certificate(final X509Certificate certificate, final String keyId) {
         try {
             final IdpEccKeyDescriptor.IdpEccKeyDescriptorBuilder descriptorBuilder = IdpEccKeyDescriptor.builder()
                 .x5c(getCertArray(certificate))
-                .keyId(certificate.getSerialNumber().toString())
+                .keyId(keyId)
                 .keyType(getKeyType(certificate));
 
             final BCECPublicKey bcecPublicKey = (BCECPublicKey) (certificate.getPublicKey());

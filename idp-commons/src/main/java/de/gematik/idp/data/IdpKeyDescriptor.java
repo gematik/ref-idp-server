@@ -28,6 +28,7 @@ import de.gematik.idp.exceptions.IdpJoseException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
+import java.util.Optional;
 import lombok.*;
 import org.jose4j.json.internal.json_simple.JSONAware;
 import org.jose4j.jwk.EllipticCurveJsonWebKey;
@@ -40,15 +41,15 @@ import org.jose4j.jwk.RsaJsonWebKey;
 @AllArgsConstructor
 public class IdpKeyDescriptor implements JSONAware {
 
-    {
-        BrainpoolCurves.init();
-    }
-
     private String[] x5c;
     @JsonProperty("kid")
     private String keyId;
     @JsonProperty("kty")
     private String keyType;
+
+    {
+        BrainpoolCurves.init();
+    }
 
     public static String[] getCertArray(final X509Certificate certificate) {
         try {
@@ -61,10 +62,17 @@ public class IdpKeyDescriptor implements JSONAware {
     }
 
     public static IdpKeyDescriptor constructFromX509Certificate(final X509Certificate certificate) {
+        return constructFromX509Certificate(certificate, Optional.empty());
+    }
+
+    public static IdpKeyDescriptor constructFromX509Certificate(final X509Certificate certificate,
+        final Optional<String> keyId) {
         if (isEcKey(certificate.getPublicKey())) {
-            return IdpEccKeyDescriptor.constructFromX509Certificate(certificate);
+            return IdpEccKeyDescriptor.constructFromX509Certificate(certificate,
+                keyId.orElse(certificate.getSerialNumber().toString()));
         } else {
-            return IdpRsaKeyDescriptor.constructFromX509Certificate(certificate);
+            return IdpRsaKeyDescriptor.constructFromX509Certificate(certificate,
+                keyId.orElse(certificate.getSerialNumber().toString()));
         }
     }
 

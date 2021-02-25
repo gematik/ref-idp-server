@@ -16,14 +16,20 @@
 
 package de.gematik.idp.server.validation.parameterConstraints;
 
-import de.gematik.idp.IdpConstants;
+import de.gematik.idp.server.configuration.IdpConfiguration;
+import de.gematik.idp.server.services.ClientRegistrationService;
+import java.util.Objects;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class ClientIdValidator implements ConstraintValidator<CheckClientId, String> {
+
+    final ClientRegistrationService clientRegistrationService;
 
     @Override
     public boolean isValid(final String clientId, final ConstraintValidatorContext constraintValidatorContext) {
-        return IdpConstants.CLIENT_ID.equals(clientId);
+        return clientRegistrationService.getClientConfiguration(clientId).isPresent();
     }
 }

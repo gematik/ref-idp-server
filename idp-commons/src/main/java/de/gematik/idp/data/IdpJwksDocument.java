@@ -17,7 +17,7 @@
 package de.gematik.idp.data;
 
 import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
-import java.security.cert.X509Certificate;
+import de.gematik.idp.crypto.model.PkiIdentity;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -38,10 +38,11 @@ public class IdpJwksDocument {
         BrainpoolCurves.init();
     }
 
-    public static IdpJwksDocument constructFromX509Certificate(final X509Certificate... certificates) {
+    public static IdpJwksDocument constructFromX509Certificate(final PkiIdentity... identities) {
         return IdpJwksDocument.builder()
-            .keys(Stream.of(certificates)
-                .map(certificate -> IdpKeyDescriptor.constructFromX509Certificate(certificate))
+            .keys(Stream.of(identities)
+                .map(identity -> IdpKeyDescriptor.constructFromX509Certificate(identity.getCertificate(),
+                    identity.getKeyId()))
                 .collect(Collectors.toList()))
             .build();
     }

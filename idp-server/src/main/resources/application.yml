@@ -10,7 +10,6 @@ idp:
     fileName: classpath:idp-fd-sig-refimpl-3.p12
     keyId: discSig
   symmetricEncryptionKey: "geheimerSchluesselDerNochGehashtWird"
-  redirectUri: http://redirect.gematik.de/erezept
   defaultLocale: US
   debug:
     requestLogging: true
@@ -34,6 +33,10 @@ idp:
       PAIRING: [ ID_NUMBER ]
   productTypeDisplayString: "IDP"
   tokenFlowMdResource: "classpath:tokenFlow.md"
+  registeredClient:
+    eRezeptApp:
+      redirectUri: http://redirect.gematik.de/erezept
+      returnSsoToken: true
 caching:
   discoveryDocument:
     cacheControl: "max-age=300"

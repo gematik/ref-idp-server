@@ -17,7 +17,7 @@
 package de.gematik.idp.token;
 
 import de.gematik.idp.crypto.CryptoLoader;
-import de.gematik.idp.exceptions.IdpJoseException;
+import de.gematik.idp.exceptions.*;
 import de.gematik.idp.field.ClaimName;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
@@ -98,4 +98,5 @@ public class TokenClaimExtraction {
             .map(encodedCert -> CryptoLoader.getCertificateFromPem((byte[]) encodedCert))
             .findAny();
     }
+
 }

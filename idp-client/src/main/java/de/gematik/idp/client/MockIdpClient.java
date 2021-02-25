@@ -116,7 +116,7 @@ public class MockIdpClient implements IIdpClient {
         jwtProcessor = new IdpJwtProcessor(serverIdentity);
         accessTokenBuilder = new AccessTokenBuilder(jwtProcessor, uriIdpServer, serverSubSalt);
         authenticationChallengeBuilder = AuthenticationChallengeBuilder.builder()
-            .authenticationIdentity(serverIdentity)
+            .serverSigner(new IdpJwtProcessor(serverIdentity))
             .uriIdpServer(uriIdpServer)
             .userConsentConfiguration(UserConsentConfiguration.builder()
                 .claimsToBeIncluded(Map.of(IdpScope.OPENID, List.of(),

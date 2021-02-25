@@ -20,7 +20,6 @@ import static de.gematik.idp.authentication.UriUtils.extractParameterValue;
 import static de.gematik.idp.crypto.CryptoLoader.getCertificateFromPem;
 import static de.gematik.idp.field.ClaimName.*;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
-
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.authentication.UriUtils;
 import de.gematik.idp.client.data.*;
@@ -119,7 +118,7 @@ public class AuthenticatorClient {
         return AuthenticationResponse.builder()
             .code(extractParameterValue(location, "code"))
             .location(location)
-            .ssoToken(extractParameterValue(location, "sso_token"))
+            .ssoToken(extractParameterValue(location, "ssotoken"))
             .build();
     }
 
@@ -137,7 +136,7 @@ public class AuthenticatorClient {
         final Function<MultipartBody, MultipartBody> beforeAuthenticationCallback,
         final Consumer<HttpResponse<String>> afterAuthenticationCallback) {
         final MultipartBody request = Unirest.post(authenticationRequest.getAuthenticationEndpointUrl())
-            .field("sso_token", authenticationRequest.getSsoToken())
+            .field("ssotoken", authenticationRequest.getSsoToken())
             .field("unsigned_challenge", authenticationRequest.getChallengeToken().getRawString())
             .header(CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .header(HttpHeaders.USER_AGENT, USER_AGENT);

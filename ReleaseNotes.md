@@ -1,3 +1,13 @@
+# Release 9.0.0
+- Korrigierte redirect_uri
+- Renaming ssotoken => sso_token
+- kid in Header-Token enthalten
+- kid-Werte im JWKS-Endpunkt und in einzelnen Schlüssel-Endpunkten vereinheitlicht
+- Testfälle zur alternativen Authentisierung enthalten
+- ACR-Wert angepasst
+- jti im ID-Token ergänzt
+- Versionranges für GemLibPki korrigiert
+
 # Release 8.1.0
 - User consent angepasst
 - Validierung von device und pairing Daten implementiert

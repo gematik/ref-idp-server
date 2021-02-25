@@ -21,7 +21,6 @@ import static de.gematik.idp.error.IdpErrorType.INVALID_PARAMETER_VALUE;
 import static de.gematik.idp.error.IdpErrorType.MISSING_PARAMETERS;
 import static de.gematik.idp.error.IdpErrorType.RESOURCE_NOT_FOUND;
 import static de.gematik.idp.field.ClaimName.*;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
@@ -45,7 +44,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -95,18 +93,16 @@ public class ChallengeTokenValidationService {
         }
         final JsonWebToken signedPairingDataFromDto = new JsonWebToken(pairingData.getSignedPairingData());
         signedPairingDataFromDto.verify(retrieveKeyFromPairingDto(pairingData, PUBLIC_KEY));
-        validateCertId(authDataCert, signedPairingDataFromDto.getStringBodyClaim(CERT_ID)
-            .orElseThrow(() -> new IdpServerException("CertID not found in pairing data",
+        validateCertSn(authDataCert, signedPairingDataFromDto.getStringBodyClaim(CERTIFICATE_SERIALNUMBER)
+            .orElseThrow(() -> new IdpServerException("Serial number of cert not found in pairing data",
                 RESOURCE_NOT_FOUND, HttpStatus.BAD_REQUEST)));
         signedAuthData.verify(retrieveKeyFromPairingDto(pairingData, KEY_DATA));
     }
 
-    private void validateCertId(final X509Certificate authDataCert, final String pairingCertId) {
-        final String authDataCertId =
-            authDataCert.getSigAlgOID() + DigestUtils.sha1Hex(authDataCert.getIssuerDN().getName()) + DigestUtils
-                .sha1Hex(authDataCert.getPublicKey().getEncoded()) + authDataCert.getSerialNumber();
-        if (!authDataCertId.equals(pairingCertId)) {
-            throw new IdpServerException("CertID did not match pairing data",
+    private void validateCertSn(final X509Certificate authDataCert, final String pairingCertSN) {
+        final String authDataCertSN = authDataCert.getSerialNumber().toString();
+        if (!pairingCertSN.equals(authDataCertSN)) {
+            throw new IdpServerException("Serial number of cert did not match pairing data",
                 INVALID_PARAMETER_VALUE, HttpStatus.BAD_REQUEST);
         }
     }

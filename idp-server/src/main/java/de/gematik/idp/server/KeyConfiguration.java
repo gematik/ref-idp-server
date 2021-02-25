@@ -64,7 +64,7 @@ public class KeyConfiguration {
     }
 
     @Bean
-    public IdpJwtProcessor idpJwtProcessor() {
+    public IdpJwtProcessor idpSigProcessor() {
         return new IdpJwtProcessor(idpSig().getIdentity());
     }
 

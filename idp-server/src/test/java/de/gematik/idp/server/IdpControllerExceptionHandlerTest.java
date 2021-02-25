@@ -16,13 +16,12 @@
 
 package de.gematik.idp.server;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import de.gematik.idp.IdpConstants;
+import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
 import de.gematik.idp.authentication.IdpJwtProcessor;
@@ -30,8 +29,10 @@ import de.gematik.idp.authentication.UriUtils;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpController;
 import de.gematik.idp.server.controllers.IdpKey;
+import de.gematik.idp.server.data.IdpClientConfiguration;
 import de.gematik.idp.server.exceptions.handler.IdpServerExceptionHandler;
 import de.gematik.idp.server.exceptions.oauth2spec.IdpServerInvalidRequestException;
+import de.gematik.idp.server.services.ClientRegistrationService;
 import de.gematik.idp.server.services.IdpAuthenticator;
 import de.gematik.idp.server.services.PkceChecker;
 import de.gematik.idp.server.services.TokenService;
@@ -39,6 +40,9 @@ import de.gematik.idp.server.validation.parameterConstraints.ClientIdValidator;
 import de.gematik.idp.server.validation.parameterConstraints.ScopeValidator;
 import de.gematik.idp.token.AccessTokenBuilder;
 import de.gematik.idp.token.IdTokenBuilder;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,6 +58,26 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import de.gematik.idp.*;
+import de.gematik.idp.authentication.*;
+import de.gematik.idp.server.configuration.*;
+import de.gematik.idp.server.controllers.*;
+import de.gematik.idp.server.exceptions.handler.*;
+import de.gematik.idp.server.exceptions.oauth2spec.*;
+import de.gematik.idp.server.services.*;
+import de.gematik.idp.server.validation.parameterConstraints.*;
+import de.gematik.idp.token.*;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.*;
+import org.springframework.beans.factory.annotation.*;
+import org.springframework.boot.test.autoconfigure.web.servlet.*;
+import org.springframework.boot.test.mock.mockito.*;
+import org.springframework.http.*;
+import org.springframework.test.context.junit.jupiter.*;
+import org.springframework.test.web.servlet.*;
+import org.springframework.test.web.servlet.request.*;
+import org.springframework.test.web.servlet.result.*;
+import org.springframework.test.web.servlet.setup.*;
 
 @AutoConfigureMockMvc
 @ExtendWith(SpringExtension.class)
@@ -85,6 +109,8 @@ public class IdpControllerExceptionHandlerTest {
     @MockBean
     private IdpJwtProcessor jwtProcessor;
     @MockBean
+    private ClientRegistrationService clientRegistrationService;
+    @MockBean
     private RequestAccessToken requestAccessToken;
     @MockBean
     private IdpConfiguration idpConfiguration;
@@ -103,19 +129,23 @@ public class IdpControllerExceptionHandlerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(new IdpServerExceptionHandler(serverUrlService, null),
             idpController)
             .build();
+
+        when(clientRegistrationService.getClientConfiguration(TestConstants.CLIENT_ID_E_REZEPT_APP))
+            .thenReturn(Optional.of(IdpClientConfiguration.builder().build()));
+
     }
 
     @Test
     public void testIdpServerInvalidRequestException() throws Exception {
         final RuntimeException exc = new IdpServerInvalidRequestException(EXCEPTION_TEXT);
         doThrow(exc)
-            .when(idpAuthenticator).validateRedirectUri(any());
+            .when(idpAuthenticator).validateRedirectUri(any(), any());
         mockMvc.perform(MockMvcRequestBuilders
             .get(IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
             .queryParam("signed_challenge", "signed_challenge")
-            .queryParam("client_id", "eRezeptApp")
+            .queryParam("client_id", TestConstants.CLIENT_ID_E_REZEPT_APP)
             .queryParam("state", "state")
-            .queryParam("redirect_uri", "fdsafdsa")
+            .queryParam("redirect_uri", "fdsafdsavs")
             .queryParam("nonce", "fdsalkfdksalfdsa")
             .queryParam("response_type", "code")
             .queryParam("code_challenge", "fkdsjfkdsjfkjdskafjdksljfkdsjfkldsjjjjjjjjj")
@@ -133,7 +163,7 @@ public class IdpControllerExceptionHandlerTest {
 
     @Test
     public void authentication_serverError_expectRedirect() throws Exception {
-        when(idpAuthenticator.getBasicFlowTokenLocation(any(), any()))
+        when(idpAuthenticator.getBasicFlowTokenLocation(any()))
             .thenThrow(new IdpServerInvalidRequestException(EXCEPTION_TEXT));
         mockMvc.perform(MockMvcRequestBuilders
             .post(IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
@@ -148,7 +178,7 @@ public class IdpControllerExceptionHandlerTest {
 
     @Test
     public void authentication_genericError_expectRedirect() throws Exception {
-        when(idpAuthenticator.getBasicFlowTokenLocation(any(), any()))
+        when(idpAuthenticator.getBasicFlowTokenLocation(any()))
             .thenThrow(new RuntimeException(EXCEPTION_TEXT));
         mockMvc.perform(MockMvcRequestBuilders
             .post(IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)

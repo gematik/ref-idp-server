@@ -31,10 +31,10 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                                      | key_identifier | signature_algorithm_identifier | device_product | serialnumber  | issuer  | not_after | public_key                                    |
-      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyiddereg001  | ES256                          | FairPhone 3    | grgdgfdgfdhfd | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-    And I sign pairing data with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
-    And I register the device with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyiddereg001  | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+    And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
+    And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
     When I deregister the device with 'keyiddereg001'
     Then the response status is 200
@@ -46,8 +46,8 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                                      | key_identifier | signature_algorithm_identifier | device_product | serialnumber  | issuer  | not_after | public_key                                    |
-      | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 | keyiddereg100  | ES256                          | FairPhone 3    | grgdgfdgfdhfd | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 |
+      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyiddereg100  | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     And I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
@@ -55,8 +55,8 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                                      | key_identifier | signature_algorithm_identifier | device_product | serialnumber  | issuer  | not_after | public_key                                    |
-      | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 | keyiddereg101  | ES256                          | FairPhone 3    | grgdgfdgfdhfd | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 |
+      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyiddereg101  | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     And I deregister the device with 'keyiddereg101'
@@ -92,8 +92,8 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                                      | key_identifier | signature_algorithm_identifier | device_product | serialnumber  | issuer  | not_after | public_key                                    |
-      | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 | keyiddereg200  | ES256                          | FairPhone 3    | grgdgfdgfdhfd | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 |
+      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyiddereg200  | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     Given I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
@@ -103,8 +103,8 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
       """
       """
 
-    # So nicht testbar, da kein access token angefordert werden kann
   # Scenario: Biometrie Deregister - Lösche Pairing mit Zertifikate ohne IDNummer
+  # So nicht testbar, da kein access token angefordert werden kann
 
   @Approval @Ready
   Scenario: Biometrie Deregister - Lösche Pairing mit e-Rezept Access Token
@@ -113,11 +113,11 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                                      | key_identifier | signature_algorithm_identifier | device_product | serialnumber  | issuer  | not_after | public_key                                    |
-      | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 | keyiddereg300  | ES256                          | FairPhone 3    | grgdgfdgfdhfd | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 |
+      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyiddereg300  | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
-    Given I request an erezept access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
+    Given I request an erezept access token with eGK cert '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     And I deregister the device with 'keyiddereg300'
     Then the response status is 403
     And the JSON response should match
@@ -125,7 +125,7 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
         { error_code: "access_denied",
           error_uuid: ".*",
           timestamp:  ".*",
-          detail_message: "Scope missing :PAIRING"
+          detail_message: "Scope missing: pairing"
         }
       """
 
@@ -136,11 +136,11 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                                      | key_identifier | signature_algorithm_identifier | device_product | serialnumber  | issuer  | not_after | public_key                                    |
-      | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 | keyiddereg400  | ES256                          | FairPhone 3    | grgdgfdgfdhfd | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 |
+      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyiddereg400  | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
-    Given I request an erezept access token via SSO token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
+    Given I request an erezept access token via SSO token with eGK cert '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     And I deregister the device with 'keyiddereg400'
     Then the response status is 403
     And the JSON response should match
@@ -148,7 +148,7 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
         { error_code: "access_denied",
           error_uuid: ".*",
           timestamp:  ".*",
-          detail_message: "Scope missing :PAIRING"
+          detail_message: "Scope missing: pairing"
         }
       """
 

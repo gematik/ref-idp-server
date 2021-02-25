@@ -16,44 +16,26 @@
 
 package de.gematik.idp.server.controllers;
 
-import static de.gematik.idp.IdpConstants.ALTERNATIVE_AUTHORIZATION_ENDPOINT;
-import static de.gematik.idp.IdpConstants.BASIC_AUTHORIZATION_ENDPOINT;
-import static de.gematik.idp.IdpConstants.SSO_ENDPOINT;
-import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
+import static de.gematik.idp.IdpConstants.*;
 
-import de.gematik.idp.authentication.AuthenticationChallenge;
-import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
-import de.gematik.idp.field.CodeChallengeMethod;
-import de.gematik.idp.server.ServerUrlService;
-import de.gematik.idp.server.data.TokenResponse;
-import de.gematik.idp.server.services.IdpAuthenticator;
-import de.gematik.idp.server.services.TokenService;
-import de.gematik.idp.server.validation.clientSystem.ValidateClientSystem;
-import de.gematik.idp.server.validation.parameterConstraints.CheckClientId;
-import de.gematik.idp.server.validation.parameterConstraints.CheckCodeChallengeMethod;
-import de.gematik.idp.server.validation.parameterConstraints.CheckScope;
-import de.gematik.idp.token.IdpJwe;
-import de.gematik.idp.token.JsonWebToken;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import de.gematik.idp.authentication.*;
+import de.gematik.idp.field.*;
+import de.gematik.idp.server.*;
+import de.gematik.idp.server.data.*;
+import de.gematik.idp.server.services.*;
+import de.gematik.idp.server.validation.clientSystem.*;
+import de.gematik.idp.server.validation.parameterConstraints.*;
+import de.gematik.idp.token.*;
+import io.swagger.annotations.*;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import lombok.RequiredArgsConstructor;
-import net.dracoblue.spring.web.mvc.method.annotation.HttpResponseHeader;
-import net.dracoblue.spring.web.mvc.method.annotation.HttpResponseHeaders;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import javax.servlet.http.*;
+import javax.validation.constraints.*;
+import lombok.*;
+import net.dracoblue.spring.web.mvc.method.annotation.*;
+import org.springframework.http.*;
+import org.springframework.validation.annotation.*;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Validated
@@ -86,7 +68,7 @@ public class IdpController {
     @ValidateClientSystem
     public AuthenticationChallenge getAuthenticationChallenge(
         @RequestParam(name = "client_id") @CheckClientId @ApiParam(value = "Identifier für den zugreifenden Client") final String clientId,
-        @RequestParam(name = "state") @ApiParam(value = "Eine Sicherheitsmaßnahme gegen CSRF-Angriffe") final String state,
+        @RequestParam(name = "state") @ApiParam(value = "Eine Sicherheitsmaßnahme gegen CSRF-Angriffe") @NotNull final String state,
         @RequestParam(name = "redirect_uri") @ApiParam(value = "TODO redirect_uri") final String redirectUri,
         @RequestParam(name = "nonce", required = false) @ApiParam(value = "TODO nonce") final String nonce,
         @RequestParam(name = "response_type") @NotEmpty @Pattern(regexp = "code", message = "Expected response_type to be 'code'") @ApiParam(value = "response_type, muss 'code' sein") final String responseType,
@@ -94,7 +76,7 @@ public class IdpController {
         @RequestParam(name = "code_challenge_method") @CheckCodeChallengeMethod @ApiParam(value = "Hash Methode für die Code challenge, derzeit wird nur 'S256' unterstützt") final CodeChallengeMethod codeChallengeMethod,
         @RequestParam(name = "scope") @CheckScope @ApiParam(value = "Scope der Anfrage, derzeit werden 'openid e-rezept', 'openid', 'openid pairing' und 'openid e-rezept pairing' unterstützt") final String scope,
         final HttpServletResponse response) {
-        idpAuthenticator.validateRedirectUri(redirectUri);
+        idpAuthenticator.validateRedirectUri(clientId, redirectUri);
         setNoCacheHeader(response);
         return authenticationChallengeBuilder
             .buildAuthenticationChallenge(clientId, state, redirectUri, codeChallenge, scope, nonce);
@@ -112,15 +94,11 @@ public class IdpController {
     @ValidateClientSystem
     public void validateChallengeAndGetTokenCode(
         @RequestParam(value = "signed_challenge", required = false) @NotNull @ApiParam(value = "Signierte und verschlüsselte Challenge") final IdpJwe signedChallenge,
-        final HttpServletResponse response,
-        final HttpServletRequest request) {
+        final HttpServletResponse response) {
         setNoCacheHeader(response);
         response.setStatus(HttpStatus.FOUND.value());
 
-        final String tokenLocation = idpAuthenticator.getBasicFlowTokenLocation(
-            signedChallenge,
-            serverUrlService.determineServerUrl(request));
-
+        final String tokenLocation = idpAuthenticator.getBasicFlowTokenLocation(signedChallenge);
         response.setHeader(HttpHeaders.LOCATION, tokenLocation);
     }
 
@@ -139,11 +117,7 @@ public class IdpController {
         final HttpServletRequest request) {
         setNoCacheHeader(response);
         response.setStatus(HttpStatus.FOUND.value());
-
-        final String tokenLocation = idpAuthenticator.getAlternateFlowTokenLocation(
-            signedAuthenticationData,
-            serverUrlService.determineServerUrl(request));
-
+        final String tokenLocation = idpAuthenticator.getAlternateFlowTokenLocation(signedAuthenticationData);
         response.setHeader(HttpHeaders.LOCATION, tokenLocation);
     }
 
@@ -156,7 +130,7 @@ public class IdpController {
     })
     @ValidateClientSystem
     public void validateSsoTokenAndGetTokenCode(
-        @RequestParam(value = "sso_token", required = false) @NotNull @ApiParam(value = "Single Sign-On Token") final IdpJwe ssoToken,
+        @RequestParam(value = "ssotoken", required = false) @NotNull @ApiParam(value = "Single Sign-On Token") final IdpJwe ssoToken,
         @RequestParam(value = "unsigned_challenge", required = false) @NotNull @ApiParam(value = "Originale Server-Challenge. Benötigt für den SSO-Flow") final JsonWebToken challengeToken,
         final HttpServletResponse response,
         final HttpServletRequest request) {
@@ -165,9 +139,7 @@ public class IdpController {
 
         final String tokenLocation = idpAuthenticator.getSsoTokenLocation(
             ssoToken,
-            challengeToken,
-            serverUrlService.determineServerUrl(request));
-
+            challengeToken);
         response.setHeader(HttpHeaders.LOCATION, tokenLocation);
     }
 

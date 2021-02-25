@@ -29,8 +29,10 @@ import de.gematik.idp.token.JsonWebToken;
 import java.security.Key;
 import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -44,16 +46,14 @@ public class AuthenticationTokenBuilder {
     private final IdpJwtProcessor jwtProcessor;
     private final Key encryptionKey;
     private final AuthenticationChallengeVerifier authenticationChallengeVerifier;
-    private final Set<String> authenticationTokenClaimsWhitelist = Set.of(
-        RESPONSE_TYPE, SCOPE, CLIENT_ID, STATE, REDIRECT_URI, CODE_CHALLENGE, CODE_CHALLENGE_METHOD
-    ).stream().map(ClaimName::getJoseName).collect(Collectors.toSet());
 
     public IdpJwe buildAuthenticationToken(
         final X509Certificate clientCertificate,
         final Map<String, Object> serverChallengeClaims,
         final ZonedDateTime issueingTime) {
         final Map<String, Object> claimsMap = X509ClaimExtraction.extractClaimsFromCertificate(clientCertificate);
-        claimsMap.put(CLIENT_ID.getJoseName(), IdpConstants.CLIENT_ID);
+
+        claimsMap.put(CLIENT_ID.getJoseName(), serverChallengeClaims.get(CLIENT_ID.getJoseName()));
         claimsMap.put(REDIRECT_URI.getJoseName(), serverChallengeClaims.get(REDIRECT_URI.getJoseName()));
         claimsMap.put(NONCE.getJoseName(), serverChallengeClaims.get(NONCE.getJoseName()));
         claimsMap.put(CODE_CHALLENGE.getJoseName(), serverChallengeClaims.get(CODE_CHALLENGE.getJoseName()));
@@ -103,7 +103,7 @@ public class AuthenticationTokenBuilder {
         claimsMap.put(ISSUER.getJoseName(), extractClaimFromChallengeToken(challengeToken, ISSUER));
         claimsMap.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
 
-        final HashMap headerClaims = new HashMap(ssoToken.getHeaderClaims());
+        final Map headerClaims = new HashMap<String,Object>(ssoToken.getHeaderClaims());
         headerClaims.put(TYPE.getJoseName(), "JWT");
 
         return jwtProcessor.buildJwt(new JwtBuilder()

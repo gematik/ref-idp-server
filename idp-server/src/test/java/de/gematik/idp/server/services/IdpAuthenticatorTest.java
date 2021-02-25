@@ -19,7 +19,9 @@ package de.gematik.idp.server.services;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import de.gematik.idp.error.IdpErrorType;
+import de.gematik.idp.TestConstants;
 import de.gematik.idp.server.configuration.IdpConfiguration;
+import de.gematik.idp.server.data.IdpClientConfiguration;
 import de.gematik.idp.server.exceptions.IdpServerException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,20 +40,34 @@ class IdpAuthenticatorTest {
 
     @Test
     public void validateRedirectUriWithNullValue_ExpectCorrectError() {
-        assertThatThrownBy(() -> idpAuthenticator.validateRedirectUri(null))
+        assertThatThrownBy(() -> idpAuthenticator.validateRedirectUri(TestConstants.CLIENT_ID_E_REZEPT_APP, null))
+            .isInstanceOf(IdpServerException.class)
+            .hasMessage(IdpErrorType.REDIRECT_URI_DEFUNCT.getDescription());
+    }
+
+    @Test
+    public void validateRedirectUriWithNonValidClientId_ExpectCorrectError() {
+        final IdpClientConfiguration idpClientConfiguration = idpConfiguration.getRegisteredClient()
+            .get(TestConstants.CLIENT_ID_E_REZEPT_APP);
+        assertThatThrownBy(() -> idpAuthenticator.validateRedirectUri("test", idpClientConfiguration.getRedirectUri()))
             .isInstanceOf(IdpServerException.class)
             .hasMessage(IdpErrorType.REDIRECT_URI_DEFUNCT.getDescription());
     }
 
     @Test
     public void validateRedirectUriWithInvalidValue_ExpectCorrectError() {
-        assertThatThrownBy(() -> idpAuthenticator.validateRedirectUri("test"))
+        final IdpClientConfiguration idpClientConfiguration = idpConfiguration.getRegisteredClient()
+            .get(TestConstants.CLIENT_ID_E_REZEPT_APP);
+        assertThatThrownBy(() -> idpAuthenticator.validateRedirectUri(TestConstants.CLIENT_ID_E_REZEPT_APP, "test"))
             .isInstanceOf(IdpServerException.class)
             .hasMessage(IdpErrorType.REDIRECT_URI_DEFUNCT.getDescription());
     }
 
     @Test
     public void validateRedirectUriIsEqualToConfigurationValue() {
-        idpAuthenticator.validateRedirectUri(idpConfiguration.getRedirectUri());
+        final IdpClientConfiguration idpClientConfiguration = idpConfiguration.getRegisteredClient()
+            .get(TestConstants.CLIENT_ID_E_REZEPT_APP);
+        idpAuthenticator
+            .validateRedirectUri(TestConstants.CLIENT_ID_E_REZEPT_APP, idpClientConfiguration.getRedirectUri());
     }
 }

@@ -17,15 +17,20 @@
 package de.gematik.idp.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 
 import de.gematik.idp.IdpConstants;
+import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpController;
 import de.gematik.idp.server.controllers.IdpKey;
+import de.gematik.idp.server.data.IdpClientConfiguration;
 import de.gematik.idp.server.exceptions.handler.IdpServerExceptionHandler;
+import de.gematik.idp.server.services.ClientRegistrationService;
 import de.gematik.idp.server.services.IdpAuthenticator;
 import de.gematik.idp.server.services.PkceChecker;
 import de.gematik.idp.server.services.TokenService;
@@ -33,8 +38,11 @@ import de.gematik.idp.server.validation.parameterConstraints.ClientIdValidator;
 import de.gematik.idp.server.validation.parameterConstraints.ScopeValidator;
 import de.gematik.idp.token.AccessTokenBuilder;
 import de.gematik.idp.token.IdTokenBuilder;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.function.Function;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,7 +64,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 public class IdpControllerParameterValidationTest {
 
     private static final List<Pair<String, String>> getChallengeParameterMap = List.of(
-        Pair.of("client_id", IdpConstants.CLIENT_ID),
+        Pair.of("client_id", TestConstants.CLIENT_ID_E_REZEPT_APP),
         Pair.of("state", "state"),
         Pair.of("redirect_uri", "fdsafdsa"),
         Pair.of("code_challenge", "l1yM_9krH3fPE2aOkRXzHQDU0lKn0mI0-Gp165Pgb1Y"),
@@ -70,7 +78,7 @@ public class IdpControllerParameterValidationTest {
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"),
         Pair.of("key_verifier", "fjdkslafdsa"),
         Pair.of("grant_type", "authorization_code"),
-        Pair.of("client_id", IdpConstants.CLIENT_ID),
+        Pair.of("client_id", TestConstants.CLIENT_ID_E_REZEPT_APP),
         Pair.of("redirect_uri", "irgend://ein.uri"));
 
     @MockBean
@@ -92,6 +100,8 @@ public class IdpControllerParameterValidationTest {
     @MockBean
     private IdpConfiguration idpConfiguration;
     @MockBean
+    private ClientRegistrationService clientRegistrationService;
+    @MockBean
     private ClientIdValidator clientIdValidator;
     @MockBean
     private TokenService tokenService;
@@ -112,6 +122,8 @@ public class IdpControllerParameterValidationTest {
         mockMvc = MockMvcBuilders.standaloneSetup(new IdpServerExceptionHandler(serverUrlService, null),
             idpController)
             .build();
+        when(clientRegistrationService.getClientConfiguration(TestConstants.CLIENT_ID_E_REZEPT_APP))
+            .thenReturn(Optional.of(IdpClientConfiguration.builder().build()));
     }
 
     @Test

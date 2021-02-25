@@ -1,4 +1,4 @@
-# Gematik IDP Zulassungstestsuite v6.0.0
+# Gematik IDP Zulassungstestsuite v8.2.0
 
 Die Gematik IDP Zulassungstestsuite dient zur Pr&uuml;fung externer IDP Dienst Drittanbieter. Sie ist derzeit in
 Entwicklung und noch **NICHT** fertiggestellt. Ziel der Suite ist es sowohl externe IDP Dienste, als auch die Gematik
@@ -16,6 +16,8 @@ Folgende Endpunkte sind von einem IDP Dienst zur Verf&uuml;gung zu stellen:
     * "ID_TOKEN" [openid-connect-core 1.0 # IDToken],
     * "ACCESS_TOKEN" [RFC6749 # section-1.4 & RFC6749 # section-5],
     * "REFRESH_TOKEN/SSO_TOKEN" [RFC6749 # section-1.5 & RFC6749 # section-6]
+* Pairing-Endpunkt für die Registrierung von Endgeräte zur alternativen Authentisierung
+* Authorization-Endpunkt für alternative Authentisierung
 
 Weiterf&uuml;hrende interne Dokumente
 

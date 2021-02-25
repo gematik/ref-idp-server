@@ -45,11 +45,11 @@ public class IdpRsaKeyDescriptor extends IdpKeyDescriptor {
         this.rsaExponentValue = rsaExponentValue;
     }
 
-    public static IdpKeyDescriptor constructFromX509Certificate(final X509Certificate certificate) {
+    public static IdpKeyDescriptor constructFromX509Certificate(final X509Certificate certificate, final String keyId) {
         try {
             final IdpRsaKeyDescriptor.IdpRsaKeyDescriptorBuilder descriptorBuilder = IdpRsaKeyDescriptor.builder()
                 .x5c(getCertArray(certificate))
-                .keyId(certificate.getSerialNumber().toString())
+                .keyId(keyId)
                 .keyType(getKeyType(certificate));
 
             final BCRSAPublicKey bcrsaPublicKey = (BCRSAPublicKey) certificate.getPublicKey();

@@ -26,10 +26,6 @@ public class SerenityJSONObject extends JSONObject {
         super(json.toString());
     }
 
-    public SerenityJSONObject(final String jsonStr) throws JSONException {
-        super(jsonStr);
-    }
-
     @Override
     @SneakyThrows
     public String toString() {

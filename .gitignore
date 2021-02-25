@@ -11,3 +11,4 @@ test-output/
 /idp-test/src/main/java/de/gematik/idp/tests/aforeport/doc-files/aforeporter.*
 /idp-test/src/main/java/de/gematik/idp/tests/aforeport/doc-files/workflow.plantuml
 /idp-testsuite/logs/
+/idp-testsuite/testartefacts/20*

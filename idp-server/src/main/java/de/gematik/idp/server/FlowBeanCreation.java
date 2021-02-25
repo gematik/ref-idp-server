@@ -45,7 +45,7 @@ import org.springframework.context.annotation.Configuration;
 @RequiredArgsConstructor
 public class FlowBeanCreation {
 
-    private final IdpJwtProcessor idpJwtProcessor;
+    private final IdpJwtProcessor idpSigProcessor;
     private final IdpKey idpEnc;
     private final IdpKey idpSig;
     private final Key symmetricEncryptionKey;
@@ -54,23 +54,23 @@ public class FlowBeanCreation {
 
     @Bean
     public AuthenticationTokenBuilder authenticationTokenBuilder() {
-        return new AuthenticationTokenBuilder(idpJwtProcessor, symmetricEncryptionKey,
+        return new AuthenticationTokenBuilder(idpSigProcessor, symmetricEncryptionKey,
             authenticationChallengeVerifier());
     }
 
     @Bean
     public AccessTokenBuilder accessTokenBuilder() {
-        return new AccessTokenBuilder(idpJwtProcessor, serverUrlService.determineServerUrl(), getSubjectSaltValue());
+        return new AccessTokenBuilder(idpSigProcessor, serverUrlService.determineServerUrl(), getSubjectSaltValue());
     }
 
     @Bean
     public IdTokenBuilder idTokenBuilder() {
-        return new IdTokenBuilder(idpJwtProcessor, serverUrlService.determineServerUrl(), getSubjectSaltValue());
+        return new IdTokenBuilder(idpSigProcessor, serverUrlService.determineServerUrl(), getSubjectSaltValue());
     }
 
     @Bean
     public SsoTokenBuilder ssoTokenBuilder() {
-        return new SsoTokenBuilder(idpJwtProcessor, serverUrlService.getIssuerUrl(),
+        return new SsoTokenBuilder(idpSigProcessor, serverUrlService.getIssuerUrl(),
             symmetricEncryptionKey);
     }
 
@@ -82,7 +82,7 @@ public class FlowBeanCreation {
     @Bean
     public AuthenticationChallengeBuilder authenticationChallengeBuilder() {
         return AuthenticationChallengeBuilder.builder()
-            .authenticationIdentity(idpSig.getIdentity())
+            .serverSigner(idpSigProcessor)
             .uriIdpServer(serverUrlService.determineServerUrl())
             .userConsentConfiguration(idpConfiguration.getUserConsent())
             .build();

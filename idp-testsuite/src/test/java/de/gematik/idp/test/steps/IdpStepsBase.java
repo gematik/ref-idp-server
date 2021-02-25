@@ -36,6 +36,7 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -48,7 +49,10 @@ import net.serenitybdd.rest.SerenityRest;
 import net.thucydides.core.annotations.Step;
 import org.apache.commons.collections.IteratorUtils;
 import org.assertj.core.api.Assertions;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.jetbrains.annotations.NotNull;
 import org.jose4j.json.JsonUtil;
 import org.jose4j.jwa.AlgorithmConstraints.ConstraintType;
@@ -158,7 +162,7 @@ public class IdpStepsBase {
     }
 
     // =================================================================================================================
-    //    K E Y / C E R T   R E L A T E D   M E T H O D S
+    // K E Y / C E R T R E L A T E D M E T H O D S
     // =================================================================================================================
     Certificate readCertFrom(final String certFile)
         throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException {
@@ -180,6 +184,24 @@ public class IdpStepsBase {
         return keyStore.getKey(keyStore.aliases().nextElement(), "00".toCharArray());
     }
 
+    @SneakyThrows
+    PrivateKey readPrivatKeyFromPkcs8(final String keyFile) {
+        final InputStream is = getClass().getResourceAsStream(keyFile);
+        assertThat(is).withFailMessage("Unable to locate key resource '" + keyFile + "'").isNotNull();
+        final PKCS8EncodedKeySpec privKeySpec = new PKCS8EncodedKeySpec(is.readAllBytes());
+        final KeyFactory factory = KeyFactory.getInstance("EC");
+        return factory.generatePrivate(privKeySpec);
+    }
+
+    @SneakyThrows
+    PublicKey readPublicKeyFromPEM(final String keyFile) {
+        final InputStream is = getClass().getResourceAsStream(keyFile);
+        final PEMParser pemParser = new PEMParser(new InputStreamReader(is));
+        final JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
+        final SubjectPublicKeyInfo publicKeyInfo = SubjectPublicKeyInfo.getInstance(pemParser.readObject());
+        return converter.getPublicKey(publicKeyInfo);
+    }
+
     void assertJWTIsSignedByCertificate(final String jwt, final Certificate cert) {
         final PublicKey publicKey = cert.getPublicKey();
         final JwtConsumer jwtConsumer = new JwtConsumerBuilder()
@@ -195,7 +217,7 @@ public class IdpStepsBase {
 
     // =================================================================================================================
     //
-    //    G E N E R A L   W O R K F L O W   S T E P S
+    // G E N E R A L W O R K F L O W S T E P S
     //
     // =================================================================================================================
     @Step
@@ -222,7 +244,7 @@ public class IdpStepsBase {
 
     // =================================================================================================================
     //
-    //    R E S P O N S E   R E L A T E D   S T E P S
+    // R E S P O N S E R E L A T E D S T E P S
     //
     // =================================================================================================================
 
@@ -299,7 +321,8 @@ public class IdpStepsBase {
         assertThat(Context.getCurrentClaims().has(claim))
             .withFailMessage("Current claims do not contain key " + claim)
             .isTrue();
-        requestResponseAndAssertStatus(Context.getCurrentClaims().getString(claim), null, method, null, null, status);
+        requestResponseAndAssertStatus(Context.getCurrentClaims().getString(claim), null, method, null, null,
+            status);
     }
 
     public void assertDateFromClaimMatches(final ClaimLocation claimLocation, final String claimName,
@@ -311,7 +334,8 @@ public class IdpStepsBase {
             assertThat(ctxt).containsKey(ContextKey.CLAIMS).doesNotContainEntry(ContextKey.CLAIMS, null);
             claims = (JSONObject) ctxt.get(ContextKey.CLAIMS);
         } else {
-            assertThat(ctxt).containsKey(ContextKey.HEADER_CLAIMS).doesNotContainEntry(ContextKey.HEADER_CLAIMS, null);
+            assertThat(ctxt).containsKey(ContextKey.HEADER_CLAIMS)
+                .doesNotContainEntry(ContextKey.HEADER_CLAIMS, null);
             claims = (JSONObject) ctxt.get(ContextKey.HEADER_CLAIMS);
         }
         assertThat(IteratorUtils.toArray(claims.keys())).contains(claimName);
@@ -365,8 +389,8 @@ public class IdpStepsBase {
         final Map<String, String> responseHeaders = Context.getCurrentResponse().getHeaders().asList().stream()
             .collect(Collectors.toMap(Header::getName, Header::getValue));
         final String location = responseHeaders.get("Location");
-        final MultiValueMap<String, String> parameters =
-            UriComponentsBuilder.fromUriString(location).build().getQueryParams();
+        final MultiValueMap<String, String> parameters = UriComponentsBuilder.fromUriString(location).build()
+            .getQueryParams();
         assertThat(parameters).containsKey(parameter);
         assertThat(parameters.get(parameter)).contains(value);
     }

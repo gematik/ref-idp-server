@@ -25,6 +25,7 @@ import java.security.Key;
 import java.security.cert.Certificate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import lombok.SneakyThrows;
 import net.thucydides.core.annotations.Step;
 import org.apache.http.NameValuePair;
@@ -98,25 +99,30 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
 
         // if token encryption active decrypt code and store it in context
         if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
-            final String encTokenCode = storeParamOfReloc(reloc, "code", ContextKey.TOKEN_CODE_ENCRYPTED);
+            final Optional<String> encTokenCode = storeParamOfReloc(reloc, "code", ContextKey.TOKEN_CODE_ENCRYPTED);
+            assertThat(encTokenCode).withFailMessage("Encrypted token code not found").isPresent();
+            //noinspection OptionalGetWithoutIsPresent
             Context.getThreadContext().put(
                 ContextKey.TOKEN_CODE,
-                decrypt(encTokenCode, TestEnvironmentConfigurator.getSymmetricEncryptionKey())
+                decrypt(encTokenCode.get(), TestEnvironmentConfigurator.getSymmetricEncryptionKey())
             );
         } else {
             storeParamOfReloc(reloc, "code", ContextKey.TOKEN_CODE);
         }
         storeParamOfReloc(reloc, "state", ContextKey.STATE);
-        if (authType == CodeAuthType.SIGNED_CHALLENGE) {
+        if (authType != CodeAuthType.SSO_TOKEN) {
             // if token encryptiona ctive decrypt sso token and store in context
             if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
-                final String encSs0Token = storeParamOfReloc(reloc, "sso_token", ContextKey.SSO_TOKEN_ENCRYPTED);
+                final Optional<String> encSsoToken = storeParamOfReloc(reloc, "ssotoken",
+                    ContextKey.SSO_TOKEN_ENCRYPTED);
                 Context.getThreadContext().put(
                     ContextKey.SSO_TOKEN,
-                    decrypt(encSs0Token, TestEnvironmentConfigurator.getSymmetricEncryptionKey())
+                    encSsoToken
+                        .map(s -> decrypt(s, TestEnvironmentConfigurator.getSymmetricEncryptionKey()))
+                        .orElse(null)
                 );
             } else {
-                storeParamOfReloc(reloc, "sso_token", ContextKey.SSO_TOKEN);
+                storeParamOfReloc(reloc, "ssotoken", ContextKey.SSO_TOKEN);
                 ctxt.put(ContextKey.SSO_TOKEN_ENCRYPTED, null);
             }
         } else {
@@ -127,23 +133,28 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
         }
     }
 
-    private String storeParamOfReloc(final String reloc, final String paramName, final ContextKey key)
+    private Optional<String> storeParamOfReloc(final String reloc, final String paramName, final ContextKey key)
         throws URISyntaxException {
-        final String value = new URIBuilder(reloc).getQueryParams().stream()
+        final Optional<String> value = new URIBuilder(reloc).getQueryParams().stream()
             .filter(param -> param.getName().equalsIgnoreCase(paramName))
             .map(NameValuePair::getValue)
-            .findFirst()
-            .orElse(null);
-        assertThat(value)
-            .withFailMessage("Expected relocation query param " + paramName + " to be not blank")
-            .isNotBlank();
-        Context.getThreadContext().put(key, value);
+            .findFirst();
+
+        if (Optional.of(paramName)
+            .filter(para -> !para.equals("ssotoken") || value.isPresent())
+            .isPresent()) {
+            assertThat(value)
+                .withFailMessage("Expected relocation query param " + paramName + " to be not blank")
+                .isNotEmpty();
+        }
+
+        Context.getThreadContext().put(key, value.orElse(null));
         return value;
     }
 
-
     @SneakyThrows
     private String checkParamsNGetPath(final CodeAuthType authType, final Map<String, String> params) {
+        String path = Context.getDiscoveryDocument().getAuthorizationEndpoint();
         switch (authType) {
             case SIGNED_CHALLENGE:
                 checkContextAddToParams(ContextKey.SIGNED_CHALLENGE, "signed_challenge", params);
@@ -151,28 +162,36 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
                 params.put(
                     "signed_challenge",
                     encrypt(params.get("signed_challenge"),
-                        DiscoveryDocument.getPublicKeyFromCertFromJWK(ContextKey.PUK_ENC))
-                );
+                        DiscoveryDocument.getPublicKeyFromCertFromJWK(ContextKey.PUK_ENC)));
                 break;
             case SSO_TOKEN:
                 checkContextAddToParams(ContextKey.CHALLENGE, "unsigned_challenge", params);
                 if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
-                    checkContextAddToParams(ContextKey.SSO_TOKEN_ENCRYPTED, "sso_token", params);
+                    checkContextAddToParams(ContextKey.SSO_TOKEN_ENCRYPTED, "ssotoken", params);
                 } else {
-                    checkContextAddToParams(ContextKey.SSO_TOKEN, "sso_token", params);
+                    checkContextAddToParams(ContextKey.SSO_TOKEN, "ssotoken", params);
                 }
+                path = Context.getDiscoveryDocument().getSsoEndpoint();
                 break;
             case SSO_TOKEN_NO_CHALLENGE:
                 if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
-                    checkContextAddToParams(ContextKey.SSO_TOKEN_ENCRYPTED, "sso_token", params);
+                    checkContextAddToParams(ContextKey.SSO_TOKEN_ENCRYPTED, "ssotoken", params);
                 } else {
-                    checkContextAddToParams(ContextKey.SSO_TOKEN, "sso_token", params);
+                    checkContextAddToParams(ContextKey.SSO_TOKEN, "ssotoken", params);
                 }
+                path = Context.getDiscoveryDocument().getSsoEndpoint();
+                break;
+            case ALTERNATIVE_AUTHENTICATION:
+                checkContextAddToParams(ContextKey.SIGEND_AUTHENTICATION_DATA, "signed_authentication_data", params);
+                // encrypt signed challenge
+                params.put(
+                    "signed_authentication_data",
+                    encrypt(params.get("signed_authentication_data"),
+                        DiscoveryDocument.getPublicKeyFromCertFromJWK(ContextKey.PUK_ENC)));
+                path = Context.getDiscoveryDocument().getAltAuthEndpoint();
                 break;
         }
-        return authType == CodeAuthType.SIGNED_CHALLENGE || authType == CodeAuthType.NO_PARAMS ?
-            Context.getDiscoveryDocument().getAuthorizationEndpoint() :
-            Context.getDiscoveryDocument().getSsoEndpoint();
+        return path;
     }
 
     private void checkContextAddToParams(final ContextKey key, final String paramName,
@@ -188,22 +207,14 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
 
         assertThat(r.getHeaders()).anySatisfy(h -> assertThat(h.getName()).isEqualTo("Location"));
         final String location = r.getHeader("Location");
-        final MultiValueMap<String, String> parameters =
-            UriComponentsBuilder.fromUriString(location).build().getQueryParams();
+        final MultiValueMap<String, String> parameters = UriComponentsBuilder.fromUriString(location).build()
+            .getQueryParams();
 
         assertThat(parameters).containsKeys("error_description",
-            "error"); // TODO activate once Julian has his code in place   , "error_uri");
+            "error"); // TODO activate once Julian has his code in place , "error_uri");
         assertThat(parameters.getFirst("error")).matches(errcode);
         assertThat(parameters.getFirst("error_description")).matches(regex);
 
-        /* TODO activate once Julian has his cod ein place
-        final String state = (String) Context.getThreadContext().getOrDefault(ContextKey.STATE, null);
-        if (state != null) {
-            assertThat(parameters).containsKey("state");
-            assertThat(parameters.getFirst("state")).isEqualTo(state);
-        } else {
-            assertThat(parameters).doesNotContainKey("state");
-        }
-        */
+        // TODO Clarify if state should be also sent with errors
     }
 }

@@ -91,7 +91,8 @@ Feature: Authentifiziere Anwendung am IDP Server
         """
           { alg: "BP256R1",
             exp: "[\\d]*",
-            typ: "JWT"
+            typ: "JWT",
+            kid: "${json-unit.ignore}"
           }
         """
     When I extract the body claims from response field challenge

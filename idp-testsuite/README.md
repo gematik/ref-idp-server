@@ -1,4 +1,4 @@
-# ![Logo](doc/images/IDPLogo-64.png) Gematik IDP Zulassungstestsuite v6.0.0
+# ![Logo](doc/images/IDPLogo-64.png) Gematik IDP Zulassungstestsuite v8.2.0
 
 Die Gematik IDP Zulassungstestsuite dient zur Pr&uuml;fung externer IDP Dienst Drittanbieter. Sie ist derzeit in
 Entwicklung und noch **NICHT** fertiggestellt. Ziel der Suite ist es sowohl externe IDP Dienste, als auch die Gematik
@@ -46,28 +46,38 @@ mit dem aktuellen Release sind folgende Testszenarien abgedeckt:
 
 * Discovery Endpunkt
     * Tests über Erreichbarkeit des Endpunkts, Struktur der Antwort, Inhalte der Claims, Signaturen, zeitliche
-      Gültigkeit
-    * _In Arbeit: ungültige Zertifikate_
+      Gültigkeit, Token Verschlüsselung
+    * _In Arbeit: ungültige Zertifikate, Fehlermeldungen_
 * Authorization Endpunkt - Anforderung Challenge Token
     * Tests über Erreichbarkeit des Endpunkts, Eingangsparameter, Struktur der Antwort, Inhalte der Claims, Signaturen,
-      Negativtests auf Parameter, Fehlermeldungen
-    * _Noch nicht realisiert: zeitliche Gültigkeit, kartenspezifische Szenarien_
+      Negativtests auf Parameter, Fehlermeldungen, zeitliche Gültigkeit, Token Verschlüsselung
+    * _In Arbeit: Fehlermeldungen_
+    * _Noch nicht realisiert: kartenspezifische Szenarien_
 * Authorization Endpunkt - Anforderung Tokencode
     * Tests über Erreichbarkeit des Endpunkts, Eingangsparameter, beide Flows (signed challenge, sso token), Signaturen,
-      Negativtests auf Parameter, Fehlermeldungen
-    * _Abzuklären: Struktur der Antwort, Inhalte der Claims_
-    * _Noch nicht realisiert: zeitliche Gültigkeit, ungültige Zertifikate, ungültiger SSO Token_
-* Token Endpunkt - Anforderung Access Token
-    * Tests über Erreichbarkeit des Endpunkts, Eingangsparameter, Beide FLows (signed challenge, sso token),
-      Signaturen (ID Token), Negativtests auf Parameter
+      Negativtests auf Parameter, Fehlermeldungen, zeitliche Gültigkeit, ungültige Zertifikate, Token Verschlüsselung
     * _Abzuklären: Struktur der Antwort, Inhalte der Claims_
     * _In Arbeit: Fehlermeldungen_
-    * _Noch nicht realisiert: zeitliche Gültigkeit, Ungültige Zertifikate, kartenspezifische Szenarien_
+    * _Noch nicht realisiert: ungültiger SSO Token_
+* Token Endpunkt - Anforderung Access Token
+    * Tests über Erreichbarkeit des Endpunkts, Eingangsparameter, beide Flows (signed challenge, sso token),
+      Signaturen (ID Token), Negativtests auf Parameter, zeitliche Gültigkeit, Ungültige Zertifikate, Token
+      Verschlüsselung
+    * _Abzuklären: Struktur der Antwort, Inhalte der Claims_
+    * _In Arbeit: Fehlermeldungen_
+    * _Noch nicht realisiert: kartenspezifische Szenarien_
+* Alternative Authentisierung
+    * Erster Draft
+    * _Abzuklären: Validierungsschritte am Server_
+    * _Noch nicht realisiert: Vollständige Umsetzung der Testszenarien, Fehlermeldungen_
+* Pairing Endpunkt - Registrierung / Deregistrierung / Liste
+    * Positivfälle, Einige Negativtests
+    * _Abzuklären: Validierungsschritte am Server_
+    * _Noch nicht realisiert: Vollständige Umsetzung der Testszenarien, Fehlermeldungen_
 
 Noch nicht realisiert:
 
-* CR Tokenverschlüsselung
-* CR Biometrie
+* CR Biometrie / Szenarien für Block/Allow-List und deren Administration
 
 ## Installation der notwendigen Software
 

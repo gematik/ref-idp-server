@@ -21,8 +21,8 @@ import static de.gematik.idp.crypto.KeyAnalysis.isEcKey;
 import static de.gematik.idp.field.ClaimName.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
-
 import de.gematik.idp.IdpConstants;
+import de.gematik.idp.TestConstants;
 import de.gematik.idp.client.IdpClient;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.IdpJoseException;
@@ -73,8 +73,6 @@ public class PairingControllerAccessTest {
     @Autowired
     private IdpKey idpEnc;
     @Autowired
-    private IdpConfiguration idpConfiguration;
-    @Autowired
     private PairingService pairingService;
     @Autowired
     private PairingRepository pairingRepository;
@@ -92,9 +90,9 @@ public class PairingControllerAccessTest {
     public void startup(@Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity,
         @PkiKeyResolver.Filename("rsa") final PkiIdentity rsaIdentity) {
         idpClient = IdpClient.builder()
-            .clientId(IdpConstants.CLIENT_ID)
+            .clientId(TestConstants.CLIENT_ID_E_REZEPT_APP)
             .discoveryDocumentUrl("http://localhost:" + localServerPort + "/discoveryDocument")
-            .redirectUrl(idpConfiguration.getRedirectUri())
+            .redirectUrl(TestConstants.REDIRECT_URI_E_REZEPT_APP)
             .build();
 
         idpClient.initialize();
@@ -278,7 +276,7 @@ public class PairingControllerAccessTest {
         claims.setClaim(CERTIFICATE_NOT_AFTER.getJoseName(), "fdsfdsa");
         claims.setClaim(SIGNATURE_ALGORITHM_IDENTIFIER.getJoseName(), "vjiw");
         claims.setClaim(DEVICE_PRODUCT.getJoseName(), "S8");
-        claims.setClaim(CERT_ID.getJoseName(), "321654");
+        claims.setClaim(CERTIFICATE_SERIALNUMBER.getJoseName(), "321654");
         claims.setClaim(AUTHORITY_INFO_ACCESS.getJoseName(), "blubblab");
         claims.setClaim(PUBLIC_KEY.getJoseName(), java.util.Base64.getEncoder()
             .encodeToString(egkUserIdentity.getCertificate().getPublicKey().getEncoded()));

@@ -18,6 +18,7 @@ package de.gematik.idp.authentication;
 
 import static de.gematik.idp.field.ClaimName.*;
 import static org.assertj.core.api.Assertions.assertThat;
+
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.data.UserConsentConfiguration;
 import de.gematik.idp.data.UserConsentDescriptionTexts;
@@ -30,6 +31,7 @@ import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
@@ -41,12 +43,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 public class AuthenticationChallengeBuilderTest {
 
     private static final long CHALLENGE_TOKEN_VALIDITY_IN_MINUTES = 3;
+    private static final String SERVER_KEY_IDENTITY = "serverKeyIdentity";
     private AuthenticationChallengeBuilder authenticationChallengeBuilder;
 
     @BeforeEach
     public void init(@PkiKeyResolver.Filename("rsa") final PkiIdentity serverIdentity) {
+        serverIdentity.setKeyId(Optional.of(SERVER_KEY_IDENTITY));
         authenticationChallengeBuilder = AuthenticationChallengeBuilder.builder()
-            .authenticationIdentity(serverIdentity)
+            .serverSigner(new IdpJwtProcessor(serverIdentity))
             .userConsentConfiguration(UserConsentConfiguration.builder()
                 .claimsToBeIncluded(Map.of(IdpScope.OPENID, List.of(),
                     IdpScope.EREZEPT, List.of(),
@@ -164,5 +168,13 @@ public class AuthenticationChallengeBuilderTest {
         assertThat(response.getChallenge().getHeaderClaims().keySet())
             .contains(EXPIRES_AT.getJoseName())
             .doesNotContain(NOT_BEFORE.getJoseName(), ISSUED_AT.getJoseName());
+    }
+
+    @Test
+    public void challengeToken_checkForKidInHeader() {
+        final AuthenticationChallenge response = authenticationChallengeBuilder
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
+        assertThat(response.getChallenge().getHeaderClaims())
+            .containsEntry(KEY_ID.getJoseName(), SERVER_KEY_IDENTITY);
     }
 }

@@ -19,17 +19,21 @@ package de.gematik.idp.test.steps.model;
 import java.util.Arrays;
 
 public enum CodeAuthType {
-    SIGNED_CHALLENGE, SSO_TOKEN, SSO_TOKEN_NO_CHALLENGE, NO_PARAMS;
+    SIGNED_CHALLENGE,
+    SSO_TOKEN,
+    SSO_TOKEN_NO_CHALLENGE,
+    NO_PARAMS,
+    ALTERNATIVE_AUTHENTICATION;
 
-    public final static String CUCUMBER_REGEX = "(signed challenge|sso token|sso token no challenge|no params)";
+    public final static String CUCUMBER_REGEX = "(signed challenge|sso token|sso token no challenge|no params|alternative authentication)";
 
     private final String value;
 
     public static CodeAuthType fromString(final String value) {
         return Arrays.stream(CodeAuthType.values())
-            .filter(e -> e.value.equals(value))
-            .findFirst()
-            .orElseThrow(() -> new AssertionError("Invalid code auth type '" + value + "'"));
+                .filter(e -> e.value.equals(value))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Invalid code auth type '" + value + "'"));
     }
 
     CodeAuthType() {

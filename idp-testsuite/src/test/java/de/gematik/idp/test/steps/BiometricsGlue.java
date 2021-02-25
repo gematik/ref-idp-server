@@ -14,7 +14,6 @@ public class BiometricsGlue {
     @Steps
     IdpBiometricsSteps biosteps;
 
-
     @When("I create a device information token with")
     public void iCreateADeviceInformationTokenWith(final DataTable data) {
         Context.getThreadContext().put(ContextKey.DEVICE_INFO, biosteps.getMapFromDatatable(data));
@@ -25,9 +24,19 @@ public class BiometricsGlue {
         Context.getThreadContext().put(ContextKey.PAIRING_DATA, biosteps.getMapFromDatatable(data));
     }
 
+    @And("I create authentication data with")
+    public void iCreateAuthenticationDataWith(final DataTable data) {
+        Context.getThreadContext().put(ContextKey.AUTHENTICATION_DATA, biosteps.getMapFromDatatable(data));
+    }
+
     @And("I sign pairing data with {string}")
     public void iSignPairingDataWithCert(final String certFile) {
         biosteps.signPairingData(certFile);
+    }
+
+    @And("I sign authentication data with {string}")
+    public void iSignAuthenticationDataWithKey(final String keyFile) {
+        biosteps.signAuthenticationData(keyFile);
     }
 
     @When("I register the device with {string}")

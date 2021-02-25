@@ -45,6 +45,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class DiscoveryDocumentController {
 
     private final IdpKey idpSig;
+    private final IdpKey idpEnc;
     private final IdpKey discSig;
     private final ObjectMapper objectMapper;
     private final ServerUrlService serverUrlService;
@@ -59,7 +60,8 @@ public class DiscoveryDocumentController {
     @GetMapping("/jwks")
     @ApiOperation(value = "Endpunkt für Schlüsselinformationen für die Tokenabfrage", notes = "Verbaut Schlüsselinformationen in ein JWK und liefert dieses zurück.")
     public IdpJwksDocument getJwks() {
-        return idpSig.buildJwks();
+        return IdpJwksDocument.constructFromX509Certificate(idpSig.getIdentity(), discSig.getIdentity(),
+            idpEnc.getIdentity());
     }
 
     @GetMapping(value = {DISCOVERY_DOCUMENT_ENDPOINT,

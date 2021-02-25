@@ -16,17 +16,12 @@
 
 package de.gematik.idp.authentication;
 
-import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
-import static de.gematik.idp.crypto.KeyAnalysis.isEcKey;
 import static de.gematik.idp.field.ClaimName.*;
-import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
 
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.crypto.Nonce;
-import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.data.UserConsent;
 import de.gematik.idp.data.UserConsentConfiguration;
-import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.token.JsonWebToken;
 import java.time.ZonedDateTime;
@@ -39,11 +34,7 @@ import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NonNull;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jose4j.jws.JsonWebSignature;
-import org.jose4j.jwt.JwtClaims;
-import org.jose4j.lang.JoseException;
 
 @Data
 @AllArgsConstructor
@@ -52,48 +43,45 @@ public class AuthenticationChallengeBuilder {
 
     private static final long CHALLENGE_TOKEN_VALIDITY_IN_MINUTES = 3;
     private static final int NONCE_BYTE_AMOUNT = 32;
-    private final PkiIdentity authenticationIdentity;
+    private final IdpJwtProcessor serverSigner;
     private final String uriIdpServer;
     private final UserConsentConfiguration userConsentConfiguration;
 
-    public AuthenticationChallenge buildAuthenticationChallenge(
-        final String clientId,
-        final String state,
-        final String redirect,
-        final String code, final String scope, final String nonce) {
-        final JwtClaims claims = new JwtClaims();
-        claims.setIssuer(uriIdpServer);
+    public AuthenticationChallenge buildAuthenticationChallenge(final String clientId, final String state,
+        final String redirect, final String code, final String scope, final String nonce) {
+        final Map<String, Object> claims = new HashMap<>();
+        claims.put(ISSUER.getJoseName(), uriIdpServer);
 
         final ZonedDateTime now = ZonedDateTime.now();
-        claims.setClaim(EXPIRES_AT.getJoseName(), now.plusMinutes(CHALLENGE_TOKEN_VALIDITY_IN_MINUTES).toEpochSecond());
-        claims.setClaim(ISSUED_AT.getJoseName(), now.toEpochSecond());
-        claims.setClaim(RESPONSE_TYPE.getJoseName(), "code");
-        claims.setClaim(SCOPE.getJoseName(), scope);
-        claims.setClaim(CLIENT_ID.getJoseName(), clientId);
-        claims.setClaim(STATE.getJoseName(), state);
-        claims.setClaim(REDIRECT_URI.getJoseName(), redirect);
-        claims.setClaim(CODE_CHALLENGE_METHOD.getJoseName(), "S256");
-        claims.setClaim(CODE_CHALLENGE.getJoseName(), code);
-        claims.setClaim(TOKEN_TYPE.getJoseName(), "challenge");
+        claims.put(EXPIRES_AT.getJoseName(), now.plusMinutes(CHALLENGE_TOKEN_VALIDITY_IN_MINUTES).toEpochSecond());
+        claims.put(ISSUED_AT.getJoseName(), now.toEpochSecond());
+        claims.put(RESPONSE_TYPE.getJoseName(), "code");
+        claims.put(SCOPE.getJoseName(), scope);
+        claims.put(CLIENT_ID.getJoseName(), clientId);
+        claims.put(STATE.getJoseName(), state);
+        claims.put(REDIRECT_URI.getJoseName(), redirect);
+        claims.put(CODE_CHALLENGE_METHOD.getJoseName(), "S256");
+        claims.put(CODE_CHALLENGE.getJoseName(), code);
+        claims.put(TOKEN_TYPE.getJoseName(), "challenge");
         if (nonce != null) {
-            claims.setClaim(NONCE.getJoseName(), nonce);
+            claims.put(NONCE.getJoseName(), nonce);
         }
-        claims.setClaim(SERVER_NONCE.getJoseName(), new Nonce().getNonceAsBase64(NONCE_BYTE_AMOUNT));
-        claims.setClaim(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
+        claims.put(SERVER_NONCE.getJoseName(), new Nonce().getNonceAsBase64(NONCE_BYTE_AMOUNT));
+        claims.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
 
         final Map<String, Object> headerClaims = new HashMap<>();
         headerClaims.put(TYPE.getJoseName(), "JWT");
         headerClaims
             .put(EXPIRES_AT.getJoseName(), now.plusMinutes(CHALLENGE_TOKEN_VALIDITY_IN_MINUTES).toEpochSecond());
 
-        final UserConsent userConsent = getUserConsent(scope, clientId);
+        final UserConsent userConsent = getUserConsent(scope);
         return AuthenticationChallenge.builder()
-            .challenge(buildJwt(claims.toJson(), headerClaims))
+            .challenge(buildJwt(claims, headerClaims))
             .userConsent(userConsent)
             .build();
     }
 
-    private UserConsent getUserConsent(final String scopes, final String clientId) {
+    private UserConsent getUserConsent(final String scopes) {
         final List<IdpScope> requestedScopes = Stream.of(scopes.split(" "))
             .map(IdpScope::fromJwtValue)
             .filter(Optional::isPresent)
@@ -117,22 +105,9 @@ public class AuthenticationChallengeBuilder {
             .build();
     }
 
-    private JsonWebToken buildJwt(final String payload, @NonNull final Map<String, Object> headerClaims) {
-        final JsonWebSignature jws = new JsonWebSignature();
-
-        jws.setPayload(payload);
-        jws.setKey(authenticationIdentity.getPrivateKey());
-        if (isEcKey(authenticationIdentity.getCertificate().getPublicKey())) {
-            jws.setAlgorithmHeaderValue(BRAINPOOL256_USING_SHA256);
-        } else {
-            jws.setAlgorithmHeaderValue(RSA_PSS_USING_SHA256);
-        }
-        headerClaims.keySet().forEach(key -> jws.setHeader(key, headerClaims.get(key)));
-
-        try {
-            return new JsonWebToken(jws.getCompactSerialization());
-        } catch (final JoseException e) {
-            throw new IdpJoseException(e);
-        }
+    private JsonWebToken buildJwt(final Map<String, Object> bodyClaims, final Map<String, Object> headerClaims) {
+        return serverSigner.buildJwt(new JwtBuilder()
+            .addAllBodyClaims(bodyClaims)
+            .addAllHeaderClaims(headerClaims));
     }
 }

@@ -16,19 +16,16 @@
 
 package de.gematik.idp.token;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.jose4j.jws.AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256;
+import static org.assertj.core.api.Assertions.*;
+import static org.jose4j.jws.AlgorithmIdentifiers.*;
 
-import de.gematik.idp.authentication.IdpJwtProcessor;
-import de.gematik.idp.authentication.JwtBuilder;
-import de.gematik.idp.crypto.model.PkiIdentity;
-import de.gematik.idp.tests.PkiKeyResolver;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.util.Map;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import de.gematik.idp.authentication.*;
+import de.gematik.idp.crypto.model.*;
+import de.gematik.idp.tests.*;
+import java.time.*;
+import java.util.*;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.*;
 
 @ExtendWith(PkiKeyResolver.class)
 public class TokenClaimExtractionTest {
@@ -100,4 +97,5 @@ public class TokenClaimExtractionTest {
             .get()
             .isEqualTo(identity.getCertificate());
     }
+
 }

@@ -95,7 +95,7 @@ Feature: Fordere Access Token mittels SSO Token an
     When I extract the body claims from token ACCESS_TOKEN
     Then the body claims should match in any order
         """
-          { acr:              "eidas-loa-high",
+          { acr:              "gematik-ehealth-loa-high",
             amr:              "[\"mfa\", \"sc\", \"pin\"]",
             aud:              "https://erp.telematik.de/login",
             auth_time:        "[\\d]*",
@@ -183,7 +183,7 @@ Feature: Fordere Access Token mittels SSO Token an
     When I extract the body claims from token ID_TOKEN
     Then the body claims should match in any order
         """
-          { acr:              "eidas-loa-high",
+          { acr:              "gematik-ehealth-loa-high",
             amr:              '["mfa", "sc", "pin"]',
             at_hash:          ".*",
             aud:              "eRezeptApp",
@@ -198,7 +198,8 @@ Feature: Fordere Access Token mittels SSO Token an
             nonce:            "886644",
             organizationName: "(.{1,64})",
             professionOID:    "1\\.2\\.276\\.0\\.76\\.4\\.(3\\d|4\\d|178|23[2-90]|240|241)",
-            sub:              ".*"
+            sub:              ".*",
+            jti:              ".*"
           }
         """
 

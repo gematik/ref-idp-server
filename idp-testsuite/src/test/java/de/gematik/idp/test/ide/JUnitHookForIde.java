@@ -25,7 +25,6 @@ import org.junit.runner.RunWith;
 
 @RunWith(CucumberWithSerenity.class)
 @CucumberOptions(
-    strict = true,
     features = {"src/test/resources/features"},
     glue = {"de.gematik.idp.test.steps"})
 public class JUnitHookForIde {

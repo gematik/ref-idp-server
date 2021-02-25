@@ -68,7 +68,8 @@ Feature: Fordere Access Token für Pairing an
             """
               { typ: "JWT",
                 alg: "BP256R1",
-                exp: "[\\d]*"
+                exp: "[\\d]*",
+                kid: "${json-unit.ignore}"
               }
             """
     When I extract the body claims from response field challenge
@@ -115,7 +116,8 @@ Feature: Fordere Access Token für Pairing an
         Cache-Control=no-store
         Pragma=no-cache
         Content-Length=0
-        Location=http.*code=.*
+
+        Location=http://redirect.gematik.de/erezept/token[?]code=.*
         """
     And I expect the Context with key STATE to match 'xxxstatexxx'
     And I expect the Context with key SSO_TOKEN to match '.*'
@@ -148,7 +150,7 @@ Feature: Fordere Access Token für Pairing an
     When I extract the body claims from token ACCESS_TOKEN
     Then the body claims should match in any order
         """
-          { acr:              "eidas-loa-high",
+          { acr:              "gematik-ehealth-loa-high",
             amr:              '["mfa", "sc", "pin"]',
             aud:              "https://.*",
             auth_time:        "[\\d]*",
@@ -205,7 +207,7 @@ Feature: Fordere Access Token für Pairing an
         Cache-Control=no-store
         Pragma=no-cache
         Content-Length=0
-        Location=http.*code=.*
+        Location=http://redirect.gematik.de/erezept/token[?]code=.*
         """
     And I expect the Context with key STATE to match 'xxxstatexxx'
     And I expect the Context with key SSO_TOKEN to match '$NULL'
@@ -252,7 +254,7 @@ Feature: Fordere Access Token für Pairing an
     When I extract the body claims from token ACCESS_TOKEN
     Then the body claims should match in any order
         """
-          { acr:              "eidas-loa-high",
+          { acr:              "gematik-ehealth-loa-high",
             amr:              '["mfa", "sc", "pin"]',
             aud:              "https://.*",
             auth_time:        "[\\d]*",

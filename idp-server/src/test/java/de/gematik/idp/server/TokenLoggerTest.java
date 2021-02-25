@@ -17,10 +17,10 @@
 package de.gematik.idp.server;
 
 import static de.gematik.idp.authentication.UriUtils.extractParameterMap;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import de.gematik.idp.IdpConstants;
+import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.client.IdpClient;
 import de.gematik.idp.crypto.model.PkiIdentity;
@@ -165,9 +165,9 @@ public class TokenLoggerTest {
         @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity clientIdentity)
         throws IOException {
         idpClient = IdpClient.builder()
-            .clientId(IdpConstants.CLIENT_ID)
+            .clientId(TestConstants.CLIENT_ID_E_REZEPT_APP)
             .discoveryDocumentUrl("http://localhost:" + localServerPort + IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT)
-            .redirectUrl(idpConfiguration.getRedirectUri())
+            .redirectUrl(TestConstants.REDIRECT_URI_E_REZEPT_APP)
             .build();
 
         idpClient.initialize();
@@ -213,7 +213,7 @@ public class TokenLoggerTest {
 
                     appendMultipartAndDecrypt(getRequest.getBody().get().multiParts(), "signed_challenge",
                         "Challenge Response", idpEnc.getIdentity().getPrivateKey());
-                    appendMultipartAndDecrypt(getRequest.getBody().get().multiParts(), "sso_token",
+                    appendMultipartAndDecrypt(getRequest.getBody().get().multiParts(), "ssotoken",
                         "SSO Token", symmetricEncryptionKey);
                     appendMultipartAndDecrypt(getRequest.getBody().get().multiParts(), "unsigned_challenge",
                         "Unsigned Challenge", null);
@@ -229,8 +229,8 @@ public class TokenLoggerTest {
                     appendJwe(new IdpJwe(parameterMap.get("code")), "Authorization Code", symmetricEncryptionKey);
                 }
 
-                if (parameterMap.containsKey("sso_token")) {
-                    appendJwe(new IdpJwe(parameterMap.get("sso_token")), "SSO Token", symmetricEncryptionKey);
+                if (parameterMap.containsKey("ssotoken")) {
+                    appendJwe(new IdpJwe(parameterMap.get("ssotoken")), "SSO Token", symmetricEncryptionKey);
                 }
             }
         );
@@ -280,10 +280,18 @@ public class TokenLoggerTest {
         idpClient.loginWithSsoToken(ssoToken);
 
         // Discovery Document
-        final String ddRaw = Unirest.get(idpClient.getDiscoveryDocumentUrl()).asString().getBody();
+        final HttpResponse<String> ddResponse = Unirest.get(idpClient.getDiscoveryDocumentUrl()).asString();
 
         addSeperator("# Discovery Document", "=");
-        appendTokenToFile("", new JsonWebToken(ddRaw));
+        final JsonWebToken dd = new JsonWebToken(ddResponse.getBody());
+        appendResponseToFile(idpClient.getDiscoveryDocumentUrl(), ddResponse);
+
+        // JWKS
+        final String jwksUri = dd.getBodyClaims().get("jwks_uri").toString();
+        final HttpResponse<JsonNode> jwksResponse = Unirest.get(jwksUri).asJson();
+
+        addSeperator("# JWKS", "=");
+        appendResponseToFile(jwksUri, jwksResponse);
     }
 
     private void appendMultipartAndDecrypt(
@@ -396,7 +404,7 @@ public class TokenLoggerTest {
         } else if (body instanceof JsonNode) {
             return ((JsonNode) body).toPrettyString();
         } else if (body instanceof String) {
-            return body.toString();
+            return prettyPrintJoseParts(body.toString());
         } else {
             return "Ugly-printing " + body.getClass().getSimpleName() + ": \n\n'" + body.toString() + "'";
         }
