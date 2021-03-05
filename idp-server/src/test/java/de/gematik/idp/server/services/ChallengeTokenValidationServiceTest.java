@@ -24,6 +24,7 @@ import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
 import de.gematik.idp.crypto.X509ClaimExtraction;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.IdpJoseException;
+import de.gematik.idp.exceptions.NoNestedJwtFoundException;
 import de.gematik.idp.server.data.DeviceInformation;
 import de.gematik.idp.server.data.DeviceType;
 import de.gematik.idp.server.data.PairingDto;
@@ -96,7 +97,7 @@ public class ChallengeTokenValidationServiceTest {
         assertThatThrownBy(
             () -> challengeTokenValidationService
                 .validateChallengeToken(createSignedAuthenticationData(egkIdentity, authModuleIdentity, null)))
-            .isInstanceOf(IdpJoseException.class);
+            .isInstanceOf(NoNestedJwtFoundException.class);
     }
 
     private JsonWebToken createSignedAuthenticationData(final PkiIdentity egkIdentity,

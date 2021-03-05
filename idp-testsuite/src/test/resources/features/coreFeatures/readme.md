@@ -12,6 +12,6 @@ Authorization-Endpunkt (Teil des "The OAuth 2.0 Authorization Framework" [RFC674
 
 Token-Endpunkt [RFC6749 # section-3.2] mit
 
-* "ID_TOKEN" [openid-connect-core 1.0 # IDToken],
-* "ACCESS_TOKEN" [RFC6749 # section-1.4 & RFC6749 # section-5],
-* "REFRESH_TOKEN/SSO_TOKEN" [RFC6749 # section-1.5 & RFC6749 # section-6]
+* ID_TOKEN [openid-connect-core 1.0 # IDToken],
+* ACCESS_TOKEN [RFC6749 # section-1.4 & RFC6749 # section-5],
+* REFRESH_TOKEN/SSO_TOKEN [RFC6749 # section-1.5 & RFC6749 # section-6]

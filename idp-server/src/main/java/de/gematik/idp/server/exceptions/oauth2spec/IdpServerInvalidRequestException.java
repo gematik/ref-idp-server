@@ -29,5 +29,4 @@ public class IdpServerInvalidRequestException extends IdpServerException {
     public IdpServerInvalidRequestException(final String s) {
         super(s, IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
     }
-
 }

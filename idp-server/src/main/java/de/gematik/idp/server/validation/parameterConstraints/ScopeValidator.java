@@ -16,7 +16,9 @@
 
 package de.gematik.idp.server.validation.parameterConstraints;
 
+import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.field.IdpScope;
+import de.gematik.idp.server.exceptions.IdpServerException;
 import java.util.Optional;
 import java.util.stream.Stream;
 import javax.validation.ConstraintValidator;
@@ -32,8 +34,15 @@ public class ScopeValidator implements ConstraintValidator<CheckScope, String> {
             .filter(Optional::isPresent)
             .count();
 
-        return (numberOfValidScopes >= 2) && numberOfValidScopes == scopes.length
-            && rawScopes.contains(IdpScope.OPENID.getJwtValue());
+        if (numberOfValidScopes != scopes.length) {
+            throw new IdpServerException(1030, IdpErrorType.INVALID_SCOPE, "Fachdienst ist unbekannt");
+        }
+
+        if ((numberOfValidScopes < 2) || !rawScopes.contains(IdpScope.OPENID.getJwtValue())) {
+            throw new IdpServerException(1022, IdpErrorType.INVALID_SCOPE, "scope ist ungültig");
+        }
+
+        return true;
     }
 }
 

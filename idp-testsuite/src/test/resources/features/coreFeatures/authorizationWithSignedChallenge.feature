@@ -220,6 +220,17 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     When I request a code token with signed challenge
     Then the context TOKEN_CODE must be signed with cert PUK_SIGN
 
+    # When I extract the header claims from token TOKEN_CODE_ENCRYPTED
+    # Then the header claims should match in any order
+    #     """
+    #       {
+    #         cty: "JWT",
+    #         exp: "[\\d]*",
+    #         enc: "A256GCM",
+    #         alg: "dir"
+    #       }
+    #     """
+
   @Afo:A_20695
   @Approval @Ready
   @Signature
@@ -262,8 +273,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
 
     When I wait PT3M5S
     And I request a code token with signed challenge
-    Then the response is an 302 error with code 'invalid_request' and message matching 'The%20given%20JWT%20has%20expired%20and%20is%20no%20longer%20valid%20%28exp%20is%20in%20the%20past%29'
-
+    Then the response is an 302 error with gematik code 2032 and error 'invalid_request'
 
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -286,11 +296,11 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
       | eRezeptApp | e-rezept openid | ds7JaEfpdLidWekR52OhoVpjXHDlplLyV3GtUezxfY0 | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx1 | 1212  | code          |
 
     When I request a code token with no params
-    Then the response is an 302 error with code 'invalid_request' and message matching 'validateChallengeAndGetTokenCode.signedChallenge%3A%20must%20not%20be%20null'
+    Then the response is an 302 error with gematik code 2030 and error 'invalid_request'
 
 
-  @Afo:A_20951-1
-  @Approval @Todo:ErrorMessages
+  @Afo:A_20951
+  @Approval @Ready
   Scenario: Author mit signierter Challenge - Challenge mit abgelaufenem Zertifikat signiert
 
   ```
@@ -307,9 +317,9 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
 
     When I sign the challenge with '/certs/invalid/smcb-idp-expired.p12'
     And I request a code token with signed challenge
-    Then the response is an 302 error with code 'invalid_request' and message matching 'Error%20while%20verifying%20client%20certificate'
+    Then the response is an 302 error with gematik code 2020 and error 'invalid_request'
 
-  @Afo:A_20951-1 @Afo:A_20318 @Afo:A_20465
+  @Afo:A_20951 @Afo:A_20318 @Afo:A_20465
   @OpenBug @TODO:OCSPChecks
   @Approval
   Scenario: Author mit signierter Challenge - Challenge mit gesperrtem Zertifikat signiert
@@ -328,9 +338,9 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
 
     When I sign the challenge with '/certs/invalid/smcb-idp-revoked.p12'
     And I request a code token with signed challenge
-    Then the response is an 302 error with code 'invalid_request' and message matching 'TODO'
+    Then the response is an 302 error with gematik code 2020 and error 'invalid_request'
 
-  @Afo:A_20951-1
+  @Afo:A_20951
   @Approval
   Scenario: Author mit signierter Challenge - Challenge mit selbst signiertem Zertifikat signiert
 
@@ -348,9 +358,9 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
 
     When I sign the challenge with '/certs/invalid/smcb-idp-selfsigned.p12'
     And I request a code token with signed challenge
-    Then the response is an 302 error with code 'invalid_request' and message matching 'Error%20while%20verifying%20client%20certificate'
+    Then the response is an 302 error with gematik code 2020 and error 'invalid_request'
 
-  @Afo:A_20951-1 @Afo:A_20460
+  @Afo:A_20951 @Afo:A_20460
   @Approval @Ready
   Scenario: Author mit signierter Challenge - Fehlerhafte Signatur der SIGNED_CHALLENGE (Keine Signatur)
 
@@ -368,7 +378,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
 
     When I set the context with key SIGNED_CHALLENGE to 'invalid signed challenge for sure'
     And I request a code token with signed challenge
-    Then the response is an 302 error with code 'invalid_request' and message matching '.*Error%20during%20JOSE-operations.*'
+    Then the response is an 302 error with gematik code 2030 and error 'invalid_request'
 
   @Approval @Ready
   Scenario: Author mit signierter Challenge - Falscher Inhalt in der signierten Challenge
@@ -388,9 +398,9 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     When I set the context with key CHALLENGE to 'malicious content test'
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And I request a code token with signed challenge
-    Then the response is an 302 error with code 'invalid_request' and message matching '.*Error%20during%20JOSE-operations.*'
+    Then the response is an 302 error with gematik code 2030 and error 'invalid_request'
 
-  @Afo:A_20951-1 @Afo:A_20460
+  @Afo:A_20951 @Afo:A_20460
   @Approval @Ready
   Scenario: Author mit signierter Challenge - Invalide Signatur
 
@@ -411,4 +421,27 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     #flipping bits seems to be tricky. due to bits as bytes and bytes as base64 the last couple of bits may or may not have influence on the signature
     And I flip bit -20 on context with key SIGNED_CHALLENGE
     And I request a code token with signed challenge
-    Then the response is an 302 error with code 'invalid_request' and message matching 'Error%20during%20JOSE-operations'
+    Then the response is an 302 error with gematik code 2013 and error 'invalid_request'
+
+  @Todo:Afos
+  @Approval @Ready
+  Scenario: Author mit signierter Challenge - Forder Code über Signed Challenge Endpunkt mit SSO Token Parameter an
+    Given I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+        # code_challenge for given verifier can be obtained from https://tonyxu-io.github.io/pkce-generator/
+    And I request a challenge with
+      | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state         | nonce  | response_type |
+      | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx1a | 997755 | code          |
+    And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And I request a code token with signed challenge
+    And I request an access token
+    And I start new interaction keeping only
+      | SSO_TOKEN           |
+      | SSO_TOKEN_ENCRYPTED |
+    And I initialize scenario from discovery document endpoint
+    And I retrieve public keys from URIs
+    And I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+    And I request a challenge with
+      | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state         | nonce  | response_type |
+      | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx2a | 997744 | code          |
+    And I request a code token with signed challenge with sso token
+    Then the response is an 302 error with gematik code 2030 and error 'invalid_request'

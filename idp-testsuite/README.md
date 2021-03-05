@@ -304,7 +304,7 @@ Basierend auf dieser Umgebungsvariable werden drei Dateien erwartet:
 Für die Signierung des Discovery Documents wird ein privater Schlüssel in der p12 Datei erwartet. Das Passwort für den
 Schlüssel kann über die Umgebungsvariable IDP_LOCAL_DISCDOC_PKEY_PWD festgelegt werden.
 
-Die zeitlichen Validierungs-Claims (exp, iat, nbf) werden von der Testsuite dynamisch ergänzt.
+Die zeitlichen Validierungs-Claims (exp, iat) werden von der Testsuite dynamisch ergänzt.
 
 Im idp-testsuite Ordner gibt es für den Referenzserver Beispieldateien `discover_document*.*`, welche die Schlüssel vom
 lokal zu startenden Server nutzt.

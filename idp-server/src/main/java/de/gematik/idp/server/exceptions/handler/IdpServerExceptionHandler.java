@@ -17,29 +17,34 @@
 package de.gematik.idp.server.exceptions.handler;
 
 import de.gematik.idp.IdpConstants;
+import de.gematik.idp.data.IdpErrorResponse;
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.server.ServerUrlService;
+import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.exceptions.IdpServerException;
-import de.gematik.idp.server.exceptions.data.IdpErrorTypeResponse;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.ValidationException;
 import javax.ws.rs.core.UriBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.dao.NonTransientDataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -53,6 +58,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.util.UriUtils;
 
 @ControllerAdvice
@@ -60,37 +66,44 @@ import org.springframework.web.util.UriUtils;
 @Slf4j
 public class IdpServerExceptionHandler {
 
+    private static final int MAX_HEADER_SIZE = 200;
     private final ServerUrlService serverUrlService;
     private final IdpKey idpEnc;
+    private final IdpConfiguration idpConfiguration;
 
     @ExceptionHandler(IdpServerException.class)
-    public ResponseEntity<IdpErrorTypeResponse> handleIdpServerException(final IdpServerException exc,
+    public ResponseEntity<IdpErrorResponse> handleIdpServerException(final IdpServerException exc,
         final WebRequest request, final HttpServletResponse response) {
-        if (isAuthorizationRequest(request)) {
-            return buildForwardingError(exc, request, response);
-        }
-
-        final IdpErrorTypeResponse body = getBody(exc.getErrorType());
+        final IdpErrorResponse body = getBody(exc);
         if (!StringUtils.isEmpty(exc.getMessage())) {
             body.setDetailMessage(exc.getMessage());
         }
         logEntry(body, exc);
+
+        if (isAuthorizationRequest(request)) {
+            return buildForwardingError(body, request, response, exc);
+        }
         return new ResponseEntity<>(body, getHeader(), exc.getStatus());
     }
 
-    private ResponseEntity<IdpErrorTypeResponse> buildForwardingError(final IdpServerException exc,
-        final WebRequest request, final HttpServletResponse response) {
+    private ResponseEntity<IdpErrorResponse> buildForwardingError(final IdpErrorResponse errorResponse,
+        final WebRequest request, final HttpServletResponse response, final IdpServerException exc) {
         response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
         response.setHeader(HttpHeaders.PRAGMA, "no-cache");
         final UriBuilder uriBuilder = UriBuilder.fromPath(serverUrlService.determineServerUrl())
-            .queryParam("error", "invalid_request");
+            .queryParam("error", UriUtils.encodeQueryParam(
+                errorResponse.getError().getSerializationValue(), Charset.defaultCharset()))
+            .queryParam("gematik_code", errorResponse.getCode())
+            .queryParam("gematik_timestamp", UriUtils.encodeQueryParam(
+                errorResponse.getTimestamp(), Charset.defaultCharset()))
+            .queryParam("gematik_uuid", UriUtils.encodeQueryParam(
+                errorResponse.getErrorUuid(), Charset.defaultCharset()))
+            .queryParam("gematik_error_text", UriUtils.encodeQueryParam(
+                errorResponse.getDetailMessage(), Charset.defaultCharset()));
         addStateIfAvailable(uriBuilder, request);
         addDescriptionIfAvailable(uriBuilder, exc);
         final URI location = uriBuilder.build();
         response.setHeader(HttpHeaders.LOCATION, location.toString());
-
-        log.info("Returning error to client: {}", exc.getMessage());
-        log.info(ExceptionUtils.getStackTrace(exc));
 
         return new ResponseEntity<>(HttpStatus.FOUND);
     }
@@ -101,6 +114,7 @@ public class IdpServerExceptionHandler {
                 .filter(Objects::nonNull)
                 .map(IdpServerException::getMessage)
                 .filter(org.apache.commons.lang3.StringUtils::isNotEmpty)
+                .map(str -> str.substring(0, Math.min(str.length(), MAX_HEADER_SIZE)))
                 .map(value -> UriUtils.encodeQueryParam(value, StandardCharsets.UTF_8))
                 .ifPresent(descr -> uriBuilder.queryParam("error_description", descr));
         } catch (final RuntimeException e) {
@@ -117,6 +131,7 @@ public class IdpServerExceptionHandler {
                 .flatMap(jwt -> jwt.getStringBodyClaim(ClaimName.NESTED_JWT))
                 .map(JsonWebToken::new)
                 .flatMap(jwt -> jwt.getStringBodyClaim(ClaimName.STATE))
+                .map(str -> str.substring(0, Math.min(str.length(), MAX_HEADER_SIZE)))
                 .map(value -> UriUtils.encodeQueryParam(value, StandardCharsets.UTF_8))
                 .ifPresent(state -> uriBuilder.queryParam("state", state));
         } catch (final RuntimeException e) {
@@ -136,34 +151,70 @@ public class IdpServerExceptionHandler {
         return isForwardingEnpointUrl && servletWebRequest.getHttpMethod() == HttpMethod.POST;
     }
 
-    @ExceptionHandler(IdpJoseException.class)
-    public ResponseEntity<IdpErrorTypeResponse> handleIdpJoseException(final IdpJoseException exc,
+    @ExceptionHandler({ConstraintViolationException.class, ValidationException.class,
+        MethodArgumentNotValidException.class, IdpJoseException.class})
+    public ResponseEntity<IdpErrorResponse> handleValidationException(final Exception exc,
         final WebRequest request, final HttpServletResponse response) {
         return handleIdpServerException(
-            new IdpServerException(exc.getMessageForUntrustedClients(), exc, IdpErrorType.INVALID_REQUEST,
-                HttpStatus.BAD_REQUEST),
-            request, response);
+            (IdpServerException) ExceptionUtils.getThrowableList(exc)
+                .stream()
+                .filter(IdpServerException.class::isInstance)
+                .findAny()
+                .or(() -> tryToExtractErrorCodeFromConstraintViolationAndConvertToIdpException(exc))
+                .or(() -> tryToExtractErrorCodeFromExceptionMessageAndConvertToIdpException(exc))
+                .or(() -> tryToMapJoseExceptionToIdpException(exc))
+                .orElseGet(() -> new IdpServerException("Ein Fehler ist aufgetreten", exc, IdpErrorType.SERVER_ERROR,
+                    HttpStatus.BAD_REQUEST)), request, response);
     }
 
-    @ExceptionHandler({ConstraintViolationException.class, ValidationException.class,
-        MethodArgumentNotValidException.class})
-    public ResponseEntity<IdpErrorTypeResponse> handleValidationException(final Exception exc,
-        final WebRequest request, final HttpServletResponse response) {
-        return handleIdpServerException(
-            new IdpServerException(exc.getMessage(), exc, IdpErrorType.INVALID_REQUEST,
-                HttpStatus.BAD_REQUEST), request, response);
+    private Optional<IdpServerException> tryToExtractErrorCodeFromConstraintViolationAndConvertToIdpException(
+        final Exception exc) {
+        return Optional.of(exc)
+            .filter(ConstraintViolationException.class::isInstance)
+            .map(ConstraintViolationException.class::cast)
+            .map(ConstraintViolationException::getConstraintViolations)
+            .stream().flatMap(Set::stream)
+            .map(ConstraintViolation::getMessage)
+            .filter(NumberUtils::isParsable)
+            .map(Integer::parseInt)
+            .sorted()
+            .filter(idpConfiguration.getErrors().getErrorCodeMap()::containsKey)
+            .map(idpConfiguration.getErrors().getErrorCodeMap()::get)
+            .map(errorCode -> new IdpServerException(errorCode, exc))
+            .findAny();
+    }
+
+    private Optional<IdpServerException> tryToExtractErrorCodeFromExceptionMessageAndConvertToIdpException(
+        final Exception exc) {
+        return Optional.of(exc)
+            .map(Exception::getMessage)
+            .filter(NumberUtils::isParsable)
+            .map(Integer::parseInt)
+            .filter(idpConfiguration.getErrors().getErrorCodeMap()::containsKey)
+            .map(idpConfiguration.getErrors().getErrorCodeMap()::get)
+            .map(errorCode -> new IdpServerException(errorCode, exc));
+    }
+
+    private Optional<IdpServerException> tryToMapJoseExceptionToIdpException(
+        final Exception exc) {
+        return Optional.of(exc)
+            .map(Exception::getClass)
+            .map(Class::getSimpleName)
+            .filter(idpConfiguration.getErrors().getJoseExceptionMap()::containsKey)
+            .map(idpConfiguration.getErrors().getJoseExceptionMap()::get)
+            .map(errorCode -> new IdpServerException(errorCode, exc));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<IdpErrorTypeResponse> handleRuntimeException(final Exception exc,
+    public ResponseEntity<IdpErrorResponse> handleRuntimeException(final Exception exc,
         final WebRequest request, final HttpServletResponse response) {
         return handleIdpServerException(
-            new IdpServerException("Invalid Request", exc, IdpErrorType.INTERNAL_SERVER_ERROR,
+            new IdpServerException("Invalid Request", exc, IdpErrorType.SERVER_ERROR,
                 HttpStatus.INTERNAL_SERVER_ERROR), request, response);
     }
 
     @ExceptionHandler(NonTransientDataAccessException.class)
-    public ResponseEntity<IdpErrorTypeResponse> handleDbIntegrityError(final NonTransientDataAccessException exc,
+    public ResponseEntity<IdpErrorResponse> handleDbIntegrityError(final NonTransientDataAccessException exc,
         final WebRequest request, final HttpServletResponse response) {
         return handleIdpServerException(
             new IdpServerException("Invalid Request", exc, IdpErrorType.INVALID_REQUEST,
@@ -171,42 +222,51 @@ public class IdpServerExceptionHandler {
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<IdpErrorTypeResponse> handleMissingServletRequestParameter(
+    public ResponseEntity<IdpErrorResponse> handleMissingServletRequestParameter(
         final MissingServletRequestParameterException ex, final WebRequest request,
-        final HttpServletResponse response) {
+        final HttpServletResponse response, final HandlerMethod handlerMethod) {
+        if (idpConfiguration.getErrors().getGenericErrorMap().containsKey(ex.getParameterName())) {
+            return new ResponseEntity(idpConfiguration.getErrors().getGenericErrorMap().get(ex.getParameterName())
+                .toBuilder()
+                .errorUuid(UUID.randomUUID().toString())
+                .timestamp(String.valueOf(ZonedDateTime.now().toEpochSecond()))
+                .build(), getHeader(), HttpStatus.BAD_REQUEST);
+        }
+
         return handleIdpServerException(
-            new IdpServerException(ex.getMessage(), ex, IdpErrorType.MISSING_PARAMETERS,
+            new IdpServerException(ex.getMessage(), ex, IdpErrorType.INVALID_REQUEST,
                 HttpStatus.BAD_REQUEST), request, response);
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<IdpErrorTypeResponse> handleMethodNotSupported(
-        final MissingServletRequestParameterException ex, final WebRequest request,
+    public ResponseEntity<IdpErrorResponse> handleMethodNotSupported(
+        final HttpRequestMethodNotSupportedException ex, final WebRequest request,
         final HttpServletResponse response) {
         return handleIdpServerException(
             new IdpServerException(ex.getMessage(), ex, IdpErrorType.INVALID_REQUEST,
                 HttpStatus.METHOD_NOT_ALLOWED), request, response);
     }
 
-    private void logEntry(final IdpErrorTypeResponse body, final Exception exc) {
+    private void logEntry(final IdpErrorResponse body, final Exception exc) {
         log.info("Returning error to client: {}, error_id: {}", exc.getMessage(), body.getErrorUuid());
         log.debug(body.toString(), exc);
     }
 
     private HttpHeaders getHeader() {
         final HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.add(HttpHeaders.CONTENT_TYPE, "application/json");
+        responseHeaders.add(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8");
         responseHeaders.add(HttpHeaders.CACHE_CONTROL, "no-store");
         responseHeaders.add(HttpHeaders.PRAGMA, "no-cache");
         return responseHeaders;
     }
 
-    private IdpErrorTypeResponse getBody(final IdpErrorType error) {
-        return IdpErrorTypeResponse.builder()
-            .errorCode(error.name().toLowerCase())
+    private IdpErrorResponse getBody(final IdpServerException exception) {
+        return IdpErrorResponse.builder()
+            .code(exception.getErrorCode())
+            .error(exception.getErrorType())
             .errorUuid(UUID.randomUUID().toString())
-            .timestamp(ZonedDateTime.now().toString())
-            .detailMessage(error.getDescription())
+            .timestamp(String.valueOf(ZonedDateTime.now().toEpochSecond()))
+            .detailMessage(exception.getMessage())
             .build();
     }
 }

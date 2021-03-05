@@ -16,40 +16,38 @@
 
 package de.gematik.idp.error;
 
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-@Getter
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public enum IdpErrorType {
+    INTERACTION_REQUIRED("interaction_required"),
+    LOGIN_REQUIRED("login_required"),
+    ACCOUNT_SELECTION_REQUIRED("account_selection_required"),
+    CONSENT_REQUIRED("consent_required"),
+    INVALID_REQUEST_URI("invalid_request_uri"),
+    INVALID_REQUEST_OBJECT("invalid_request_object"),
+    REQUEST_NOT_SUPPORTED("request_not_supported"),
+    REQUEST_URI_NOT_SUPPORTED("request_uri_not_supported"),
+    REGISTRATION_NOT_SUPPORTED("registration_not_supported"),
+    INVALID_REQUEST("invalid_request"),
+    UNAUTHORIZED_CLIENT("unauthorized_client"),
+    ACCESS_DENIED("access_denied"),
+    UNSUPPORTED_RESPONSE_TYPE("unsupported_response_type"),
+    INVALID_SCOPE("invalid_scope"),
+    SERVER_ERROR("server_error"),
+    TEMPORARILY_UNAVAILABLE("temporarily_unavailable"),
+    INVALID_CLIENT("invalid_client"),
+    INVALID_GRANT("invalid_grant"),
+    UNSUPPORTED_GRANT_TYPE("unsupported_grant_type");
 
-    INVALID_REQUEST("The request is malformed."),
-    INVALID_CLIENT("Client authentication failed"),
-    INVALID_CLIENT_CERTIFICATE("Client certificate validation failed"),
-    INVALID_GRANT("The provided authorization grant or refresh token is invalid, expired, revoked, "
-        + "does not match the redirection URI used in the authorization request, or was issued to another client."),
-    UNAUTHORIZED_CLIENT("The authenticated client is not authorized to use this authorization grant type."),
-    URI_BUILDER_ERROR("The authenticated client is not authorized to use this authorization grant type."),
-    UNSUPPORTED_GRANT_TYPE("The authorization grant type is not supported by the authorization server."),
-    INVALID_SCOPE("The requested scope is invalid, unknown, malformed, or exceeds the scope granted by the "
-        + "resource owner."),
-    ACCESS_DENIED("The resource owner or authorization server denied the request."),
-    UNSUPPORTED_RESPONSE_TYPE("The authorization server does not support obtaining an authorization code "
-        + "using this method."),
-    SERVER_ERROR("The authorization server encountered an unexpected condition that prevented it from "
-        + "fulfilling the request. "),
-    TEMPORARILY_UNAVAILABLE("The authorization server is currently unable to handle the request due to a "
-        + "temporary overloading or maintenance of the server."),
-    UNSUPPORTED_TRANSFORM_ALGORITHM("The given PKCE transform algorithm is not supported"),
-    MISSING_PARAMETERS("Parameters are missing"),
-    INVALID_PARAMETER_VALUE("Parameter value is invalid"),
-    PKCE_VERIFICATION_FAILURE("PKCE verification failed"),
-    INTERNAL_SERVER_ERROR("Unexpected internal server-error occured"),
-    REDIRECT_URI_DEFUNCT("Redirect-URI is invalid or missing"),
-    RESOURCE_NOT_FOUND("The requested resource was not found."),
-    STATE_MISSING_IN_NESTED_CHALLENGE("Parameter 'state' missing in Nested Challenge"),
-    DEVICE_VALIDATION_NOT_ALLOWED("The device information given matched with not allowed configuration."),
-    DEVICE_VALIDATION_PAIRING_EXPIRED("The pairing data has expired.");
+    private final String serializationValue;
 
-    private final String description;
+    @JsonValue
+    public String getSerializationValue() {
+        return serializationValue;
+    }
 }

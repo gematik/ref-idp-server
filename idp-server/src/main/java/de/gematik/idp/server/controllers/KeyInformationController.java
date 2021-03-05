@@ -32,10 +32,8 @@ public class KeyInformationController {
 
     public static final String PUK_URI_SIG = "/ipdSig/jwks.json";
     public static final String PUK_URI_ENC = "/idpEnc/jwks.json";
-    public static final String PUK_URI_DISC = "/discSig/jwks.json";
     private final IdpKey idpEnc;
     private final IdpKey idpSig;
-    private final IdpKey discSig;
 
     @GetMapping(PUK_URI_SIG)
     @ApiOperation(httpMethod = "GET", value = "Endpunkt für Schlüsselinformationen für den Authentifizierungsprozess", notes = "Verbaut Schlüsselinformationen in ein JwksDocument und liefert dieses zurück.")
@@ -49,12 +47,5 @@ public class KeyInformationController {
     @ValidateClientSystem
     public IdpKeyDescriptor getTokenJwk() {
         return idpEnc.buildJwk();
-    }
-
-    @GetMapping(PUK_URI_DISC)
-    @ApiOperation(httpMethod = "GET", value = "Endpunkt für Schlüsselinformationen für den öffentlichen Verzeichnisdienst", notes = "Verbaut Schlüsselinformationen in ein JwksDocument und liefert dieses zurück.")
-    @ValidateClientSystem
-    public IdpKeyDescriptor getDiscJwk() {
-        return discSig.buildJwk();
     }
 }

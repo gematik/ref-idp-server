@@ -54,6 +54,17 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
       | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state        | nonce  | response_type |
       | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx2 | 234567 | code          |
 
+   # When I extract the header claims from token SSO_TOKEN_ENCRYPTED
+   # Then the header claims should match in any order
+   #     """
+   #       {
+   #         cty: "JWT",
+   #         exp: "[\\d]*",
+   #         enc: "A256GCM",
+   #         alg: "dir"
+   #       }
+   #     """
+
     When I request a code token with sso token
     Then the response status is 302
     And the response http headers match
@@ -65,7 +76,6 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
         """
     And I expect the Context with key SSO_TOKEN to match '$NULL'
     And I expect the Context with key STATE to match 'xxxstatexxx2'
-
 
   @Afo:A_20946 @Afo:A_20950 @Afo:A_20377
   @Approval @Todo:ClarifyTokenCodeContentRelevant
@@ -201,7 +211,7 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
 
     When I wait PT3M5S
     And I request a code token with sso token
-    Then the response is an 302 error with code 'invalid_request' and message matching 'The%20given%20JWT%20has%20expired%20and%20is%20no%20longer%20valid%20%28exp%20is%20in%20the%20past%29'
+    Then the response is an 302 error with gematik code 2040 and error 'access_denied'
 
     # ------------------------------------------------------------------------------------------------------------------
     #
@@ -236,7 +246,7 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
       | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx2 | 242424 | code          |
 
     When I request a code token with sso token no challenge
-    Then the response is an 302 error with code 'invalid_request' and message matching 'validateSsoTokenAndGetTokenCode.challengeToken%3A%20must%20not%20be%20null'
+    Then the response is an 302 error with gematik code 2030 and error 'invalid_request'
 
 
   @Afo:A_20948
@@ -260,4 +270,4 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
         # TODO how to modify the sso token to ensure that the idp checks the signature correctly
 
     When I request a code token with sso token
-    Then the response is an 302 error with code 'invalid_request' and message matching 'TODO'
+    Then the response is an 302 error with gematik code 9999 and error 'TODO'

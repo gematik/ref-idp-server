@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.server.exceptions.data;
+package de.gematik.idp.data;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import de.gematik.idp.error.IdpErrorType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -26,19 +28,26 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
-@NoArgsConstructor
+@Builder(toBuilder = true)
 @AllArgsConstructor
+@NoArgsConstructor
 @ApiModel(description = "Antwort Objekt, wenn eine OAuth2 / OICD Exception geworfen wurde.")
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
-public class IdpErrorTypeResponse {
+public class IdpErrorResponse {
 
     @ApiModelProperty(notes = "Error code laut OAuth2 / OICD spec.")
-    private String errorCode;
-    @ApiModelProperty(notes = "generierte uuid")
-    private String errorUuid;
-    @ApiModelProperty(notes = "Timestamp zur Fehlermeldung.")
+    private IdpErrorType error;
+    @ApiModelProperty(notes = "Detaillierter gematik Fehlercode, 4-stellig")
+    @JsonProperty("gematik_code")
+    private int code;
+    @ApiModelProperty(notes = "Zeitpunkt des Fehlers in Sekunden seit 01.01.1970 UTC.")
+    @JsonProperty("gematik_timestamp")
     private String timestamp;
-    @ApiModelProperty(notes = "Detaillierte Fehlermeldung.")
+    @ApiModelProperty(notes = "eindeutige, generierte uuid für den Fehler")
+    @JsonProperty("gematik_uuid")
+    private String errorUuid;
+    @ApiModelProperty(notes = "Fehlertext für den Endbenutzer.")
+    @JsonProperty("gematik_error_text")
     private String detailMessage;
+
 }

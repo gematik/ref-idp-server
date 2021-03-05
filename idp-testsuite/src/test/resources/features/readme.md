@@ -27,8 +27,8 @@ Weiterf&uuml;hrende interne Dokumente
 
 #### Relevante RFCs
 
-* [RFC6749](https://tools.ietf.org/html/rfc6749) ist der allgemeine OAuth 2.0 RFC. Hier werden die Endpunkte (
-  Authorization-Endpoint, Token-Endpoint, ...) beschrieben
+* [RFC6749](https://tools.ietf.org/html/rfc6749) ist der allgemeine OAuth 2.0 RFC. Hier werden die Endpunkte
+  (Authorization-Endpoint, Token-Endpoint, …) beschrieben.
 * [RFC7636](https://tools.ietf.org/html/rfc7636) beschreibt einen Schutzmechanismus gegen das Abfangen von Authorization
   Codes. Es wird mit code_verifier gearbeitet und die damit verbundenen &Auml;nderungen am Authorization-Request finden
   sich in diesem RFC

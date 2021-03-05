@@ -57,7 +57,6 @@ public class DiscoveryDocumentResponseBody implements ResponseBody {
         jsonBody = new JSONObject(IOUtils.toString(new FileReader(templateBody, StandardCharsets.UTF_8)));
 
         final ZonedDateTime now = ZonedDateTime.now();
-        jsonBody.put("nbf", now.toEpochSecond());
         jsonBody.put("exp", now.plusHours(24).toEpochSecond());
         jsonBody.put("iat", now.toEpochSecond());
 

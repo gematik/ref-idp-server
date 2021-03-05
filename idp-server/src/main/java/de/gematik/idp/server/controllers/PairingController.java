@@ -17,6 +17,7 @@
 package de.gematik.idp.server.controllers;
 
 import static de.gematik.idp.IdpConstants.PAIRING_ENDPOINT;
+
 import de.gematik.idp.server.RequestAccessToken;
 import de.gematik.idp.server.data.PairingDto;
 import de.gematik.idp.server.services.PairingService;
@@ -72,7 +73,7 @@ public class PairingController {
     @ValidateAccessToken
     @ValidateClientSystem
     public void deleteSinglePairing(
-        @PathVariable(value = "key_identifier") @ApiParam(value = "Key Identifier") final String keyIdentifier
+        @PathVariable(value = "key_identifier") @NotNull(message = "4001") @ApiParam(value = "Key Identifier") final String keyIdentifier
     ) {
         pairingService
             .validateTokenAndDeleteSelectedPairing(requestAccessToken.getAccessToken(), keyIdentifier);

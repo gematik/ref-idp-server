@@ -17,13 +17,15 @@
 package de.gematik.idp.server.services;
 
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
-import static de.gematik.idp.error.IdpErrorType.MISSING_PARAMETERS;
-import static de.gematik.idp.field.ClaimName.*;
+import static de.gematik.idp.error.IdpErrorType.INVALID_REQUEST;
+import static de.gematik.idp.field.ClaimName.CHALLENGE_TOKEN;
+import static de.gematik.idp.field.ClaimName.CLIENT_ID;
+import static de.gematik.idp.field.ClaimName.REDIRECT_URI;
 
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.field.ClaimName;
-import de.gematik.idp.server.configuration.*;
+import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.data.IdpClientConfiguration;
 import de.gematik.idp.server.exceptions.IdpServerException;
@@ -41,7 +43,7 @@ import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.*;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.client.utils.URIBuilder;
 import org.springframework.http.HttpStatus;
@@ -98,31 +100,28 @@ public class IdpAuthenticator {
     }
 
     private URIBuilder buildBasicFlowTokenLocation(final JsonWebToken signedChallenge) {
-        final Map<String, Object> serverChallengeClaims = signedChallenge
-            .getStringBodyClaim(ClaimName.NESTED_JWT)
-            .map(TokenClaimExtraction::extractClaimsFromJwtBody)
-            .orElseThrow(() -> new IdpServerInvalidRequestException(
-                "Expected signed_challenge to contain String-Claim 'njwt'."));
+        final Map<String, Object> serverChallengeClaims = getServerChallengeClaims(signedChallenge);
 
         challengeTokenValidationService.validateChallengeToken(signedChallenge);
 
         final X509Certificate nestedX509ClientCertificate =
             signedChallenge.getClientCertificateFromHeader()
-                .orElseThrow(() -> new IdpServerException("No Certificate given in header of Signed-Challenge!"));
+                .orElseThrow(
+                    () -> new IdpServerException(2044, INVALID_REQUEST, "Das AUT Zertifikat wurde nicht übermittelt"));
 
         verifyClientCertificate(nestedX509ClientCertificate);
 
         final String state = Optional.ofNullable(serverChallengeClaims.get(ClaimName.STATE.getJoseName()))
             .map(Object::toString)
             .orElseThrow(() ->
-                new IdpServerException(IdpErrorType.STATE_MISSING_IN_NESTED_CHALLENGE,
+                new IdpServerException(IdpErrorType.INVALID_REQUEST,
                     HttpStatus.BAD_REQUEST));
-        String redirectUrl = serverChallengeClaims.get(REDIRECT_URI.getJoseName()).toString();
+        final String redirectUrl = serverChallengeClaims.get(REDIRECT_URI.getJoseName()).toString();
         return Stream.of(redirectUrl + TOKEN_ENDPOINT)
             .map(param -> {
                 try {
                     return new URIBuilder(param);
-                } catch (Exception ex) {
+                } catch (final Exception ex) {
                     throw new IdpServerLocationBuildException(ex);
                 }
             })
@@ -133,25 +132,37 @@ public class IdpAuthenticator {
             .findFirst().get();
     }
 
+    private Map<String, Object> getServerChallengeClaims(final JsonWebToken signedChallenge) {
+        try {
+            return signedChallenge
+                .getStringBodyClaim(ClaimName.NESTED_JWT)
+                .map(TokenClaimExtraction::extractClaimsFromJwtBody)
+                .orElseThrow(() -> new IdpServerInvalidRequestException(
+                    "Expected signed_challenge to contain String-Claim 'njwt'."));
+        } catch (final Exception e) {
+            throw new IdpServerException(2030, INVALID_REQUEST, "Challenge ist ungültig", e);
+        }
+    }
+
     private URIBuilder buildAlternateFlowTokenLocation(final JsonWebToken signedAuthData) {
         final Map<String, Object> authDataClaims = addAllClaimsFromAuthDataAndChallenge(signedAuthData);
         challengeTokenValidationService.validateChallengeToken(signedAuthData);
         final X509Certificate nestedX509ClientCertificate = signedAuthData.getAuthenticationCertificate()
             .orElseThrow(() -> new IdpServerException("No Certificate given in authentication data!",
-                MISSING_PARAMETERS, HttpStatus.BAD_REQUEST));
+                IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST));
         //TODO OCSP-Check(nestedX509ClientCertificate)
         final Map<String, Object> challengeTokenClaimsMap = TokenClaimExtraction
             .extractClaimsFromJwtBody((String) authDataClaims.get(CHALLENGE_TOKEN.getJoseName()));
         final String state = Optional.ofNullable(challengeTokenClaimsMap.get(ClaimName.STATE.getJoseName()))
             .map(Object::toString)
             .orElseThrow(() ->
-                new IdpServerException(IdpErrorType.STATE_MISSING_IN_NESTED_CHALLENGE,
+                new IdpServerException(IdpErrorType.INVALID_REQUEST,
                     HttpStatus.BAD_REQUEST));
         return Stream.of(authDataClaims.get(REDIRECT_URI.getJoseName()) + TOKEN_ENDPOINT)
             .map(param -> {
                 try {
                     return new URIBuilder(param);
-                } catch (Exception ex) {
+                } catch (final Exception ex) {
                     throw new IdpServerLocationBuildException(ex);
                 }
             })
@@ -193,8 +204,7 @@ public class IdpAuthenticator {
         try {
             tucPki018Verifier.performTucPki18Checks(nestedX509ClientCertificate);
         } catch (final GemPkiException | RuntimeException e) {
-            throw new IdpServerException("Error while verifying client certificate", e,
-                IdpErrorType.SERVER_ERROR, HttpStatus.BAD_REQUEST);
+            throw new IdpServerException(2020, INVALID_REQUEST, "Das AUT Zertifikat ist ungültig");
         }
     }
 
@@ -204,7 +214,15 @@ public class IdpAuthenticator {
             throw new IdpServerInvalidRequestException(
                 "For the use of the SSO-Flow the challengeToken parameter is required");
         }
-        challengeToken.verify(idpSig.getIdentity().getCertificate().getPublicKey());
+        if (challengeToken.getExpiresAtBody().isBefore(ZonedDateTime.now()) ||
+            challengeToken.getExpiresAt().isBefore(ZonedDateTime.now())) {
+            throw new IdpServerException(2032, INVALID_REQUEST, "Challenge ist abgelaufen");
+        }
+        try {
+            challengeToken.verify(idpSig.getIdentity().getCertificate().getPublicKey());
+        } catch (final Exception e) {
+            throw new IdpServerException(2030, INVALID_REQUEST, "Challenge ist ungültig");
+        }
         final JsonWebToken ssoToken = ssoTokenValidator.decryptAndValidateSsoToken(encryptedSsoToken);
 
         locationBuilder.addParameter("code", authenticationTokenBuilder
@@ -216,15 +234,17 @@ public class IdpAuthenticator {
                 Optional.ofNullable(challengeToken.getBodyClaims().get(ClaimName.STATE.getJoseName()))
                     .map(Object::toString)
                     .orElseThrow(() ->
-                        new IdpServerException(IdpErrorType.STATE_MISSING_IN_NESTED_CHALLENGE,
+                        new IdpServerException(IdpErrorType.INVALID_REQUEST,
                             HttpStatus.BAD_REQUEST)));
     }
 
     public void validateRedirectUri(final String clientId, final String redirectUri) {
-        clientRegistrationService.getClientConfiguration(clientId)
+        if (!clientRegistrationService.getClientConfiguration(clientId)
             .map(clientRegistration -> clientRegistration.getRedirectUri())
             .filter(Objects::nonNull)
-            .filter(value -> value.equals(redirectUri))
-            .orElseThrow(() -> new IdpServerException(IdpErrorType.REDIRECT_URI_DEFUNCT, HttpStatus.BAD_REQUEST));
+            .orElseThrow(() -> new IdpServerException(1004, INVALID_REQUEST, "redirect_uri wurde nicht übermittelt"))
+            .equals(redirectUri)) {
+            throw new IdpServerException(1020, INVALID_REQUEST, "redirect_uri ist ungültig");
+        }
     }
 }

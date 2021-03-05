@@ -23,7 +23,7 @@ Feature: Fordere Access Token mittels SSO Token an
     Given I initialize scenario from discovery document endpoint
     And I retrieve public keys from URIs
 
-  @Afo:A_20950-01
+  @Afo:A_20950
   @Approval @Todo:AccessTokenContent
   Scenario: GetToken mit SSO Token - Gutfall - Check Access Token - Validiere Antwortstruktur
     Given I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
@@ -87,7 +87,6 @@ Feature: Fordere Access Token mittels SSO Token an
     Then the header claims should match in any order
         """
           { alg: "BP256R1",
-            exp: "[\\d]*",
             kid: "${json-unit.ignore}",
             typ: "at+JWT"
           }
@@ -175,7 +174,6 @@ Feature: Fordere Access Token mittels SSO Token an
     Then the header claims should match in any order
         """
           { alg: "BP256R1",
-            exp: "[\\d]*",
             kid: "${json-unit.ignore}",
             typ: "JWT"
           }
@@ -242,7 +240,7 @@ Feature: Fordere Access Token mittels SSO Token an
     Then I store SSO_TOKEN as text
     And I store SSO_TOKEN_ENCRYPTED as text
 
-  @Afo:A_20315-01
+  @Afo:A_20315
   @Approval @Todo:NotCheckingSsoTokenExactly12H
   @Timeout
   Scenario: GetToken mit SSO Token - Veralteter SSO Token wird abgelehnt
@@ -255,7 +253,7 @@ Feature: Fordere Access Token mittels SSO Token an
     When I load SSO_TOKEN from folder 'old_sso_token'
     And I load SSO_TOKEN_ENCRYPTED from folder 'old_sso_token'
     And I request a code token with sso token
-    Then the response is an 302 error with code "invalid_request" and message matching 'SsoToken%20expired'
+    Then the response is an 302 error with gematik code 2040 and error 'access_denied'
 
   # TODO we have no scenario where we check that an SSO Token is valid after 11h59m
 

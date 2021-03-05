@@ -39,7 +39,6 @@ public class IdpDiscoveryDocument {
     private String issuer;
     private String jwksUri;
     private long exp;
-    private long nbf;
     private long iat;
     private String uriPukIdpEnc;
     private String uriPukIdpSig;

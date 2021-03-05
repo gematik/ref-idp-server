@@ -21,13 +21,13 @@ import static de.gematik.idp.crypto.KeyAnalysis.isEcKey;
 import static de.gematik.idp.field.ClaimName.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
+
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.TestConstants;
 import de.gematik.idp.client.IdpClient;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.field.IdpScope;
-import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.data.DeviceInformation;
 import de.gematik.idp.server.data.DeviceType;
@@ -70,6 +70,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @Transactional
 public class PairingControllerAccessTest {
 
+    private static final String TEST_KVNR_VALID = "X114428530";
     @Autowired
     private IdpKey idpEnc;
     @Autowired
@@ -84,7 +85,6 @@ public class PairingControllerAccessTest {
     private JsonWebToken accessToken;
     @LocalServerPort
     private int localServerPort;
-    private static final String TEST_KVNR_VALID = "X114428530";
 
     @BeforeEach
     public void startup(@Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity,
@@ -187,7 +187,7 @@ public class PairingControllerAccessTest {
         assertThat(httpResponse.getStatus())
             .isEqualTo(HttpStatus.CONFLICT.value());
         assertThat(httpResponse.getBody().getObject().keySet().toArray())
-            .containsAnyOf("error_code", "timestamp", "detail_message");
+            .containsAnyOf("error", "gematik_code", "gematik_timestamp", "gematik_uuid", "gematik_error_text");
     }
 
     @Test
@@ -207,7 +207,7 @@ public class PairingControllerAccessTest {
         assertThat(httpResponse.getStatus())
             .isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(httpResponse.getBody().getObject().keySet().toArray())
-            .containsAnyOf("error_code", "timestamp", "detail_message");
+            .containsAnyOf("error", "gematik_code", "gematik_timestamp", "gematik_uuid", "gematik_error_text");
     }
 
     @Test
@@ -246,7 +246,7 @@ public class PairingControllerAccessTest {
     private byte[] createIdpJweFromRegistrationData(final RegistrationData registrationData) {
         return IdpJwe
             .createWithPayloadAndEncryptWithKey(registrationData.toJSONString(),
-                idpEnc.getIdentity().getCertificate().getPublicKey())
+                idpEnc.getIdentity().getCertificate().getPublicKey(), "JSON")
             .getRawString().getBytes(
                 StandardCharsets.UTF_8);
     }

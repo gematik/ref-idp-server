@@ -18,10 +18,11 @@ package de.gematik.idp.token;
 
 import static de.gematik.idp.field.ClaimName.*;
 import static de.gematik.idp.token.TokenBuilderUtil.buildSubjectClaim;
+
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtBuilder;
-import de.gematik.idp.crypto.*;
+import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.field.ClaimName;
 import java.time.ZonedDateTime;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Data;
 import org.apache.commons.lang3.ArrayUtils;
+import org.jose4j.jwt.NumericDate;
 
 @Data
 public class IdTokenBuilder {
@@ -49,7 +51,7 @@ public class IdTokenBuilder {
         final byte[] accesTokenHash) {
         final Map<String, Object> claimsMap = new HashMap<>();
         final ZonedDateTime now = ZonedDateTime.now();
-        final String atHashValue = Base64.getEncoder().encodeToString(
+        final String atHashValue = Base64.getUrlEncoder().withoutPadding().encodeToString(
             ArrayUtils.subarray(accesTokenHash, 0, 16));
 
         claimsMap.put(ISSUER.getJoseName(), issuerUrl);
@@ -78,13 +80,13 @@ public class IdTokenBuilder {
                     .orElseThrow(() -> new IdpJoseException("Missing '" + ID_NUMBER.getJoseName() + "' claim!")),
                 serverSubjectSalt));
         claimsMap.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
+        claimsMap.put(EXPIRES_AT.getJoseName(), NumericDate.fromSeconds(now.plusMinutes(5).toEpochSecond()).getValue());
 
         final Map<String, Object> headerClaims = new HashMap<>();
         headerClaims.put(TYPE.getJoseName(), "JWT");
 
         return jwtProcessor.buildJwt(new JwtBuilder()
             .addAllBodyClaims(claimsMap)
-            .addAllHeaderClaims(headerClaims)
-            .expiresAt(now.plusMinutes(5)));
+            .addAllHeaderClaims(headerClaims));
     }
 }

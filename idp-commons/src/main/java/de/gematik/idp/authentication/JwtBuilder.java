@@ -17,6 +17,7 @@
 package de.gematik.idp.authentication;
 
 import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
+
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.IdpJoseException;
@@ -72,6 +73,11 @@ public class JwtBuilder {
 
     public JwtBuilder addHeaderClaim(final ClaimName key, final Object value) {
         headerClaims.put(key.getJoseName(), value);
+        return this;
+    }
+
+    public JwtBuilder addBodyClaim(final ClaimName key, final Object value) {
+        bodyClaims.put(key.getJoseName(), value);
         return this;
     }
 

@@ -122,10 +122,11 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
     Then the response status is 403
     And the JSON response should match
         """
-          { error_code:     "access_denied",
-            error_uuid:     ".*",
-            timestamp:      ".*",
-            detail_message: "Scope missing: pairing"
+          { error:              "access_denied",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "-1"
           }
         """
 
@@ -136,10 +137,11 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
     Then the response status is 403
     And the JSON response should match
         """
-          { error_code:     "access_denied",
-            error_uuid:     ".*",
-            timestamp:      ".*",
-            detail_message: "Scope missing: pairing"
+          { error:              "access_denied",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "-1"
           }
         """
 

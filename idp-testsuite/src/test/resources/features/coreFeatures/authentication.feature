@@ -182,22 +182,23 @@ Feature: Authentifiziere Anwendung am IDP Server
     Then the response status is failed state
     And the JSON response should match
         """
-          { detail_message: "Required .* parameter '.*' is not present",
-            error_code:     "missing_parameters",
-            error_uuid:     ".*",
-            timestamp:      ".*"
+          { error:              "<err>",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "<err_id>"
           }
         """
 
     Examples: Auth - Fehlende Parameter Beispiele
-      | client_id  | scope           | code_challenge                                                   | code_challenge_method | redirect_uri                       | state       | nonce     | response_type |
-      | $REMOVE    | e-rezept openid | 932F3C1B56257CE8539AC269D7AAB42550DACF8818D075F0BDF1990562AAE3EF | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | code          |
-      | eRezeptApp | $REMOVE         | 932F3C1B56257CE8539AC269D7AAB42550DACF8818D075F0BDF1990562AAE3EF | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | code          |
-      | eRezeptApp | e-rezept openid | $REMOVE                                                          | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | code          |
-      | eRezeptApp | e-rezept openid | 932F3C1B56257CE8539AC269D7AAB42550DACF8818D075F0BDF1990562AAE3EF | $REMOVE               | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | code          |
-      | eRezeptApp | e-rezept openid | 932F3C1B56257CE8539AC269D7AAB42550DACF8818D075F0BDF1990562AAE3EF | S256                  | $REMOVE                            | xxxstatexxx | 123456789 | code          |
-      | eRezeptApp | e-rezept openid | 932F3C1B56257CE8539AC269D7AAB42550DACF8818D075F0BDF1990562AAE3EF | S256                  | http://redirect.gematik.de/erezept | $REMOVE     | 123456789 | code          |
-      | eRezeptApp | e-rezept openid | 932F3C1B56257CE8539AC269D7AAB42550DACF8818D075F0BDF1990562AAE3EF | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | $REMOVE       |
+      | err_id | err             | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state       | nonce     | response_type |
+      | 1002   | invalid_request | $REMOVE    | e-rezept openid | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | code          |
+      | 1005   | invalid_request | eRezeptApp | $REMOVE         | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | code          |
+      | 2009   | invalid_request | eRezeptApp | e-rezept openid | $REMOVE                                     | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | code          |
+      | 2008   | invalid_request | eRezeptApp | e-rezept openid | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | $REMOVE               | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | code          |
+      | 1004   | invalid_request | eRezeptApp | e-rezept openid | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | $REMOVE                            | xxxstatexxx | 123456789 | code          |
+      | 2002   | invalid_request | eRezeptApp | e-rezept openid | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | http://redirect.gematik.de/erezept | $REMOVE     | 123456789 | code          |
+      | 2004   | invalid_request | eRezeptApp | e-rezept openid | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | $REMOVE       |
       # nonce is not mandatory so no example here
 
   @Afo:A_20601 @Afo:A_20740
@@ -215,25 +216,26 @@ Feature: Authentifiziere Anwendung am IDP Server
     Then the response status is failed state
     And the JSON response should match
         """
-          { detail_message: "getAuthenticationChallenge.*invalid.*",
-            error_code:     "invalid_request",
-            error_uuid:     ".*",
-            timestamp:      ".*"
+          { error:              "<err>",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "<err_id>"
           }
         """
 
     Examples: Auth - Null Parameter Beispiele
-      | client_id  | scope           | code_challenge                                                   | code_challenge_method | redirect_uri                       | state       | nonce     | response_type |
-      | $NULL      | e-rezept openid | 932F3C1B56257CE8539AC269D7AAB42550DACF8818D075F0BDF1990562AAE3EF | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | code          |
-      | eRezeptApp | $NULL           | 932F3C1B56257CE8539AC269D7AAB42550DACF8818D075F0BDF1990562AAE3EF | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | code          |
-      | eRezeptApp | e-rezept openid | $NULL                                                            | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | code          |
-      | eRezeptApp | e-rezept openid | 932F3C1B56257CE8539AC269D7AAB42550DACF8818D075F0BDF1990562AAE3EF | $NULL                 | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | code          |
-      | eRezeptApp | e-rezept openid | 932F3C1B56257CE8539AC269D7AAB42550DACF8818D075F0BDF1990562AAE3EF | S256                  | $NULL                              | xxxstatexxx | 123456789 | code          |
-      | eRezeptApp | e-rezept openid | 932F3C1B56257CE8539AC269D7AAB42550DACF8818D075F0BDF1990562AAE3EF | S256                  | http://redirect.gematik.de/erezept | $NULL       | 123456789 | code          |
-      | eRezeptApp | e-rezept openid | 932F3C1B56257CE8539AC269D7AAB42550DACF8818D075F0BDF1990562AAE3EF | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | $NULL     | code          |
-      | eRezeptApp | e-rezept openid | 932F3C1B56257CE8539AC269D7AAB42550DACF8818D075F0BDF1990562AAE3EF | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | $NULL         |
+      | err_id | err                       | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state       | nonce     | response_type |
+      | 2012   | invalid_request           | $NULL      | e-rezept openid | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | code          |
+      | 1030   | invalid_scope             | eRezeptApp | $NULL           | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | code          |
+      | 2010   | invalid_request           | eRezeptApp | e-rezept openid | $NULL                                       | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | code          |
+      | 2008   | invalid_request           | eRezeptApp | e-rezept openid | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | $NULL                 | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | code          |
+      | 1020   | invalid_request           | eRezeptApp | e-rezept openid | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | $NULL                              | xxxstatexxx | 123456789 | code          |
+      | 2006   | invalid_request           | eRezeptApp | e-rezept openid | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | http://redirect.gematik.de/erezept | $NULL       | 123456789 | code          |
+      | 2007   | invalid_request           | eRezeptApp | e-rezept openid | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | $NULL     | code          |
+      | 2005   | unsupported_response_type | eRezeptApp | e-rezept openid | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | $NULL         |
 
-  @Afo:A_20601 @Afo:A_20440-01
+  @Afo:A_20601 @Afo:A_20440
     @Approval @Todo:ErrorMessage
   Scenario Outline: Auth - Ungültige Parameter
 
@@ -248,40 +250,31 @@ Feature: Authentifiziere Anwendung am IDP Server
     Then the response status is failed state
     And the JSON response should match
         """
-          { detail_message: ".*",
-            error_code:     "<error_code>",
-            error_uuid:     ".*",
-            timestamp:      ".*"
+          { error:              "<error_code>",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "<err_id>"
           }
         """
 
     Examples: Auth - Ungültige Parameter Beispiele
-      | error_code            | client_id          | scope           | code_challenge                                                   | code_challenge_method | redirect_uri                       | state       | nonce | response_type |
+      | err_id | error_code                | client_id          | scope           | code_challenge                                               | code_challenge_method | redirect_uri                       | state       | nonce | response_type |
             # REM invalid client_id
-      | invalid_request       | resistanceisfutile | openid e-rezept | 932F3C1B56257CE8539AC269D7AAB42550DACF8818D075F0BDF1990562AAE3EF | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 12345 | code          |
+      | 2012   | invalid_request           | resistanceisfutile | openid e-rezept | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk                  | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 12345 | code          |
             # REM invalid scope IDP-361
-      | invalid_request       | eRezeptApp         | weareborg       | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg                      | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 12345 | code          |
+      | 1030   | invalid_scope             | eRezeptApp         | weareborg       | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg                  | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 12345 | code          |
             # opnenid or e-rezept only is not valid
-      | invalid_request       | eRezeptApp         | openid          | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg                      | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 12345 | code          |
-      | invalid_request       | eRezeptApp         | e-rezept        | 932F3C1B56257CE8539AC269D7AAB42550DACF8818D075F0BDF1990562AAE3EF | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 12345 | code          |
+      | 1022   | invalid_scope             | eRezeptApp         | openid          | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg                  | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 12345 | code          |
+      | 1022   | invalid_scope             | eRezeptApp         | e-rezept        | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk                  | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 12345 | code          |
             # REM invalid code_challenge: something definitely not being an S256 hash string (! und .)
-      | invalid_request       | eRezeptApp         | openid e-rezept | Fest gemauert in der Erde! Steht die Form aus Lehm gebrannt.     | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 12345 | code          |
+      | 2010   | invalid_request           | eRezeptApp         | openid e-rezept | Fest gemauert in der Erde! Steht die Form aus Lehm gebrannt. | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 12345 | code          |
             # REM unsupported code challenge method
-      | internal_server_error | eRezeptApp         | openid e-rezept | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg                      | plain                 | http://redirect.gematik.de/erezept | xxxstatexxx | 12345 | code          |
+      | 2008   | invalid_request           | eRezeptApp         | openid e-rezept | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg                  | plain                 | http://redirect.gematik.de/erezept | xxxstatexxx | 12345 | code          |
             # REM invalid code challenge method
-      | internal_server_error | eRezeptApp         | openid e-rezept | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg                      | axanar                | http://redirect.gematik.de/erezept | xxxstatexxx | 12345 | code          |
+      | 2008   | invalid_request           | eRezeptApp         | openid e-rezept | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg                  | axanar                | http://redirect.gematik.de/erezept | xxxstatexxx | 12345 | code          |
             # REM invalid redirect uri
-      | redirect_uri_defunct  | eRezeptApp         | openid e-rezept | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg                      | S256                  | http://www.drinkinggamezone.com/   | xxxstatexxx | 12345 | code          |
+      | 1020   | invalid_request           | eRezeptApp         | openid e-rezept | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg                  | S256                  | http://www.drinkinggamezone.com/   | xxxstatexxx | 12345 | code          |
             # REM state could be any value
-      | invalid_request       | eRezeptApp         | openid e-rezept | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg                      | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 12345 | invalid_type  |
+      | 2005   | unsupported_response_type | eRezeptApp         | openid e-rezept | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg                  | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 12345 | invalid_type  |
             # REM nonce could be any value
-
-      # code challenge method plain and axanar:
-#  {
-#  "error_uuid": "2ea5c3e1-2bbf-45e6-8c96-61653e32038c",
-#  "error_code": "internal_server_error",
-#  "detail_message": "Failed to convert value of type 'java.lang.String' to required type 'de.gematik.idp.field.CodeChallengeMethod'; nested exception is org.springframework.core.convert.ConversionFailedException: Failed to convert from type [java.lang.String] to type [@org.springframework.web.bind.annotation.RequestParam @de.gematik.idp.server.validation.parameterConstraints.CheckCodeChallengeMethod @io.swagger.annotations.ApiParam de.gematik.idp.field.CodeChallengeMethod] for value 'plain'; nested exception is java.lang.IllegalArgumentException: No enum constant de.gematik.idp.field.CodeChallengeMethod.plain",
-#  "timestamp": "2021-01-22T18:51:54.580485700+01:00[Europe\/Berlin]"
-#  }
-
-

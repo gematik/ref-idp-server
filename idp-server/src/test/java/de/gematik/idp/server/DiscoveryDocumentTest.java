@@ -107,7 +107,6 @@ public class DiscoveryDocumentTest {
                 "acr_values_supported",
                 "token_endpoint_auth_methods_supported",
                 "exp",
-                "nbf",
                 "iat",
                 "uri_puk_idp_enc",
                 "uri_puk_idp_sig",
@@ -174,7 +173,7 @@ public class DiscoveryDocumentTest {
         final List<String> acrValuesSupported = (List<String>) retrieveAndParseDiscoveryDocument()
             .getBodyClaim(ClaimName.ACR_VALUES_SUPPORTED).get();
 
-        assertThat(acrValuesSupported).containsExactlyInAnyOrder("urn:eidas:loa:high");
+        assertThat(acrValuesSupported).containsExactlyInAnyOrder("gematik-ehealth-loa-high");
     }
 
     @Test
@@ -239,12 +238,6 @@ public class DiscoveryDocumentTest {
         assertThat(retrieveAndParseDiscoveryDocument().getExpiresAtBody())
             .isBetween(ZonedDateTime.now().minusMinutes(1).plusHours(24),
                 ZonedDateTime.now().plusHours(24));
-    }
-
-    @Test
-    public void testValueNotBefore() throws UnirestException {
-        assertThat(retrieveAndParseDiscoveryDocument().getNotBefore())
-            .isBetween(ZonedDateTime.now().minusMinutes(1), ZonedDateTime.now());
     }
 
     @Test

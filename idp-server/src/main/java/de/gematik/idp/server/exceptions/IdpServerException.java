@@ -16,6 +16,7 @@
 
 package de.gematik.idp.server.exceptions;
 
+import de.gematik.idp.data.IdpErrorResponse;
 import de.gematik.idp.error.IdpErrorType;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
@@ -24,18 +25,11 @@ import org.springframework.web.server.ResponseStatusException;
 @Getter
 public class IdpServerException extends ResponseStatusException {
 
-    private static final long serialVersionUID = -6338520681700326027L;
-
     private final IdpErrorType errorType;
+    private int errorCode = -1;
 
-    public IdpServerException(final String message, final Exception e) {
-        super(HttpStatus.INTERNAL_SERVER_ERROR, message, e);
-        errorType = IdpErrorType.SERVER_ERROR;
-    }
-
-    public IdpServerException(final String s) {
-        super(HttpStatus.INTERNAL_SERVER_ERROR, s);
-        errorType = IdpErrorType.SERVER_ERROR;
+    public IdpServerException(final IdpErrorResponse errorResponse, final Exception e) {
+        this(errorResponse.getCode(), errorResponse.getError(), errorResponse.getDetailMessage(), e);
     }
 
     public IdpServerException(final String message, final Exception e, final IdpErrorType errorType,
@@ -45,13 +39,26 @@ public class IdpServerException extends ResponseStatusException {
     }
 
     public IdpServerException(final IdpErrorType errorType, final HttpStatus responseCode) {
-        super(responseCode, errorType.getDescription());
+        super(responseCode, errorType.getSerializationValue());
         this.errorType = errorType;
     }
 
     public IdpServerException(final String s, final IdpErrorType errorType, final HttpStatus responseCode) {
         super(responseCode, s);
         this.errorType = errorType;
+    }
+
+    public IdpServerException(final int errorCode, final IdpErrorType errorType, final String message) {
+        super(HttpStatus.BAD_REQUEST, message);
+        this.errorType = errorType;
+        this.errorCode = errorCode;
+    }
+
+    public IdpServerException(final int errorCode, final IdpErrorType errorType, final String message,
+        final Exception e) {
+        super(HttpStatus.BAD_REQUEST, message, e);
+        this.errorType = errorType;
+        this.errorCode = errorCode;
     }
 
     @Override

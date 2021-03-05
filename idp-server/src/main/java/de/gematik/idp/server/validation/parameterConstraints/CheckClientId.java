@@ -26,7 +26,7 @@ import javax.validation.Payload;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CheckClientId {
 
-    String message() default "client_id is invalid";
+    String message() default "2012";
 
     Class<?>[] groups() default {};
 

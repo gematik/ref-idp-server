@@ -142,7 +142,6 @@ Feature: Fordere Access Token für Pairing an
     Then the header claims should match in any order
         """
           { alg: "BP256R1",
-            exp: "[\\d]*",
             kid: ".*",
             typ: "at+JWT"
           }
@@ -246,7 +245,6 @@ Feature: Fordere Access Token für Pairing an
     Then the header claims should match in any order
         """
           { alg: "BP256R1",
-            exp: "[\\d]*",
             kid: ".*",
             typ: "at+JWT"
           }

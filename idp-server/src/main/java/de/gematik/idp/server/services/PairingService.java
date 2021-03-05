@@ -16,7 +16,6 @@
 
 package de.gematik.idp.server.services;
 
-import static de.gematik.idp.error.IdpErrorType.MISSING_PARAMETERS;
 import static de.gematik.idp.field.ClaimName.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -106,7 +105,7 @@ public class PairingService {
         if (deviceValidationService.assess(deviceInformation.getDeviceType())
             .equals(DeviceValidationState.NOT_ALLOWED)) {
             throw new IdpServerException("Device validation matched with not allowed devices!",
-                IdpErrorType.DEVICE_VALIDATION_NOT_ALLOWED, HttpStatus.BAD_REQUEST);
+                IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
         }
         final PairingDto data = createPairingDtoFromRegistrationData(signedPairingData, idNumber,
             deviceInformation.getDeviceName());
@@ -156,17 +155,17 @@ public class PairingService {
         return accessToken
             .getStringBodyClaim(ClaimName.ID_NUMBER)
             .orElseThrow(() -> new IdpServerException("idNumber not found in accessToken",
-                MISSING_PARAMETERS, HttpStatus.BAD_REQUEST));
+                IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST));
     }
 
     private void validateAccessTokenClaims(final JsonWebToken accessToken) {
         //TODO further validation of AMR/ACR
         accessToken.getStringBodyClaim(AUTHENTICATION_METHODS_REFERENCE)
             .orElseThrow(() -> new IdpServerException("Claim amr not found in accessToken",
-                MISSING_PARAMETERS, HttpStatus.BAD_REQUEST));
+                IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST));
         accessToken.getStringBodyClaim(AUTHENTICATION_CLASS_REFERENCE)
             .orElseThrow(() -> new IdpServerException("Claim acr not found in accessToken",
-                MISSING_PARAMETERS, HttpStatus.BAD_REQUEST));
+                IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST));
     }
 
     private PairingDto createPairingDtoFromRegistrationData(final JsonWebToken signedPairingData, final String idNumber,
@@ -176,7 +175,7 @@ public class PairingService {
             .idNumber(idNumber)
             .keyIdentifier(signedPairingData.getStringBodyClaim(KEY_IDENTIFIER)
                 .orElseThrow(() -> new IdpServerException("Key identifier not found in pairing data",
-                    MISSING_PARAMETERS, HttpStatus.BAD_REQUEST)))
+                    IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST)))
             .deviceName(deviceName)
             .signedPairingData(signedPairingData.getRawString())
             .timestampPairing(ZonedDateTime.now())
@@ -190,7 +189,7 @@ public class PairingService {
         final String idNumberCert = getIdNumberFromCertClaimsAndThrowExceptionIfNotExists(certClaims);
         if (!idNumber.equals(idNumberCert)) {
             throw new IdpServerException("IdNumber does not match to certificate!",
-                IdpErrorType.INVALID_PARAMETER_VALUE, HttpStatus.BAD_REQUEST);
+                IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -198,7 +197,7 @@ public class PairingService {
         final Optional<String> idNumber = Optional.ofNullable(certClaims.get(ClaimName.ID_NUMBER.getJoseName()))
             .filter(String.class::isInstance).map(String.class::cast);
         return idNumber.orElseThrow(() -> new IdpServerException("Information ID_NUMBER not found in certificate",
-            MISSING_PARAMETERS, HttpStatus.BAD_REQUEST));
+            IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST));
     }
 
     public Optional<PairingDto> getPairingDtoForIdNumberAndKeyIdentifier(final String kvnr,

@@ -25,14 +25,19 @@ import de.gematik.idp.TestConstants;
 import de.gematik.idp.client.IdpClient;
 import de.gematik.idp.client.IdpClientRuntimeException;
 import de.gematik.idp.client.IdpTokenResult;
+import de.gematik.idp.client.data.AuthenticationResponse;
 import de.gematik.idp.crypto.model.PkiIdentity;
+import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.field.CodeChallengeMethod;
 import de.gematik.idp.server.configuration.IdpConfiguration;
+import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.exceptions.IdpServerException;
 import de.gematik.idp.server.services.PkceChecker;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.tests.Remark;
 import de.gematik.idp.tests.Rfc;
+import de.gematik.idp.token.IdpJwe;
+import java.security.Key;
 import java.util.Map;
 import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
@@ -51,7 +56,11 @@ public class PkceServerTest {
 
     private final PkceChecker pkceChecker = new PkceChecker();
     @Autowired
-    IdpConfiguration idpConfiguration;
+    private IdpConfiguration idpConfiguration;
+    @Autowired
+    private Key symmetricEncryptionKey;
+    @Autowired
+    private IdpKey idpSig;
     private IdpClient idpClient;
     private PkiIdentity egkUserIdentity;
     @LocalServerPort
@@ -93,7 +102,9 @@ public class PkceServerTest {
         idpClient.setAfterAuthorizationCallback(r -> assertThat(r.getStatus()).isEqualTo(400));
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
-            .isInstanceOf(IdpClientRuntimeException.class);
+            .isInstanceOf(IdpClientRuntimeException.class)
+            .hasMessageContaining("2008")
+            .hasMessageContaining("code_challenge_method ist ungültig");
     }
 
     @Test
@@ -108,27 +119,32 @@ public class PkceServerTest {
         idpClient.setAfterAuthorizationCallback(r -> assertThat(r.getStatus()).isEqualTo(400));
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
-            .isInstanceOf(IdpClientRuntimeException.class);
+            .isInstanceOf(IdpClientRuntimeException.class)
+            .hasMessageContaining("2009")
+            .hasMessageContaining("code_challenge wurde nicht übermittelt");
     }
 
     @Test
     @Remark("Client sendet falschen code_verifier, Server muss Error senden")
     @Rfc("rfc7636, section 4.4.1")
-    public void pkceNegativInvalidCodeVerifier()
-        throws UnirestException {
-        idpClient.setBeforeTokenMapper(request -> {
-            final Map<String, Object> newFields = getAllFieldElementsAsMap(request);
-            newFields.put("key_verifier", "invalidCodeVerifierInvalidCodeVerifierinvalidCodeVerifier");
-            return Unirest
-                .post(request.getUrl())
-                .headers(getAllHeaderElementsAsMap(request))
-                .fields(newFields);
-        });
+    public void pkceNegativInvalidCodeVerifier() throws UnirestException {
+        idpClient.setAuthenticationResponseMapper(authenticationResponse ->
+            AuthenticationResponse.builder()
+                .ssoToken(authenticationResponse.getSsoToken())
+                .location(authenticationResponse.getLocation())
+                .code(
+                    new IdpJwe(authenticationResponse.getCode()).decryptNestedJwt(
+                        symmetricEncryptionKey)
+                        .toJwtDescription().addBodyClaim(ClaimName.CODE_CHALLENGE, "wrongCodeChallengeValue")
+                        .setSignerKey(idpSig.getIdentity().getPrivateKey())
+                        .buildJwt().encrypt(symmetricEncryptionKey).getRawString()).build());
 
         idpClient.setAfterTokenCallback(r -> assertThat(r.getStatus()).isEqualTo(400));
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
-            .isInstanceOf(IdpClientRuntimeException.class);
+            .isInstanceOf(IdpClientRuntimeException.class)
+            .hasMessageContaining("3000")
+            .hasMessageContaining("code_verifier stimmt nicht mit code_challenge überein");
     }
 
     @Test

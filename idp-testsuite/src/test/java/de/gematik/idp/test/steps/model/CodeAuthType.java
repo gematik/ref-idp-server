@@ -23,17 +23,18 @@ public enum CodeAuthType {
     SSO_TOKEN,
     SSO_TOKEN_NO_CHALLENGE,
     NO_PARAMS,
+    SIGNED_CHALLENGE_WITH_SSO_TOKEN,
     ALTERNATIVE_AUTHENTICATION;
 
-    public final static String CUCUMBER_REGEX = "(signed challenge|sso token|sso token no challenge|no params|alternative authentication)";
+    public final static String CUCUMBER_REGEX = "(signed challenge|sso token|sso token no challenge|no params|signed challenge with sso token|alternative authentication)";
 
     private final String value;
 
     public static CodeAuthType fromString(final String value) {
         return Arrays.stream(CodeAuthType.values())
-                .filter(e -> e.value.equals(value))
-                .findFirst()
-                .orElseThrow(() -> new AssertionError("Invalid code auth type '" + value + "'"));
+            .filter(e -> e.value.equals(value))
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("Invalid code auth type '" + value + "'"));
     }
 
     CodeAuthType() {

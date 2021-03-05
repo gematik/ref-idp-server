@@ -314,9 +314,10 @@ public class StepsGlue {
         disc.jsonArrayPathShouldContainValidCertificates(path);
     }
 
-    @Then("the response is an 302 error with code {string} and message matching {string}")
-    public void theResponseIsAnErrorWithMessageMatching(final String errcode, final String regex) {
-        author.responseIs302ErrorWithMessageMatching(errcode, regex);
+    @Then("the response is an 302 error with gematik code {int} and error {string}")
+    public void theResponseIsAnErrorWithMessageMatching(final int errcode, final String errstr) {
+        // TODO rewrite code
+        author.responseIs302ErrorWithMessageMatching(errcode, errstr);
     }
 
     @When("I wait {Duration}")

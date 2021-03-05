@@ -16,6 +16,7 @@
 
 @testsuite
 @biometrics
+@TODO:GematikErrId
 Feature: Registrierung für Alternative Authentisierung am IDP Server
 
   Frontends müssen mit einer eGK und einem pairing Access oder SSO Token Geräte registrieren können.
@@ -106,10 +107,11 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     Then the response status is 409
     And the JSON response should match
         """
-          { error_code:     "invalid_request",
-            error_uuid:     ".*",
-            timestamp:      ".*",
-            detail_message: "Pairing for this ID/Key-ID combination already in DB"
+          { error:              "invalid_request",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "-1"
           }
         """
 
@@ -137,10 +139,11 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     Then the response status is 409
     And the JSON response should match
         """
-          { error_code:     "invalid_request",
-            error_uuid:     ".*",
-            timestamp:      ".*",
-            detail_message: "Pairing for this ID/Key-ID combination already in DB"
+          { error:              "invalid_request",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "-1"
           }
         """
 
@@ -168,10 +171,11 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     Then the response status is 409
     And the JSON response should match
         """
-          { error_code:     "invalid_request",
-            error_uuid:     ".*",
-            timestamp:      ".*",
-            detail_message: "Pairing for this ID/Key-ID combination already in DB"
+          { error:              "invalid_request",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "-1"
           }
         """
 
@@ -194,20 +198,21 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     Then the response status is <status>
     And the JSON response should match
         """
-          { error_code:     "<errcode>",
-            error_uuid:     ".*",
-            timestamp:      ".*",
-            detail_message: "<errmsg>"
+          { error:              "<errcode>",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "<errid>"
           }
         """
 
     #TODO Clarify with Spec: first and second scenario is OK?
     Examples: Liste mit Einträgen wo immer ein Zertifikat unterschiedlich aber gültig ist
-      | status | errcode                 | errmsg                                  | key_identifier     | cert_access                           | cert_keydata     | cert_public_key                       | cert_sign                             | cert_register                         |
-      | 400    | invalid_parameter_value | IdNumber does not match to certificate! | keyidentdiffcert01 | egk-idp-idnumber-a-folgekarte-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12      | egk-idp-idnumber-a-valid-ecc.p12      | egk-idp-idnumber-a-valid-ecc.p12      |
-      | 500    | internal_server_error   | Invalid Request                         | keyidentdiffcert03 | egk-idp-idnumber-a-valid-ecc.p12      | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-folgekarte-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12      | egk-idp-idnumber-a-valid-ecc.p12      |
-      | 400    | invalid_request         | Error during JOSE-operations            | keyidentdiffcert04 | egk-idp-idnumber-a-valid-ecc.p12      | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12      | egk-idp-idnumber-a-folgekarte-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12      |
-      | 400    | invalid_request         | Error during JOSE-operations            | keyidentdiffcert05 | egk-idp-idnumber-a-valid-ecc.p12      | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12      | egk-idp-idnumber-a-valid-ecc.p12      | egk-idp-idnumber-a-folgekarte-ecc.p12 |
+      | status | errcode                 | errid | key_identifier     | cert_access                           | cert_keydata     | cert_public_key                       | cert_sign                             | cert_register                         |
+      | 400    | invalid_parameter_value | -1    | keyidentdiffcert01 | egk-idp-idnumber-a-folgekarte-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12      | egk-idp-idnumber-a-valid-ecc.p12      | egk-idp-idnumber-a-valid-ecc.p12      |
+      | 500    | internal_server_error   | -1    | keyidentdiffcert03 | egk-idp-idnumber-a-valid-ecc.p12      | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-folgekarte-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12      | egk-idp-idnumber-a-valid-ecc.p12      |
+      | 400    | invalid_request         | -1    | keyidentdiffcert04 | egk-idp-idnumber-a-valid-ecc.p12      | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12      | egk-idp-idnumber-a-folgekarte-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12      |
+      | 400    | invalid_request         | -1    | keyidentdiffcert05 | egk-idp-idnumber-a-valid-ecc.p12      | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12      | egk-idp-idnumber-a-valid-ecc.p12      | egk-idp-idnumber-a-folgekarte-ecc.p12 |
 
   @Approval @Ready
     @OpenBug
@@ -225,19 +230,20 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     Then the response status is <status>
     And the JSON response should match
         """
-          { error_code:     "<errcode>",
-            error_uuid:     ".*",
-            timestamp:      ".*",
-            detail_message: "<errmsg>"
+          { error:              "<errcode>",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "<errid>"
           }
         """
 
     Examples: Liste mit Einträgen wo immer ein Zertifikat mit anderer IDNummer unterschiedlich aber gültig ist
-      | status | errcode                 | errmsg                                                                  | key_identifier     | cert_access                      | cert_keydata     | cert_public_key                  | cert_sign                        | cert_register                    |
-      | 400    | invalid_parameter_value | IdNumber does not match to certificate!                                 | keyidentdiffcert01 | egk-idp-idnumber-b-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 |
-      | 409    | invalid_request         | TODO Pairing for this ID/Key-ID combination already in DB sicher falsch | keyidentdiffcert03 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-b-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 |
-      | 400    | invalid_request         | Error during JOSE-operations                                            | keyidentdiffcert04 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-b-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 |
-      | 400    | invalid_parameter_value | IdNumber does not match to certificate!                                 | keyidentdiffcert05 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-b-valid-ecc.p12 |
+      | status | errcode                 | errid | key_identifier     | cert_access                      | cert_keydata     | cert_public_key                  | cert_sign                        | cert_register                    |
+      | 400    | invalid_parameter_value | -1    | keyidentdiffcert01 | egk-idp-idnumber-b-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 |
+      | 409    | invalid_request         | -1    | keyidentdiffcert03 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-b-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 |
+      | 400    | invalid_request         | -1    | keyidentdiffcert04 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-b-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 |
+      | 400    | invalid_parameter_value | -1    | keyidentdiffcert05 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-b-valid-ecc.p12 |
 
   @Approval
   Scenario Outline: Biometrie Register - Null Werte in device info
@@ -255,10 +261,11 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     Then the response status is 400
     And the JSON response should match
         """
-          { error_code:     "invalid_request",
-            error_uuid:     ".*",
-            timestamp:      ".*",
-            detail_message: ".*error.*registration_data.*"
+          { error:              "invalid_request",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "-1"
           }
         """
 
@@ -286,10 +293,11 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     Then the response status is 400
     And the JSON response should match
         """
-          { error_code:     "invalid_request",
-            error_uuid:     ".*",
-            timestamp:      ".*",
-            detail_message: ".*error.*registration_data.*"
+          { error:              "invalid_request",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "-1"
           }
         """
 
@@ -318,10 +326,11 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     Then the response status is 400
     And the JSON response should match
         """
-          { error_code:     "invalid_request",
-            error_uuid:     ".*",
-            timestamp:      ".*",
-            detail_message: ".*Unable to find .* in signed_pairing_data.*"
+          { error:              "invalid_request",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "-1"
           }
         """
 
@@ -350,10 +359,11 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     Then the response status is 400
     And the JSON response should match
         """
-          { error_code:     "invalid_request",
-            error_uuid:     ".*",
-            timestamp:      ".*",
-            detail_message: ".*Unable to find .* in signed_pairing_data.*"
+          { error:              "invalid_request",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "-1"
           }
         """
 
@@ -367,7 +377,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | keyidentremove16 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | 419094927676993 | Android | $REMOVE   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
       | keyidentremove17 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | $REMOVE                                       |
 
-  @Approval @issue:IDP-454 @OpenBug
+  @Approval @issue:IDP-470 @OpenBug
   Scenario Outline: Biometrie Register - Ungültige Zertifikate (selfsigned, outdated, revoced)
     Given I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -382,10 +392,11 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     Then the response status is 500
     And the JSON response should match
         """
-          { error_code:     "internal_server_error",
-            error_uuid:     ".*",
-            timestamp:      ".*",
-            detail_message: "Invalid Request"
+          { error:              "invalid_request",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "-1"
           }
         """
 
@@ -409,19 +420,20 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     And I register the device with '/certs/valid/<cert_register>'
     Then the response status is <status>
     And the JSON response should match
-        """
-          { error_code:     "<errcode>",
-            error_uuid:     ".*",
-            timestamp:      ".*",
-            detail_message: "<errmsg>"
+         """
+          { error:              "<errcode>",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "<errid>"
           }
         """
 
     Examples: Liste mit Einträgen wo immer ein Zertifikat ohne IdNummer verwendet wird
-      | status | errcode               | errmsg                       | key_identifier | cert_access                      | cert_keydata     | cert_public_key                   | cert_sign                         | cert_register                     |
-      | 500    | internal_server_error | Invalid Request              | keyidentnoid03 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-missing1-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12  | egk-idp-idnumber-a-valid-ecc.p12  |
-      | 400    | invalid_request       | Error during JOSE-operations | keyidentnoid04 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12  | egk-idp-idnumber-missing1-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12  |
-      | 500    | internal_server_error | Invalid Request              | keyidentnoid05 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12  | egk-idp-idnumber-a-valid-ecc.p12  | egk-idp-idnumber-missing1-ecc.p12 |
+      | status | errcode               | errid | key_identifier | cert_access                      | cert_keydata     | cert_public_key                   | cert_sign                         | cert_register                     |
+      | 500    | internal_server_error | -1    | keyidentnoid03 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-missing1-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12  | egk-idp-idnumber-a-valid-ecc.p12  |
+      | 400    | invalid_request       | -1    | keyidentnoid04 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12  | egk-idp-idnumber-missing1-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12  |
+      | 500    | internal_server_error | -1    | keyidentnoid05 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12  | egk-idp-idnumber-a-valid-ecc.p12  | egk-idp-idnumber-missing1-ecc.p12 |
 
   @manual
   @manual-result:passed
@@ -452,10 +464,11 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     Then the response status is 403
     And the JSON response should match
         """
-          { error_code:     "access_denied",
-            error_uuid:     ".*",
-            timestamp:      ".*",
-            detail_message: "Error while verifying Access-Token"
+          { error:              "access_denied",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "-1"
           }
         """
 
@@ -476,10 +489,11 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     Then the response status is 403
     And the JSON response should match
         """
-          { error_code:     "access_denied",
-            error_uuid:     ".*",
-            timestamp:      ".*",
-            detail_message: "Scope missing: pairing"
+          { error:              "access_denied",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "-1"
           }
         """
 
@@ -498,9 +512,10 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     Then the response status is 403
     And the JSON response should match
         """
-          { error_code:     "access_denied",
-            error_uuid:     ".*",
-            timestamp:      ".*",
-            detail_message: "Scope missing: pairing"
+          { error:              "access_denied",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "-1"
           }
         """

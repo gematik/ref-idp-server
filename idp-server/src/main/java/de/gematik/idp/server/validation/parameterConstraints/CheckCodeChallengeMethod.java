@@ -35,7 +35,7 @@ import javax.validation.Payload;
 @Retention(RUNTIME)
 public @interface CheckCodeChallengeMethod {
 
-    String message() default "";
+    String message() default "2008";
 
     Class<?>[] groups() default {};
 

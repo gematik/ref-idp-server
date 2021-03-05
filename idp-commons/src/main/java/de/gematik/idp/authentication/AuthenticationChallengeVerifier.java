@@ -17,11 +17,15 @@
 package de.gematik.idp.authentication;
 
 import de.gematik.idp.crypto.model.PkiIdentity;
+import de.gematik.idp.exceptions.ChallengeExpiredException;
+import de.gematik.idp.exceptions.ChallengeSignatureInvalidException;
 import de.gematik.idp.exceptions.IdpJoseException;
+import de.gematik.idp.exceptions.NoNestedJwtFoundException;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.token.JsonWebToken;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
@@ -65,8 +69,8 @@ public class AuthenticationChallengeVerifier {
             .build();
         try {
             serverJwtConsumer.process(authResponse);
-        } catch (final InvalidJwtException e) {
-            throw new IdpJoseException(e);
+        } catch (final Exception e) {
+            throw new ChallengeSignatureInvalidException(e);
         }
     }
 
@@ -78,18 +82,24 @@ public class AuthenticationChallengeVerifier {
         try {
             serverJwtConsumer.process(authResponse);
         } catch (final InvalidJwtException e) {
-            throw new IdpJoseException(e);
+            throw new ChallengeSignatureInvalidException(e);
         }
     }
 
     private void performServerSignatureValidationOfNjwt(final JsonWebToken authenticationResponse) {
-        authenticationResponse.getBodyClaim(ClaimName.NESTED_JWT)
+        final JsonWebToken serverChallenge = authenticationResponse.getBodyClaim(ClaimName.NESTED_JWT)
             .map(njwt -> new JsonWebToken(njwt.toString()))
-            .ifPresentOrElse(jsonWebToken -> jsonWebToken.verify(serverIdentity.getCertificate().getPublicKey()),
-                () -> {
-                    throw new IdpJoseException("Server certificate mismatch");
-                }
-            );
+            .orElseThrow(() -> new NoNestedJwtFoundException());
+
+        if (serverChallenge.getExpiresAt().isBefore(ZonedDateTime.now())
+            || serverChallenge.getExpiresAtBody().isBefore(ZonedDateTime.now())) {
+            throw new ChallengeExpiredException();
+        }
+        try {
+            serverChallenge.verify(serverIdentity.getCertificate().getPublicKey());
+        } catch (final Exception e) {
+            throw new ChallengeSignatureInvalidException();
+        }
     }
 
     public Optional<X509Certificate> extractClientCertificateFromChallenge(final JsonWebToken authenticationResponse) {

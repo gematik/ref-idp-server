@@ -23,7 +23,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     Given I initialize scenario from discovery document endpoint
     And I retrieve public keys from URIs
 
-  @Afo:A_20463 @Afo:A_20321-01
+  @Afo:A_20463 @Afo:A_20321
   @Approval @Ready
   Scenario: GetToken Signierte Challenge - Gutfall - Check Access Token - Validiere Antwortstruktur
     Given I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
@@ -63,7 +63,6 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     Then the header claims should match in any order
         """
           { alg: "BP256R1",
-            exp: "[\\d]*",
             kid: "${json-unit.ignore}",
             typ: "at+JWT"
           }
@@ -124,6 +123,11 @@ Feature: Fordere Access Token mit einer signierten Challenge an
   @Afo:A_21321
   @Approval @Ready
   Scenario: GetToken Signierte Challenge - Gutfall - Check ID Token - Validiere ID Token Claims
+  ```
+  Validierungen:
+
+  at_hash ist base64 url encoded (enthält keine URL inkompatiblen Zeichen +/=)
+
     Given I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
     And I request a challenge with
       | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state       | nonce | response_type |
@@ -137,7 +141,6 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     Then the header claims should match in any order
         """
           { alg: "BP256R1",
-            exp: "[\\d]*",
             kid: "${json-unit.ignore}",
             typ: "JWT"
           }
@@ -147,7 +150,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
         """
           { acr:              "gematik-ehealth-loa-high",
             amr:              '["mfa", "sc", "pin"]',
-            at_hash:          ".*",
+            at_hash:          "[A-Za-z0-9\\-\\_]*",
             aud:              "eRezeptApp",
             auth_time:        "[\\d]*",
             azp:              "eRezeptApp",
@@ -204,7 +207,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     Then the body claim 'sub' should match '.*'
     And the body claim 'idNummer' should match "[\d]\-.*"
 
-  @Afo:A_20327-02
+  @Afo:A_20327
   @Approval @Ready
   @Signature
   Scenario: GetToken Signierte Challenge - Validiere Signatur Access Token
@@ -220,7 +223,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     When I request an access token
     Then the context ACCESS_TOKEN must be signed with cert PUK_SIGN
 
-  @Afo:A_20625 @Afo:A_20327-02
+  @Afo:A_20625 @Afo:A_20327
   @Approval @Ready
   @Signature
   Scenario: GetToken Signierte Challenge - Validiere Signatur ID Token
@@ -239,7 +242,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     # TODO card specific cases (if user consent claims should be validated)
 
 
-  @Afo:A_20314 @Afo:A_20315-01
+  @Afo:A_20314 @Afo:A_20315
   @Approval @Todo
   @Timeout
   Scenario: GetToken Signierte Challenge - Veralteter Token code wird abgelehnt
@@ -256,15 +259,15 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     Then the response status is 400
     And the JSON response should match
         """
-          { error_code: "invalid_request",
-            error_uuid: ".*",
-            timestamp: ".*",
-            detail_message: "The given JWT has expired and is no longer valid (exp is in the past)"
+          { error:              "invalid_grant",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "3011"
           }
         """
 
-
-  @Approval @Todo:ErrorMessages
+  @Approval @Ready
   Scenario Outline: GetToken Signierte Challenge - Null Parameter
     Given I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
     And I request a challenge with
@@ -274,28 +277,30 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And I request a code token with signed challenge
     And I set the context with key REDIRECT_URI to 'http://redirect.gematik.de/erezept'
     When I request an access token with
-      | grant_type   | redirect_uri   | code   | code_verifier   | client_id   |
-      | <grant_type> | <redirect_uri> | <code> | <code_verifier> | <client_id> |
+      | grant_type   | redirect_uri   | token_code   | code_verifier   | client_id   |
+      | <grant_type> | <redirect_uri> | <token_code> | <code_verifier> | <client_id> |
     Then the response status is 400
     And the JSON response should match
         """
-          { error_code: "invalid_request",
-            error_uuid: ".*",
-            timestamp: ".*",
-            detail_message: ".*"
+          { error:              "<err_code>",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "<err_id>"
           }
         """
+
     # TODO check error detail message
 
     Examples: GetToken - Null Parameter Beispiele
-      | grant_type         | redirect_uri                       | code                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | code_verifier                                                                      | client_id |
-      | $NULL              | http://redirect.gematik.de/erezept | eyJhbGciOiJCUDI1NlIxIn0.eyJzdWIiOiJzdWJqZWN0Iiwib3JnYW5pemF0aW9uTmFtZSI6ImdlbWF0aWsgR21iSCBOT1QtVkFMSUQiLCJwcm9mZXNzaW9uT0lEIjoiMS4yLjI3Ni4wLjc2LjQuNDkiLCJpZE51bW1lciI6IlgxMTA0MTE2NzUiLCJpc3MiOiJzZW5kZXIiLCJyZXNwb25zZV90eXBlIjoiY29kZSIsImNvZGVfY2hhbGxlbmdlX21ldGhvZCI6IlMyNTYiLCJnaXZlbl9uYW1lIjoiRGFyaXVzIE1pY2hhZWwgQnJpYW4gVWJibyIsImNsaWVudF9pZCI6Im9pZGNfY2xpZW50IiwiYWNyIjoiZWlkYXMtbG9hLWhpZ2giLCJhdWQiOiJlcnAuemVudHJhbC5lcnAudGktZGllbnN0ZS5kZSIsInNjb3BlIjoib3BlbmlkIGUtcmV6ZXB0IiwiYXV0aF90aW1lIjoxNjA3MzQ5MjExLCJyZWRpcmVjdF91cmkiOiJodHRwOmxvY2FsaG9zdDo4MDgwIiwic3RhdGUiOiJ4eHhzdGF0ZXh4eCIsImV4cCI6MTYwNzM1MjgxMSwiZmFtaWx5X25hbWUiOiJCw7ZkZWZlbGQiLCJjb2RlX2NoYWxsZW5nZSI6IkNhM1ZlOGpTc0JRT0JGVnFRdkxzMUUtZEdWMUJYZzJGVHZyZC1UZzE5VmcifQ.RsR3JFqMCFV9I7m8l5SlyTMNGOCF8GeInDEtj9zvBDRCIjjPSYjjHlwiCxYsimYhrcFzr77bpXUjd1BbprzI_Q | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj | erezept   |
-      | authorization_code | $NULL                              | eyJhbGciOiJCUDI1NlIxIn0.eyJzdWIiOiJzdWJqZWN0Iiwib3JnYW5pemF0aW9uTmFtZSI6ImdlbWF0aWsgR21iSCBOT1QtVkFMSUQiLCJwcm9mZXNzaW9uT0lEIjoiMS4yLjI3Ni4wLjc2LjQuNDkiLCJpZE51bW1lciI6IlgxMTA0MTE2NzUiLCJpc3MiOiJzZW5kZXIiLCJyZXNwb25zZV90eXBlIjoiY29kZSIsImNvZGVfY2hhbGxlbmdlX21ldGhvZCI6IlMyNTYiLCJnaXZlbl9uYW1lIjoiRGFyaXVzIE1pY2hhZWwgQnJpYW4gVWJibyIsImNsaWVudF9pZCI6Im9pZGNfY2xpZW50IiwiYWNyIjoiZWlkYXMtbG9hLWhpZ2giLCJhdWQiOiJlcnAuemVudHJhbC5lcnAudGktZGllbnN0ZS5kZSIsInNjb3BlIjoib3BlbmlkIGUtcmV6ZXB0IiwiYXV0aF90aW1lIjoxNjA3MzQ5MjExLCJyZWRpcmVjdF91cmkiOiJodHRwOmxvY2FsaG9zdDo4MDgwIiwic3RhdGUiOiJ4eHhzdGF0ZXh4eCIsImV4cCI6MTYwNzM1MjgxMSwiZmFtaWx5X25hbWUiOiJCw7ZkZWZlbGQiLCJjb2RlX2NoYWxsZW5nZSI6IkNhM1ZlOGpTc0JRT0JGVnFRdkxzMUUtZEdWMUJYZzJGVHZyZC1UZzE5VmcifQ.RsR3JFqMCFV9I7m8l5SlyTMNGOCF8GeInDEtj9zvBDRCIjjPSYjjHlwiCxYsimYhrcFzr77bpXUjd1BbprzI_Q | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj | erezept   |
-      | authorization_code | http://redirect.gematik.de/erezept | $NULL                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj | erezept   |
-      | authorization_code | http://redirect.gematik.de/erezept | eyJhbGciOiJCUDI1NlIxIn0.eyJzdWIiOiJzdWJqZWN0Iiwib3JnYW5pemF0aW9uTmFtZSI6ImdlbWF0aWsgR21iSCBOT1QtVkFMSUQiLCJwcm9mZXNzaW9uT0lEIjoiMS4yLjI3Ni4wLjc2LjQuNDkiLCJpZE51bW1lciI6IlgxMTA0MTE2NzUiLCJpc3MiOiJzZW5kZXIiLCJyZXNwb25zZV90eXBlIjoiY29kZSIsImNvZGVfY2hhbGxlbmdlX21ldGhvZCI6IlMyNTYiLCJnaXZlbl9uYW1lIjoiRGFyaXVzIE1pY2hhZWwgQnJpYW4gVWJibyIsImNsaWVudF9pZCI6Im9pZGNfY2xpZW50IiwiYWNyIjoiZWlkYXMtbG9hLWhpZ2giLCJhdWQiOiJlcnAuemVudHJhbC5lcnAudGktZGllbnN0ZS5kZSIsInNjb3BlIjoib3BlbmlkIGUtcmV6ZXB0IiwiYXV0aF90aW1lIjoxNjA3MzQ5MjExLCJyZWRpcmVjdF91cmkiOiJodHRwOmxvY2FsaG9zdDo4MDgwIiwic3RhdGUiOiJ4eHhzdGF0ZXh4eCIsImV4cCI6MTYwNzM1MjgxMSwiZmFtaWx5X25hbWUiOiJCw7ZkZWZlbGQiLCJjb2RlX2NoYWxsZW5nZSI6IkNhM1ZlOGpTc0JRT0JGVnFRdkxzMUUtZEdWMUJYZzJGVHZyZC1UZzE5VmcifQ.RsR3JFqMCFV9I7m8l5SlyTMNGOCF8GeInDEtj9zvBDRCIjjPSYjjHlwiCxYsimYhrcFzr77bpXUjd1BbprzI_Q | $NULL                                                                              | erezept   |
-      | authorization_code | http://redirect.gematik.de/erezept | eyJhbGciOiJCUDI1NlIxIn0.eyJzdWIiOiJzdWJqZWN0Iiwib3JnYW5pemF0aW9uTmFtZSI6ImdlbWF0aWsgR21iSCBOT1QtVkFMSUQiLCJwcm9mZXNzaW9uT0lEIjoiMS4yLjI3Ni4wLjc2LjQuNDkiLCJpZE51bW1lciI6IlgxMTA0MTE2NzUiLCJpc3MiOiJzZW5kZXIiLCJyZXNwb25zZV90eXBlIjoiY29kZSIsImNvZGVfY2hhbGxlbmdlX21ldGhvZCI6IlMyNTYiLCJnaXZlbl9uYW1lIjoiRGFyaXVzIE1pY2hhZWwgQnJpYW4gVWJibyIsImNsaWVudF9pZCI6Im9pZGNfY2xpZW50IiwiYWNyIjoiZWlkYXMtbG9hLWhpZ2giLCJhdWQiOiJlcnAuemVudHJhbC5lcnAudGktZGllbnN0ZS5kZSIsInNjb3BlIjoib3BlbmlkIGUtcmV6ZXB0IiwiYXV0aF90aW1lIjoxNjA3MzQ5MjExLCJyZWRpcmVjdF91cmkiOiJodHRwOmxvY2FsaG9zdDo4MDgwIiwic3RhdGUiOiJ4eHhzdGF0ZXh4eCIsImV4cCI6MTYwNzM1MjgxMSwiZmFtaWx5X25hbWUiOiJCw7ZkZWZlbGQiLCJjb2RlX2NoYWxsZW5nZSI6IkNhM1ZlOGpTc0JRT0JGVnFRdkxzMUUtZEdWMUJYZzJGVHZyZC1UZzE5VmcifQ.RsR3JFqMCFV9I7m8l5SlyTMNGOCF8GeInDEtj9zvBDRCIjjPSYjjHlwiCxYsimYhrcFzr77bpXUjd1BbprzI_Q | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj | $NULL     |
+      | err_id | err_code               | grant_type         | redirect_uri                       | token_code | code_verifier                                                                      | client_id  |
+      | 3014   | unsupported_grant_type | $NULL              | http://redirect.gematik.de/erezept | $CONTEXT   | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj | eRezeptApp |
+      | 1020   | invalid_request        | authorization_code | $NULL                              | $CONTEXT   | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj | eRezeptApp |
+      | 3010   | invalid_grant          | authorization_code | http://redirect.gematik.de/erezept | $NULL      | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj | eRezeptApp |
+      | 3015   | invalid_request        | authorization_code | http://redirect.gematik.de/erezept | $CONTEXT   | $NULL                                                                              | eRezeptApp |
+      | 3007   | invalid_client         | authorization_code | http://redirect.gematik.de/erezept | $CONTEXT   | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj | $NULL      |
 
-  @Approval @Todo:ErrorMessages
+  @Approval @Ready
   Scenario Outline: GetToken Signierte Challenge - Fehlende Parameter
     Given I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
     And I request a challenge with
@@ -304,24 +309,55 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And I request a code token with signed challenge
     When I request an access token with
-      | grant_type   | redirect_uri   | code   | code_verifier   | client_id   |
-      | <grant_type> | <redirect_uri> | <code> | <code_verifier> | <client_id> |
+      | grant_type   | redirect_uri   | token_code   | code_verifier   | client_id   |
+      | <grant_type> | <redirect_uri> | <token_code> | <code_verifier> | <client_id> |
     Then the response status is 400
     And the JSON response should match
         """
-          { error_code: "<error_code>",
-            error_uuid: ".*",
-            timestamp: ".*",
-            detail_message: ".*"
+          { error:              "<err_code>",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "<err_id>"
           }
         """
-    # TODO check error detail message
-
 
     Examples: GetToken - Fehlende Parameter Beispiele
-      | error_code         | grant_type         | redirect_uri                       | code                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | code_verifier                                                                      | client_id |
-      | missing_parameters | $REMOVE            | http://redirect.gematik.de/erezept | eyJhbGciOiJCUDI1NlIxIn0.eyJzdWIiOiJzdWJqZWN0Iiwib3JnYW5pemF0aW9uTmFtZSI6ImdlbWF0aWsgR21iSCBOT1QtVkFMSUQiLCJwcm9mZXNzaW9uT0lEIjoiMS4yLjI3Ni4wLjc2LjQuNDkiLCJpZE51bW1lciI6IlgxMTA0MTE2NzUiLCJpc3MiOiJzZW5kZXIiLCJyZXNwb25zZV90eXBlIjoiY29kZSIsImNvZGVfY2hhbGxlbmdlX21ldGhvZCI6IlMyNTYiLCJnaXZlbl9uYW1lIjoiRGFyaXVzIE1pY2hhZWwgQnJpYW4gVWJibyIsImNsaWVudF9pZCI6Im9pZGNfY2xpZW50IiwiYWNyIjoiZWlkYXMtbG9hLWhpZ2giLCJhdWQiOiJlcnAuemVudHJhbC5lcnAudGktZGllbnN0ZS5kZSIsInNjb3BlIjoib3BlbmlkIGUtcmV6ZXB0IiwiYXV0aF90aW1lIjoxNjA3MzQ5MjExLCJyZWRpcmVjdF91cmkiOiJodHRwOmxvY2FsaG9zdDo4MDgwIiwic3RhdGUiOiJ4eHhzdGF0ZXh4eCIsImV4cCI6MTYwNzM1MjgxMSwiZmFtaWx5X25hbWUiOiJCw7ZkZWZlbGQiLCJjb2RlX2NoYWxsZW5nZSI6IkNhM1ZlOGpTc0JRT0JGVnFRdkxzMUUtZEdWMUJYZzJGVHZyZC1UZzE5VmcifQ.RsR3JFqMCFV9I7m8l5SlyTMNGOCF8GeInDEtj9zvBDRCIjjPSYjjHlwiCxYsimYhrcFzr77bpXUjd1BbprzI_Q | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj | erezept   |
-      | missing_parameters | authorization_code | $REMOVE                            | eyJhbGciOiJCUDI1NlIxIn0.eyJzdWIiOiJzdWJqZWN0Iiwib3JnYW5pemF0aW9uTmFtZSI6ImdlbWF0aWsgR21iSCBOT1QtVkFMSUQiLCJwcm9mZXNzaW9uT0lEIjoiMS4yLjI3Ni4wLjc2LjQuNDkiLCJpZE51bW1lciI6IlgxMTA0MTE2NzUiLCJpc3MiOiJzZW5kZXIiLCJyZXNwb25zZV90eXBlIjoiY29kZSIsImNvZGVfY2hhbGxlbmdlX21ldGhvZCI6IlMyNTYiLCJnaXZlbl9uYW1lIjoiRGFyaXVzIE1pY2hhZWwgQnJpYW4gVWJibyIsImNsaWVudF9pZCI6Im9pZGNfY2xpZW50IiwiYWNyIjoiZWlkYXMtbG9hLWhpZ2giLCJhdWQiOiJlcnAuemVudHJhbC5lcnAudGktZGllbnN0ZS5kZSIsInNjb3BlIjoib3BlbmlkIGUtcmV6ZXB0IiwiYXV0aF90aW1lIjoxNjA3MzQ5MjExLCJyZWRpcmVjdF91cmkiOiJodHRwOmxvY2FsaG9zdDo4MDgwIiwic3RhdGUiOiJ4eHhzdGF0ZXh4eCIsImV4cCI6MTYwNzM1MjgxMSwiZmFtaWx5X25hbWUiOiJCw7ZkZWZlbGQiLCJjb2RlX2NoYWxsZW5nZSI6IkNhM1ZlOGpTc0JRT0JGVnFRdkxzMUUtZEdWMUJYZzJGVHZyZC1UZzE5VmcifQ.RsR3JFqMCFV9I7m8l5SlyTMNGOCF8GeInDEtj9zvBDRCIjjPSYjjHlwiCxYsimYhrcFzr77bpXUjd1BbprzI_Q | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj | erezept   |
-      | missing_parameters | authorization_code | http://redirect.gematik.de/erezept | $REMOVE                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj | erezept   |
-      | invalid_request    | authorization_code | http://redirect.gematik.de/erezept | eyJhbGciOiJCUDI1NlIxIn0.eyJzdWIiOiJzdWJqZWN0Iiwib3JnYW5pemF0aW9uTmFtZSI6ImdlbWF0aWsgR21iSCBOT1QtVkFMSUQiLCJwcm9mZXNzaW9uT0lEIjoiMS4yLjI3Ni4wLjc2LjQuNDkiLCJpZE51bW1lciI6IlgxMTA0MTE2NzUiLCJpc3MiOiJzZW5kZXIiLCJyZXNwb25zZV90eXBlIjoiY29kZSIsImNvZGVfY2hhbGxlbmdlX21ldGhvZCI6IlMyNTYiLCJnaXZlbl9uYW1lIjoiRGFyaXVzIE1pY2hhZWwgQnJpYW4gVWJibyIsImNsaWVudF9pZCI6Im9pZGNfY2xpZW50IiwiYWNyIjoiZWlkYXMtbG9hLWhpZ2giLCJhdWQiOiJlcnAuemVudHJhbC5lcnAudGktZGllbnN0ZS5kZSIsInNjb3BlIjoib3BlbmlkIGUtcmV6ZXB0IiwiYXV0aF90aW1lIjoxNjA3MzQ5MjExLCJyZWRpcmVjdF91cmkiOiJodHRwOmxvY2FsaG9zdDo4MDgwIiwic3RhdGUiOiJ4eHhzdGF0ZXh4eCIsImV4cCI6MTYwNzM1MjgxMSwiZmFtaWx5X25hbWUiOiJCw7ZkZWZlbGQiLCJjb2RlX2NoYWxsZW5nZSI6IkNhM1ZlOGpTc0JRT0JGVnFRdkxzMUUtZEdWMUJYZzJGVHZyZC1UZzE5VmcifQ.RsR3JFqMCFV9I7m8l5SlyTMNGOCF8GeInDEtj9zvBDRCIjjPSYjjHlwiCxYsimYhrcFzr77bpXUjd1BbprzI_Q | $REMOVE                                                                            | erezept   |
-      | missing_parameters | authorization_code | http://redirect.gematik.de/erezept | eyJhbGciOiJCUDI1NlIxIn0.eyJzdWIiOiJzdWJqZWN0Iiwib3JnYW5pemF0aW9uTmFtZSI6ImdlbWF0aWsgR21iSCBOT1QtVkFMSUQiLCJwcm9mZXNzaW9uT0lEIjoiMS4yLjI3Ni4wLjc2LjQuNDkiLCJpZE51bW1lciI6IlgxMTA0MTE2NzUiLCJpc3MiOiJzZW5kZXIiLCJyZXNwb25zZV90eXBlIjoiY29kZSIsImNvZGVfY2hhbGxlbmdlX21ldGhvZCI6IlMyNTYiLCJnaXZlbl9uYW1lIjoiRGFyaXVzIE1pY2hhZWwgQnJpYW4gVWJibyIsImNsaWVudF9pZCI6Im9pZGNfY2xpZW50IiwiYWNyIjoiZWlkYXMtbG9hLWhpZ2giLCJhdWQiOiJlcnAuemVudHJhbC5lcnAudGktZGllbnN0ZS5kZSIsInNjb3BlIjoib3BlbmlkIGUtcmV6ZXB0IiwiYXV0aF90aW1lIjoxNjA3MzQ5MjExLCJyZWRpcmVjdF91cmkiOiJodHRwOmxvY2FsaG9zdDo4MDgwIiwic3RhdGUiOiJ4eHhzdGF0ZXh4eCIsImV4cCI6MTYwNzM1MjgxMSwiZmFtaWx5X25hbWUiOiJCw7ZkZWZlbGQiLCJjb2RlX2NoYWxsZW5nZSI6IkNhM1ZlOGpTc0JRT0JGVnFRdkxzMUUtZEdWMUJYZzJGVHZyZC1UZzE5VmcifQ.RsR3JFqMCFV9I7m8l5SlyTMNGOCF8GeInDEtj9zvBDRCIjjPSYjjHlwiCxYsimYhrcFzr77bpXUjd1BbprzI_Q | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj | $REMOVE   |
+      | err_id | err_code        | grant_type         | redirect_uri                       | token_code | code_verifier                                                                      | client_id  |
+      | 3006   | invalid_request | $REMOVE            | http://redirect.gematik.de/erezept | $CONTEXT   | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj | eRezeptApp |
+      | 1004   | invalid_request | authorization_code | $REMOVE                            | $CONTEXT   | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj | eRezeptApp |
+      | 3010   | invalid_grant   | authorization_code | http://redirect.gematik.de/erezept | $REMOVE    | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj | eRezeptApp |
+      | 3015   | invalid_request | authorization_code | http://redirect.gematik.de/erezept | $CONTEXT   | $REMOVE                                                                            | eRezeptApp |
+      | 1002   | invalid_request | authorization_code | http://redirect.gematik.de/erezept | $CONTEXT   | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj | $REMOVE    |
+
+
+  #noinspection NonAsciiCharacters
+  @Approval @Ready
+  Scenario Outline: GetToken Signierte Challenge - Ungültige Parameter
+    Given I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+    And I request a challenge with
+      | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state       | nonce  | response_type |
+      | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 776655 | code          |
+    And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And I request a code token with signed challenge
+    When I request an access token with
+      | grant_type   | redirect_uri   | token_code   | code_verifier   | client_id   |
+      | <grant_type> | <redirect_uri> | <token_code> | <code_verifier> | <client_id> |
+    Then the response status is 400
+    And the JSON response should match
+        """
+          { error:              "<err_code>",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "<err_id>"
+          }
+        """
+
+    Examples: GetToken - Ungültige Parameter Beispiele
+      | err_id | err_code               | grant_type         | redirect_uri                       | token_code                                                                                                                                                | code_verifier                                                                                                                  | client_id  |
+      | 3014   | unsupported_grant_type | deepstate_grant    | http://redirect.gematik.de/erezept | $CONTEXT                                                                                                                                                  | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj                                             | eRezeptApp |
+      | 1020   | invalid_request        | authorization_code | http://www.somethingstore.com/     | $CONTEXT                                                                                                                                                  | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj                                             | eRezeptApp |
+      | 3013   | invalid_request        | authorization_code | http://redirect.gematik.de/erezept | Ob Regen, Sturm oder Sonnenschein: Dankbare Ergebenheit ist kein Latein. Bleibe nicht länger abhängig vom Wetter, sondern schaue auf den einzigen Retter! | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj                                             | eRezeptApp |
+      | 3016   | invalid_request        | authorization_code | http://redirect.gematik.de/erezept | $CONTEXT                                                                                                                                                  | Was war das für ein Zaubertraum, der sich in meine Seele glückt? An Tannen gehn die Lichter an und immer weiter wird der Raum. | eRezeptApp |
+      | 3007   | invalid_client         | authorization_code | http://redirect.gematik.de/erezept | $CONTEXT                                                                                                                                                  | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj                                             | shadows    |

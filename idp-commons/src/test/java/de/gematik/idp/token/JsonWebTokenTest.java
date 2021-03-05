@@ -17,6 +17,7 @@
 package de.gematik.idp.token;
 
 import static de.gematik.idp.field.ClaimName.CONFIRMATION;
+import static de.gematik.idp.field.ClaimName.CONTENT_TYPE;
 import static de.gematik.idp.field.ClaimName.ENCRYPTION_ALGORITHM;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -130,6 +131,16 @@ public class JsonWebTokenTest {
         assertThat(jsonWebToken.encrypt(aesKey).getHeaderClaim(ENCRYPTION_ALGORITHM))
             .get()
             .isEqualTo("A256GCM");
+    }
+
+    @Test
+    public void encryptJwtWithAes_ctyShouldBeJWT() {
+        final JsonWebToken jsonWebToken = idpJwtProcessor
+            .buildJwt(new JwtBuilder().addAllBodyClaims(Map.of(CONFIRMATION.getJoseName(), ZonedDateTime.now())));
+
+        assertThat(jsonWebToken.encrypt(aesKey).getHeaderClaim(CONTENT_TYPE))
+            .get()
+            .isEqualTo("JWT");
     }
 
     @Test

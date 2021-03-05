@@ -89,7 +89,7 @@ public class IdTokenBuilderTest {
             .doesNotContainKey(JWKS_URI.getJoseName());
         assertThat(idToken.getHeaderClaims())
             .containsKey(ALGORITHM.getJoseName())
-            .containsKey(EXPIRES_AT.getJoseName())
+            .doesNotContainKey(EXPIRES_AT.getJoseName())
             .doesNotContainKey("headerNotCopy");
     }
 
@@ -102,14 +102,12 @@ public class IdTokenBuilderTest {
                 StandardCharsets.UTF_8));
 
         final long now = ZonedDateTime.now().toEpochSecond();
-        final long expHeader = idToken.getExpiresAt().toEpochSecond();
         final long expBody = idToken.getExpiresAtBody().toEpochSecond();
         final long iat = idToken.getIssuedAt().toEpochSecond();
 
         assertThat(now).isGreaterThanOrEqualTo(iat);
-        assertThat(now).isLessThan(expHeader);
         assertThat(now).isLessThan(expBody);
-        assertThat(expHeader - now).isLessThan(maxIdTokenExpirationInSec);
+        assertThat(expBody - now).isLessThan(maxIdTokenExpirationInSec);
     }
 
     @Rfc("OpenID Connect Core 1.0 - 3.1.3.6.")
@@ -119,7 +117,7 @@ public class IdTokenBuilderTest {
         final JsonWebToken idToken = idTokenBuilder
             .buildIdToken(TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, accesTokenHash);
 
-        assertThat(Base64.getDecoder().decode(idToken.getStringBodyClaim(ACCESS_TOKEN_HASH).get()))
+        assertThat(Base64.getUrlDecoder().decode(idToken.getStringBodyClaim(ACCESS_TOKEN_HASH).get()))
             .isEqualTo(ArrayUtils.subarray(accesTokenHash, 0, (128 / 8)))
             .hasSize(128 / 8);
     }

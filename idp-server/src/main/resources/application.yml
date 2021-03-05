@@ -37,6 +37,135 @@ idp:
     eRezeptApp:
       redirectUri: http://redirect.gematik.de/erezept
       returnSsoToken: true
+  errors:
+    genericErrorMap:
+      client_id:
+        detailMessage: "client_id wurde nicht übermittelt"
+        error: INVALID_REQUEST
+        code: 1002
+      redirect_uri:
+        detailMessage: "redirect_uri wurde nicht übermittelt"
+        error: INVALID_REQUEST
+        code: 1004
+      scope:
+        detailMessage: "scope wurde nicht übermittelt"
+        error: INVALID_REQUEST
+        code: 1005
+      state:
+        detailMessage: "state wurde nicht übermittelt"
+        error: INVALID_REQUEST
+        code: 2002
+      response_type:
+        detailMessage: "response_type wurde nicht übermittelt"
+        error: INVALID_REQUEST
+        code: 2004
+      code_challenge_method:
+        detailMessage: "code_challenge_method wurde nicht übermittelt"
+        error: INVALID_REQUEST
+        code: 2008
+      code_challenge:
+        detailMessage: "code_challenge wurde nicht übermittelt"
+        error: INVALID_REQUEST
+        code: 2009
+      key_verifier:
+        detailMessage: "key_verifier wurde nicht übermittelt"
+        error: INVALID_REQUEST
+        code: 3004
+      code:
+        detailMessage: "Authorization Code wurde nicht übermittelt"
+        error: INVALID_REQUEST
+        code: 3005
+      grant_type:
+        detailMessage: "grant_type wurde nicht übermittelt"
+        error: INVALID_REQUEST
+        code: 3006
+    errorCodeMap:
+      1004:
+        detailMessage: "redirect_uri wurde nicht übermittelt"
+        error: INVALID_REQUEST
+        code: 1004
+      1020:
+        detailMessage: "redirect_uri ist ungültig"
+        error: INVALID_REQUEST
+        code: 1020
+      2004:
+        detailMessage: "response_type wurde nicht übermittelt"
+        error: INVALID_REQUEST
+        code: 2004
+      2005:
+        detailMessage: "response_type wird nicht unterstützt"
+        error: UNSUPPORTED_RESPONSE_TYPE
+        code: 2005
+      2006:
+        detailMessage: "state ist ungültig"
+        error: INVALID_REQUEST
+        code: 2006
+      2007:
+        detailMessage: "nonce ist ungültig"
+        error: INVALID_REQUEST
+        code: 2007
+      2008:
+        detailMessage: "code_challenge_method ist ungültig"
+        error: INVALID_REQUEST
+        code: 2008
+      2009:
+        detailMessage: "code_challenge wurde nicht übermittelt"
+        error: INVALID_REQUEST
+        code: 2009
+      2010:
+        detailMessage: "code_challenge ist ungültig"
+        error: INVALID_REQUEST
+        code: 2010
+      2012:
+        detailMessage: "client_id ist ungültig"
+        error: INVALID_REQUEST
+        code: 2012
+      2013:
+        detailMessage: "Der Request besitzt keine gültige Signatur"
+        error: INVALID_REQUEST
+        code: 2013
+      2030:
+        detailMessage: "Challenge ist ungültig"
+        error: INVALID_REQUEST
+        code: 2030
+      2032:
+        detailMessage: "Challenge ist abgelaufen"
+        error: INVALID_REQUEST
+        code: 2032
+      2040:
+        detailMessage: "SSO_TOKEN nicht valide, bitte um neuerliche Authentisierung"
+        error: ACCESS_DENIED
+        code: 2040
+      3006:
+        detailMessage: "grant_type wurde nicht übermittelt"
+        error: INVALID_REQUEST
+        code: 3006
+      3007:
+        detailMessage: "client_id ist ungültig"
+        error: INVALID_CLIENT
+        code: 3007
+      3014:
+        detailMessage: "grant_type wird nicht unterstützt"
+        error: UNSUPPORTED_GRANT_TYPE
+        code: 3014
+      4001:
+        detailMessage: "key_identifier wurde nicht übermittelt"
+        error: INVALID_REQUEST
+        code: 4001
+    joseExceptionMap:
+      ChallengeSignatureInvalidException:
+        detailMessage: "Der Request besitzt keine gültige Signatur"
+        error: INVALID_REQUEST
+        code: 2013
+      NoNestedJwtFoundException:
+        detailMessage: "Challenge ist ungültig"
+        error: INVALID_REQUEST
+        code: 2030
+      ChallengeExpiredException:
+        detailMessage: "Challenge ist abgelaufen"
+        error: INVALID_REQUEST
+        code: 2032
+
 caching:
   discoveryDocument:
     cacheControl: "max-age=300"

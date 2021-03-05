@@ -61,6 +61,16 @@ public class Context {
         return (DiscoveryDocument) (getThreadContext().get(ContextKey.DISC_DOC));
     }
 
+    public static Map<String, String> getMap(final ContextKey key) {
+        assertThat(key)
+            .withFailMessage("Key is not supported as of now, feel fre to implement it")
+            .isIn(ContextKey.PAIRING_DATA, ContextKey.DEVICE_INFO);
+        assertThat(getThreadContext().get(key)).isInstanceOf(Map.class);
+        //noinspection unchecked
+        return (Map<String, String>) getThreadContext().get(key);
+
+    }
+
     public void setValue(final ContextKey key, final String value) {
         assertThat(key).isNotIn(ContextKey.USER_CONSENT, ContextKey.RESPONSE, ContextKey.DISC_DOC,
             ContextKey.HEADER_CLAIMS, ContextKey.CLAIMS);

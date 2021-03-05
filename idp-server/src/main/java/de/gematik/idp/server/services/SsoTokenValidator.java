@@ -19,6 +19,7 @@ package de.gematik.idp.server.services;
 import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
 
 import de.gematik.idp.authentication.IdpJwtProcessor;
+import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.exceptions.IdpServerException;
 import de.gematik.idp.server.exceptions.oauth2spec.IdpServerInvalidRequestException;
@@ -59,7 +60,8 @@ public class SsoTokenValidator {
 
     private void validateExpiration(final ZonedDateTime exp) {
         if (exp.isBefore(ZonedDateTime.now())) {
-            throw new IdpServerException("SsoToken expired");
+            throw new IdpServerException(2040, IdpErrorType.ACCESS_DENIED,
+                "SSO_TOKEN nicht valide, bitte um neuerliche Authentisierung");
         }
     }
 }

@@ -55,12 +55,13 @@ public class IdpJwe extends IdpJoseObject {
         super(rawString);
     }
 
-    public static IdpJwe createWithPayloadAndEncryptWithKey(final String payload, final Key key) {
-        return createWithPayloadAndExpiryAndEncryptWithKey(payload, Optional.empty(), key);
+    public static IdpJwe createWithPayloadAndEncryptWithKey(final String payload, final Key key,
+        final String contentType) {
+        return createWithPayloadAndExpiryAndEncryptWithKey(payload, Optional.empty(), key, contentType);
     }
 
     public static IdpJwe createWithPayloadAndExpiryAndEncryptWithKey(final String payload,
-        final Optional<ZonedDateTime> expiryOptional, final Key key) {
+        final Optional<ZonedDateTime> expiryOptional, final Key key, final String contentType) {
         final JsonWebEncryption jwe = new JsonWebEncryption();
 
         jwe.setPlaintext(payload);
@@ -74,6 +75,7 @@ public class IdpJwe extends IdpJoseObject {
         expiryOptional
             .map(TokenClaimExtraction::zonedDateTimeToClaim)
             .ifPresent(expValue -> jwe.setHeader(ClaimName.EXPIRES_AT.getJoseName(), expValue));
+        jwe.setHeader(ClaimName.CONTENT_TYPE.getJoseName(), contentType);
 
         try {
             return new IdpJwe(jwe.getCompactSerialization());

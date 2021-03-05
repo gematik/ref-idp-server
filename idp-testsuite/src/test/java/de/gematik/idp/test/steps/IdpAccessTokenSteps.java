@@ -23,6 +23,7 @@ import de.gematik.idp.test.steps.model.*;
 import io.cucumber.datatable.DataTable;
 import io.restassured.response.Response;
 import java.security.PublicKey;
+import java.security.Security;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +31,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jose4j.jwt.JwtClaims;
 import org.json.JSONObject;
 import org.springframework.http.MediaType;
@@ -59,9 +61,19 @@ public class IdpAccessTokenSteps extends IdpStepsBase {
             if (params.containsKey("redirect_uri")) {
                 ctxt.put(ContextKey.REDIRECT_URI, params.get("redirect_uri"));
             }
-            if (params.containsKey("code")) {
-                // TODO for token encryption active this needs to encrypt the given token code and store it in ctxt
-                ctxt.put(ContextKey.TOKEN_CODE, params.get("code"));
+            Security.addProvider(new BouncyCastleProvider());
+            if (params.containsKey("token_code")) {
+                final String token_code = params.get("token_code");
+                ctxt.put(ContextKey.TOKEN_CODE, token_code);
+                if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
+                    if (token_code != null) {
+                        ctxt.put(ContextKey.TOKEN_CODE_ENCRYPTED, encrypt(params.get("token_code"),
+                            TestEnvironmentConfigurator.getSymmetricEncryptionKey()));
+                    } else {
+                        ctxt.put(ContextKey.TOKEN_CODE_ENCRYPTED, null);
+                    }
+                    params.put("token_code", (String) ctxt.get(ContextKey.TOKEN_CODE_ENCRYPTED));
+                }
             }
             if (params.containsKey("code_verifier")) {
                 ctxt.put(ContextKey.CODE_VERIFIER, params.get("code_verifier"));
@@ -73,12 +85,19 @@ public class IdpAccessTokenSteps extends IdpStepsBase {
             params.put("grant_type", "authorization_code");
             params.put("redirect_uri", (String) ctxt.get(ContextKey.REDIRECT_URI));
             if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
-                params.put("code", (String) ctxt.get(ContextKey.TOKEN_CODE_ENCRYPTED));
+                params.put("token_code", (String) ctxt.get(ContextKey.TOKEN_CODE_ENCRYPTED));
             } else {
-                params.put("code", (String) ctxt.get(ContextKey.TOKEN_CODE));
+                params.put("token_code", (String) ctxt.get(ContextKey.TOKEN_CODE));
             }
             params.put("code_verifier", (String) ctxt.get(ContextKey.CODE_VERIFIER));
             params.put("client_id", (String) ctxt.get(ContextKey.CLIENT_ID));
+        }
+
+        // map token_code to request param code
+        if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
+            params.put("code", params.remove("token_code"));
+        } else {
+            params.put("code", params.remove("token_code"));
         }
 
         // create/encrypt key_verifier
@@ -89,7 +108,7 @@ public class IdpAccessTokenSteps extends IdpStepsBase {
             final PublicKey pukToken = DiscoveryDocument.getPublicKeyFromCertFromJWK(ContextKey.PUK_ENC);
             params.put(
                 "key_verifier",
-                buildKeyVerifierToken(tokenKeyBytes, String.valueOf(ctxt.get(ContextKey.CODE_VERIFIER)), pukToken));
+                buildKeyVerifierToken(tokenKeyBytes, params.get("code_verifier"), pukToken));
         }
         final Map<String, String> headers = new HashMap<>();
         headers.put(CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);

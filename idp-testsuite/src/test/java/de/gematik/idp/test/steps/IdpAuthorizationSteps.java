@@ -111,7 +111,7 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
         }
         storeParamOfReloc(reloc, "state", ContextKey.STATE);
         if (authType != CodeAuthType.SSO_TOKEN) {
-            // if token encryptiona ctive decrypt sso token and store in context
+            // if token encryption active decrypt sso token and store in context
             if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
                 final Optional<String> encSsoToken = storeParamOfReloc(reloc, "ssotoken",
                     ContextKey.SSO_TOKEN_ENCRYPTED);
@@ -181,6 +181,14 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
                 }
                 path = Context.getDiscoveryDocument().getSsoEndpoint();
                 break;
+            case SIGNED_CHALLENGE_WITH_SSO_TOKEN:
+                checkContextAddToParams(ContextKey.CHALLENGE, "unsigned_challenge", params);
+                if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
+                    checkContextAddToParams(ContextKey.SSO_TOKEN_ENCRYPTED, "ssotoken", params);
+                } else {
+                    checkContextAddToParams(ContextKey.SSO_TOKEN, "ssotoken", params);
+                }
+                break;
             case ALTERNATIVE_AUTHENTICATION:
                 checkContextAddToParams(ContextKey.SIGEND_AUTHENTICATION_DATA, "signed_authentication_data", params);
                 // encrypt signed challenge
@@ -201,7 +209,7 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
         params.put(paramName, String.valueOf(ctxt.get(key)));
     }
 
-    public void responseIs302ErrorWithMessageMatching(final String errcode, final String regex) {
+    public void responseIs302ErrorWithMessageMatching(final int errid, final String errcode) {
         final Response r = Context.getCurrentResponse();
         assertThat(r.getStatusCode()).isEqualTo(302);
 
@@ -210,10 +218,13 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
         final MultiValueMap<String, String> parameters = UriComponentsBuilder.fromUriString(location).build()
             .getQueryParams();
 
-        assertThat(parameters).containsKeys("error_description",
-            "error"); // TODO activate once Julian has his code in place , "error_uri");
-        assertThat(parameters.getFirst("error")).matches(errcode);
-        assertThat(parameters.getFirst("error_description")).matches(regex);
+        assertThat(parameters)
+            .containsKeys("error", "gematik_error_text", "gematik_timestamp", "gematik_uuid", "gematik_code");
+        final String returnedErrCode = parameters.getFirst("error");
+        if (!errcode.equals(returnedErrCode)) {
+            assertThat(returnedErrCode).matches(errcode);
+        }
+        assertThat(parameters.getFirst("gematik_code")).isEqualTo(String.valueOf(errid));
 
         // TODO Clarify if state should be also sent with errors
     }

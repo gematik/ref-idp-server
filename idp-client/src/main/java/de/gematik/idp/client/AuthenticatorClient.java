@@ -20,6 +20,7 @@ import static de.gematik.idp.authentication.UriUtils.extractParameterValue;
 import static de.gematik.idp.crypto.CryptoLoader.getCertificateFromPem;
 import static de.gematik.idp.field.ClaimName.*;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
+
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.authentication.UriUtils;
 import de.gematik.idp.client.data.*;
@@ -91,7 +92,8 @@ public class AuthenticatorClient {
         afterCallback.accept(authorizationResponse);
         if (authorizationResponse.getStatus() != HttpStatus.SC_OK) {
             throw new IdpClientRuntimeException(
-                "Unexpected Server-Response " + authorizationResponse.getStatus());
+                "Unexpected Server-Response " + authorizationResponse.getStatus() + " with details "
+                    + authorizationResponse.mapError(String.class));
         }
         return AuthorizationResponse.builder()
             .authenticationChallenge(authorizationResponse.getBody())
@@ -126,6 +128,9 @@ public class AuthenticatorClient {
         UriUtils.extractParameterValueOptional(location, "error")
             .ifPresent(errorCode -> {
                 throw new IdpClientRuntimeException("Server-Error with message: " +
+                    UriUtils.extractParameterValueOptional(location, "gematik_code")
+                        .map(code -> code + ": ")
+                        .orElse("") +
                     UriUtils.extractParameterValueOptional(location, "error_description")
                         .orElse(errorCode));
             });
@@ -180,8 +185,9 @@ public class AuthenticatorClient {
         afterTokenCallback.accept(tokenResponse);
         if (tokenResponse.getStatus() != HttpStatus.SC_OK) {
             throw new IdpClientRuntimeException(
-                "Unexpected Server-Response " + tokenResponse.getStatus() + " with detail_message "
-                    + tokenResponse.getBody().getObject().getString("detail_message"));
+                "Unexpected Server-Response " + tokenResponse.getStatus() + " "
+                    + tokenResponse.getBody().getObject().getString("gematik_code") + ": "
+                    + tokenResponse.getBody().getObject().getString("gematik_error_text"));
         }
         final JSONObject jsonObject = tokenResponse.getBody().getObject();
 
@@ -212,7 +218,7 @@ public class AuthenticatorClient {
         claims.setStringClaim(TOKEN_KEY.getJoseName(), new String(Base64.getEncoder().encode(tokenKeyBytes)));
         claims.setStringClaim(CODE_VERIFIER.getJoseName(), codeVerifier);
 
-        return IdpJwe.createWithPayloadAndEncryptWithKey(claims.toJson(), idpEnc);
+        return IdpJwe.createWithPayloadAndEncryptWithKey(claims.toJson(), idpEnc, "JSON");
     }
 
     public DiscoveryDocumentResponse retrieveDiscoveryDocument(final String discoveryDocumentUrl) {

@@ -18,7 +18,6 @@ package de.gematik.idp.server;
 
 import static de.gematik.idp.IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT;
 import static org.assertj.core.api.Assertions.assertThat;
-
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.Rfc;
@@ -110,12 +109,11 @@ public class KeyRetrievalTest {
             .extracting(k -> k.getKey())
             .isNotEmpty();
         assertThat(keySet.getJsonWebKeys())
-            .hasSize(3);
+            .hasSize(2);
         assertThat(keySet.getJsonWebKeys().stream()
             .map(JsonWebKey::getKeyId)
             .collect(Collectors.toList()))
-            .containsExactlyInAnyOrder(discSig.getIdentity().getKeyId().get(),
-                idpSig.getIdentity().getKeyId().get(),
+            .containsExactlyInAnyOrder(idpSig.getIdentity().getKeyId().get(),
                 idpEnc.getIdentity().getKeyId().get());
     }
 

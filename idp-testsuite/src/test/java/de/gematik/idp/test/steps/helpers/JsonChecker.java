@@ -87,7 +87,8 @@ public class JsonChecker {
                                     testJson.toString().equals(oracleJson.toString())) {
                                     return true;
                                 }
-                                return testJson.toString().matches(oracleJson.toString());
+                                assertJsonShouldMatchInAnyOrder(testJson.toString(), oracleJson.toString());
+                                return true;
                             })));
                     } else {
                         final String jsoValue = json.get(key).toString();

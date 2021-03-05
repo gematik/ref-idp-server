@@ -78,7 +78,7 @@ public class JsonWebToken extends IdpJoseObject {
 
     public IdpJwe encrypt(final Key key) {
         return IdpJwe.createWithPayloadAndExpiryAndEncryptWithKey(getRawString(),
-            getBodyDateTimeClaim(ClaimName.EXPIRES_AT), key);
+            getBodyDateTimeClaim(ClaimName.EXPIRES_AT), key, "JWT");
     }
 
     @Override

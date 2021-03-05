@@ -159,7 +159,7 @@ public class MockIdpClientTest {
         final JsonWebToken resignedAccessToken = mockIdpClient.resignToken(
             jwt.getHeaderClaims(),
             bodyClaims,
-            jwt.getExpiresAt());
+            jwt.getExpiresAtBody());
 
         assertThat(resignedAccessToken.getBodyClaims())
             .containsEntry("foo", "bar");
@@ -178,7 +178,7 @@ public class MockIdpClientTest {
         final JsonWebToken resignedAccessToken = mockIdpClient.resignToken(
             jwtHeaderClaims,
             jwtBodyClaims,
-            jwt.getExpiresAt());
+            jwt.getExpiresAtBody());
 
         assertThat(resignedAccessToken.getHeaderClaims())
             .containsEntry("foo", "bar");

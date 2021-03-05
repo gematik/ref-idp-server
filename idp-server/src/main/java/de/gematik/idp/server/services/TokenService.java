@@ -16,14 +16,15 @@
 
 package de.gematik.idp.server.services;
 
+import static de.gematik.idp.error.IdpErrorType.INVALID_GRANT;
+import static de.gematik.idp.error.IdpErrorType.INVALID_REQUEST;
 import static de.gematik.idp.field.ClaimName.CODE_CHALLENGE;
-import static de.gematik.idp.field.ClaimName.CODE_VERIFIER;
 import static de.gematik.idp.field.ClaimName.REDIRECT_URI;
 
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.data.TokenResponse;
-import de.gematik.idp.server.exceptions.oauth2spec.IdpServerInvalidRedirectUriException;
+import de.gematik.idp.server.exceptions.IdpServerException;
 import de.gematik.idp.server.exceptions.oauth2spec.IdpServerInvalidRequestException;
 import de.gematik.idp.token.*;
 import java.security.Key;
@@ -47,30 +48,34 @@ public class TokenService {
 
     public TokenResponse getTokenResponse(final IdpJwe encryptedAuthenticationToken, final IdpJwe keyVerifier,
         final String redirectUri, final String clientId) {
-        final JsonWebToken authenticationToken = encryptedAuthenticationToken
-            .decryptNestedJwt(symmetricEncryptionKey);
+        final JsonWebToken authenticationToken = decryptEncryptedAuthenticationToken(encryptedAuthenticationToken);
         decryptKeyVerifierAndTestStructure(keyVerifier);
+        testAuthenticationTokenStructure(authenticationToken);
 
         final String codeChallenge = authenticationToken.getStringBodyClaim(CODE_CHALLENGE)
-            .orElseThrow(() -> new IdpServerInvalidRequestException(
-                "Authentication_Token without " + CODE_CHALLENGE.getJoseName() + " found!"));
+            .orElseThrow(() -> new IdpServerException(3001, INVALID_GRANT,
+                "Claims unvollständig im Authorization Code"));
         pkceChecker.checkCodeVerifier(keyVerifier.getStringBodyClaim(ClaimName.CODE_VERIFIER)
-            .orElseThrow(() -> new IdpServerInvalidRequestException(
-                "Could not find claim '" + CODE_VERIFIER.getJoseName() + "' in given key_verifier")), codeChallenge);
-        authenticationToken.verify(idpSig.getIdentity().getCertificate().getPublicKey());
+                .orElseThrow(
+                    () -> new IdpServerException(3015, INVALID_REQUEST, "Claims unvollständig im key_verifier")),
+            codeChallenge);
+        try {
+            authenticationToken.verify(idpSig.getIdentity().getCertificate().getPublicKey());
+        } catch (final Exception e) {
+            throw new IdpServerException(3011, INVALID_GRANT, "Authorization Code ist abgelaufen");
+        }
 
         if (authenticationToken.getBodyClaim(REDIRECT_URI)
             .filter(originalRedirectUri -> originalRedirectUri.equals(redirectUri))
             .isEmpty()) {
-            throw new IdpServerInvalidRedirectUriException("Expected redirect_uri to match the original value");
+            throw new IdpServerException(1020, INVALID_REQUEST, "redirect_uri ist ungültig");
         }
 
         final JsonWebToken accessToken = getAccessToken(authenticationToken);
         final SecretKey tokenKey = keyVerifier.getStringBodyClaim(ClaimName.TOKEN_KEY)
             .map(Base64.getDecoder()::decode)
             .map(keyBytes -> new SecretKeySpec(keyBytes, "AES"))
-            .orElseThrow(() -> new IdpServerInvalidRequestException(
-                "Could not find string-claim '" + ClaimName.TOKEN_KEY.getJoseName() + "' in given key_verifier"));
+            .orElseThrow(() -> new IdpServerException(3015, INVALID_REQUEST, "Claims unvollständig im key_verifier"));
         return TokenResponse.builder()
             .tokenType("Bearer")
             .expiresIn(300)
@@ -80,6 +85,22 @@ public class TokenService {
                 .encrypt(tokenKey)
                 .getRawString())
             .build();
+    }
+
+    private void testAuthenticationTokenStructure(final JsonWebToken authenticationToken) {
+        try {
+            authenticationToken.getBodyClaims();
+        } catch (final Exception e) {
+            throw new IdpServerException(3013, INVALID_REQUEST, "Authorization Code ist nicht lesbar", e);
+        }
+    }
+
+    private JsonWebToken decryptEncryptedAuthenticationToken(final IdpJwe encryptedAuthenticationToken) {
+        try {
+            return encryptedAuthenticationToken.decryptNestedJwt(symmetricEncryptionKey);
+        } catch (final Exception e) {
+            throw new IdpServerException(3010, INVALID_GRANT, "Authorization Code Signatur ungültig", e);
+        }
     }
 
     private IdpJoseObject decryptKeyVerifierAndTestStructure(final IdpJwe encryptedKeyVerifier) {

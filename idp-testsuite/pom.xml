@@ -170,6 +170,14 @@
             <version>1.15</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.json/json -->
+        <dependency>
+            <artifactId>json</artifactId>
+            <groupId>org.json</groupId>
+            <version>20201115</version>
+        </dependency>
+
+
         <!-- Idp server -->
         <dependency>
             <artifactId>idp-server</artifactId>
@@ -249,13 +257,6 @@
             <version>${version.assertj}</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.json/json -->
-        <dependency>
-            <artifactId>json</artifactId>
-            <groupId>org.json</groupId>
-            <scope>test</scope>
-            <version>20201115</version>
-        </dependency>
         <dependency>
             <artifactId>json-unit-spring</artifactId>
             <groupId>net.javacrumbs.json-unit</groupId>
@@ -267,6 +268,12 @@
             <artifactId>jsonassert</artifactId>
             <version>1.5.0</version>
         </dependency>
+        <dependency>
+            <artifactId>aforeporter</artifactId>
+            <groupId>de.gematik.idp.aforeporter</groupId>
+            <version>1.0.12</version>
+        </dependency>
+
     </dependencies>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
@@ -275,7 +282,7 @@
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>9.0.0</version>
+        <version>10.0.0</version>
     </parent>
 
     <profiles>
@@ -382,7 +389,32 @@
                         <groupId>org.springframework.boot</groupId>
                         <version>${version.spring-boot}</version>
                     </plugin>
+
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.6.0</version>
+                        <configuration>
+                            <arguments>
+                                <argument>-bdd</argument>
+                                <argument>target/site/serenity</argument>
+                                <argument>-tpl</argument>
+                                <argument>src/main/resources/templates</argument>
+                            </arguments>
+                            <mainClass>de.gematik.idp.tests.aforeport.RunAfoReporter</mainClass>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>aforeporter</id>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
                 </plugins>
+
             </build>
             <id>local-idp-server</id>
             <properties>
@@ -411,5 +443,5 @@
         <version.serenity.maven.plugin>2.3.4</version.serenity.maven.plugin>
     </properties>
 
-    <version>9.0.0</version>
+    <version>10.0.0</version>
 </project>

@@ -1,3 +1,9 @@
+# Release 10.0.0
+* Fehlermeldungen spezifikationskonform im Basisflow
+* CLAIMS ACR/NBF/AT_HASH/EXP/CTY spezifikationskonform
+* Discovery Document überarbeitet
+* AFO Reporter in Testsuite integriert
+
 # Release 9.0.0
 - Korrigierte redirect_uri
 - Renaming ssotoken => sso_token

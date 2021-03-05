@@ -1,0 +1,1127 @@
+[
+  {
+    "id": "A_20246",
+    "title": "Performance - Erfassung von Rohdaten bei fehlerhaften Operationen - IdP-Dienst",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Keine Tests zu Performance und Rohdatenerfassung in der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_20242",
+    "title": "Performance - Rohdaten-Performance-Berichte - Format der Einträge des Performance-Berichts IdP-Dienst",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Keine Tests zu Performance und Rohdatenerfassung in der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_20243",
+    "title": "Performance - IdP-Dienst - Robustheit gegenüber Lastspitzen",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Keine Tests zu Performance und Rohdatenerfassung in der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_20247",
+    "title": "Performance - Erfassung von Rohdaten - IdP-Dienst",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Keine Tests zu Performance und Rohdatenerfassung in der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_20591",
+    "title": "Festlegungen zur Signatur der Discovery Documents",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "abgelöst durch A_20591-1",
+    "refURL": null
+  },
+  {
+    "id": "A_20465",
+    "title": "Zertifikatsprüfung gegen OCSP-Responder",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null
+  },
+  {
+    "id": "A_20328",
+    "title": "Verschlüsselung des \"ACCESS_TOKEN\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "afo wurde ersetzt, siehe STIDPD-93",
+    "refURL": null
+  },
+  {
+    "id": "A_20689",
+    "title": "Internes Discovery Document - Prüfung vor Veröffentlichung",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Nachweisart wird geändert, siehe STIDPD-96",
+    "refURL": null
+  },
+  {
+    "id": "A_20457",
+    "title": "Verwendung eindeutiger URI",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null
+  },
+  {
+    "id": "A_20329",
+    "title": "Sichere Übertragung von \"ID_TOKEN\", \"ACCESS_TOKEN\" und \"SSO_TOKEN\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20329-1",
+    "refURL": null
+  },
+  {
+    "id": "A_20688",
+    "title": "Discovery Document interne und externe Adressierung",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null
+  },
+  {
+    "id": "A_20458",
+    "title": "Inhalte des Discovery Documents",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20458-2",
+    "refURL": null
+  },
+  {
+    "id": "A_20313",
+    "title": "Inhalte des Claims",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20313-1",
+    "refURL": null
+  },
+  {
+    "id": "A_20315",
+    "title": "\"AUTHORIZATION_CODE\" nach Gültigkeitsende nicht mehr verwenden",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20315-1",
+    "refURL": null
+  },
+  {
+    "id": "A_20376",
+    "title": "Verwendung des Attributes \"state\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null
+  },
+  {
+    "id": "A_20463",
+    "title": "Maximale Gültigkeitsdauer des \"ACCESS_TOKEN\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null
+  },
+  {
+    "id": "A_20691",
+    "title": "Das Discovery Document ist maximal 24 Stunden alt",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "entfällt, siehe STIDPD-94",
+    "refURL": null
+  },
+  {
+    "id": "A_20318",
+    "title": "Keine Token für widerrufene Entitäten",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "entfällt, siehe STIDPD-16",
+    "refURL": null
+  },
+  {
+    "id": "A_20694",
+    "title": "Zusammenstellung des \"SSO_TOKEN\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null
+  },
+  {
+    "id": "A_20521-01",
+    "title": "Inhalt der Challenge an das Authenticator-Modul",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20521-02",
+    "refURL": null
+  },
+  {
+    "id": "A_20947",
+    "title": "Entschlüsselung des \"SSO_TOKEN\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null
+  },
+  {
+    "id": "A_20946",
+    "title": "Annahme eines \"SSO_TOKEN\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20946-01",
+    "refURL": null
+  },
+  {
+    "id": "A_20524",
+    "title": "Befüllen der Claims \"given_name\", \"family_name\", \"organizationName\", \"professionOID\" und \"idNummer\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20524-02",
+    "refURL": null
+  },
+  {
+    "id": "A_20696",
+    "title": "Verschlüsselung des \"SSO_TOKEN\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null
+  },
+  {
+    "id": "A_20951",
+    "title": "Validierung der Signatur und des Zertifikats der \"CHALLENGE\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20951-01",
+    "refURL": null
+  },
+  {
+    "id": "A_20950",
+    "title": "Positive Validierung des \"SSO_TOKEN\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20950-01",
+    "refURL": null
+  },
+  {
+    "id": "A_20949",
+    "title": "Anforderung einer Authentisierung bei negativer Validierung des \"SSO_TOKEN\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null
+  },
+  {
+    "id": "A_20687",
+    "title": "Bereitstellung der PUK",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20687-01",
+    "refURL": null
+  },
+  {
+    "id": "A_20952",
+    "title": "Claim \"aud\" im Token setzen",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4943",
+    "title": "Alter der OCSP-Responses für eGK-Zertifikate",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "OCSP Protokoll selbst nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_20948",
+    "title": "Validierung des \"SSO_TOKEN\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20948-01",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4864",
+    "title": "Logging-Vorgaben nach dem Übergang zum Produktivbetrieb",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Logging nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_20245-01",
+    "title": "Performance - Messpunkte für die Erfassung von Rohdaten am IdP-Dienst",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Performance/Rohdatenlieferungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_19717-02",
+    "title": "Performance – IdP-Dienst – Bearbeitungszeit unter Last",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Performance/Rohdatenlieferungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4362",
+    "title": "X.509-Identitäten für Verschlüsselungszertifikate",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Details zu X.509-Zertifikaten nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_20692",
+    "title": "Maximale Gültigkeitsdauer einer \"SUBJECT_SESSION\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20692-01",
+    "refURL": null
+  },
+  {
+    "id": "A_20695",
+    "title": "Signieren des \"SSO_TOKEN\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20695-01",
+    "refURL": null
+  },
+  {
+    "id": "A_20693",
+    "title": "Senden des \"AUTHORIZATION_CODE\" und \"SSO_TOKEN\" an die \"REDIRECT_URI\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20693-01",
+    "refURL": null
+  },
+  {
+    "id": "A_20699",
+    "title": "Annahme der signierten \"CHALLENGE\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20699-02",
+    "refURL": null
+  },
+  {
+    "id": "A_20698",
+    "title": "Annahme des Authorization Request",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null
+  },
+  {
+    "id": "A_20697",
+    "title": "Zusammenstellung des \"AUTHORIZATION_CODE\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20697-01",
+    "refURL": null
+  },
+  {
+    "id": "A_20732",
+    "title": "Aufnahme der öffentlichen Schlüssel in das Discovery Document",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null
+  },
+  {
+    "id": "A_20731",
+    "title": "Verwendung des Attributes \"auth_time\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null
+  },
+  {
+    "id": "A_20604",
+    "title": "Signatur der Challenge",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20604-01",
+    "refURL": null
+  },
+  {
+    "id": "A_20459",
+    "title": "Das Attribut AUTH_TIME muss in allen Token unverändert bleiben",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null
+  },
+  {
+    "id": "A_20462",
+    "title": "Maximale Gültigkeitsdauer des \"ID_TOKEN\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null
+  },
+  {
+    "id": "A_20314",
+    "title": "Maximale Gültigkeitsdauer des \"AUTHORIZATION_CODE\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20314-01",
+    "refURL": null
+  },
+  {
+    "id": "A_20377",
+    "title": "Verwendung des Attributes \"state\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null
+  },
+  {
+    "id": "A_20464",
+    "title": "Token-Endpunkt (Datensparsamkeit)",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20464-01",
+    "refURL": null
+  },
+  {
+    "id": "A_20434",
+    "title": "Einhaltung der Standards bei der Realisierung des Authorization-Endpunkts",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20434-01",
+    "refURL": null
+  },
+  {
+    "id": "A_20319",
+    "title": "Signatur des \"AUTHORIZATION_CODE\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20319-01",
+    "refURL": null
+  },
+  {
+    "id": "A_20742",
+    "title": "Vergabe der \"client_id\" durch den IdP-Dienst",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "organisatorischer Prozess nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_20320",
+    "title": "Sichere Übertragung des \"AUTHORIZATION_CODE\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Afo-Zuordnung wird auf Herstellererklärung geändert",
+    "refURL": null
+  },
+  {
+    "id": "A_20321",
+    "title": "Annahme und Prüfung von \"AUTHORIZATION_CODE\" und \"CODE_VERIFIER\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20321-01",
+    "refURL": null
+  },
+  {
+    "id": "A_20323",
+    "title": "TOKEN-Ausgabe Protokollierung in allen Fällen",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Protokollierung nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_20522",
+    "title": "Erstellen einer \"SESSION_ID\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null
+  },
+  {
+    "id": "A_20440",
+    "title": "Schematische Prüfung des Consent",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20440-01",
+    "refURL": null
+  },
+  {
+    "id": "A_20523",
+    "title": "Zusammenstellung der Claims zum \"user_consent\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null
+  },
+  {
+    "id": "A_20439",
+    "title": "Das Discovery Document enthält statische Adressen",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null
+  },
+  {
+    "id": "A_20327",
+    "title": "Signatur des \"ID_TOKEN\", \"ACCESS_TOKEN\" und \"SSO_TOKEN\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20327-01",
+    "refURL": null
+  },
+  {
+    "id": "A_20330",
+    "title": "Ausgabe der Token",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "soll gelöscht werden, siehe STIDPD-72",
+    "refURL": null
+  },
+  {
+    "id": "A_20686",
+    "title": "Erweiterte Nutzung von Schlüsseln",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null
+  },
+  {
+    "id": "A_20690",
+    "title": "Externes Discovery Document - Prüfung vor Veröffentlichung",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": "ersetzt durch A_20690-01",
+    "refURL": null
+  },
+  {
+    "id": "A_17688",
+    "title": "Nutzung des ECC-RSA-Vertrauensraumes (ECC-Migration)",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Andoferungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_17690",
+    "title": "Nutzung der Hash-Datei für TSL (ECC-Migration)",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Andoferungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_17416-01",
+    "title": "Schnittstelle Betriebsdatenerfassung Prüfung des TLS-Server-Zertifikats durch Fach- und zentrale Dienste",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Betriebsdatenerfassung nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4649",
+    "title": "TUC_PKI_020: XML-Dokument validieren",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Andoferungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4651",
+    "title": "TUC_PKI_012: XML-Signatur-Prüfung",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Andoferungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4751",
+    "title": "Fehlercodes bei TSL- und Zertifikatsprüfung",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Andoferungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_5025",
+    "title": "Versionierung von Produkten auf Basis von zentralen Produkttypen der TI-Plattform und fachanwendungsspezifischen Diensten durch die Produktidentifikation",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Versionierung nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4646",
+    "title": "TUC_PKI_017: Lokalisierung TSL Download-Adressen",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_3702",
+    "title": "Inhalt der Selbstauskunft von Produkten außer Karten",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Selbstauskunft nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_17678",
+    "title": "Performance - Rohdaten-Performance-Berichte - Übermittlung",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Performance/Rohdatenlieferung nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_5054",
+    "title": "Versionierung von Produkten durch die Produktidentifikation erweitert um Klartextnamen",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Versionierung nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_5038",
+    "title": "Festlegungen zur Vergabe einer Produktversion",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Versionierung nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_3695",
+    "title": "Grundlegender Aufbau Versionsnummern",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Versionierung nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4387",
+    "title": "TLS-Verbindungen, nicht Version 1.0",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_5322",
+    "title": "Weitere Vorgaben für TLS-Verbindungen",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_5542",
+    "title": "TLS-Verbindungen (fatal Alert bei Abbrüchen)",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende Krypt-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_5526",
+    "title": "TLS-Renegotiation-Indication-Extension",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende Krypt-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_5339",
+    "title": "TLS-Verbindungen, erweiterte Webbrowser-Interoperabilität",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende Krypt-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_17124",
+    "title": "TLS-Verbindungen (ECC-Migration)",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende Krypt-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_17757-01",
+    "title": "Performance - Rohdaten-Performance-Lieferung - zu liefernde Dateien",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Performance/Rohdaten nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_17755",
+    "title": "Performance - Rohdaten-Performance-Berichte - Name der Berichte",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Performance/Rohdaten nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_17756",
+    "title": "Performance - Rohdaten-Performance-Berichte - Korrektheit",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Performance/Rohdaten nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_17671",
+    "title": "Performance - Rohdaten-Performance-Berichte - Format des Performance-Berichts",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Performance/Rohdaten nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_17679",
+    "title": "Performance - Rohdaten-Performance-Berichte - Berichtsintervall",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Performance/Rohdaten nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_17758",
+    "title": "Performance - Rohdaten-Performance-Berichte - Frist für Nachlieferung",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Performance/Rohdaten nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4661-01",
+    "title": "kritische Erweiterungen in Zertifikaten",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4385",
+    "title": "TLS-Verbindungen, Version 1.2",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende Krypt-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4662",
+    "title": "Bedingungen für TLS-Handshake",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende Krypt-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_5035",
+    "title": "Nichtverwendung des SSL-Protokolls",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende Krypt-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_21275",
+    "title": "TLS-Verbindungen, zulässige Hashfunktionen bei Signaturen im TLS-Handshake",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende Krypt-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4384",
+    "title": "TLS-Verbindungen",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende Krypt-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_19874-04",
+    "title": "Bereitstellung des internen Discovery Documents innerhalb der TI",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null
+  },
+  {
+    "id": "A_19877-02",
+    "title": "Bereitstellung des externen Discovery Documents im Internet",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null
+  },
+  {
+    "id": "A_21275-01",
+    "title": "TLS-Verbindungen, zulässige Hashfunktionen bei Signaturen im TLS-Handshake",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende Krypt-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_21332",
+    "title": "E-Rezept: TLS-Vorgaben",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "TLS nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_17733-01",
+    "title": "Schnittstelle Betriebsdatenerfassung Datei-Upload",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "Betriebsdatenerfassung nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_5336",
+    "title": "Zertifikatsprüfung nach Ablauf TSL-Graceperiod",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4829",
+    "title": "TUCs, Fehlerbehandlung",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4663",
+    "title": "Zertifikats-Prüfparameter für den TLS-Handshake",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4637",
+    "title": "TUCs, Durchführung Fehlerüberprüfung",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4647",
+    "title": "TUC_PKI_016: Download der TSL-Datei",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4652-01",
+    "title": "TUC_PKI_018: Zertifikatsprüfung in der TI",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4648",
+    "title": "TUC_PKI_019: Prüfung der Aktualität der TSL",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4643",
+    "title": "TUC_PKI_013: Import TI-Vertrauensanker aus TSL",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4650",
+    "title": "TUC_PKI_011: Prüfung des TSL-Signer-Zertifikates",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4657-03",
+    "title": "TUC_PKI_006: OCSP-Abfrage",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4957-01",
+    "title": "Beschränkungen OCSP-Request",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_5215",
+    "title": "Festlegung der zeitlichen Toleranzen in einer OCSP-Response",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4749-01",
+    "title": "TUC_PKI_007: Prüfung Zertifikatstyp",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4642",
+    "title": "TUC_PKI_001: Periodische Aktualisierung TI-Vertrauensraum",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4899",
+    "title": "TSL Update-Prüfintervall",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4898",
+    "title": "TSL-Grace-Period einer TSL",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_5077",
+    "title": "FQDN-Prüfung beim TLS-Handshake",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_17700",
+    "title": "TSL-Auswertung ServiceTypeIdentifier \"unspecified\"",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4660-02",
+    "title": "TUC_PKI_009: Rollenermittlung",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4653-01",
+    "title": "TUC_PKI_002: Gültigkeitsprüfung des Zertifikats",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4654-01",
+    "title": "TUC_PKI_003: CA-Zertifikat finden",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4655-01",
+    "title": "TUC_PKI_004: Mathematische Prüfung der Zertifikatssignatur",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4656",
+    "title": "TUC_PKI_005: Adresse für Status- und Sperrprüfung ermitteln",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "A_18467",
+    "title": "TLS-Verbindungen, Version 1.3",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4359",
+    "title": "X.509-Identitäten für die Durchführung einer TLS-Authentifizierung",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  },
+  {
+    "id": "GS-A_4361",
+    "title": "X.509-Identitäten für die Erstellung und Prüfung digitaler Signaturen",
+    "status": null,
+    "results": null,
+    "afoStatus": "deleted",
+    "refName": "übergreifende Krypt-Anforderungen nicht im Scope der Zulassungstestsuite",
+    "refURL": null
+  }
+]

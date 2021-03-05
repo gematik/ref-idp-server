@@ -30,13 +30,14 @@ import org.springframework.http.MediaType;
 @RequiredArgsConstructor
 public class BiometrieClient {
 
+    private static final String BEARER = "Bearer ";
     private final String serverUrl;
     private final JsonWebToken accessToken;
 
     public boolean insertPairing(final BiometrieData biometrieData) {
         final HttpResponse<String> response = Unirest.put(serverUrl)
             .body(biometrieData)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
+            .header(HttpHeaders.AUTHORIZATION, BEARER + accessToken.getRawString())
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .asString();
         return response.getStatus() == HttpStatus.SC_OK;

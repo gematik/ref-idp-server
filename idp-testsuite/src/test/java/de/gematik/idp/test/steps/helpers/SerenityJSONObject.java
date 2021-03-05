@@ -26,6 +26,7 @@ public class SerenityJSONObject extends JSONObject {
         super(json.toString());
     }
 
+
     @Override
     @SneakyThrows
     public String toString() {

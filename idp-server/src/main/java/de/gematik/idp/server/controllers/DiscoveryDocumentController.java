@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.data.IdpDiscoveryDocument;
 import de.gematik.idp.data.IdpJwksDocument;
+import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.server.ServerUrlService;
 import de.gematik.idp.server.exceptions.IdpServerException;
 import de.gematik.idp.server.services.DiscoveryDocumentBuilder;
@@ -60,8 +61,7 @@ public class DiscoveryDocumentController {
     @GetMapping("/jwks")
     @ApiOperation(value = "Endpunkt für Schlüsselinformationen für die Tokenabfrage", notes = "Verbaut Schlüsselinformationen in ein JWK und liefert dieses zurück.")
     public IdpJwksDocument getJwks() {
-        return IdpJwksDocument.constructFromX509Certificate(idpSig.getIdentity(), discSig.getIdentity(),
-            idpEnc.getIdentity());
+        return IdpJwksDocument.constructFromX509Certificate(idpSig.getIdentity(), idpEnc.getIdentity());
     }
 
     @GetMapping(value = {DISCOVERY_DOCUMENT_ENDPOINT,
@@ -81,7 +81,7 @@ public class DiscoveryDocumentController {
                 .buildJws(objectMapper.writeValueAsString(discoveryDocument), Collections.emptyMap(), true)
                 .getRawString();
         } catch (final JsonProcessingException e) {
-            throw new IdpServerException("Error during discovery-document serialization", e);
+            throw new IdpServerException(2100, IdpErrorType.SERVER_ERROR, "Ein Fehler ist aufgetreten", e);
         }
     }
 }

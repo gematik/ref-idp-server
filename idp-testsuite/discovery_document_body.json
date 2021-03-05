@@ -29,7 +29,7 @@
     "authorization_code"
   ],
   "acr_values_supported": [
-    "urn:eidas:loa:high"
+    "gematik-ehealth-loa-high"
   ],
   "token_endpoint_auth_methods_supported": [
     "none"

@@ -26,6 +26,6 @@ public class IdpServerLocationBuildException extends IdpServerException {
     private static final String URI_BUILDER_ERROR = "Error during authentication building the token-location URL";
 
     public IdpServerLocationBuildException(final Exception e) {
-        super(URI_BUILDER_ERROR, e, IdpErrorType.URI_BUILDER_ERROR, HttpStatus.BAD_REQUEST);
+        super(URI_BUILDER_ERROR, e, IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
     }
 }

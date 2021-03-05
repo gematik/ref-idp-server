@@ -18,8 +18,8 @@ package de.gematik.idp.server.services;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
-import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.TestConstants;
+import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.data.IdpClientConfiguration;
 import de.gematik.idp.server.exceptions.IdpServerException;
@@ -42,7 +42,7 @@ class IdpAuthenticatorTest {
     public void validateRedirectUriWithNullValue_ExpectCorrectError() {
         assertThatThrownBy(() -> idpAuthenticator.validateRedirectUri(TestConstants.CLIENT_ID_E_REZEPT_APP, null))
             .isInstanceOf(IdpServerException.class)
-            .hasMessage(IdpErrorType.REDIRECT_URI_DEFUNCT.getDescription());
+            .hasFieldOrPropertyWithValue("errorType", IdpErrorType.INVALID_REQUEST);
     }
 
     @Test
@@ -51,7 +51,7 @@ class IdpAuthenticatorTest {
             .get(TestConstants.CLIENT_ID_E_REZEPT_APP);
         assertThatThrownBy(() -> idpAuthenticator.validateRedirectUri("test", idpClientConfiguration.getRedirectUri()))
             .isInstanceOf(IdpServerException.class)
-            .hasMessage(IdpErrorType.REDIRECT_URI_DEFUNCT.getDescription());
+            .hasFieldOrPropertyWithValue("errorType", IdpErrorType.INVALID_REQUEST);
     }
 
     @Test
@@ -60,7 +60,7 @@ class IdpAuthenticatorTest {
             .get(TestConstants.CLIENT_ID_E_REZEPT_APP);
         assertThatThrownBy(() -> idpAuthenticator.validateRedirectUri(TestConstants.CLIENT_ID_E_REZEPT_APP, "test"))
             .isInstanceOf(IdpServerException.class)
-            .hasMessage(IdpErrorType.REDIRECT_URI_DEFUNCT.getDescription());
+            .hasFieldOrPropertyWithValue("errorType", IdpErrorType.INVALID_REQUEST);
     }
 
     @Test

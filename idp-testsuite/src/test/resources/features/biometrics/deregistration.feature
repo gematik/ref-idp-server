@@ -121,13 +121,14 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
     And I deregister the device with 'keyiddereg300'
     Then the response status is 403
     And the JSON response should match
-      """
-        { error_code: "access_denied",
-          error_uuid: ".*",
-          timestamp:  ".*",
-          detail_message: "Scope missing: pairing"
-        }
-      """
+        """
+          { error:              "access_denied",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "-1"
+          }
+        """
 
   @Approval @Ready
   Scenario: Biometrie Deregister - Lösche Pairing mit e-Rezept SSO Token
@@ -144,13 +145,14 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
     And I deregister the device with 'keyiddereg400'
     Then the response status is 403
     And the JSON response should match
-      """
-        { error_code: "access_denied",
-          error_uuid: ".*",
-          timestamp:  ".*",
-          detail_message: "Scope missing: pairing"
-        }
-      """
+        """
+          { error:              "access_denied",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "-1"
+          }
+        """
 
   @Todo:ErrorStatusNMessage
   @Approval
@@ -159,29 +161,28 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
     When I deregister the device with '$REMOVE'
     Then the response status is 405
     And the JSON response should match
-      """
-        { error: "Method Not Allowed",
-          path: ".*",
-          timestamp:  ".*",
-          message: ".*",
-          status: ".*"
-        }
-      """
+        """
+          { error:              "invalid_request",
+	        gematik_error_text: ".*",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "-1"
+          }
+        """
     #TODO struktur anpassen an spec
 
   @Todo:ErrorStatusNMessage
   @Approval
   Scenario: Biometrie Deregister - Lösche Pairing Null key identifier in der Anfrage
+  ```
+  Das Senden eines null Wertes wird am Server als KeyIdentifier "null" interpretiert.
+
+  Da es dazu keinen Eintrag gibt und um potentiall exisiteirende KeyIdentifier nicht zu verraten wird,
+  statt eines Fehlers hier eine leere 200 Antwort gesendet.
+
     Given I request an pairing access token via SSO token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     When I deregister the device with '$NULL'
     Then the response status is 200
-    #And the JSON response should match
-    #  """
-    #    { error: "Method Not Allowed",
-    #      path: ".*",
-    #      timestamp:  ".*",
-    #      message: ".*",
-    #      status: ".*"
-    #    }
-    #  """
-    #TODO struktur anpassen an spec
+    And the response should match
+        """
+        """

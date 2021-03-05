@@ -16,8 +16,8 @@
 
 package de.gematik.idp.server.services;
 
-import de.gematik.idp.server.exceptions.oauth2spec.IdpPkceVerificationFailureException;
-import de.gematik.idp.server.exceptions.oauth2spec.IdpServerInvalidGrantException;
+import de.gematik.idp.error.IdpErrorType;
+import de.gematik.idp.server.exceptions.IdpServerException;
 import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,15 +36,8 @@ public class PkceChecker {
     public static final int PKCE_CODE_VERIFIER_MAX_LENGTH = 128;
 
     public void checkCodeVerifier(final String codeVerifier, final String codeChallenge) {
-        if (StringUtils.isBlank(codeVerifier)) {
-            throw new IdpServerInvalidGrantException("PKCE code verifier not specified");
-        }
-        verifyCodeVerifier(codeVerifier, codeChallenge);
-    }
-
-    private void verifyCodeVerifier(final String codeVerifier, final String codeChallenge) {
         if (!isValidPkceCodeVerifier(codeVerifier)) {
-            throw new IdpPkceVerificationFailureException("Invalid PKCE: '" + codeVerifier + "'");
+            throw new IdpServerException(3016, IdpErrorType.INVALID_REQUEST, "code_verifier ist ungültig");
         }
 
         final String generatedCodeChallenge = generateCodeChallenge(codeVerifier);
@@ -52,7 +45,8 @@ public class PkceChecker {
         if (!codeChallenge.equals(generatedCodeChallenge)) {
             LOGGER.info("Failed PKCE validation: codeVerifier={}, generatedCodeChallenge={}, codeChallenge={}",
                 codeVerifier, generatedCodeChallenge, codeChallenge);
-            throw new IdpPkceVerificationFailureException("Failed PKCE validation");
+            throw new IdpServerException(3000, IdpErrorType.INVALID_GRANT,
+                "code_verifier stimmt nicht mit code_challenge überein");
         } else {
             LOGGER.debug("PKCE verification success. codeVerifierEncoded = {} codeChallenge = {}",
                 generatedCodeChallenge,
@@ -61,18 +55,21 @@ public class PkceChecker {
     }
 
     private boolean isValidPkceCodeVerifier(final String codeVerifier) {
+        if (StringUtils.isBlank(codeVerifier)) {
+            return false;
+        }
         if (codeVerifier.length() < PKCE_CODE_VERIFIER_MIN_LENGTH) {
-            LOGGER.info("Error: PKCE codeVerifier length under lower limit , codeVerifier = '{}'", codeVerifier);
+            LOGGER.trace("Error: PKCE codeVerifier length under lower limit , codeVerifier = '{}'", codeVerifier);
             return false;
         }
         if (codeVerifier.length() > PKCE_CODE_VERIFIER_MAX_LENGTH) {
-            LOGGER.info("Error: PKCE codeVerifier length over upper limit , codeVerifier = '{}'", codeVerifier);
+            LOGGER.trace("Error: PKCE codeVerifier length over upper limit , codeVerifier = '{}'", codeVerifier);
             return false;
         }
         final Matcher m = VALID_CODE_VERIFIER_PATTERN.matcher(codeVerifier);
         final boolean matchResult = m.matches();
         if (!matchResult) {
-            LOGGER.info("Error: PKCE codeVerifier not match to pattern {}, codeVerifier = '{}'",
+            LOGGER.trace("Error: PKCE codeVerifier not match to pattern {}, codeVerifier = '{}'",
                 VALID_CODE_VERIFIER_PATTERN, codeVerifier);
         }
         return matchResult;

@@ -37,7 +37,7 @@ Feature: Fordere Discovery Dokument an
     Then the response status is 200
     And the response content type matches 'application/json.*'
 
-  @Afo:A_20614 @Afo:A_20623 @Afo:A_20591-01
+  @Afo:A_20614 @Afo:A_20623 @Afo:A_20591
   @Approval @Ready
   Scenario: Disc - Discovery Dokument muss signiert sein
 
@@ -53,7 +53,7 @@ Feature: Fordere Discovery Dokument an
     When I request the discovery document
     Then the response must be signed with cert PUK_DISC
 
-  @Afo:A_20591-01
+  @Afo:A_20591
   @Approval @Ready
   Scenario: Disc - Discovery Dokument header claims sind korrekt
 
@@ -77,7 +77,7 @@ Feature: Fordere Discovery Dokument an
         }
         """
 
-  @Afo:A_20297_01 @Afo:A_20505_01 @Afo:A_20506_01 @Afo:A_20698 @Afo:A_20591-01
+  @Afo:A_20297_01 @Afo:A_20505_01 @Afo:A_20506_01 @Afo:A_20698 @Afo:A_20591
   @Approval @Ready
   Scenario: Disc - Discovery Dokument body claims sind korrekt
 
@@ -94,7 +94,7 @@ Feature: Fordere Discovery Dokument an
     When I extract the body claims
     Then the body claims should match in any order
         """
-          { acr_values_supported :                  '["urn:eidas:loa:high"]',
+          { acr_values_supported :                  '["gematik-ehealth-loa-high"]',
             authorization_endpoint:                 "http.*",
             alternative_authorization_endpoint:     "http.*",
             sso_endpoint:                           "http.*",
@@ -104,8 +104,7 @@ Feature: Fordere Discovery Dokument an
             iat:                                    "[\\d]*",
             id_token_signing_alg_values_supported : '["BP256R1"]',
             issuer:                                 "http.*",
-            jwks_uri :                              "http.*",
-            nbf:                                    "[\\d]*",
+            jwks_uri:                               "http.*",
             uri_puk_idp_sig:                        ".*",
             uri_puk_idp_enc:                        ".*",
             uri_disc:                               ".*",
@@ -134,9 +133,6 @@ Feature: Fordere Discovery Dokument an
     # iat must be within 24h and before now
     Then the body claim 'iat' contains a date not before P-1DT-1S
     And the body claim 'iat' contains a date not after PT1S
-    # nbf must be in past and within 24h
-    And the body claim 'nbf' contains a date not before P-1DT-1S
-    And the body claim 'nbf' contains a date not after PT1S
     # exp must be after now but within 24h
     And the body claim 'exp' contains a date not before PT1S
     And the body claim 'exp' contains a date not after P1DT1S
@@ -173,12 +169,16 @@ Feature: Fordere Discovery Dokument an
     And URI in claim "uri_disc" exists with method POST and status 405
     And URI in claim "authorization_endpoint" exists with method GET and status 400
     And URI in claim "authorization_endpoint" exists with method POST and status 302
+    And URI in claim "alternative_authorization_endpoint" exists with method GET and status 405
+    And URI in claim "alternative_authorization_endpoint" exists with method POST and status 400
     And URI in claim "sso_endpoint" exists with method GET and status 405
     And URI in claim "sso_endpoint" exists with method POST and status 302
     And URI in claim "token_endpoint" exists with method GET and status 405
     And URI in claim "token_endpoint" exists with method POST and status 400
+    And URI in claim "pairing_endpoint" exists with method GET and status 403
+    And URI in claim "pairing_endpoint" exists with method PUT and status 403
 
-  @Afo:A_20732 @Afo:A_20591-01
+  @Afo:A_20732 @Afo:A_20591
     @Approval @Todo:KeyChecksOCSP
   #OpenBug: currently not working if we use file based key material
   Scenario Outline: Disc - Die Schlüssel URIs sind erreichbar und enthalten public X509 Schlüssel
@@ -230,7 +230,24 @@ Feature: Fordere Discovery Dokument an
     Then the JSON response should match
         """
           {
-            keys: "${json-unit.ignore}"
+            keys: [
+              {
+                x5c:  "${json-unit.ignore}",
+                kid:  "idpEnc",
+                kty:  "EC",
+                crv:  "BP-256",
+                x:    ".*",
+                y:    ".*"
+              },
+              {
+                x5c:  "${json-unit.ignore}",
+                kid:  "idpSig",
+                kty:  "EC",
+                crv:  "BP-256",
+                x:    ".*",
+                y:    ".*"
+              }
+            ]
           }
         """
 

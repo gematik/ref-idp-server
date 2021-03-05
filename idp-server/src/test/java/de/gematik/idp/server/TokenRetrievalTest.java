@@ -16,11 +16,12 @@
 
 package de.gematik.idp.server;
 
-import static de.gematik.idp.TestConstants.*;
+import static de.gematik.idp.TestConstants.REDIRECT_URI_E_REZEPT_APP;
 import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
 import static de.gematik.idp.client.AuthenticatorClient.getAllHeaderElementsAsMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.authentication.IdpJwtProcessor;
@@ -51,7 +52,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
-import org.apache.http.*;
+import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -89,10 +90,7 @@ public class TokenRetrievalTest {
 
         idpClient.initialize();
 
-        egkUserIdentity = PkiIdentity.builder()
-            .certificate(egkIdentity.getCertificate())
-            .privateKey(egkIdentity.getPrivateKey())
-            .build();
+        egkUserIdentity = egkIdentity;
     }
 
     @Rfc({"OpenID Connect Core 1.0 incorporating errata set 1 - 3.1.3.3.  Successful Token Response",
@@ -228,8 +226,8 @@ public class TokenRetrievalTest {
         final IdpTokenResult oldLoginResult = idpClient.login(egkUserIdentity);
         final JsonWebToken newLoginResult = idpClient.loginWithSsoToken(oldLoginResult.getSsoToken()).getAccessToken();
 
-        assertThat(oldLoginResult.getAccessToken().getExpiresAt())
-            .isBeforeOrEqualTo(newLoginResult.getExpiresAt());
+        assertThat(oldLoginResult.getAccessToken().getExpiresAtBody())
+            .isBeforeOrEqualTo(newLoginResult.getExpiresAtBody());
     }
 
     @Test
@@ -415,7 +413,7 @@ public class TokenRetrievalTest {
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
             .isInstanceOf(IdpClientRuntimeException.class)
-            .hasMessageContaining("Server-Response");
+            .hasMessageContaining("1020: redirect_uri ist ungültig");
     }
 
     @Test
@@ -423,7 +421,9 @@ public class TokenRetrievalTest {
         idpClient.setScopes(Set.of(IdpScope.OPENID));
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
-            .isInstanceOf(IdpClientRuntimeException.class);
+            .isInstanceOf(IdpClientRuntimeException.class)
+            .hasMessageContaining("\"gematik_code\":1022")
+            .hasMessageContaining("\"gematik_error_text\":\"scope ist ungültig\"");
     }
 
     @Test
@@ -443,7 +443,8 @@ public class TokenRetrievalTest {
         });
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
-            .isInstanceOf(IdpClientRuntimeException.class);
+            .isInstanceOf(IdpClientRuntimeException.class)
+            .hasMessageContaining("2013: Der Request besitzt keine gültige Signatur");
     }
 
     @Test
@@ -463,16 +464,18 @@ public class TokenRetrievalTest {
         });
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
-            .isInstanceOf(IdpClientRuntimeException.class);
+            .isInstanceOf(IdpClientRuntimeException.class)
+            .hasMessageContaining("3010: Authorization Code Signatur ungültig");
     }
 
     @Test
-    public void scopeWithoutOpenid_shouldGiveNoAccessToken() throws UnirestException {
+    public void scopeWithoutOpenid_shouldGiveException() throws UnirestException {
         idpClient.setScopes(Set.of(IdpScope.EREZEPT));
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
             .isInstanceOf(IdpClientRuntimeException.class)
-            .hasMessageContaining("Server-Response");
+            .hasMessageContaining("\"gematik_code\":1022")
+            .hasMessageContaining("\"gematik_error_text\":\"scope ist ungültig\"");
     }
 
     @Test
@@ -557,7 +560,8 @@ public class TokenRetrievalTest {
         });
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
-            .isInstanceOf(IdpClientRuntimeException.class);
+            .isInstanceOf(IdpClientRuntimeException.class)
+            .hasMessageContaining("2032: Challenge ist abgelaufen");
     }
 
     @Test
@@ -575,7 +579,8 @@ public class TokenRetrievalTest {
             .build());
 
         assertThatThrownBy(() -> idpClient.loginWithSsoToken(ssoToken))
-            .isInstanceOf(IdpClientRuntimeException.class);
+            .isInstanceOf(IdpClientRuntimeException.class)
+            .hasMessageContaining("2032: Challenge ist abgelaufen");
     }
 
     @Test
@@ -597,7 +602,8 @@ public class TokenRetrievalTest {
     public void illegalCertificateType_shouldGiveServerError(
         @Filename("smcb-idp-expired") final PkiIdentity illegalIdentity) throws UnirestException {
         assertThatThrownBy(() -> idpClient.login(illegalIdentity))
-            .isInstanceOf(IdpClientRuntimeException.class);
+            .isInstanceOf(IdpClientRuntimeException.class)
+            .hasMessageContaining("2020: Das AUT Zertifikat ist ungültig");
     }
 
     @Test
@@ -620,7 +626,8 @@ public class TokenRetrievalTest {
         idpClient.setAfterTokenCallback(response -> assertThat(response.getStatus()).isEqualTo(400));
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
-            .isInstanceOf(IdpClientRuntimeException.class);
+            .isInstanceOf(IdpClientRuntimeException.class)
+            .hasMessageContaining("3011: Authorization Code ist abgelaufen");
     }
 
     @Test
@@ -636,7 +643,8 @@ public class TokenRetrievalTest {
             .encrypt(symmetricEncryptionKey);
 
         assertThatThrownBy(() -> idpClient.loginWithSsoToken(expiredSsoToken))
-            .isInstanceOf(IdpClientRuntimeException.class);
+            .isInstanceOf(IdpClientRuntimeException.class)
+            .hasMessageContaining("2040: SSO_TOKEN nicht valide, bitte um neuerliche Authentisierung");
     }
 
     @Test
@@ -656,7 +664,8 @@ public class TokenRetrievalTest {
         });
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
-            .isInstanceOf(IdpClientRuntimeException.class);
+            .isInstanceOf(IdpClientRuntimeException.class)
+            .hasMessageContaining("2032: Challenge ist abgelaufen");
     }
 
     @Test

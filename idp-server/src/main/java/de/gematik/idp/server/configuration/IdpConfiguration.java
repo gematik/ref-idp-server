@@ -51,4 +51,5 @@ public class IdpConfiguration {
     private Locale defaultLocale;
     private Map<String, IdpClientConfiguration> registeredClient;
     private UserConsentConfiguration userConsent;
+    private IdpErrorConfiguration errors;
 }

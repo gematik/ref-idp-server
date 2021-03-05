@@ -112,8 +112,6 @@ public class AccessTokenBuilderTest {
     @Test
     public void verifyExpiresAtIsPresentAndInNearFuture() {
         final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);
-        assertThat(accessToken.getExpiresAt())
-            .isBefore(ZonedDateTime.now().plusMinutes(5));
         assertThat(accessToken.getExpiresAtBody())
             .isBefore(ZonedDateTime.now().plusMinutes(5));
     }

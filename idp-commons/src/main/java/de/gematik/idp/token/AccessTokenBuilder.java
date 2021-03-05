@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.Data;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jose4j.jwt.NumericDate;
 
 @Data
 public class AccessTokenBuilder {
@@ -66,13 +67,13 @@ public class AccessTokenBuilder {
         claimsMap.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(),
             authenticationToken.getStringBodyClaim(AUTHENTICATION_METHODS_REFERENCE)
                 .orElse("[\"mfa\", \"sc\", \"pin\"]"));
+        claimsMap.put(EXPIRES_AT.getJoseName(), NumericDate.fromSeconds(now.plusMinutes(5).toEpochSecond()).getValue());
 
         final Map<String, Object> headerClaimsMap = new HashMap<>();
         headerClaimsMap.put(TYPE.getJoseName(), "at+JWT");
 
         return jwtProcessor.buildJwt(new JwtBuilder()
             .replaceAllBodyClaims(claimsMap)
-            .replaceAllHeaderClaims(headerClaimsMap)
-            .expiresAt(now.plusMinutes(5)));
+            .replaceAllHeaderClaims(headerClaimsMap));
     }
 }

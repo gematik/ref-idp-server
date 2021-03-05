@@ -25,7 +25,6 @@ import de.gematik.idp.client.IdpTokenResult;
 import de.gematik.idp.client.MockIdpClient;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.field.ClaimName;
-import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.JsonWebToken;
 import java.util.HashMap;
@@ -36,7 +35,6 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -135,6 +133,8 @@ public class MockIdpClientTokenSynchronTest {
         final JsonWebToken jwt = mockIdpClient.login(clientIdentity).getAccessToken();
         final Map<String, Object> bodyClaims = jwt.getBodyClaims();
         final Map<String, Object> bodyClaimsCloned = new HashMap<>() {
+            private static final long serialVersionUID = -6148576016469952778L;
+
             {
                 putAll(bodyClaims);
             }
@@ -142,7 +142,7 @@ public class MockIdpClientTokenSynchronTest {
         bodyClaims.put("foo", "bar");
         final JsonWebToken resignedAccessToken = mockIdpClient.resignToken(jwt.getHeaderClaims(),
             bodyClaims,
-            jwt.getExpiresAt());
+            jwt.getExpiresAtBody());
 
         final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
         final JsonWebToken accessTokenIdpClient = tokenResponse.getAccessToken();

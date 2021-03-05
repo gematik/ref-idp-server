@@ -77,8 +77,7 @@ public class IdpBiometricsSteps extends IdpStepsBase {
     public void registerDeviceWithCert(final String certFile) {
         final Certificate cert = readCertFrom(certFile);
 
-        final Map<String, String> ctxtDevInfo = (Map<String, String>) Context.getThreadContext()
-            .get(ContextKey.DEVICE_INFO);
+        final Map<String, String> ctxtDevInfo = Context.getMap(ContextKey.DEVICE_INFO);
         final Map<String, String> devTypeInfo = new HashMap<>(ctxtDevInfo);
         devTypeInfo.remove("device_name");
         final JSONObject devInfo = new JSONObject();

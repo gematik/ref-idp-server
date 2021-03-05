@@ -16,7 +16,6 @@ import de.gematik.idp.test.steps.helpers.TestEnvironmentConfigurator;
 
 @RunWith(CucumberWithSerenity.class)
 @CucumberOptions(
-strict = $strict,
 features = {"$featureFile"},
 plugin = #stringArray($plugins),
 monochrome = $monochrome,

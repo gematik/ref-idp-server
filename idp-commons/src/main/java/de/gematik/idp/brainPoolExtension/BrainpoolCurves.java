@@ -87,9 +87,9 @@ public class BrainpoolCurves {
             return;
         }
 
-        addCurve("BP-256", BP256);
-        addCurve("BP-384", BP384);
-        addCurve("BP-512", BP512);
+        addCurve(BP_256, BP256);
+        addCurve(BP_384, BP384);
+        addCurve(BP_512, BP512);
 
         AlgorithmFactoryFactory.getInstance().getJwsAlgorithmFactory()
             .registerAlgorithm(new BrainpoolAlgorithmSuites.EcdsaBP256R1UsingSha256());
