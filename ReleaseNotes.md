@@ -1,3 +1,6 @@
+# Release 11.1.0
+* GemLibPki-Version auf Version 0.4.1 aktualisiert
+
 # Release 11.0.0
 * Accept header werden vom IDP-Client benutzt sowie vom Server validiert
 * Erstes Set von Testszenarien mit Anforderungen verlinkt
