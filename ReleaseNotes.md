@@ -1,3 +1,13 @@
+# Release 11.0.0
+* Accept header werden vom IDP-Client benutzt sowie vom Server validiert
+* Erstes Set von Testszenarien mit Anforderungen verlinkt
+* NBF entfernt
+* Endpunkt pairing in pairings umbenannt
+* Korrekte Werte für not_after in Pairing-Data in der Testsuite
+* Discoverydocument an neue Spezifikation angepasst
+* IDP PUK_ENC ohne X5C in JWKS_URI Response
+* Testsuite um Testfall für Primärsystem ohne SSO_TOKEN erweitert
+
 # Release 10.0.0
 * Fehlermeldungen spezifikationskonform im Basisflow
 * CLAIMS ACR/NBF/AT_HASH/EXP/CTY spezifikationskonform

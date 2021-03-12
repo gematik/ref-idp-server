@@ -17,7 +17,6 @@
 package de.gematik.idp.authentication;
 
 import static de.gematik.idp.field.ClaimName.*;
-
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.data.UserConsent;
@@ -66,7 +65,7 @@ public class AuthenticationChallengeBuilder {
         if (nonce != null) {
             claims.put(NONCE.getJoseName(), nonce);
         }
-        claims.put(SERVER_NONCE.getJoseName(), new Nonce().getNonceAsBase64(NONCE_BYTE_AMOUNT));
+        claims.put(SERVER_NONCE.getJoseName(), new Nonce().getNonceAsBase64UrlEncodedString(NONCE_BYTE_AMOUNT));
         claims.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
 
         final Map<String, Object> headerClaims = new HashMap<>();

@@ -42,7 +42,7 @@ public class IdpJwksDocument {
         return IdpJwksDocument.builder()
             .keys(Stream.of(identities)
                 .map(identity -> IdpKeyDescriptor.constructFromX509Certificate(identity.getCertificate(),
-                    identity.getKeyId()))
+                    identity.getKeyId(), true))
                 .collect(Collectors.toList()))
             .build();
     }

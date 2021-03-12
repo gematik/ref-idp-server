@@ -42,8 +42,8 @@
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>10.0.0</version>
+        <version>11.0.0</version>
     </parent>
 
-    <version>10.0.0</version>
+    <version>11.0.0</version>
 </project>

@@ -138,7 +138,7 @@ public class IdpClient implements IIdpClient {
                 .ssoToken(authenticationResponse.getSsoToken())
                 .redirectUrl(redirectUrl)
                 .codeVerifier(codeVerifier)
-                .idpEnc(discoveryDocumentResponse.getIdpEnc().getPublicKey())
+                .idpEnc(discoveryDocumentResponse.getIdpEnc())
                 .build(),
             beforeTokenMapper,
             afterTokenCallback);
@@ -199,7 +199,7 @@ public class IdpClient implements IIdpClient {
                 .ssoToken(ssoToken.getRawString())
                 .redirectUrl(redirectUrl)
                 .codeVerifier(codeVerifier)
-                .idpEnc(discoveryDocumentResponse.getIdpEnc().getPublicKey())
+                .idpEnc(discoveryDocumentResponse.getIdpEnc())
                 .build(),
             beforeTokenMapper,
             afterTokenCallback);
@@ -217,7 +217,7 @@ public class IdpClient implements IIdpClient {
         return AuthenticationResponseBuilder.builder().build()
             .buildResponseForChallenge(authenticationChallenge, idpIdentity)
             .getSignedChallenge()
-            .encrypt(discoveryDocumentResponse.getIdpEnc().getPublicKey());
+            .encrypt(discoveryDocumentResponse.getIdpEnc());
     }
 
     private void assertThatClientIsInitialized() {

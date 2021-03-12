@@ -31,8 +31,8 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidlist100   | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-d-valid-ecc.p12 |
+      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidlist100   | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-d-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
     And I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
@@ -59,8 +59,8 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidlist200   | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-d-valid-ecc.p12 |
+      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidlist200   | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-d-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
     And I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
@@ -68,8 +68,8 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidlist201   | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-d-valid-ecc.p12 |
+      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidlist201   | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-d-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
     And I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'

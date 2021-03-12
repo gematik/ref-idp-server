@@ -1,4 +1,4 @@
-# ![Logo](doc/images/IDPLogo-64.png) Gematik IDP Zulassungstestsuite v8.2.0
+# ![Logo](doc/images/IDPLogo-64.png) Gematik IDP Zulassungstestsuite v11.0.0
 
 Die Gematik IDP Zulassungstestsuite dient zur Pr&uuml;fung externer IDP Dienst Drittanbieter. Sie ist derzeit in
 Entwicklung und noch **NICHT** fertiggestellt. Ziel der Suite ist es sowohl externe IDP Dienste, als auch die Gematik
@@ -342,6 +342,16 @@ testsuite_config.properties folgender Eintrag gesetzt werden.
 
 ```
 encryption.token.active=0
+```
+
+### Deaktivieren der Verschlüsselung der signierten Challenge
+
+In der aktuellen Version der Referenzimplementierung wird die signierte CHallenge bereits verschlüsselt. Die Testsuite
+ist daraufhin abgestimmt und nimmt automatisch die Ver-/Entschlüsselung vor. Um dies abzuschalten, kann im
+testsuite_config.properties folgender Eintrag gesetzt werden.
+
+```
+encryption.challenge.active=0
 ```
 
 Das für die symmetrische Verschlüsselung zu verwendende Passwort wird in folgendem Eintrag gesetzt:

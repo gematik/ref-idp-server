@@ -37,6 +37,9 @@ idp:
     eRezeptApp:
       redirectUri: http://redirect.gematik.de/erezept
       returnSsoToken: true
+    gematikTestPs:
+      redirectUri: http://test-ps.gematik.de/erezept
+      returnSsoToken: false
   errors:
     genericErrorMap:
       client_id:

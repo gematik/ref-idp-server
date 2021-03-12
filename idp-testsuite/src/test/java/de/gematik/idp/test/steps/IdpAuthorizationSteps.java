@@ -62,8 +62,8 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
 
         String error = null;
         if (responseStatus.getValue() == 302) {
-            assertThat(r.getHeaders()).anySatisfy(h -> assertThat(h.getName()).isEqualTo("Location"));
-            error = new URIBuilder(r.getHeader("Location")).getQueryParams().stream()
+            final String loc = getLocationHeader(r);
+            error = new URIBuilder(loc).getQueryParams().stream()
                 .filter(param -> param.getName().equalsIgnoreCase("error"))
                 .map(NameValuePair::getValue)
                 .findFirst()
@@ -90,9 +90,61 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
     }
 
     @SneakyThrows
+    private String checkParamsNGetPath(final CodeAuthType authType, final Map<String, String> params) {
+        String path = Context.getDiscoveryDocument().getAuthorizationEndpoint();
+        switch (authType) {
+            case SIGNED_CHALLENGE:
+                checkContextAddToParams(ContextKey.SIGNED_CHALLENGE, "signed_challenge", params);
+                // encrypt signed challenge
+                if (TestEnvironmentConfigurator.isChallengeEncryptionActive()) {
+                    params.put(
+                        "signed_challenge",
+                        encrypt(params.get("signed_challenge"),
+                            DiscoveryDocument.getPublicKeyFromCertFromJWK(ContextKey.PUK_ENC)));
+                }
+                break;
+            case SSO_TOKEN:
+                checkContextAddToParams(ContextKey.CHALLENGE, "unsigned_challenge", params);
+                if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
+                    checkContextAddToParams(ContextKey.SSO_TOKEN_ENCRYPTED, "ssotoken", params);
+                } else {
+                    checkContextAddToParams(ContextKey.SSO_TOKEN, "ssotoken", params);
+                }
+                path = Context.getDiscoveryDocument().getSsoEndpoint();
+                break;
+            case SSO_TOKEN_NO_CHALLENGE:
+                if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
+                    checkContextAddToParams(ContextKey.SSO_TOKEN_ENCRYPTED, "ssotoken", params);
+                } else {
+                    checkContextAddToParams(ContextKey.SSO_TOKEN, "ssotoken", params);
+                }
+                path = Context.getDiscoveryDocument().getSsoEndpoint();
+                break;
+            case SIGNED_CHALLENGE_WITH_SSO_TOKEN:
+                checkContextAddToParams(ContextKey.CHALLENGE, "unsigned_challenge", params);
+                if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
+                    checkContextAddToParams(ContextKey.SSO_TOKEN_ENCRYPTED, "ssotoken", params);
+                } else {
+                    checkContextAddToParams(ContextKey.SSO_TOKEN, "ssotoken", params);
+                }
+                break;
+            case ALTERNATIVE_AUTHENTICATION:
+                checkContextAddToParams(ContextKey.SIGEND_AUTHENTICATION_DATA, "signed_authentication_data", params);
+                // encrypt signed challenge
+                params.put(
+                    "signed_authentication_data",
+                    encrypt(params.get("signed_authentication_data"),
+                        DiscoveryDocument.getPublicKeyFromCertFromJWK(ContextKey.PUK_ENC)));
+                path = Context.getDiscoveryDocument().getAltAuthEndpoint();
+                break;
+        }
+        return path;
+    }
+
+    @SneakyThrows
     private void storeResponseContentInContext(
         final CodeAuthType authType, final Map<ContextKey, Object> ctxt, final Response r) {
-        final String reloc = r.getHeader("Location");
+        final String reloc = getLocationHeader(r);
         assertThat(reloc).withFailMessage("No Location header in response", r.getHeaders()).isNotBlank();
 
         ctxt.put(ContextKey.TOKEN_REDIRECT_URL, reloc);
@@ -133,6 +185,15 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
         }
     }
 
+    private String getLocationHeader(final Response r) {
+        assertThat(r.getHeaders()).anySatisfy(h -> assertThat(h.getName().toLowerCase()).isEqualTo("location"));
+        String loc = r.getHeader("location");
+        if (loc == null) {
+            loc = r.getHeader("Location");
+        }
+        return loc;
+    }
+
     private Optional<String> storeParamOfReloc(final String reloc, final String paramName, final ContextKey key)
         throws URISyntaxException {
         final Optional<String> value = new URIBuilder(reloc).getQueryParams().stream()
@@ -152,56 +213,6 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
         return value;
     }
 
-    @SneakyThrows
-    private String checkParamsNGetPath(final CodeAuthType authType, final Map<String, String> params) {
-        String path = Context.getDiscoveryDocument().getAuthorizationEndpoint();
-        switch (authType) {
-            case SIGNED_CHALLENGE:
-                checkContextAddToParams(ContextKey.SIGNED_CHALLENGE, "signed_challenge", params);
-                // encrypt signed challenge
-                params.put(
-                    "signed_challenge",
-                    encrypt(params.get("signed_challenge"),
-                        DiscoveryDocument.getPublicKeyFromCertFromJWK(ContextKey.PUK_ENC)));
-                break;
-            case SSO_TOKEN:
-                checkContextAddToParams(ContextKey.CHALLENGE, "unsigned_challenge", params);
-                if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
-                    checkContextAddToParams(ContextKey.SSO_TOKEN_ENCRYPTED, "ssotoken", params);
-                } else {
-                    checkContextAddToParams(ContextKey.SSO_TOKEN, "ssotoken", params);
-                }
-                path = Context.getDiscoveryDocument().getSsoEndpoint();
-                break;
-            case SSO_TOKEN_NO_CHALLENGE:
-                if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
-                    checkContextAddToParams(ContextKey.SSO_TOKEN_ENCRYPTED, "ssotoken", params);
-                } else {
-                    checkContextAddToParams(ContextKey.SSO_TOKEN, "ssotoken", params);
-                }
-                path = Context.getDiscoveryDocument().getSsoEndpoint();
-                break;
-            case SIGNED_CHALLENGE_WITH_SSO_TOKEN:
-                checkContextAddToParams(ContextKey.CHALLENGE, "unsigned_challenge", params);
-                if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
-                    checkContextAddToParams(ContextKey.SSO_TOKEN_ENCRYPTED, "ssotoken", params);
-                } else {
-                    checkContextAddToParams(ContextKey.SSO_TOKEN, "ssotoken", params);
-                }
-                break;
-            case ALTERNATIVE_AUTHENTICATION:
-                checkContextAddToParams(ContextKey.SIGEND_AUTHENTICATION_DATA, "signed_authentication_data", params);
-                // encrypt signed challenge
-                params.put(
-                    "signed_authentication_data",
-                    encrypt(params.get("signed_authentication_data"),
-                        DiscoveryDocument.getPublicKeyFromCertFromJWK(ContextKey.PUK_ENC)));
-                path = Context.getDiscoveryDocument().getAltAuthEndpoint();
-                break;
-        }
-        return path;
-    }
-
     private void checkContextAddToParams(final ContextKey key, final String paramName,
         final Map<String, String> params) {
         final Map<ContextKey, Object> ctxt = Context.getThreadContext();
@@ -212,9 +223,7 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
     public void responseIs302ErrorWithMessageMatching(final int errid, final String errcode) {
         final Response r = Context.getCurrentResponse();
         assertThat(r.getStatusCode()).isEqualTo(302);
-
-        assertThat(r.getHeaders()).anySatisfy(h -> assertThat(h.getName()).isEqualTo("Location"));
-        final String location = r.getHeader("Location");
+        final String location = getLocationHeader(r);
         final MultiValueMap<String, String> parameters = UriComponentsBuilder.fromUriString(location).build()
             .getQueryParams();
 

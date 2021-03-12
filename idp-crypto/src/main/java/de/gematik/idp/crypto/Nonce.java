@@ -17,9 +17,9 @@
 package de.gematik.idp.crypto;
 
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
+import java.util.Base64;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
-import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
 
 public class Nonce {
@@ -29,7 +29,7 @@ public class Nonce {
     private static final int NONCE_STRLEN_MIN = 2;
     private static final int NONCE_STRLEN_MAX = 512;
 
-    public String getNonceAsBase64(final int randomByteAmount) {
+    public String getNonceAsBase64UrlEncodedString(final int randomByteAmount) {
         if (randomByteAmount < NONCE_BYTE_AMOUNT_MIN || randomByteAmount > NONCE_BYTE_AMOUNT_MAX) {
             throw new IdpCryptoException(
                 "Amount of random bytes is expected to be between " + NONCE_BYTE_AMOUNT_MIN + " and "
@@ -39,7 +39,7 @@ public class Nonce {
         final Random random = ThreadLocalRandom.current();
         final byte[] randomArray = new byte[randomByteAmount];
         random.nextBytes(randomArray);
-        return Base64.toBase64String(randomArray);
+        return new String(Base64.getUrlEncoder().encode(randomArray));
     }
 
     public String getNonceAsHex(final int strlen) {

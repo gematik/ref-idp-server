@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.server.controllers;
+package de.gematik.idp.data;
 
-import de.gematik.idp.crypto.model.PkiIdentity;
-import de.gematik.idp.data.IdpKeyDescriptor;
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-@Getter
-public class IdpKey {
+public enum PublicKeyUse {
+    SIGNATURE("sig"), ENCRYPTION("enc");
 
-    private final PkiIdentity identity;
+    private final String serializationValue;
 
-    public IdpKeyDescriptor buildJwk(final boolean addX5C) {
-        return IdpKeyDescriptor.constructFromX509Certificate(identity.getCertificate(), identity.getKeyId(), addX5C);
+    @JsonValue
+    public String getSerializationValue() {
+        return serializationValue;
     }
 }

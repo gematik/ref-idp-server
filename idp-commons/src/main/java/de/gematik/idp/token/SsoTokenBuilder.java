@@ -45,7 +45,6 @@ public class SsoTokenBuilder {
         headerClaimsMap.put(TYPE.getJoseName(), "JWT");
         bodyClaimsMap.put(ISSUER.getJoseName(), issuerUrl);
         bodyClaimsMap.put(ISSUED_AT.getJoseName(), issuingTime.toEpochSecond());
-        bodyClaimsMap.put(NOT_BEFORE.getJoseName(), issuingTime.toEpochSecond());
         bodyClaimsMap.put(AUTH_TIME.getJoseName(), issuingTime.toEpochSecond());
 
         bodyClaimsMap.putAll(X509ClaimExtraction.extractClaimsFromCertificate(certificate));

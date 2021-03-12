@@ -95,11 +95,7 @@ docker-compose build --nuild-args mode=untested # creates a docker image without
 
 ## Caveats
 
-Aufgrund von ungeklärten Phänomenen im Lifecycle, empfiehlt es sich vor dem Ausführen von package, verify oder install
-zuerst ein `mvn clean compile` auszuführen. Anschließend können Tests und Install targets aufgerufen werden. Sämtliche
-Targets müssen aus dem **Basisverzeichnis idp-global** aufgerufen werden!
-
-Ein wiederholtes mvn clean kann zu einer Fehlermeldung führen.
+Sämtliche Targets müssen aus dem **Basisverzeichnis idp-global** aufgerufen werden!
 
 Um docker images zu entfernen, hilft mvn docker:remove, leider geht dies nur aus dem idp-server Verzeichnis. Auf top
 Ebene wird das docker plugin nicht gefunden. Mehr Details dazu

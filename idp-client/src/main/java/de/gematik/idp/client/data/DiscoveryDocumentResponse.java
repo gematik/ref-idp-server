@@ -16,6 +16,7 @@
 
 package de.gematik.idp.client.data;
 
+import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,6 +32,6 @@ public class DiscoveryDocumentResponse {
     private String authorizationEndpoint;
     private String tokenEndpoint;
     private X509Certificate idpSig;
-    private X509Certificate idpEnc;
+    private PublicKey idpEnc;
     private X509Certificate discSig;
 }

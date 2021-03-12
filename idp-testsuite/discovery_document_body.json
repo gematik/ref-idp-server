@@ -1,14 +1,14 @@
 {
-  "authorization_endpoint": "http://localhost:8080/sign_response",
-  "alternative_authorization_endpoint": "http://localhost:8080/alt_response",
-  "sso_endpoint": "http://localhost:8080/sso_response",
-  "pairing_endpoint": "http://localhost:8080/pairing",
-  "token_endpoint": "http://localhost:8080/token",
-  "uri_disc": "http://localhost:8080/discoveryDocument",
+  "uri_disc": "https://idp-test.zentral.idp.splitdns.ti-dienste.de/discoveryDocument",
+  "authorization_endpoint": "https://idp-test.zentral.idp.splitdns.ti-dienste.de/auth",
+  "sso_endpoint": "https://idp-test.zentral.idp.splitdns.ti-dienste.de/auth/sso_response",
+  "token_endpoint": "https://idp-test.zentral.idp.splitdns.ti-dienste.de/token",
+  "auth_pair_endpoint": "https://idp-test.zentral.idp.splitdns.ti-dienste.de/alt_response",
+  "uri_pair": "https://idp-test.zentral.idp.splitdns.ti-dienste.de/pairings",
   "issuer": "https://idp.zentral.idp.splitdns.ti-dienste.de",
-  "jwks_uri": "http://localhost:8080/jwks",
-  "uri_puk_idp_enc": "http://localhost:8080/idpEnc/jwks.json",
-  "uri_puk_idp_sig": "http://localhost:8080/ipdSig/jwks.json",
+  "jwks_uri": "https://idp-test.zentral.idp.splitdns.ti-dienste.de/jwks",
+  "uri_puk_idp_enc": "accesskeeper.p12#auth",
+  "uri_puk_idp_sig": "accesskeeper.p12#auth",
   "subject_types_supported": [
     "pairwise"
   ],

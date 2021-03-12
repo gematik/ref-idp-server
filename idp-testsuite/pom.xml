@@ -282,7 +282,7 @@
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>10.0.0</version>
+        <version>11.0.0</version>
     </parent>
 
     <profiles>
@@ -443,5 +443,5 @@
         <version.serenity.maven.plugin>2.3.4</version.serenity.maven.plugin>
     </properties>
 
-    <version>10.0.0</version>
+    <version>11.0.0</version>
 </project>

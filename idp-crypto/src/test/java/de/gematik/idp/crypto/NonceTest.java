@@ -18,11 +18,10 @@ package de.gematik.idp.crypto;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
-import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +29,7 @@ class NonceTest {
 
     @Test
     public void checkInvalidLowerLimit() {
-        assertThatThrownBy(() -> new Nonce().getNonceAsBase64(0)).
+        assertThatThrownBy(() -> new Nonce().getNonceAsBase64UrlEncodedString(0)).
             isInstanceOf(IdpCryptoException.class).
             hasMessageContaining("Amount of random bytes");
 
@@ -41,7 +40,7 @@ class NonceTest {
 
     @Test
     public void checkInvalidUpperLimit() {
-        assertThatThrownBy(() -> new Nonce().getNonceAsBase64(513)).
+        assertThatThrownBy(() -> new Nonce().getNonceAsBase64UrlEncodedString(513)).
             isInstanceOf(IdpCryptoException.class).
             hasMessageContaining("Amount of random bytes");
 
@@ -53,8 +52,8 @@ class NonceTest {
     @Test
     public void checkExactNonceLength() {
         final int BYTE_AMOUNT = 256;
-        final String nonce = new Nonce().getNonceAsBase64(BYTE_AMOUNT);
-        assertThat(Base64.decode(nonce).length).isEqualTo(BYTE_AMOUNT);
+        final String nonce = new Nonce().getNonceAsBase64UrlEncodedString(BYTE_AMOUNT);
+        assertThat(Base64.getUrlDecoder().decode(nonce).length).isEqualTo(BYTE_AMOUNT);
 
         final int HEXSTR_LEN = 10;
         final String hexStr = new Nonce().getNonceAsHex(HEXSTR_LEN);
@@ -67,7 +66,7 @@ class NonceTest {
         final Nonce nonce = new Nonce();
         final Set<String> nonces = new HashSet<>();
         for (int i = 0; i < NONCES_REQUEST_AMOUNT; i++) {
-            nonces.add(nonce.getNonceAsBase64(32));
+            nonces.add(nonce.getNonceAsBase64UrlEncodedString(32));
             nonces.add(nonce.getNonceAsHex(8));
         }
         assertThat(nonces.size()).isEqualTo(NONCES_REQUEST_AMOUNT * 2);

@@ -93,7 +93,7 @@ public class AuthenticationTokenBuilderTest {
     }
 
     @Test
-    public void verifyThatAuthenticationTokenCarriesIatNbfClaimOnlyInBody() {
+    public void verifyThatAuthenticationTokenCarriesIatClaimOnlyInBody() {
         final ZonedDateTime now = ZonedDateTime.now();
         final JsonWebToken authenticationToken = authenticationTokenBuilder
             .buildAuthenticationToken(clientIdentity.getCertificate(), Collections.emptyMap(), now)
@@ -101,12 +101,10 @@ public class AuthenticationTokenBuilderTest {
 
         assertThat(authenticationToken.getHeaderClaims())
             .as("Authentication-Token Header-Claims")
-            .doesNotContainKey(NOT_BEFORE.getJoseName())
             .doesNotContainKey(ISSUED_AT.getJoseName());
         assertThat(authenticationToken.getBodyClaims())
             .as("Authentication-Token Body-Claims")
-            .containsKey(ISSUED_AT.getJoseName())
-            .containsKey(NOT_BEFORE.getJoseName());
+            .containsKey(ISSUED_AT.getJoseName());
     }
 
     @Test

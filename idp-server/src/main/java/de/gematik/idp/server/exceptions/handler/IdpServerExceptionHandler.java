@@ -51,6 +51,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -211,6 +212,11 @@ public class IdpServerExceptionHandler {
         return handleIdpServerException(
             new IdpServerException("Invalid Request", exc, IdpErrorType.SERVER_ERROR,
                 HttpStatus.INTERNAL_SERVER_ERROR), request, response);
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
+    public ResponseEntity<IdpErrorResponse> handleHttpMediaTypeNotAcceptableException() {
+        return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
     }
 
     @ExceptionHandler(NonTransientDataAccessException.class)

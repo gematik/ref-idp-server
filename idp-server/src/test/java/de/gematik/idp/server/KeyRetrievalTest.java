@@ -18,6 +18,7 @@ package de.gematik.idp.server;
 
 import static de.gematik.idp.IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT;
 import static org.assertj.core.api.Assertions.assertThat;
+
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.Rfc;
@@ -85,13 +86,14 @@ public class KeyRetrievalTest {
 
     @Afo("A_20458")
     @Test
-    public void retrieveAuthKey_noRsaFieldShouldBePresent() throws UnirestException {
+    public void retrieveSigKey_noRsaFieldShouldBePresent() throws UnirestException {
         final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
         final String pukUriAuth = TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())
             .get("uri_puk_idp_sig").toString();
         final JsonNode jwk = Unirest.get(pukUriAuth).asJson().getBody();
         assertThat(jwk.getObject().has("n")).isFalse();
         assertThat(jwk.getObject().has("e")).isFalse();
+        assertThat(jwk.getObject().has("use")).isFalse();
     }
 
     @Afo("A_20458")
@@ -115,6 +117,16 @@ public class KeyRetrievalTest {
             .collect(Collectors.toList()))
             .containsExactlyInAnyOrder(idpSig.getIdentity().getKeyId().get(),
                 idpEnc.getIdentity().getKeyId().get());
+    }
+
+    @Test
+    public void retrieveJwksKeyStore_shouldContainUseClaims() throws UnirestException, JoseException {
+        final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
+        final String jwksUri = TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())
+            .get("jwks_uri").toString();
+        final HttpResponse<JsonNode> jwks = Unirest.get(jwksUri).asJson();
+        assertThat(jwks.getBody().getObject().getJSONArray("keys").getJSONObject(0).getString("use"))
+            .matches("(sig|enc)");
     }
 
     @Afo("A_20458")

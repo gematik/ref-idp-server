@@ -42,7 +42,6 @@ public enum ClaimName {
     CONTENT_TYPE("cty"),
     JWT_ID("jti"),
     KEY_ID("kid"),
-    NOT_BEFORE("nbf"),
     CLIENT_SIGNATURE("csig"),
     NESTED_JWT("njwt"),
     CODE_CHALLENGE("code_challenge"), // (Hashwert des "code_verifier") [RFC7636 # section-4.2]

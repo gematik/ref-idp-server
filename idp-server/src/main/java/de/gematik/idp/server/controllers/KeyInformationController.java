@@ -39,13 +39,13 @@ public class KeyInformationController {
     @ApiOperation(httpMethod = "GET", value = "Endpunkt für Schlüsselinformationen für den Authentifizierungsprozess", notes = "Verbaut Schlüsselinformationen in ein JwksDocument und liefert dieses zurück.")
     @ValidateClientSystem
     public IdpKeyDescriptor getAuthJwk() {
-        return idpSig.buildJwk();
+        return idpSig.buildJwk(true);
     }
 
     @GetMapping(PUK_URI_ENC)
     @ApiOperation(httpMethod = "GET", value = "Endpunkt für Schlüsselinformationen für die Tokenabfrage", notes = "Verbaut Schlüsselinformationen in ein JwksDocument und liefert dieses zurück.")
     @ValidateClientSystem
     public IdpKeyDescriptor getTokenJwk() {
-        return idpEnc.buildJwk();
+        return idpEnc.buildJwk(false);
     }
 }

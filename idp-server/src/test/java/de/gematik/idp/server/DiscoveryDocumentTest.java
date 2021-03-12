@@ -22,7 +22,6 @@ import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
-
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.tests.Afo;
@@ -93,9 +92,9 @@ public class DiscoveryDocumentTest {
         assertThat(extractClaimMapFromResponse(httpResponse))
             .containsOnlyKeys("issuer",
                 "authorization_endpoint",
-                "alternative_authorization_endpoint",
+                "auth_pair_endpoint",
                 "sso_endpoint",
-                "pairing_endpoint",
+                "uri_pair",
                 "token_endpoint",
                 "jwks_uri",
                 "subject_types_supported",

@@ -75,7 +75,6 @@ public class SsoTokenBuilderTest {
         assertThat(ssoToken.getBodyClaims())
             .containsKeys(
                 ISSUED_AT.getJoseName(),
-                NOT_BEFORE.getJoseName(),
                 EXPIRES_AT.getJoseName(),
                 GIVEN_NAME.getJoseName(),
                 FAMILY_NAME.getJoseName(),

@@ -20,6 +20,7 @@ import static de.gematik.idp.field.ClaimName.*;
 import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.PkiKeyResolver;
@@ -42,7 +43,6 @@ public class IdpJwtProcessorTest {
         .expiresAt(ZonedDateTime.now().plusMinutes(10))
         .addAllBodyClaims(new HashMap<>(Map.ofEntries(
             entry(ISSUED_AT.getJoseName(), ZonedDateTime.now().toEpochSecond()),
-            entry(NOT_BEFORE.getJoseName(), ZonedDateTime.now().toEpochSecond()),
             entry(ISSUER.getJoseName(), "https://idp.zentral.idp.splitdns.ti-dienste.de"),
             entry(RESPONSE_TYPE.getJoseName(), "code"),
             entry(SCOPE.getJoseName(), "openid e-rezept"),

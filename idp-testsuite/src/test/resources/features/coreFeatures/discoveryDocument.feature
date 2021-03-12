@@ -20,7 +20,7 @@ Feature: Fordere Discovery Dokument an
   Frontends von TI Diensten müssen vom IDP Server über ein HTTP GET an den Discovery Endpoint ein Discovery Dokument
   abfragen können. Welches alle notwendigen Informationen enthält um die IDP Server Endpunkte bedienen zu können.
 
-  @Afo:A_20668 @Afo:A_19874
+  @Afo:A_20668 @Afo:A_19874  @Afo:A_20457  @Afo:A_20688
   @Approval @Ready
   Scenario: Disc - Discovery Dokument muss verfügbar sein
 
@@ -77,7 +77,7 @@ Feature: Fordere Discovery Dokument an
         }
         """
 
-  @Afo:A_20297_01 @Afo:A_20505_01 @Afo:A_20506_01 @Afo:A_20698 @Afo:A_20591
+  @Afo:A_20297_01 @Afo:A_20505_01 @Afo:A_20506_01 @Afo:A_20698 @Afo:A_20591 @Afo:A_20439 @Afo:A_20458
   @Approval @Ready
   Scenario: Disc - Discovery Dokument body claims sind korrekt
 
@@ -96,9 +96,9 @@ Feature: Fordere Discovery Dokument an
         """
           { acr_values_supported :                  '["gematik-ehealth-loa-high"]',
             authorization_endpoint:                 "http.*",
-            alternative_authorization_endpoint:     "http.*",
+            auth_pair_endpoint:                     "http.*",
             sso_endpoint:                           "http.*",
-            pairing_endpoint:                       "http.*",
+            uri_pair:                               "http.*",
             exp:                                    "[\\d]*",
             grant_types_supported :                 '["authorization_code"]',
             iat:                                    "[\\d]*",
@@ -148,7 +148,7 @@ Feature: Fordere Discovery Dokument an
   Result: Keiner der Testdurchläufe darf fehlschlagen
   ```
 
-  @Afo:A_20687
+  @Afo:A_20687 @Afo:A_20439
   @Approval @Ready
   Scenario: Disc - Die URLs im Discovery Dokument sind erreichbar
 
@@ -169,38 +169,35 @@ Feature: Fordere Discovery Dokument an
     And URI in claim "uri_disc" exists with method POST and status 405
     And URI in claim "authorization_endpoint" exists with method GET and status 400
     And URI in claim "authorization_endpoint" exists with method POST and status 302
-    And URI in claim "alternative_authorization_endpoint" exists with method GET and status 405
-    And URI in claim "alternative_authorization_endpoint" exists with method POST and status 400
+    And URI in claim "auth_pair_endpoint" exists with method GET and status 405
+    And URI in claim "auth_pair_endpoint" exists with method POST and status 400
     And URI in claim "sso_endpoint" exists with method GET and status 405
     And URI in claim "sso_endpoint" exists with method POST and status 302
     And URI in claim "token_endpoint" exists with method GET and status 405
     And URI in claim "token_endpoint" exists with method POST and status 400
-    And URI in claim "pairing_endpoint" exists with method GET and status 403
-    And URI in claim "pairing_endpoint" exists with method PUT and status 403
+    And URI in claim "uri_pair" exists with method GET and status 403
+    And URI in claim "uri_pair" exists with method PUT and status 403
 
   @Afo:A_20732 @Afo:A_20591
-    @Approval @Todo:KeyChecksOCSP
+  @Approval @Todo:KeyChecksOCSP
   #OpenBug: currently not working if we use file based key material
-  Scenario Outline: Disc - Die Schlüssel URIs sind erreichbar und enthalten public X509 Schlüssel
+  Scenario: Disc - Die idpSig URI ist erreichbar und enthält ein public X509 Zertifikat
 
   ```
-  Wir fordern das Discovery Dokument an und überprüfen die Inhalte der URIs aus den PUK Claims
-
-  - uri_puk_idp_enc
-  - uri_puk_idp_sign
+  Wir fordern das Discovery Dokument an und überprüfen die Inhalte der URI für uri_puk_idp_sign
 
   Der PuK_Disc wird aus dem header des Disc Docs gelesen und hier NICHT geprüft.
 
-  Die Antwort des Servers auf Anfragen auf diese URIs muss einen validen ECC BP256 Schlüssel liefern.
+  Die Antwort des Servers auf Anfragen auf diese URIs muss ein valides ECC BP256 Zertifikat liefern.
 
     Given I request the discovery document
     And I extract the body claims
 
-    When I request the uri from claim "<claim>" with method GET and status 200
+    When I request the uri from claim "uri_puk_idp_sig" with method GET and status 200
     Then the JSON response should match
         """
           { crv: "BP-256",
-            kid: "${json-unit.ignore}",
+            kid: "idpSig",
             kty: "EC",
             x:   "${json-unit.ignore}",
             x5c: "${json-unit.ignore}",
@@ -210,10 +207,32 @@ Feature: Fordere Discovery Dokument an
     And the JSON response should be a valid certificate
     # The correct usage is then checked in the workflow scenarios
 
-    Examples: Die claims welche Schlüssel URIs enthalten
-      | claim           |
-      | uri_puk_idp_enc |
-      | uri_puk_idp_sig |
+  @Afo:A_20732
+  Scenario: Disc - Die idpEnc URI ist erreichbar und enthält einen public X509 Schlüssel
+
+  ```
+  Wir fordern das Discovery Dokument an und überprüfen die Inhalte der URI für uri_puk_idp_enc
+
+  Der PuK_Disc wird aus dem header des Disc Docs gelesen und hier NICHT geprüft.
+
+  Die Antwort des Servers auf Anfragen auf diese URIs muss einen validen ECC BP256 Schlüssel liefern.
+
+    Given I request the discovery document
+    And I extract the body claims
+
+    When I request the uri from claim "uri_puk_idp_enc" with method GET and status 200
+    Then the JSON response should match
+        """
+          { crv: "BP-256",
+            kid: "idpEnc",
+            kty: "EC",
+            x:   "${json-unit.ignore}",
+            y:   "${json-unit.ignore}"
+          }
+        """
+    # TODO And the JSON response should be a valid certificate
+    # The correct usage is then checked in the workflow scenarios
+
 
   @Approval @Todo:KeyChecksOCSP
   Scenario Outline: Check JWKS URI
@@ -232,8 +251,8 @@ Feature: Fordere Discovery Dokument an
           {
             keys: [
               {
-                x5c:  "${json-unit.ignore}",
                 kid:  "idpEnc",
+                use:  "enc",
                 kty:  "EC",
                 crv:  "BP-256",
                 x:    ".*",
@@ -242,6 +261,7 @@ Feature: Fordere Discovery Dokument an
               {
                 x5c:  "${json-unit.ignore}",
                 kid:  "idpSig",
+                use:  "sig",
                 kty:  "EC",
                 crv:  "BP-256",
                 x:    ".*",
@@ -251,7 +271,7 @@ Feature: Fordere Discovery Dokument an
           }
         """
 
-    And the JSON array 'keys' of response should contain valid certificates
+    And the JSON array 'keys' of response should contain valid certificates for 'idpSig'
     # The correct usage is then checked in the workflow scenarios
 
     Examples:

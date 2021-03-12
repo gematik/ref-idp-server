@@ -76,7 +76,7 @@ Feature: Fordere Access Token für Pairing an
     Then the body claims should match in any order
             """
               { scope:                 "pairing openid",
-                iss:                   "https://idp.zentral.idp.splitdns.ti-dienste.de",
+                iss:                   "https:\\/\\/idp.*\\.zentral\\.idp\\.splitdns\\.ti\\-dienste\\.de",
                 response_type:         "code",
                 code_challenge_method: "S256",
                 redirect_uri:          "http://redirect.gematik.de/erezept",

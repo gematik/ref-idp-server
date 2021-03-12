@@ -21,8 +21,11 @@ import static de.gematik.idp.IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.authentication.IdpJwtProcessor;
+import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.data.IdpDiscoveryDocument;
 import de.gematik.idp.data.IdpJwksDocument;
+import de.gematik.idp.data.IdpKeyDescriptor;
+import de.gematik.idp.data.PublicKeyUse;
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.server.ServerUrlService;
 import de.gematik.idp.server.exceptions.IdpServerException;
@@ -30,7 +33,10 @@ import de.gematik.idp.server.services.DiscoveryDocumentBuilder;
 import de.gematik.idp.server.validation.clientSystem.ValidateClientSystem;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -61,7 +67,25 @@ public class DiscoveryDocumentController {
     @GetMapping("/jwks")
     @ApiOperation(value = "Endpunkt für Schlüsselinformationen für die Tokenabfrage", notes = "Verbaut Schlüsselinformationen in ein JWK und liefert dieses zurück.")
     public IdpJwksDocument getJwks() {
-        return IdpJwksDocument.constructFromX509Certificate(idpSig.getIdentity(), idpEnc.getIdentity());
+        final List<PkiIdentity> identities = new ArrayList<>();
+        identities.add(idpSig.getIdentity());
+        identities.add(idpEnc.getIdentity());
+        return IdpJwksDocument.builder()
+            .keys(identities.stream()
+                .map(identity -> {
+                    final IdpKeyDescriptor keyDesc = IdpKeyDescriptor
+                        .constructFromX509Certificate(identity.getCertificate(),
+                            identity.getKeyId(),
+                            identity.getKeyId()
+                                .map(id -> !id.equals("idpEnc"))
+                                .orElse(false));
+                    keyDesc.setPublicKeyUse(identity.getKeyId()
+                        .map(id -> id.equals("idpEnc") ? PublicKeyUse.ENCRYPTION : PublicKeyUse.SIGNATURE)
+                        .orElse(null));
+                    return keyDesc;
+                })
+                .collect(Collectors.toList()))
+            .build();
     }
 
     @GetMapping(value = {DISCOVERY_DOCUMENT_ENDPOINT,

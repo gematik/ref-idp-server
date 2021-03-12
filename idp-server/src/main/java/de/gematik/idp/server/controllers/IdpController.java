@@ -47,6 +47,7 @@ import net.dracoblue.spring.web.mvc.method.annotation.HttpResponseHeader;
 import net.dracoblue.spring.web.mvc.method.annotation.HttpResponseHeaders;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -70,7 +71,8 @@ public class IdpController {
     private final IdpAuthenticator idpAuthenticator;
     private final TokenService tokenService;
 
-    @GetMapping(BASIC_AUTHORIZATION_ENDPOINT)
+    @GetMapping(value = BASIC_AUTHORIZATION_ENDPOINT, consumes = {MediaType.ALL_VALUE,
+        MediaType.APPLICATION_JSON_VALUE, "application/*"})
     @ApiOperation(httpMethod = "GET", value = "Endpunkt für Authentifizierung", notes = "Die übergebenen Parameter"
         + " werden zu einer Liste von JWTClaims zusammengefasst und daraus dann die zurückgelieferte "
         + "AuthenticationChallenge gebaut.", response = AuthenticationChallenge.class)
@@ -137,7 +139,8 @@ public class IdpController {
         response.setHeader(HttpHeaders.LOCATION, tokenLocation);
     }
 
-    @PostMapping(SSO_ENDPOINT)
+    @PostMapping(value = SSO_ENDPOINT, consumes = {MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE,
+        "application/*"})
     @ApiOperation(httpMethod = "POST", value = "Endpunkt für SSO-Authorisierung", notes =
         "Wird ein SSO-Token übergeben, so wird aus diesem der Code für die Tokenabfrage generiert. "
             + "Der Code wird dann als Query parameter mit der URL zum Token Endpunkt zurückgeliefert.")
@@ -159,7 +162,8 @@ public class IdpController {
         response.setHeader(HttpHeaders.LOCATION, tokenLocation);
     }
 
-    @PostMapping(TOKEN_ENDPOINT)
+    @PostMapping(value = TOKEN_ENDPOINT, consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.ALL_VALUE,
+        "application/*"})
     @ApiOperation(httpMethod = "POST", value = "Endpunkt für Tokenabfrage", notes = "Es wird der Token Code mit "
         + "dem Code Verifier geprüft, entwertet und bei Erfolg daraus ein Zugangstoken erstellt. Der Zugangstoken "
         + "wird gemeinsam mit einem ID Token zurückgeliefert.", response = TokenResponse.class)

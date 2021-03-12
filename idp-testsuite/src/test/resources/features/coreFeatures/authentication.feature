@@ -23,8 +23,9 @@ Feature: Authentifiziere Anwendung am IDP Server
     Given I initialize scenario from discovery document endpoint
     And I retrieve public keys from URIs
 
-  @Afo:A_20601 @Afo:A_20740 @Afo:A_20698
-  @Approval @Ready
+  @Afo:A_20601 @Afo:A_20740 @Afo:A_20698  @Afo:A_20523
+  @Approval @Ready @Rise
+  @issue:IDP-472
   Scenario: Core Auth - Gutfall - Validiere Antwortstruktur
 
   ```
@@ -47,9 +48,9 @@ Feature: Authentifiziere Anwendung am IDP Server
     And the response http headers match
         """
           Content-Type=application/json.*
-          Cache-Control=no-store
-          Pragma=no-cache
         """
+    #  Cache-Control=no-store
+    #  Pragma=no-cache
     And the JSON response should match
         """
           {
@@ -70,7 +71,7 @@ Feature: Authentifiziere Anwendung am IDP Server
           }
         """
 
-  @Afo:A_20601 @Afo:A_20740 @Afo:A_20376 @Afo:A_20521-01 @Afo:A_20377
+  @Afo:A_20601 @Afo:A_20740 @Afo:A_20376 @Afo:A_20521 @Afo:A_20377
   @Approval @Ready
   Scenario: Auth - Gutfall - Validiere Claims
 
@@ -104,7 +105,7 @@ Feature: Authentifiziere Anwendung am IDP Server
             exp:                   "[\\d]*",
             jti:                   "${json-unit.ignore}",
             iat:                   "[\\d]*",
-            iss:                   "https://idp.zentral.idp.splitdns.ti-dienste.de",
+            iss:                   "https:\\/\\/idp.*\\.zentral\\.idp\\.splitdns\\.ti\\-dienste\\.de",
             nonce:                 "123456789",
             redirect_uri:          "http://redirect.gematik.de/erezept",
             response_type:         "code",
@@ -139,7 +140,7 @@ Feature: Authentifiziere Anwendung am IDP Server
             exp:                   "[\\d]*",
             jti:                   "${json-unit.ignore}",
             iat:                   "[\\d]*",
-            iss:                   "https://idp.zentral.idp.splitdns.ti-dienste.de",
+            iss:                   "https:\\/\\/idp.*\\.zentral\\.idp\\.splitdns\\.ti\\-dienste\\.de",
             redirect_uri:          "http://redirect.gematik.de/erezept",
             response_type:         "code",
             scope:                 "(e-rezept openid|openid e-rezept)",
@@ -168,7 +169,7 @@ Feature: Authentifiziere Anwendung am IDP Server
     Then the context CHALLENGE must be signed with cert PUK_SIGN
 
 
-  @Afo:A_20740 @Afo:A_20601 @Afo:A_20698
+  @Afo:A_20740 @Afo:A_20601 @Afo:A_20698 @Afo:A_20440
     @Approval @Ready
   Scenario Outline: Auth - Fehlende Parameter
 
@@ -201,7 +202,7 @@ Feature: Authentifiziere Anwendung am IDP Server
       | 2004   | invalid_request | eRezeptApp | e-rezept openid | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | $REMOVE       |
       # nonce is not mandatory so no example here
 
-  @Afo:A_20601 @Afo:A_20740
+  @Afo:A_20601 @Afo:A_20740 @Afo:A_20440
     @Approval @Ready
   Scenario Outline: Auth - Null Parameter
 

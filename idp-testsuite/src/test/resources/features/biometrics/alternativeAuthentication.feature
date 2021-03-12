@@ -26,7 +26,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
 
   @todo:pairingdatenHinterlegen
 
-  @Afo:A_20699-1 @Afo:A_20951-1 @Afo:A_20460
+  @Afo:A_20699 @Afo:A_20951 @Afo:A_20460
   @Todo:CheckAfos
   @Todo:NichtDeviceInformationTokenErzeugenWennNichtNotwendig
   @Approval
@@ -44,8 +44,8 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth002   | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth002   | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -75,7 +75,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     And I expect the Context with key SSO_TOKEN to match '.*'
 
 
-  @Afo:A_20699-1 @Afo:A_20951-1 @Afo:A_20460 @Afo:A_20731 @Afo:A_20310 @Afo:A_20377 @Afo:A_20697 @Afo:A_21317
+  @Afo:A_20699 @Afo:A_20951 @Afo:A_20460 @Afo:A_20731 @Afo:A_20310 @Afo:A_20377 @Afo:A_20697 @Afo:A_21317
   @Todo:ClarifyTokenCodeContentRelevant @Todo:CompareSubjectInfosInTokenAndInAuthenticationData @Todo:CheckAfos
   @Todo:CheckAmr
   @Approval
@@ -94,8 +94,8 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth002   | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth002   | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -137,8 +137,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
             given_name:            "(.{1,64})",
             iat:                   "[\\d]*",
             idNummer:              "[A-Z][\\d]{9,10}",
-            iss:                   "https://idp.zentral.idp.splitdns.ti-dienste.de",
-            nbf:                   "[\\d]*",
+            iss:                   "https:\\/\\/idp.*\\.zentral\\.idp\\.splitdns\\.ti\\-dienste\\.de",
             nonce:                 "12345",
             organizationName:      "(.{1,64})",
             professionOID:         "1\\.2\\.276\\.0\\.76\\.4\\.(3\\d|4\\d|178|23[2-90]|240|241)",
@@ -169,8 +168,8 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth002   | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth002   | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -209,8 +208,8 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth002   | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth002   | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -253,8 +252,8 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth002   | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth002   | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -319,8 +318,8 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth002   | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth002   | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -442,7 +441,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     Then the response is an 302 error with code 'invalid_request' and message matching 'validateChallengeAndGetTokenCode.signedChallenge%3A%20must%20not%20be%20null'
 
 
-  @Afo:A_20951-1
+  @Afo:A_20951
   @Todo:checkAfos
   @Todo:ErrorMessages
   @Todo:HierMitZuvorRegistrietenDatenArbeitenDamitManNichtEtwasUngueltigesRegistrierenMussUndDaranScheitert
@@ -471,7 +470,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     Then the response is an 302 error with code 'invalid_request' and message matching 'TODO'
 
   @WIP
-  @Afo:A_20951-1
+  @Afo:A_20951
   @Todo:checkAfos
   @Todo:ErrorMessages
   @Todo:HierMitZuvorRegistrietenDatenArbeitenDamitManNichtEtwasUngueltigesRegistrierenMussUndDaranScheitert
@@ -498,7 +497,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     When I request a code token with alternative authentication
     Then the response is an 302 error with code 'invalid_request' and message matching 'TODO'
 
-  @Afo:A_20951-1
+  @Afo:A_20951
   @Todo:checkAfos
   @Todo:ErrorMessages
   @Todo:HierMitZuvorRegistrietenDatenArbeitenDamitManNichtEtwasUngueltigesRegistrierenMussUndDaranScheitert
@@ -526,7 +525,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     When I request a code token with alternative authentication
     Then the response is an 302 error with code 'invalid_request' and message matching 'TODO'
 
-  @Afo:A_20951-1
+  @Afo:A_20951
   @Todo:checkAfos
   @Todo:ErrorMessages
   @Todo:HierMitZuvorRegistrietenDatenArbeitenDamitManNichtEtwasUngueltigesRegistrierenMussUndDaranScheitert
@@ -555,7 +554,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     Then the response is an 302 error with code 'invalid_request' and message matching 'TODO'
 
 
-  @Afo:A_20951-1
+  @Afo:A_20951
   @Todo:checkAfos
   @Todo:ErrorMessages
   @WIP
@@ -607,7 +606,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     Then the response is an 302 error with code 'invalid_request' and message matching 'TODO'
 
 
-  @Afo:A_20951-1
+  @Afo:A_20951
   @Todo:checkAfos
   @Todo:ErrorMessages
   @Todo:HierMitZuvorRegistrietenDatenArbeitenDamitManNichtEtwasUngueltigesRegistrierenMussUndDaranScheitert

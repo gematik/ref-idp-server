@@ -20,7 +20,6 @@ import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifie
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
-
 import de.gematik.idp.test.steps.helpers.TestEnvironmentConfigurator;
 import de.gematik.idp.test.steps.model.*;
 import de.gematik.idp.test.steps.utils.SerenityReportUtils;
@@ -388,6 +387,9 @@ public class IdpStepsBase {
     }
 
     @Step
+    // header names are case insensitive
+    // http://www.w3.org/Protocols/rfc2616/rfc2616.html (outdated but base)
+    // https://tools.ietf.org/html/rfc7230#appendix-A.2 (current rfc and no changes to rfc2616)
     public void assertThatHttpResponseHeadersMatch(final String kvps) {
         final Properties props = new Properties();
         try (final StringReader sr = new StringReader(kvps)) {
@@ -397,12 +399,12 @@ public class IdpStepsBase {
         }
         try {
             final Map<String, String> responseHeaders = Context.getCurrentResponse().getHeaders().asList().stream()
-                .collect(Collectors.toMap(Header::getName, Header::getValue));
+                .collect(Collectors.toMap(h -> h.getName().toLowerCase(), Header::getValue));
             final Map<String, String> stringProps = props.entrySet().stream()
                 .collect(Collectors.toMap(e -> e.getKey().toString(), e -> e.getValue().toString()));
             stringProps.forEach((key, value) -> {
-                assertThat(responseHeaders).containsKey(key);
-                assertThat(responseHeaders.get(key)).matches(value);
+                assertThat(responseHeaders).containsKey(key.toLowerCase());
+                assertThat(responseHeaders.get(key.toLowerCase())).matches(value);
             });
         } catch (final IllegalStateException ise) {
             Assertions.fail(ise.getMessage());
@@ -441,13 +443,16 @@ public class IdpStepsBase {
     }
 
     @SneakyThrows
-    public void jsonArrayPathShouldContainValidCertificates(final String arrStr) {
+    public void jsonArrayPathShouldContainValidCertificatesWithKeyId(final String arrStr, final String keyid) {
         final JSONObject json = new JSONObject(Context.getCurrentResponse().getBody().asString());
         assertThat(IteratorUtils.toArray(json.keys())).contains(arrStr);
         assertThat(json.get(arrStr)).isInstanceOf(JSONArray.class);
         final JSONArray jarr = json.getJSONArray(arrStr);
         for (int i = 0; i < jarr.length(); i++) {
-            jsonObjectShouldBeValidCertificate(jarr.getJSONObject(i));
+            final JSONObject jsonCert = jarr.getJSONObject(i);
+            if (jsonCert.getString("kid").equals(keyid)) {
+                jsonObjectShouldBeValidCertificate(jsonCert);
+            }
         }
     }
 

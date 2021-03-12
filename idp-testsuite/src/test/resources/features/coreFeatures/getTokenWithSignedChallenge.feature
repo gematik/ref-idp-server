@@ -45,7 +45,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
           }
         """
 
-  @Afo:A_20731 @Afo:A_20310 @Afo:A_20464 @Afo:A_20952 @Afo:21320 @Afo:A_21321
+  @Afo:A_20731 @Afo:A_20310 @Afo:A_20464 @Afo:A_20952 @Afo:21320 @Afo:A_21321 @Afo:A_20313
   @Approval @Todo:AccessTokenContent
   @Todo:CompareSubjectInfosInAccessTokenAndInCert
     # TODO: wollen wir noch den Wert der auth_time gegen den Zeitpunkt der Authentifizierung pruefen
@@ -120,7 +120,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
           }
         """
 
-  @Afo:A_21321
+  @Afo:A_21321 @Afo:A_20313
   @Approval @Ready
   Scenario: GetToken Signierte Challenge - Gutfall - Check ID Token - Validiere ID Token Claims
   ```

@@ -21,6 +21,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
 
   Frontends müssen mit einer eGK und einem pairing Access oder SSO Token Geräte registrieren können.
 
+  not_after 1893456000 entspricht dem 1.1.2030
+
   Background: Initialisiere Testkontext durch Abfrage des Discovery Dokuments
     Given I initialize scenario from discovery document endpoint
     And I retrieve public keys from URIs
@@ -33,14 +35,16 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyident001    | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyident001    | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     Then the response status is 200
     And the response is empty
 
   # TODO user agent ? Relevanz, add testcases without user agents if relevant
+
+  # TODO not_after mit Wert aus der Vergangenheit
 
   # TODO add variants for different PukSE AUThs
   @TODOErlaubenWir2PairingsAufDemselbenDevice?
@@ -51,8 +55,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyident002    | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyident002    | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-b-valid-ecc.p12'
@@ -60,8 +64,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyident002    | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-b-valid-ecc.p12 |
+      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyident002    | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-b-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-b-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-b-valid-ecc.p12'
     Then the response status is 200
@@ -74,8 +78,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyident003    | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyident003    | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-b-valid-ecc.p12'
@@ -83,8 +87,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyident004    | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-b-valid-ecc.p12 |
+      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyident004    | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-b-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-b-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-b-valid-ecc.p12'
     Then the response status is 200
@@ -97,8 +101,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                     | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel01 | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | key_data                     | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel01 | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -122,8 +126,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Motorola            | GOTA 1         | G2           | Android   | 1.3.2          |
     And I create pairing data with
-      | key_data                     | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel02 | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | key_data                     | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel02 | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I request an access token
@@ -132,8 +136,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                     | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel02 | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | key_data                     | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel02 | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     Then the response status is 409
@@ -154,8 +158,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Motorola            | GOTA 1         | G2           | Ubuntu    | 1.3.2          |
     And I create pairing data with
-      | key_data                     | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel03 | ES256                          | GOTA 1         | 419094927676993 | Ubuntu | 1.3.2     | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | key_data                     | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel03 | ES256                          | GOTA 1         | 419094927676993 | Ubuntu | 2208988800 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I request an access token
@@ -164,8 +168,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                     | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel03 | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | key_data                     | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel03 | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     Then the response status is 409
@@ -191,8 +195,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                   | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                     |
-      | /keys/valid/<cert_keydata> | <key_identifier> | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/<cert_public_key> |
+      | key_data                   | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                     |
+      | /keys/valid/<cert_keydata> | <key_identifier> | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/<cert_public_key> |
     And I sign pairing data with '/certs/valid/<cert_sign>'
     And I register the device with '/certs/valid/<cert_register>'
     Then the response status is <status>
@@ -223,8 +227,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                   | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                     |
-      | /keys/valid/<cert_keydata> | <key_identifier> | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/<cert_public_key> |
+      | key_data                   | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                     |
+      | /keys/valid/<cert_keydata> | <key_identifier> | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/<cert_public_key> |
     And I sign pairing data with '/certs/valid/<cert_sign>'
     And I register the device with '/certs/valid/<cert_register>'
     Then the response status is <status>
@@ -254,8 +258,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | device_name   | device_manufacturer   | device_product   | device_model   | device_os   | device_version   |
       | <device_name> | <device_manufacturer> | <device_product> | <device_model> | <device_os> | <device_version> |
     And I create pairing data with
-      | key_data                     | key_identifier  | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | <keyidentifier> | ES256                          | Fair Phone 3   | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | key_data                     | key_identifier  | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | <keyidentifier> | ES256                          | Fair Phone 3   | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     Then the response status is 400
@@ -286,8 +290,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | device_name   | device_manufacturer   | device_product   | device_model   | device_os   | device_version   |
       | <device_name> | <device_manufacturer> | <device_product> | <device_model> | <device_os> | <device_version> |
     And I create pairing data with
-      | key_data                     | key_identifier  | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | <keyidentifier> | ES256                          | Fair Phone 3   | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | key_data                     | key_identifier  | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | <keyidentifier> | ES256                          | Fair Phone 3   | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     Then the response status is 400
@@ -335,14 +339,14 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
         """
 
     Examples: Biometrie Register - Null Pairing Data Beispiele
-      | keyidentifier  | key_data                     | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | keyidentnull11 | $NULL                        | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentnull12 | /keys/valid/Pub_Se_Aut-1.pem | $NULL                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentnull13 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | $NULL          | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentnull14 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | $NULL           | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentnull15 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | 419094927676993 | $NULL   | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentnull16 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | 419094927676993 | Android | $NULL     | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentnull17 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | $NULL                                         |
+      | keyidentifier  | key_data                     | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | keyidentnull11 | $NULL                        | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | keyidentnull12 | /keys/valid/Pub_Se_Aut-1.pem | $NULL                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | keyidentnull13 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | $NULL          | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | keyidentnull14 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | $NULL           | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | keyidentnull15 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | 419094927676993 | $NULL   | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | keyidentnull16 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | 419094927676993 | Android | $NULL      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | keyidentnull17 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | $NULL                                         |
 
   @Approval
   Scenario Outline: Biometrie Register - Fehlende Werte in pairing data
@@ -368,14 +372,14 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
         """
 
     Examples: Biometrie Register - Fehlende Pairing Data Beispiele
-      | keyidentifier    | key_data                     | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | keyidentremove11 | $REMOVE                      | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentremove12 | /keys/valid/Pub_Se_Aut-1.pem | $REMOVE                        | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentremove13 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | $REMOVE        | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentremove14 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | $REMOVE         | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentremove15 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | 419094927676993 | $REMOVE | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentremove16 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | 419094927676993 | Android | $REMOVE   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentremove17 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | $REMOVE                                       |
+      | keyidentifier    | key_data                     | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | keyidentremove11 | $REMOVE                      | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | keyidentremove12 | /keys/valid/Pub_Se_Aut-1.pem | $REMOVE                        | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | keyidentremove13 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | $REMOVE        | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | keyidentremove14 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | $REMOVE         | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | keyidentremove15 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | 419094927676993 | $REMOVE | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | keyidentremove16 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | 419094927676993 | Android | $REMOVE    | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | keyidentremove17 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | $REMOVE                                       |
 
   @Approval @issue:IDP-470 @OpenBug
   Scenario Outline: Biometrie Register - Ungültige Zertifikate (selfsigned, outdated, revoced)
@@ -385,8 +389,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Motorola            | GOTA 1         | G2           | Android   | 1.3.2          |
     And I create pairing data with
-      | key_data                     | key_identifier  | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key    |
-      | /keys/valid/Pub_Se_Aut-1.pem | <keyidentifier> | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | <invalidcert> |
+      | key_data                     | key_identifier  | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key    |
+      | /keys/valid/Pub_Se_Aut-1.pem | <keyidentifier> | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | <invalidcert> |
     And I sign pairing data with '<invalidcert>'
     And I register the device with '<invalidcert>'
     Then the response status is 500
@@ -414,8 +418,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                   | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                     |
-      | /keys/valid/<cert_keydata> | <key_identifier> | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/<cert_public_key> |
+      | key_data                   | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                     |
+      | /keys/valid/<cert_keydata> | <key_identifier> | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/<cert_public_key> |
     And I sign pairing data with '/certs/valid/<cert_sign>'
     And I register the device with '/certs/valid/<cert_register>'
     Then the response status is <status>
@@ -455,8 +459,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidentacc001 | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidentacc001 | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
     When I wait PT5M
@@ -482,8 +486,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidentacc001 | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidentacc001 | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     Then the response status is 403
@@ -505,8 +509,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
       | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidentacc001 | ES256                          | FairPhone 3    | 419094927676993 | Android | 1.0.2 f   | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidentacc001 | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     Then the response status is 403

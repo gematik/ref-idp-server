@@ -20,13 +20,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class IdpRsaKeyDescriptor extends IdpKeyDescriptor {
@@ -37,25 +35,28 @@ public class IdpRsaKeyDescriptor extends IdpKeyDescriptor {
     private String rsaExponentValue;
 
     @Builder
-    public IdpRsaKeyDescriptor(final String[] x5c, final String keyId, final String keyType,
-        final String rsaModulusValue,
-        final String rsaExponentValue) {
-        super(x5c, keyId, keyType);
+    public IdpRsaKeyDescriptor(final String[] x5c, final PublicKeyUse publicKeyUse, final String keyId, final String keyType,
+        final String rsaModulusValue, final String rsaExponentValue) {
+        super(x5c, publicKeyUse, keyId, keyType);
         this.rsaModulusValue = rsaModulusValue;
         this.rsaExponentValue = rsaExponentValue;
     }
 
-    public static IdpKeyDescriptor constructFromX509Certificate(final X509Certificate certificate, final String keyId) {
+    public static IdpKeyDescriptor constructFromX509Certificate(final X509Certificate certificate, final String keyId,
+        final boolean addX5C) {
         try {
             final IdpRsaKeyDescriptor.IdpRsaKeyDescriptorBuilder descriptorBuilder = IdpRsaKeyDescriptor.builder()
-                .x5c(getCertArray(certificate))
                 .keyId(keyId)
                 .keyType(getKeyType(certificate));
+            if (addX5C) {
+                descriptorBuilder.x5c(getCertArray(certificate));
+            }
 
             final BCRSAPublicKey bcrsaPublicKey = (BCRSAPublicKey) certificate.getPublicKey();
             descriptorBuilder
-                .rsaModulusValue(Base64.getEncoder().encodeToString(bcrsaPublicKey.getModulus().toByteArray()))
-                .rsaExponentValue(Base64.getEncoder().encodeToString(bcrsaPublicKey.getPublicExponent().toByteArray()));
+                .rsaModulusValue(Base64.getUrlEncoder().encodeToString(bcrsaPublicKey.getModulus().toByteArray()))
+                .rsaExponentValue(
+                    Base64.getUrlEncoder().encodeToString(bcrsaPublicKey.getPublicExponent().toByteArray()));
 
             return descriptorBuilder.build();
         } catch (final ClassCastException e) {

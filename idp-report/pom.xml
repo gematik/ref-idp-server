@@ -64,6 +64,6 @@
     <parent>
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
-        <version>10.0.0</version>
+        <version>11.0.0</version>
     </parent>
 </project>

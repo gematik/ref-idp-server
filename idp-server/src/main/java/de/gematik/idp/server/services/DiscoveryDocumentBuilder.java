@@ -17,7 +17,6 @@
 package de.gematik.idp.server.services;
 
 import static de.gematik.idp.IdpConstants.*;
-
 import de.gematik.idp.data.IdpDiscoveryDocument;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.controllers.KeyInformationController;
@@ -36,9 +35,9 @@ public class DiscoveryDocumentBuilder {
             .authorizationEndpoint(serverUrl + BASIC_AUTHORIZATION_ENDPOINT)
             .tokenEndpoint(serverUrl + TOKEN_ENDPOINT)
             .uriDisc(serverUrl + DISCOVERY_DOCUMENT_ENDPOINT)
-            .alternativeAuthorizationEndpoint(serverUrl + ALTERNATIVE_AUTHORIZATION_ENDPOINT)
+            .authPairEndpoint(serverUrl + ALTERNATIVE_AUTHORIZATION_ENDPOINT)
             .ssoEndpoint(serverUrl + SSO_ENDPOINT)
-            .pairingEndpoint(serverUrl + PAIRING_ENDPOINT)
+            .uriPair(serverUrl + PAIRING_ENDPOINT)
             .grantTypesSupported(new String[]{"authorization_code"})
             .idTokenSigningAlgValuesSupported(new String[]{"BP256R1"})
             .scopesSupported(new String[]{"openid", "e-rezept"})

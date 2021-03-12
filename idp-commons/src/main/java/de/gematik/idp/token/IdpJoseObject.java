@@ -75,11 +75,6 @@ public abstract class IdpJoseObject {
             .orElseThrow();
     }
 
-    public ZonedDateTime getNotBefore() {
-        return getBodyClaimAsZonedDateTime(NOT_BEFORE)
-            .orElseThrow();
-    }
-
     private Optional<ZonedDateTime> getBodyClaimAsZonedDateTime(final ClaimName claimName) {
         return getBodyClaims().entrySet().stream()
             .filter(entry -> claimName.getJoseName().equals(entry.getKey()))

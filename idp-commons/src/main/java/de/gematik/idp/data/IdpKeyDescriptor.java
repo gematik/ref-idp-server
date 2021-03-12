@@ -18,6 +18,7 @@ package de.gematik.idp.data;
 
 import static de.gematik.idp.crypto.KeyAnalysis.isEcKey;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -41,7 +42,11 @@ import org.jose4j.jwk.RsaJsonWebKey;
 @AllArgsConstructor
 public class IdpKeyDescriptor implements JSONAware {
 
+    @JsonInclude(Include.NON_NULL)
     private String[] x5c;
+    @JsonInclude(Include.NON_NULL)
+    @JsonProperty("use")
+    private PublicKeyUse publicKeyUse;
     @JsonProperty("kid")
     private String keyId;
     @JsonProperty("kty")
@@ -62,17 +67,17 @@ public class IdpKeyDescriptor implements JSONAware {
     }
 
     public static IdpKeyDescriptor constructFromX509Certificate(final X509Certificate certificate) {
-        return constructFromX509Certificate(certificate, Optional.empty());
+        return constructFromX509Certificate(certificate, Optional.empty(), true);
     }
 
     public static IdpKeyDescriptor constructFromX509Certificate(final X509Certificate certificate,
-        final Optional<String> keyId) {
+        final Optional<String> keyId, final boolean addX5C) {
         if (isEcKey(certificate.getPublicKey())) {
             return IdpEccKeyDescriptor.constructFromX509Certificate(certificate,
-                keyId.orElse(certificate.getSerialNumber().toString()));
+                keyId.orElse(certificate.getSerialNumber().toString()), addX5C);
         } else {
             return IdpRsaKeyDescriptor.constructFromX509Certificate(certificate,
-                keyId.orElse(certificate.getSerialNumber().toString()));
+                keyId.orElse(certificate.getSerialNumber().toString()), addX5C);
         }
     }
 

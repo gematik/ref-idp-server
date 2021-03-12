@@ -17,17 +17,18 @@
 package de.gematik.idp.test.steps.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
+import de.gematik.idp.test.steps.helpers.TestEnvironmentConfigurator;
 import java.io.*;
+import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.spec.ECPublicKeySpec;
 import java.util.Base64;
 import java.util.Enumeration;
 import lombok.Getter;
@@ -71,10 +72,11 @@ public class DiscoveryDocument {
         jsonHeader = jsoHeader;
         authorizationEndpoint = jsoBody.getString("authorization_endpoint");
         ssoEndpoint = jsoBody.getString("sso_endpoint");
-        altAuthEndpoint = jsoBody.getString("alternative_authorization_endpoint");
+        altAuthEndpoint = jsoBody.getString("auth_pair_endpoint");
         tokenEndpoint = jsoBody.getString("token_endpoint");
-        pairingEndpoint = jsoBody.getString("pairing_endpoint");
+        pairingEndpoint = jsoBody.getString("uri_pair");
         jwksUri = jsoBody.getString("jwks_uri");
+        TestEnvironmentConfigurator.initializeTestEnvironment();
     }
 
     public DiscoveryDocument(final File templateBody, final File templateHeader)
@@ -83,8 +85,8 @@ public class DiscoveryDocument {
             new JSONObject(IOUtils.toString(new FileReader(templateHeader, StandardCharsets.UTF_8))));
     }
 
-    public void readPublicKeysFromURIs()
-        throws JSONException, URISyntaxException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+    @SneakyThrows
+    public void readPublicKeysFromURIs() {
         pukUriEnc = getPuKFromJSONAttribute(jsonBody.getString("uri_puk_idp_enc"));
         Context.getThreadContext().put(ContextKey.PUK_ENC, pukUriEnc);
         pukUriSign = getPuKFromJSONAttribute(jsonBody.getString("uri_puk_idp_sig"));
@@ -95,7 +97,7 @@ public class DiscoveryDocument {
         Context.getThreadContext().put(ContextKey.PUK_DISC, pukUriDisc);
     }
 
-    private JSONObject getPuKFromJSONAttribute(final String uri)
+    private JSONObject getPuKFromJSONAttribute(String uri)
         throws JSONException, KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, URISyntaxException {
         if (uri.equals("$NULL")) {
             return null;
@@ -103,6 +105,12 @@ public class DiscoveryDocument {
             log.info("Retrieving key from URI " + uri);
             return new JSONObject(SerenityRest.get(uri).getBody().asString());
         } else {
+            final int hash = uri.indexOf("#");
+            String certalias = null;
+            if (hash != -1) {
+                certalias = uri.substring(hash + 1);
+                uri = uri.substring(0, hash);
+            }
             log.info("Retrieving key from file " + uri);
 
             final byte[] p12FileContent = FileUtils
@@ -114,7 +122,9 @@ public class DiscoveryDocument {
             X509Certificate certificate = null;
             while (e.hasMoreElements() && certificate == null) {
                 final String alias = e.nextElement();
-                certificate = (X509Certificate) p12.getCertificate(alias);
+                if (certalias == null || certalias.equals(alias)) {
+                    certificate = (X509Certificate) p12.getCertificate(alias);
+                }
             }
             assertThat(certificate).withFailMessage("No Certificate found in file '" + uri + "'").isNotNull();
 
@@ -152,10 +162,22 @@ public class DiscoveryDocument {
     @SneakyThrows
     public static PublicKey getPublicKeyFromCertFromJWK(final ContextKey key) {
         final JSONObject jwk = new JSONObject(String.valueOf(Context.getThreadContext().get(key)));
-        final String certString = jwk.getJSONArray("x5c").getString(0);
-        final byte[] decode = Base64.getDecoder().decode(certString);
-        final CertificateFactory certFactory = CertificateFactory.getInstance("X.509", BOUNCY_CASTLE_PROVIDER);
-        final InputStream in = new ByteArrayInputStream(decode);
-        return certFactory.generateCertificate(in).getPublicKey();
+
+        if (!jwk.has("x5c")) {
+            assertThat(jwk.getString("kty")).isEqualTo("EC");
+            assertThat(jwk.getString("crv")).isEqualTo("BP-256");
+            final java.security.spec.ECPoint ecPoint = new java.security.spec.ECPoint(
+                new BigInteger(Base64.getUrlDecoder().decode(jwk.getString("x"))),
+                new BigInteger(Base64.getUrlDecoder().decode(jwk.getString("y"))));
+            final ECPublicKeySpec keySpec = new ECPublicKeySpec(ecPoint, BrainpoolCurves.BP256);
+            return KeyFactory.getInstance("EC").generatePublic(keySpec);
+        } else {
+
+            final String certString = jwk.getJSONArray("x5c").getString(0);
+            final byte[] decode = Base64.getDecoder().decode(certString);
+            final CertificateFactory certFactory = CertificateFactory.getInstance("X.509", BOUNCY_CASTLE_PROVIDER);
+            final InputStream in = new ByteArrayInputStream(decode);
+            return certFactory.generateCertificate(in).getPublicKey();
+        }
     }
 }

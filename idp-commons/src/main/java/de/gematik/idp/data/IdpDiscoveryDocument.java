@@ -31,9 +31,9 @@ import lombok.NoArgsConstructor;
 public class IdpDiscoveryDocument {
 
     private String authorizationEndpoint;
-    private String alternativeAuthorizationEndpoint;
+    private String authPairEndpoint;
     private String ssoEndpoint;
-    private String pairingEndpoint;
+    private String uriPair;
     private String tokenEndpoint;
     private String uriDisc;
     private String issuer;

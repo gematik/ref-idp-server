@@ -17,6 +17,7 @@
 package de.gematik.idp.server;
 
 import static de.gematik.idp.authentication.UriUtils.extractParameterMap;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import de.gematik.idp.IdpConstants;
@@ -97,9 +98,6 @@ public class TokenLoggerTest {
             + ". Beispiel: '" + value.toString() + "'>");
         MASKING_FUNCTIONS
             .put("iat", value -> "<Zeitpunkt der Ausstellung des Tokens. Beispiel: '" + value.toString() + "'>");
-        MASKING_FUNCTIONS
-            .put("nbf",
-                value -> "<Der Token ist erst ab diesem Zeitpunkt gültig. Beispiel: '" + value.toString() + "'>");
 
         MASKING_FUNCTIONS.put("code_challenge",
             v -> "<code_challenge value, Base64URL(SHA256(code_verifier)). Beispiel: " + v.toString() + ">");

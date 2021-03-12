@@ -64,7 +64,6 @@ public class AuthenticationTokenBuilder {
         claimsMap.put(STATE.getJoseName(), serverChallengeClaims.get(STATE.getJoseName()));
         claimsMap.put(SCOPE.getJoseName(), serverChallengeClaims.get(SCOPE.getJoseName()));
         claimsMap.put(ISSUED_AT.getJoseName(), issueingTime.toEpochSecond());
-        claimsMap.put(NOT_BEFORE.getJoseName(), issueingTime.toEpochSecond());
         claimsMap.put(TOKEN_TYPE.getJoseName(), "code");
         claimsMap.put(AUTH_TIME.getJoseName(), issueingTime.toEpochSecond());
         claimsMap.put(SERVER_NONCE.getJoseName(), RandomStringUtils.randomAlphanumeric(20));
@@ -103,7 +102,7 @@ public class AuthenticationTokenBuilder {
         claimsMap.put(ISSUER.getJoseName(), extractClaimFromChallengeToken(challengeToken, ISSUER));
         claimsMap.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
 
-        final Map headerClaims = new HashMap<String,Object>(ssoToken.getHeaderClaims());
+        final Map headerClaims = new HashMap<>(ssoToken.getHeaderClaims());
         headerClaims.put(TYPE.getJoseName(), "JWT");
 
         return jwtProcessor.buildJwt(new JwtBuilder()

@@ -18,7 +18,6 @@ package de.gematik.idp.server;
 
 import static de.gematik.idp.field.ClaimName.ALGORITHM;
 import static de.gematik.idp.field.ClaimName.ISSUED_AT;
-import static de.gematik.idp.field.ClaimName.NOT_BEFORE;
 import static de.gematik.idp.field.ClaimName.TYPE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -113,7 +112,6 @@ public class SsoTokenValidatorTest {
     private Map<String, Object> generateBodyClaims() {
         final Map<String, Object> bodyClaims = new HashMap<>();
         bodyClaims.put(ISSUED_AT.getJoseName(), ZonedDateTime.now().toEpochSecond());
-        bodyClaims.put(NOT_BEFORE.getJoseName(), ZonedDateTime.now().toEpochSecond());
         return bodyClaims;
     }
 

@@ -83,8 +83,9 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
   #          }
   #          """
 
-  @Afo:A_20699-1 @Afo:A_20951-1 @Afo:A_20460
-  @Approval @Todo:ClarifyTokenCodeContentRelevant
+  @Afo:A_20699 @Afo:A_20951 @Afo:A_20460  @Afo:A_20693
+  @Approval @Todo:ClarifyTokenCodeContentRelevant @Rise
+  @issue:IDP-472
   Scenario: Author mit signierter Challenge - Gutfall - Validiere Antwortstruktur
 
   ```
@@ -104,20 +105,22 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     Then the response status is 302
     And the response http headers match
         """
-        Cache-Control=no-store
-        Pragma=no-cache
         Content-Length=0
-        Location=http://redirect.gematik.de/erezept/token[?]code=.*
+        Location=http[s]{0,1}\\:\\/\\/.*\\.de\\/erezept.*[?|&]code=.*
         """
+    # TODO
+    # Cache-Control=no-store
+    # Pragma=no-cache
     And I expect the Context with key STATE to match 'xxxstatexxx'
     And I expect the Context with key SSO_TOKEN to match '.*'
 
-  @WiP
+  @Approval @Ready
   @ToDo:ServerConfiguration
-  Scenario: Author mit signierter Challenge für Client ohne SSL Token - Gutfall - Validiere Antwortstruktur
+  @issue:IDP-472
+  Scenario: Author mit signierter Challenge für Client ohne SSO Token - Gutfall - Validiere Antwortstruktur
 
   ```
-  Wir wählen einen gültigen Code verifier für einen registrierten Client der kein SSL Token zurückbekommen darf.
+  Wir wählen einen gültigen Code verifier für einen registrierten Client der kein SSO Token zurückbekommen darf.
   Wir fordern einen Challenge Token an, signieren diesen und fordern einen TOKEN_CODE mit der signierten Challenge an.
 
   Die TOKEN_CODE Antwort muss den Code 302, die richtigen HTTP Header und keinen SSO Token haben.
@@ -133,16 +136,18 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     Then the response status is 302
     And the response http headers match
         """
-        Cache-Control=no-store
-        Pragma=no-cache
         Content-Length=0
-        Location=http.*code=.*
+        Location=http[s]{0,1}\\:\\/\\/.*\\.de\\/erezept.*[?|&]code=.*
         """
+    # TODO
+    # Cache-Control=no-store
+    # Pragma=no-cache
     And I expect the Context with key STATE to match 'xxxstatexxx'
     And I expect the Context with key SSO_TOKEN to match '$NULL'
 
-  @Afo:A_20699-1 @Afo:A_20951-1 @Afo:A_20460 @Afo:A_20731 @Afo:A_20310 @Afo:A_20377 @Afo:A_20697 @Afo:A_21317
+  @Afo:A_20699 @Afo:A_20951 @Afo:A_20460 @Afo:A_20731 @Afo:A_20310 @Afo:A_20377 @Afo:A_20697 @Afo:A_21317
   @Approval @Todo:ClarifyTokenCodeContentRelevant @Todo:CompareSubjectInfosInTokenAndInCert
+  @issue:IDP-519
   Scenario: Author mit signierter Challenge - Gutfall - Validiere Location Header und Code Token Claims
 
   ```
@@ -164,11 +169,13 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     Then the header claims should match in any order
         """
           { alg: "BP256R1",
-            exp: "[\\d]*",
             kid: "${json-unit.ignore}",
+            exp: "[\\d]*",
             typ: "JWT"
           }
         """
+    # TODO RISE hat hier keinen exp claim
+
     When I extract the body claims from token TOKEN_CODE
     Then the body claims should match in any order
         """
@@ -183,12 +190,11 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
             given_name:            "(.{1,64})",
             iat:                   "[\\d]*",
             idNummer:              "[A-Z][\\d]{9,10}",
-            iss:                   "https://idp.zentral.idp.splitdns.ti-dienste.de",
-            nbf:                   "[\\d]*",
+            iss:                   "https:\\/\\/idp.*\\.zentral\\.idp\\.splitdns\\.ti\\-dienste\\.de",
             nonce:                 "12345",
             organizationName:      "(.{1,64})",
             professionOID:         "1\\.2\\.276\\.0\\.76\\.4\\.(3\\d|4\\d|178|23[2-90]|240|241)",
-            redirect_uri:          "http://redirect.gematik.de/erezept",
+            redirect_uri:          "http[s]{0,1}\\:\\/\\/.*\\.de\\/erezept",
             response_type:         "code",
             scope:                 "(e-rezept openid|openid e-rezept)",
             snc:                   ".*",
@@ -196,8 +202,6 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
             token_type:            "code"
         }
         """
-        # TODO Inhalt ist laut Spec nicht vorgegeben, daher evt. nur für Referenzimplementierung relevant
-
 
   @Afo:A_20624 @Afo:A_20319
   @Approval @Ready

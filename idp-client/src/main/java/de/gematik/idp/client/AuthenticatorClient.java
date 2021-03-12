@@ -20,16 +20,21 @@ import static de.gematik.idp.authentication.UriUtils.extractParameterValue;
 import static de.gematik.idp.crypto.CryptoLoader.getCertificateFromPem;
 import static de.gematik.idp.field.ClaimName.*;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
-
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.authentication.UriUtils;
+import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
 import de.gematik.idp.client.data.*;
 import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
 import de.gematik.idp.token.TokenClaimExtraction;
+import java.math.BigInteger;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.security.spec.ECPublicKeySpec;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
@@ -84,7 +89,8 @@ public class AuthenticatorClient {
                 authorizationRequest.getCodeChallengeMethod())
             .queryString(SCOPE.getJoseName(), scope)
             .queryString("nonce", authorizationRequest.getNonce())
-            .header(HttpHeaders.USER_AGENT, USER_AGENT);
+            .header(HttpHeaders.USER_AGENT, USER_AGENT)
+            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 
         final HttpResponse<AuthenticationChallenge> authorizationResponse = beforeCallback
             .apply(request)
@@ -144,7 +150,8 @@ public class AuthenticatorClient {
             .field("ssotoken", authenticationRequest.getSsoToken())
             .field("unsigned_challenge", authenticationRequest.getChallengeToken().getRawString())
             .header(CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-            .header(HttpHeaders.USER_AGENT, USER_AGENT);
+            .header(HttpHeaders.USER_AGENT, USER_AGENT)
+            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
         final HttpResponse<String> loginResponse = beforeAuthenticationCallback.apply(request).asString();
         afterAuthenticationCallback.accept(loginResponse);
         final String location = retrieveLocationFromResponse(loginResponse);
@@ -178,7 +185,8 @@ public class AuthenticatorClient {
             .field("code", tokenRequest.getCode())
             .field("key_verifier", keyVerifierToken.getRawString())
             .field("redirect_uri", tokenRequest.getRedirectUrl())
-            .header(HttpHeaders.USER_AGENT, USER_AGENT);
+            .header(HttpHeaders.USER_AGENT, USER_AGENT)
+            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 
         final HttpResponse<JsonNode> tokenResponse = beforeTokenCallback.apply(request)
             .asJson();
@@ -243,7 +251,7 @@ public class AuthenticatorClient {
             .tokenEndpoint(discoveryClaims.get("token_endpoint").toString())
 
             .idpSig(retrieveServerCertFromLocation(discoveryClaims.get("uri_puk_idp_sig").toString()))
-            .idpEnc(retrieveServerCertFromLocation(discoveryClaims.get("uri_puk_idp_enc").toString()))
+            .idpEnc(retrieveServerPuKFromLocation(discoveryClaims.get("uri_puk_idp_enc").toString()))
 
             .build();
     }
@@ -257,5 +265,24 @@ public class AuthenticatorClient {
         final String verificationCertificate = keyObject.getJSONArray(X509_CERTIFICATE_CHAIN.getJoseName())
             .getString(0);
         return getCertificateFromPem(Base64.getDecoder().decode(verificationCertificate));
+    }
+
+    private PublicKey retrieveServerPuKFromLocation(final String uri) {
+
+        final HttpResponse<JsonNode> pukAuthResponse = Unirest
+            .get(uri)
+            .header(HttpHeaders.USER_AGENT, USER_AGENT)
+            .asJson();
+        final JSONObject keyObject = pukAuthResponse.getBody().getObject();
+        final java.security.spec.ECPoint ecPoint = new java.security.spec.ECPoint(
+            new BigInteger(Base64.getUrlDecoder().decode(keyObject.getString("x"))),
+            new BigInteger(Base64.getUrlDecoder().decode(keyObject.getString("y"))));
+        final ECPublicKeySpec keySpec = new ECPublicKeySpec(ecPoint, BrainpoolCurves.BP256);
+        try {
+            return KeyFactory.getInstance("EC").generatePublic(keySpec);
+        } catch (final InvalidKeySpecException | NoSuchAlgorithmException e) {
+            throw new IdpClientRuntimeException(
+                "Unable to construct public key from given uri '" + uri + "', got " + e.getMessage());
+        }
     }
 }

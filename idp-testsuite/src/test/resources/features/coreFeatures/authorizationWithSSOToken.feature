@@ -127,7 +127,7 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
             exp:                   "[\\d]*",
             jti:                   "${json-unit.ignore}",
             idNummer:              "[A-Z][\\d]{9,10}",
-            iss:                   "https://idp.zentral.idp.splitdns.ti-dienste.de",
+            iss:                   "https:\\/\\/idp.*\\.zentral\\.idp\\.splitdns\\.ti\\-dienste\\.de",
             family_name:           "(.{1,64})",
             given_name:            "(.{1,64})",
             nonce:                 "234567",
@@ -249,7 +249,8 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
     Then the response is an 302 error with gematik code 2030 and error 'invalid_request'
 
 
-  @Afo:A_20948
+  @Afo:A_20948  @Afo:A_20949
+  @Todo:ErrorMessageEntsprechendSTIDPD48
   @WiP
   Scenario: Author mit SSO Token - Anfrage mit modifiziertem SSO Token
 

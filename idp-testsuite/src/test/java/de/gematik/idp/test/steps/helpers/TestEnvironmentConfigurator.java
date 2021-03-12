@@ -34,6 +34,8 @@ public class TestEnvironmentConfigurator {
     private static String DISCOVERY_URL = null;
 
     private static boolean TOKEN_ENCRYPTION_ACTIVE = false;
+    private static boolean CHALLENGE_ENCRYPTION_ACTIVE = false;
+
     private static String TOKEN_ENCRYPTION_KEY = "";
 
     public static synchronized String getDiscoveryDocumentURL() {
@@ -52,6 +54,13 @@ public class TestEnvironmentConfigurator {
         return TOKEN_ENCRYPTION_ACTIVE;
     }
 
+    public static synchronized boolean isChallengeEncryptionActive() {
+        if (DISCOVERY_URL == null) {
+            initializeTestEnvironment();
+        }
+        return CHALLENGE_ENCRYPTION_ACTIVE;
+    }
+
     public static synchronized Key getSymmetricEncryptionKey() {
         if (DISCOVERY_URL == null) {
             initializeTestEnvironment();
@@ -61,6 +70,8 @@ public class TestEnvironmentConfigurator {
 
     @SneakyThrows
     public static void initializeTestEnvironment() {
+        log.info("HTTPS PROXY: " + System.getProperty("https.proxyHost") + ":" + System.getProperty("https.proxyPort"));
+        log.info("HTTP PROXY: " + System.getProperty("http.proxyHost") + ":" + System.getProperty("http.proxyPort"));
         // initialize Jose4j to support Gematik specific brainpool curves
         BrainpoolCurves.init();
 
@@ -93,7 +104,11 @@ public class TestEnvironmentConfigurator {
         final Properties props = new Properties();
         props.load(new FileInputStream("testsuite_config.properties"));
         TOKEN_ENCRYPTION_ACTIVE = props.getProperty("encryption.token.active", "0").equals("1");
+        CHALLENGE_ENCRYPTION_ACTIVE = props.getProperty("encryption.challenge.active", "0").equals("1");
         TOKEN_ENCRYPTION_KEY = props.getProperty("encryption.symmetric.key", "");
+
+        log.info("TOKEN ENCRYPTION " + (TOKEN_ENCRYPTION_ACTIVE ? "ACTIVE" : "DEACTIVED"));
+        log.info("CHALLENGE ENCRYPTION " + (CHALLENGE_ENCRYPTION_ACTIVE ? "ACTIVE" : "DEACTIVED"));
 
         log.info("======================================\n\n"
             + "Running Test against Discovery Document " + DISCOVERY_URL

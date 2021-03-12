@@ -41,20 +41,23 @@ public class IdpEccKeyDescriptor extends IdpKeyDescriptor {
     private String eccPointYValue;
 
     @Builder
-    public IdpEccKeyDescriptor(final String[] x5c, final String keyId, final String keyType, final String eccCurveName,
-        final String eccPointXValue, final String eccPointYValue) {
-        super(x5c, keyId, keyType);
+    public IdpEccKeyDescriptor(final String[] x5c, final PublicKeyUse publicKeyUse, final String keyId, final String keyType,
+        final String eccCurveName, final String eccPointXValue, final String eccPointYValue) {
+        super(x5c, publicKeyUse, keyId, keyType);
         this.eccCurveName = eccCurveName;
         this.eccPointXValue = eccPointXValue;
         this.eccPointYValue = eccPointYValue;
     }
 
-    public static IdpKeyDescriptor constructFromX509Certificate(final X509Certificate certificate, final String keyId) {
+    public static IdpKeyDescriptor constructFromX509Certificate(final X509Certificate certificate, final String keyId,
+        final boolean addX5C) {
         try {
             final IdpEccKeyDescriptor.IdpEccKeyDescriptorBuilder descriptorBuilder = IdpEccKeyDescriptor.builder()
-                .x5c(getCertArray(certificate))
                 .keyId(keyId)
                 .keyType(getKeyType(certificate));
+            if (addX5C) {
+                descriptorBuilder.x5c(getCertArray(certificate));
+            }
 
             final BCECPublicKey bcecPublicKey = (BCECPublicKey) (certificate.getPublicKey());
             if (!((ECNamedCurveParameterSpec) bcecPublicKey.getParameters()).getName().equals("brainpoolP256r1")) {
@@ -67,9 +70,9 @@ public class IdpEccKeyDescriptor extends IdpKeyDescriptor {
             descriptorBuilder
                 .eccCurveName("BP-256")
                 .eccPointXValue(
-                    Base64.getEncoder().encodeToString(generator.getAffineXCoord().toBigInteger().toByteArray()))
+                    Base64.getUrlEncoder().encodeToString(generator.getAffineXCoord().toBigInteger().toByteArray()))
                 .eccPointYValue(
-                    Base64.getEncoder().encodeToString(generator.getAffineYCoord().toBigInteger().toByteArray()));
+                    Base64.getUrlEncoder().encodeToString(generator.getAffineYCoord().toBigInteger().toByteArray()));
 
             return descriptorBuilder.build();
         } catch (final ClassCastException e) {

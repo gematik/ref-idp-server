@@ -308,10 +308,10 @@ public class StepsGlue {
         disc.jsonObjectShouldBeValidCertificate(new JSONObject(Context.getCurrentResponse().getBody().asString()));
     }
 
-    @And("the JSON array {string} of response should contain valid certificates")
+    @And("the JSON array {string} of response should contain valid certificates for {string}")
     @SneakyThrows
-    public void theJSONArrayOfResponseShouldContainValidCertificates(final String path) {
-        disc.jsonArrayPathShouldContainValidCertificates(path);
+    public void theJSONArrayOfResponseShouldContainValidCertificatesWithKeyId(final String path, final String keyid) {
+        disc.jsonArrayPathShouldContainValidCertificatesWithKeyId(path, keyid);
     }
 
     @Then("the response is an 302 error with gematik code {int} and error {string}")

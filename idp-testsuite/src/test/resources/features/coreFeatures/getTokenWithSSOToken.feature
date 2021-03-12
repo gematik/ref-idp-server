@@ -57,7 +57,7 @@ Feature: Fordere Access Token mittels SSO Token an
           }
         """
 
-  @Afo:A_20731 @Afo:A_20310 @Afo:A_20464 @Afo:A_20952
+  @Afo:A_20731 @Afo:A_20310 @Afo:A_20464 @Afo:A_20952 @Afo:A_20313
   @Approval @Todo:AccessTokenContent
   @Todo:CompareSubjectInfosInAccessTokenAndInCert
   # TODO: wollen wir noch den Wert der auth_time gegen den Zeitpunkt der Authentifizierung pruefen
@@ -147,6 +147,7 @@ Feature: Fordere Access Token mittels SSO Token an
           }
         """
 
+  @Afo:A_20313
   @Approval @Ready
   Scenario: GetToken mit SSO Token - Gutfall - Check ID Token - Validiere ID Token Claims
     Given I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
@@ -240,7 +241,8 @@ Feature: Fordere Access Token mittels SSO Token an
     Then I store SSO_TOKEN as text
     And I store SSO_TOKEN_ENCRYPTED as text
 
-  @Afo:A_20315
+
+  @Afo:A_20315 @Afo:A_20692
   @Approval @Todo:NotCheckingSsoTokenExactly12H
   @Timeout
   Scenario: GetToken mit SSO Token - Veralteter SSO Token wird abgelehnt
