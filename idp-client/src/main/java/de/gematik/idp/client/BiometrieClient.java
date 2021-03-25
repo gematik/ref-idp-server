@@ -23,22 +23,26 @@ import javax.ws.rs.core.HttpHeaders;
 import kong.unirest.GenericType;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
-import lombok.RequiredArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import org.apache.http.HttpStatus;
 import org.springframework.http.MediaType;
 
-@RequiredArgsConstructor
+@Builder
+@Data
 public class BiometrieClient {
 
+    private static final String USER_AGENT = "IdP-Client";
     private static final String BEARER = "Bearer ";
     private final String serverUrl;
-    private final JsonWebToken accessToken;
+    private JsonWebToken accessToken;
 
     public boolean insertPairing(final BiometrieData biometrieData) {
         final HttpResponse<String> response = Unirest.put(serverUrl)
-            .body(biometrieData)
+            .field("encrypted_registration_data", biometrieData)
             .header(HttpHeaders.AUTHORIZATION, BEARER + accessToken.getRawString())
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .header(HttpHeaders.USER_AGENT, USER_AGENT)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString();
         return response.getStatus() == HttpStatus.SC_OK;
     }
@@ -46,7 +50,9 @@ public class BiometrieClient {
     public List<BiometrieData> getAllPairingsForKvnr(final String kvnr) {
         final HttpResponse<List<BiometrieData>> response = Unirest
             .get(serverUrl + "/" + kvnr)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
+            .header(HttpHeaders.AUTHORIZATION, BEARER + accessToken.getRawString())
+            .header(HttpHeaders.USER_AGENT, USER_AGENT)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .asObject(new GenericType<>() {
             });
 
@@ -60,9 +66,11 @@ public class BiometrieClient {
 
     public boolean deleteAllPairingsForKvnr(final String kvnr) {
         final HttpResponse<String> response = Unirest.delete(serverUrl + "/" + kvnr)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .header(HttpHeaders.AUTHORIZATION, BEARER + accessToken.getRawString())
+            .header(HttpHeaders.USER_AGENT, USER_AGENT)
+            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
             .asString();
         return response.getStatus() == HttpStatus.SC_OK;
     }
 }
+

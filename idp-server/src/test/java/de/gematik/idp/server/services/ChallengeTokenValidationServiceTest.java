@@ -21,14 +21,17 @@ import static de.gematik.idp.crypto.KeyAnalysis.isEcKey;
 import static de.gematik.idp.field.ClaimName.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.crypto.X509ClaimExtraction;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.exceptions.NoNestedJwtFoundException;
 import de.gematik.idp.server.data.DeviceInformation;
 import de.gematik.idp.server.data.DeviceType;
-import de.gematik.idp.server.data.PairingDto;
 import de.gematik.idp.server.exceptions.IdpServerException;
+import de.gematik.idp.server.pairing.PairingData;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.tests.PkiKeyResolver.Filename;
 import de.gematik.idp.token.JsonWebToken;
@@ -36,6 +39,7 @@ import java.security.cert.CertificateEncodingException;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import javax.transaction.Transactional;
+import lombok.SneakyThrows;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.lang.JoseException;
@@ -77,7 +81,9 @@ public class ChallengeTokenValidationServiceTest {
         throws CertificateEncodingException {
         createPairingDataEntry();
         challengeTokenValidationService
-            .validateChallengeToken(createSignedAuthenticationData(egkIdentity, altIdentity, "hwk"));
+            .validateChallengeToken(createSignedAuthenticationData(altIdentity, new String[]{
+                "mfa", "hwk", "face"
+            }));
     }
 
     @Test
@@ -86,22 +92,24 @@ public class ChallengeTokenValidationServiceTest {
         @PkiKeyResolver.Filename("833621999741600_c.hci.aut-apo-ecc") final PkiIdentity authModuleIdentity) {
         assertThatThrownBy(
             () -> challengeTokenValidationService
-                .validateChallengeToken(createSignedAuthenticationData(egkIdentity, authModuleIdentity, "hwk")))
+                .validateChallengeToken(createSignedAuthenticationData(authModuleIdentity, new String[]{
+                    "mfa", "hwk", "face"
+                })))
             .isInstanceOf(IdpServerException.class);
     }
 
     @Test
     public void validateInvalidCertChallenge(
-        @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity,
         @PkiKeyResolver.Filename("833621999741600_c.hci.aut-apo-ecc") final PkiIdentity authModuleIdentity) {
         assertThatThrownBy(
             () -> challengeTokenValidationService
-                .validateChallengeToken(createSignedAuthenticationData(egkIdentity, authModuleIdentity, null)))
+                .validateChallengeToken(createSignedAuthenticationData(authModuleIdentity, null)))
             .isInstanceOf(NoNestedJwtFoundException.class);
     }
 
-    private JsonWebToken createSignedAuthenticationData(final PkiIdentity egkIdentity,
-        final PkiIdentity authModuleIdentity, final String amrValue)
+    @SneakyThrows
+    private JsonWebToken createSignedAuthenticationData(
+        final PkiIdentity authModuleIdentity, final String[] amrValue)
         throws CertificateEncodingException {
 
         final JwtClaims authDataClaims = new JwtClaims();
@@ -110,22 +118,31 @@ public class ChallengeTokenValidationServiceTest {
             authDataClaims.setClaim(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), amrValue);
         }
         authDataClaims.setClaim(AUTHENTICATION_CERTIFICATE.getJoseName(),
-            java.util.Base64.getEncoder().encodeToString(authModuleIdentity.getCertificate().getEncoded()));
+            java.util.Base64.getUrlEncoder().withoutPadding()
+                .encodeToString(authModuleIdentity.getCertificate().getEncoded()));
+        final Map<String, Object> devInfoMap = new ObjectMapper()
+            .readValue(createDeviceInformation().toJson(), new TypeReference<>() {
+            });
         authDataClaims
-            .setClaim(DEVICE_INFORMATION.getJoseName(), createDeviceInformation().toJson());
+            .setClaim(DEVICE_INFORMATION.getJoseName(), devInfoMap);
+        authDataClaims
+            .setClaim(AUTHENTICATION_DATA_VERSION.getJoseName(), "1.0");
+
         return buildSignedJwt(authDataClaims.toJson(), altIdentity);
     }
 
     private DeviceInformation createDeviceInformation() {
         final DeviceType deviceType = DeviceType.builder()
-            .deviceManufacturer("Samsungs")
-            .deviceProduct("S8")
-            .deviceOs("Android")
-            .deviceVersion("14")
+            .manufacturer("Samsungs")
+            .product("S8")
+            .os("Android")
+            .osVersion("14")
+            .deviceTypeDataVersion("1.0")
             .build();
         return DeviceInformation.builder()
             .deviceType(deviceType)
-            .deviceName(testDeviceName)
+            .name(testDeviceName)
+            .deviceInformationDataVersion("1.0")
             .build();
     }
 
@@ -133,10 +150,10 @@ public class ChallengeTokenValidationServiceTest {
         pairingService.insertPairing(createPairingDtoFromRegistrationData());
     }
 
-    private PairingDto createPairingDtoFromRegistrationData() {
+    private PairingData createPairingDtoFromRegistrationData() {
         final Map<String, Object> claimsMap = X509ClaimExtraction
             .extractClaimsFromCertificate(altIdentity.getCertificate());
-        return PairingDto.builder()
+        return PairingData.builder()
             .id(null)
             .idNumber(claimsMap.get(ID_NUMBER.getJoseName()).toString())
             .keyIdentifier(testKeyIdentifier)
@@ -148,13 +165,13 @@ public class ChallengeTokenValidationServiceTest {
 
     private JsonWebToken createSignedPairingData() {
         final JwtClaims claims = new JwtClaims();
-        claims.setClaim(KEY_DATA.getJoseName(), java.util.Base64.getEncoder()
+        claims.setClaim(SE_SUBJECT_PUBLIC_KEY_INFO.getJoseName(), java.util.Base64.getUrlEncoder()
             .encodeToString(altIdentity.getCertificate().getPublicKey().getEncoded()));
         claims.setClaim(KEY_IDENTIFIER.getJoseName(), "654321");
         claims.setClaim(ALGORITHM.getJoseName(), "SHA256");
         claims.setClaim(DEVICE_PRODUCT.getJoseName(), "S8");
         claims.setClaim(CERTIFICATE_SERIALNUMBER.getJoseName(), "257423680229794");
-        claims.setClaim(PUBLIC_KEY.getJoseName(), java.util.Base64.getEncoder()
+        claims.setClaim(AUTH_CERT_SUBJECT_PUBLIC_KEY_INFO.getJoseName(), java.util.Base64.getUrlEncoder()
             .encodeToString(egkIdentity.getCertificate().getPublicKey().getEncoded()));
         return buildSignedJwt(claims.toJson(), egkIdentity);
     }

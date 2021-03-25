@@ -116,7 +116,7 @@ public class AuthenticationTokenBuilderTest {
 
         assertThat(authenticationToken.getHeaderClaims())
             .as("Authentication-Token exp in Header-Claims")
-            .containsKey(EXPIRES_AT.getJoseName());
+            .doesNotContainKey(EXPIRES_AT.getJoseName());
         assertThat(authenticationToken.getBodyClaims())
             .as("Authentication-Token exp in Body-Claims")
             .containsKey(EXPIRES_AT.getJoseName());

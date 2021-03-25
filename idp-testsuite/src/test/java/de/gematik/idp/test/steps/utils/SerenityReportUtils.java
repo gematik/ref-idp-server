@@ -79,7 +79,6 @@ public class SerenityReportUtils {
         }
         if (StepEventBus.getEventBus().isBaseStepListenerRegistered()) {
             Serenity.recordReportData().withTitle("cURL").andContents(curlCmd.toString());
-            Serenity.recordReportData().withTitle("RestAssured Log").andContents(rALogDetails);
         }
         log.info("cURL command: " + curlCmd);
         log.debug("RestAssured details:\n" + rALogDetails);

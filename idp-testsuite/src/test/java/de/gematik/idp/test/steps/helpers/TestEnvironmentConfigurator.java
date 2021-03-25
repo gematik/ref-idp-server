@@ -16,6 +16,7 @@
 
 package de.gematik.idp.test.steps.helpers;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
 import java.io.FileInputStream;
 import java.nio.file.Path;
@@ -35,8 +36,11 @@ public class TestEnvironmentConfigurator {
 
     private static boolean TOKEN_ENCRYPTION_ACTIVE = false;
     private static boolean CHALLENGE_ENCRYPTION_ACTIVE = false;
+    private static boolean RBEL_LOGGER_ACTIVE = false;
 
     private static String TOKEN_ENCRYPTION_KEY = "";
+
+    private static Properties props;
 
     public static synchronized String getDiscoveryDocumentURL() {
         // To allow IDE to simply call features/scenarios we do check for missing initialization in this call
@@ -61,11 +65,26 @@ public class TestEnvironmentConfigurator {
         return CHALLENGE_ENCRYPTION_ACTIVE;
     }
 
+    public static synchronized boolean isRbelLoggerActive() {
+        if (DISCOVERY_URL == null) {
+            initializeTestEnvironment();
+        }
+        return RBEL_LOGGER_ACTIVE;
+    }
+
     public static synchronized Key getSymmetricEncryptionKey() {
         if (DISCOVERY_URL == null) {
             initializeTestEnvironment();
         }
         return new SecretKeySpec(DigestUtils.sha256(TOKEN_ENCRYPTION_KEY), "AES");
+    }
+
+    public static synchronized String getTestEnvVar(final String varName) {
+        if (DISCOVERY_URL == null) {
+            initializeTestEnvironment();
+        }
+        assertThat(props).containsKey("TESTENV." + varName);
+        return props.getProperty("TESTENV." + varName);
     }
 
     @SneakyThrows
@@ -101,11 +120,12 @@ public class TestEnvironmentConfigurator {
             DISCOVERY_URL = Path.of(idpLocalDiscdoc).toUri().toURL().toExternalForm();
         }
 
-        final Properties props = new Properties();
+        props = new Properties();
         props.load(new FileInputStream("testsuite_config.properties"));
         TOKEN_ENCRYPTION_ACTIVE = props.getProperty("encryption.token.active", "0").equals("1");
         CHALLENGE_ENCRYPTION_ACTIVE = props.getProperty("encryption.challenge.active", "0").equals("1");
         TOKEN_ENCRYPTION_KEY = props.getProperty("encryption.symmetric.key", "");
+        RBEL_LOGGER_ACTIVE = props.getProperty("logging.rbel.active", "0").equals("1");
 
         log.info("TOKEN ENCRYPTION " + (TOKEN_ENCRYPTION_ACTIVE ? "ACTIVE" : "DEACTIVED"));
         log.info("CHALLENGE ENCRYPTION " + (CHALLENGE_ENCRYPTION_ACTIVE ? "ACTIVE" : "DEACTIVED"));

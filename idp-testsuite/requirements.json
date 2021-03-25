@@ -1,233 +1,133 @@
 [
   {
-    "id": "A_17124",
+    "id": "-1",
     "version": null,
-    "title": "TLS-Verbindungen (ECC-Migration)",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende Krypt-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "A_17416",
-    "version": "01",
-    "title": "Schnittstelle Betriebsdatenerfassung Prüfung des TLS-Server-Zertifikats durch Fach- und zentrale Dienste",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "Betriebsdatenerfassung nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "A_17671",
-    "version": null,
-    "title": "Performance - Rohdaten-Performance-Berichte - Format des Performance-Berichts",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "Performance/Rohdaten nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "A_17678",
-    "version": null,
-    "title": "Performance - Rohdaten-Performance-Berichte - Übermittlung",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "Performance/Rohdatenlieferung nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "A_17679",
-    "version": null,
-    "title": "Performance - Rohdaten-Performance-Berichte - Berichtsintervall",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "Performance/Rohdaten nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "A_17688",
-    "version": null,
-    "title": "Nutzung des ECC-RSA-Vertrauensraumes (ECC-Migration)",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Andoferungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "A_17690",
-    "version": null,
-    "title": "Nutzung der Hash-Datei für TSL (ECC-Migration)",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Andoferungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "A_17700",
-    "version": null,
-    "title": "TSL-Auswertung ServiceTypeIdentifier \"unspecified\"",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "A_17733",
-    "version": "01",
-    "title": "Schnittstelle Betriebsdatenerfassung Datei-Upload",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "Betriebsdatenerfassung nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "A_17755",
-    "version": null,
-    "title": "Performance - Rohdaten-Performance-Berichte - Name der Berichte",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "Performance/Rohdaten nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "A_17756",
-    "version": null,
-    "title": "Performance - Rohdaten-Performance-Berichte - Korrektheit",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "Performance/Rohdaten nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "A_17757",
-    "version": "01",
-    "title": "Performance - Rohdaten-Performance-Lieferung - zu liefernde Dateien",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "Performance/Rohdaten nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "A_17758",
-    "version": null,
-    "title": "Performance - Rohdaten-Performance-Berichte - Frist für Nachlieferung",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "Performance/Rohdaten nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "A_18467",
-    "version": null,
-    "title": "TLS-Verbindungen, Version 1.3",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "A_19717",
-    "version": "02",
-    "title": "Performance – IdP-Dienst – Bearbeitungszeit unter Last",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "Performance/Rohdatenlieferungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "A_19874",
-    "version": "04",
-    "title": "Bereitstellung des internen Discovery Documents innerhalb der TI",
+    "title": "Korrektur der Verwendung und Produktion einzelner Token der Endpunkte des IDP",
     "status": null,
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": null,
+    "petStatus": null,
+    "idAndVersion": "-1"
   },
   {
-    "id": "A_19877",
-    "version": "02",
-    "title": "Bereitstellung des externen Discovery Documents im Internet",
+    "id": "-1",
+    "version": null,
+    "title": "Claim aud für E-Rezept-FD in AccessToken",
     "status": null,
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": null,
+    "petStatus": null,
+    "idAndVersion": "-1"
   },
   {
-    "id": "A_20242",
-    "version": "01",
-    "title": "Performance - Rohdaten-Performance-Berichte - Format der Einträge des Performance-Berichts IdP-Dienst",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "Keine Tests zu Performance und Rohdatenerfassung in der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "A_20243",
+    "id": "-1",
     "version": null,
-    "title": "Performance - IdP-Dienst - Robustheit gegenüber Lastspitzen",
+    "title": "Anderer HTTP Code bei fehlendem User-Agent-Header",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "Keine Tests zu Performance und Rohdatenerfassung in der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": null,
+    "petStatus": null,
+    "idAndVersion": "-1"
   },
   {
-    "id": "A_20245",
-    "version": "01",
-    "title": "Performance - Messpunkte für die Erfassung von Rohdaten am IdP-Dienst",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "Performance/Rohdatenlieferungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "A_20246",
-    "version": "01",
-    "title": "Performance - Erfassung von Rohdaten bei fehlerhaften Operationen - IdP-Dienst",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "Keine Tests zu Performance und Rohdatenerfassung in der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "A_20247",
+    "id": "-1",
     "version": null,
-    "title": "Performance - Erfassung von Rohdaten - IdP-Dienst",
+    "title": "Umgang mit unterschiedlichen URLs der Endpunkte",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "Keine Tests zu Performance und Rohdatenerfassung in der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": null,
+    "petStatus": null,
+    "idAndVersion": "-1"
+  },
+  {
+    "id": "-1",
+    "version": null,
+    "title": "Ausgabe des SSO Token über Token Endpoint",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": null,
+    "petStatus": null,
+    "idAndVersion": "-1"
+  },
+  {
+    "id": "-1",
+    "version": null,
+    "title": "A_20440 Anpassung der Anforderungen zur schematischen Prüfung des Consent",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": null,
+    "petStatus": null,
+    "idAndVersion": "-1"
+  },
+  {
+    "id": "-1",
+    "version": null,
+    "title": "SSO_TOKEN nicht direkt gegen ACCESS_TOKEN eintauschen",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": null,
+    "petStatus": null,
+    "idAndVersion": "-1"
+  },
+  {
+    "id": "-1",
+    "version": null,
+    "title": "A_20692 Vorgaben für die SUBJECT_SESSION",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": null,
+    "petStatus": null,
+    "idAndVersion": "-1"
+  },
+  {
+    "id": "-1",
+    "version": null,
+    "title": "SSO_TOKEN nur für Mobile Endgeräte und nicht für Primärsysteme",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": null,
+    "petStatus": null,
+    "idAndVersion": "-1"
   },
   {
     "id": "A_20313",
-    "version": null,
+    "version": "01",
     "title": "Inhalte des Claims",
     "status": null,
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der IdP-Dienst MUSS <span style=\"font-weight: bold;font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">&quot;</span><span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">ID_TOKEN</span><span style=\"font-weight: bold;font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">&quot;</span> und <span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">&quot;ACCESS_TOKEN&quot;</span> für unterschiedliche Fachdienste gemäß den mit dem jeweiligen Fachdienst abgestimmten Claims bereitstellen. Sind Inhalte des Claims teilweise oder das gesamte Claim für einen registrierten Fachdienst nicht gesetzt, befüllt der IdP-Dienst die einzelnen Parameter der Gültigkeitsdauer (<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">&quot;AUTHORIZATION_CODE&quot;, &quot;ACCESS_TOKEN&quot;, &quot;SSO_TOKEN&quot;</span> <span style=\"font-family: Arial, Helvetica;\">und</span> <span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">&quot;ID_TOKEN&quot;</span>) gemäß der spezifizierten Maximalwerte",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_20313-01"
   },
   {
     "id": "A_20314",
@@ -237,27 +137,36 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Authorization Server DARF die zeitliche Gültigkeit des <span style=\"font-weight: normal;font-family: 'Courier New', Courier, monospace, HanWangKanTan;\">&quot;AUTHORIZATION_CODE&quot;</span> NICHT länger als 180 Sekunden (Challenge-Response) und nach dessen Übergabe an das Anwendungsfrontend nicht länger als 60 Sekunden einstellen.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20314"
   },
   {
     "id": "A_20315",
-    "version": null,
+    "version": "01",
     "title": "\"AUTHORIZATION_CODE\" nach Gültigkeitsende nicht mehr verwenden",
     "status": null,
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Token-Endpunkt DARF <span style=\"font-size: 10pt;line-height: 1.5;\">außerhalb der Gültigkeitsdauer </span>eingehenden <span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">&quot;AUTHORIZATION_CODE&quot;</span> NICHT in <span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">&quot;ID_TOKEN&quot; oder &quot;ACCESS_TOKEN&quot;</span> eintauschen.",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_20315-01"
   },
   {
     "id": "A_20318",
     "version": null,
     "title": "Keine Token für widerrufene Entitäten",
-    "status": null,
+    "status": "UNKNOWN",
     "results": null,
     "afoStatus": "deleted",
     "refName": "entfällt, siehe STIDPD-16",
-    "refURL": null
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt DARF für nicht existente Entitäten NICHT einen <span style=\"font-weight: bold;font-family: 'Courier New', Courier, monospace, HanWangKanTan;color: #000000;\">&quot;</span><span style=\"font-family: 'Courier New', Courier, monospace, HanWangKanTan;\">AUTHORIZATION</span><span style=\"font-weight: normal;font-family: 'Courier New', Courier, monospace, HanWangKanTan;color: #000000;\">_CODE</span><span style=\"font-weight: bold;font-family: 'Courier New', Courier, monospace, HanWangKanTan;color: #000000;\">&quot;,</span> einen <span style=\"font-weight: normal;font-family: 'Courier New', Courier, monospace, HanWangKanTan;color: #000000;\">&quot;ID_TOKEN&quot;</span>, einen <span style=\"font-family: 'Courier New', Courier, monospace, HanWangKanTan;\">&quot;ACCESS_TOKEN&quot;</span> oder einen <span style=\"font-weight: bold;font-family: 'Courier New', Courier, monospace, HanWangKanTan;\">&quot;</span><span style=\"font-weight: normal;font-family: 'Courier New', Courier, monospace, HanWangKanTan;\">SSO_TOKEN</span><span style=\"font-weight: bold;font-family: 'Courier New', Courier, monospace, HanWangKanTan;\">&quot;</span> auszustellen. ",
+    "petStatus": "binding",
+    "idAndVersion": "A_20318"
   },
   {
     "id": "A_20319",
@@ -266,28 +175,24 @@
     "status": null,
     "results": null,
     "afoStatus": "NOTSET",
-    "refName": null,
-    "refURL": null
-  },
-  {
-    "id": "A_20320",
-    "version": null,
-    "title": "Sichere Übertragung des \"AUTHORIZATION_CODE\"",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "Afo-Zuordnung wird auf Herstellererklärung geändert",
-    "refURL": null
+    "refName": "Manuell hinzugefügt, nicht in Baseline",
+    "refURL": null,
+    "description": null,
+    "petStatus": null,
+    "idAndVersion": "A_20319"
   },
   {
     "id": "A_20321",
-    "version": null,
-    "title": "Annahme und Prüfung von \"AUTHORIZATION_CODE\" und \"CODE_VERIFIER\"",
+    "version": "01",
+    "title": "Annahme und Prüfung von \"AUTHORIZATION_CODE\" und \"KEY_VERIFIER\"",
     "status": null,
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Token-Endpunkt MUSS den vom Anwendungsfrontend übertragenen &quot;AUTHORIZATION_CODE&quot;, und den &quot;KEY_VERIFIER&quot; des Anwendungsfrontend annehmen. Der „AUTHORIZATION_CODE“ ist dabei mittels eines durch den IDP-Dienst für Authorization-Endpunkt und Token-Endpunkt definierten Verfahren zu entschlüsseln. ",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_20321-01"
   },
   {
     "id": "A_20323",
@@ -297,47 +202,23 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": "Protokollierung nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "refURL": null,
+    "description": "Der Token-Endpunkt <span style=\"font-weight: normal;\">MUSS</span> die Herausgabe der <span style=\"font-weight: bold;font-family: 'Courier New', Courier, monospace, HanWangKanTan;color: #000000;\">&quot;</span><span style=\"font-weight: normal;font-family: 'Courier New', Courier, monospace, HanWangKanTan;color: #000000;\">TOKEN</span><span style=\"font-weight: bold;font-family: 'Courier New', Courier, monospace, HanWangKanTan;color: #000000;\">&quot;</span> im Positiv- wie auch im Negativfall protokollieren.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20323"
   },
   {
     "id": "A_20327",
-    "version": null,
-    "title": "Signatur des \"ID_TOKEN\", \"ACCESS_TOKEN\" und \"SSO_TOKEN\"",
+    "version": "02",
+    "title": "Signatur des \"ID_TOKEN\" und \"ACCESS_TOKEN\"",
     "status": null,
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
-  },
-  {
-    "id": "A_20328",
-    "version": null,
-    "title": "Verschlüsselung des \"ACCESS_TOKEN\"",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "afo wurde ersetzt, siehe STIDPD-93",
-    "refURL": null
-  },
-  {
-    "id": "A_20329",
-    "version": null,
-    "title": "Sichere Übertragung von \"ID_TOKEN\", \"ACCESS_TOKEN\" und \"SSO_TOKEN\"",
-    "status": null,
-    "results": null,
-    "afoStatus": "NOTSET",
-    "refName": "TLS nicht im Scope der Zulassungstestsuite, siehe auch STIDPD-99",
-    "refURL": null
-  },
-  {
-    "id": "A_20330",
-    "version": null,
-    "title": "Ausgabe der Token",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "soll gelöscht werden, siehe STIDPD-72",
-    "refURL": null
+    "refURL": null,
+    "description": "Der Token-Endpunkt MUSS alle erstellten &quot;ID_TOKEN&quot; und &quot;ACCESS_TOKEN&quot;, um deren Integrität sicherzustellen und eine eineindeutige Erklärung über deren Herkunft abzugeben, mit seinem privaten Schlüssel &quot;PrK_IDP_SIG&quot; signieren. [<a href=\"https://tools.ietf.org/html/rfc7523#section-3\" target=\"_top\" class=\"descriptionLink\">RFC7523 # section-3</a>  Spiegelpunkt 9] ist zu gewährleisten. Als Algorithmus ist dementsprechend &quot;BP256R1&quot; zu wählen.",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_20327-02"
   },
   {
     "id": "A_20376",
@@ -347,7 +228,10 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt MUSS den vom Anwendungsfrontend initierten &quot;state&quot;-Parameter gemäß [<a class=\"descriptionLink\" target=\"_top\" href=\"https://tools.ietf.org/html/rfc6749#section-10.12\">RFC6749 # section-10.12</a>] bei einer Redirection an den Client in seiner Antwort verwenden.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20376"
   },
   {
     "id": "A_20377",
@@ -357,7 +241,10 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Authroization-Endpunkt MUSS den <span style=\"font-family: 'Courier New', Courier, monospace, HanWangKanTan;\">&quot;state&quot;</span>-Parameter [<a class=\"descriptionLink\" target=\"_top\" href=\"https://tools.ietf.org/html/rfc6749#section-10.12\">RFC6749 # section-10.12</a>] des Anwendungsfrontends in allen darauf basierenden Responses verwenden.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20377"
   },
   {
     "id": "A_20434",
@@ -367,7 +254,10 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": "allgemeine Afo zu OAUTH 2.0, indirekt durch das Zusammenspiel der Tests abgedeckt, siehe dazu STIDPD-52",
-    "refURL": null
+    "refURL": null,
+    "description": "<span style=\"font-weight: normal;\">Der IdP-Dienst MUSS die Schnittstelle „Authorization-Endpunkt“ gemäß [RFC6749 &quot;The OAuth 2.0 Authorization Framework&quot;] und [RFC8252 „OAuth 2.0 for Native Apps“] und weiteren darin festgelegten Standards implementieren.</span>",
+    "petStatus": "binding",
+    "idAndVersion": "A_20434"
   },
   {
     "id": "A_20439",
@@ -377,17 +267,23 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Discovery-Endpunkt MUSS sowohl im internen, als auch im externen Discovery Document die Akteure mit  ihrer URI veröffentlichen. <br/>",
+    "petStatus": "binding",
+    "idAndVersion": "A_20439"
   },
   {
     "id": "A_20440",
-    "version": null,
+    "version": "01",
     "title": "Schematische Prüfung des Consent",
     "status": null,
     "results": null,
     "afoStatus": "NOTSET",
     "refName": "siehe dazu STIDPD-52",
-    "refURL": null
+    "refURL": null,
+    "description": "Der IdP-Dienst MUSS die bei der organisatorischen Registrierung der App hinterlegten redirect_uri mit der redirect_uri aus dem Claim des &quot;CHALLENGE_TOKEN&quot; prüfen. Stimmen diese nicht überein, werden keine Token ausgestellt und die weitere Verarbeitung mit einem Fehler Response abgebrochen (vgl. https://openid.net/specs/openid-connect-core-1_0.html#AuthError).",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_20440-01"
   },
   {
     "id": "A_20457",
@@ -397,17 +293,23 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": "Nur nachgewiesen, wenn Testsuite im Internet und in der TI ausgeführt wurde",
-    "refURL": null
+    "refURL": null,
+    "description": "Der IdP-Dienst <span style=\"font-weight: normal;\">MUSS </span>alle verwendeten Adressen in Form von URL gemäß [<a class=\"descriptionLink\" target=\"_top\" href=\"https://tools.ietf.org/html/rfc1738\">RFC1738</a> ] angeben und in einem Discovery Document gemäß [<a class=\"descriptionLink\" target=\"_top\" href=\"https://tools.ietf.org/html/rfc8414#section-2\">RFC8414 # section-2</a>] innerhalb der TI und im Internet veröffentlichen.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20457"
   },
   {
     "id": "A_20458",
-    "version": null,
+    "version": "01",
     "title": "Inhalte des Discovery Documents",
     "status": null,
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Discovery-Endpunkt MUSS sowohl im internen, als auch im externen Discovery Document gemäß [<a href=\"https://tools.ietf.org/html/rfc8414#section-2\" target=\"_top\" class=\"descriptionLink\">RFC8414 # section-2</a>] mindestens die folgenden Attribute als URI angeben:<br/>\n \n<ul>\n  <li>&quot;issuer&quot; (hier ist der IdP-Dienst erreichbar)<br/>\n    </li>\n  <li>&quot;jwks_uri&quot; (für den Abruf von „PUK_IDP_ENC“ sowie des öffentlichen Schlüssel und des Zertifikat von „PUK_IDP_SIG“ entsprechend TAB_IDP_DIENST_0003   [RFC7517] – identifiziert anhand der „kid“ Parameter (puk_idp_enc / puk_idp_sig)<br/>\n    </li>\n  <li>&quot;uri_disc&quot; (URI, unter welcher das Discovery Document bereitgestellt wird)<br/>\n    </li>\n  <li>&quot;authorization_endpoint&quot; (URI des Dienstes und des öffentlichen Verschlüsselungschlüssels des Authorization-Endpunktes gemäß [RFC6749])<br/>\n    </li>\n  <li>&quot;sso_endpoint“ (URI des Authorization-Endpunktes für Requests mit SSO-Token)<br/>\n    </li>\n  <li>&quot;token_endpoint&quot; (URI des Token-Endpunktes gemäß [RFC6749 ])<br/>\n    </li>\n  <li>&quot;uri_pair &quot; (URI des Pairing-Endpunktes)<br/>\n    </li>\n  <li>&quot;uri_puk_idp_enc“ und „uri_puk_idp_sig“ (URI der JWK Objekte für die zwei Schlüssel und des Zertifikates) </li>\n</ul>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_20458-01"
   },
   {
     "id": "A_20459",
@@ -417,7 +319,10 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "<span style=\"font-weight: normal;\">Der Authorization-Endpunkt DARF den Zeitpunkt der letzten Authentisierung im Attribut <span style=\"font-family: 'Courier New', Courier, monospace, HanWangKanTan;color: #000000;\">&quot;auth_time&quot;</span> NICHT verändern.</span>",
+    "petStatus": "binding",
+    "idAndVersion": "A_20459"
   },
   {
     "id": "A_20462",
@@ -427,7 +332,10 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Token-Endpunkt DARF <span style=\"font-weight: bold;font-family: 'Courier New', Courier, monospace, HanWangKanTan;color: #000000;\">&quot;</span><span style=\"font-weight: normal;font-family: 'Courier New', Courier, monospace, HanWangKanTan;color: #000000;\">ID_TOKEN&quot;</span> mit einer Gültigkeitsdauer <span style=\"font-weight: normal;\">von mehr</span> als 86400 <span style=\"font-weight: normal;\">Sekunden (24 Stunden)</span> NICHT ausstellen.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20462"
   },
   {
     "id": "A_20463",
@@ -437,7 +345,10 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Token-Endpunkt DARF <span style=\"font-weight: bold;font-family: 'Courier New', Courier, monospace, HanWangKanTan;color: #000000;\">&quot;</span><span style=\"font-weight: normal;font-family: 'Courier New', Courier, monospace, HanWangKanTan;color: #000000;\">ACCESS_TOKEN</span><span style=\"font-weight: bold;font-family: 'Courier New', Courier, monospace, HanWangKanTan;color: #000000;\">&quot;</span> <span style=\"font-weight: normal;\">mit einer Gültigkeitsdauer von mehr</span> als 300 <span style=\"font-weight: normal;\">Sekunden (5 Minuten)</span> NICHT ausstellen.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20463"
   },
   {
     "id": "A_20464",
@@ -447,7 +358,10 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Token-Endpunkt <span style=\"font-weight: normal;\">DARF andere Informationen, als die im Claim geforderten, NICHT </span>herausgeben.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20464"
   },
   {
     "id": "A_20465",
@@ -457,27 +371,36 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": "Wir können am Außeninterface nur indirekt prüfen, ob der IDP den OCSP-Responder abfragt. Wird von der Ref nicht umgesetzt.",
-    "refURL": null
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt MUSS das Zertifikat des Antragstellers immer gegen den zugehörigen OCSP-Responder innerhalb der TI auf Gültigkeit prüfen.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20465"
   },
   {
     "id": "A_20521",
     "version": "01",
-    "title": "Inhalt der Challenge an das Authenticator-Modul",
+    "title": "Inhalt des CHALLENGE_TOKENS an das Authenticator-Modul",
     "status": null,
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "<span style=\"font-size: 10pt;line-height: 1.5;\">Der IdP-Dienst MUSS die ihm vorliegenden Session-Informationen (z.B. &quot;<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">SESSION_ID</span>&quot;, &quot;<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">CODE_CHALLENGE</span>&quot;, &quot;<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">SCOPE</span>&quot; und alle Informationen über Anwendungsfrontend und Authenticator-Modul) mit seinem privaten Schlüssel &quot;<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">PrK_IDP_SIG</span>&quot; und der technischen Rolle „oid_idpd“ gemäß [gemSpec_OID # Abschnitt 3.5.4] signieren und als JWT ergänzt um die &quot;<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">USER_CONSENT</span>&quot;-Anfrage an das Authenticator-Modul senden. Als Algorithmus ist dementsprechend &quot;BP256R1&quot; zu wählen.</span>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_20521-01"
   },
   {
     "id": "A_20522",
     "version": null,
     "title": "Erstellen einer \"SESSION_ID\"",
-    "status": null,
+    "status": "UNKNOWN",
     "results": null,
     "afoStatus": "deleted",
     "refName": "IDP wurde als stateless Service spezifiziert, daher wird keine Session id verwendet",
-    "refURL": null
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt MUSS eine neue &quot;<span style=\"font-family: 'Courier New', Courier, monospace, HanWangKanTan;\">SESSION_ID</span>&quot; anlegen, sobald ein Authorization Request eingeht.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20522"
   },
   {
     "id": "A_20523",
@@ -487,27 +410,49 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt MUSS die für den vorgetragenen <span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">&quot;SCOPE&quot;</span> vom einfordernden Fachdienst erwarteten Claims zur <span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">&quot;USER_CONSENT&quot;</span>-Anfrage zusammenstellen.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20523"
   },
   {
     "id": "A_20524",
-    "version": null,
-    "title": "Befüllen der Claims \"given_name\", \"family_name\", \"organizationName\", \"professionOID\" und \"idNummer\"",
+    "version": "02",
+    "title": "Befüllen der Claims \"given_name\", \"family_name\", \"organizationName\", \"professionOID\", \"idNummer\", \"acr\" und \"amr\"",
     "status": null,
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Token-Endpunkt MUSS benötigte Attribute in Claims für das auszustellende <span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">&quot;ACCESS_TOKEN&quot;</span> und das <span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">&quot;ID_TOKEN&quot;</span> ausschließlich aus dem ihm mit dem<span style=\"font-family: Arial, Helvetica;\"> signierten </span><span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">CHALLENGE_TOKEN</span> eingereichten Authentifizierungs-Zertifikat der Smartcard (eGK, HBA oder SMC-B) beziehen. Der Claim &quot;amr&quot; MUSS entsprechend des ursprünglich zur Authentisierung verwendeten Authentisierungsmittels belegt werden.<br/>\nDer Token-Endpunkt MUSS das Attribut <span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">&quot;given_name&quot;</span> und <span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">&quot;family_name&quot;</span> der juristischen und natürlichen Personen sowie die Attribute <span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">&quot;organizationName&quot;, &quot;professionOID&quot;</span> und <span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">&quot;idNummer&quot; </span> entsprechend des Datenformates der Informationsquelle (Zertifikat) wie folgt befüllen:<br/>\n <p data-keep-next=\"true\" class=\"polarion-rte-caption-paragraph\" style=\"text-align: left;\"></p><br/>\n \n<p data-keep-next=\"true\" class=\"polarion-rte-caption-paragraph\" style=\"text-align: left;\">\n  Tabelle <span data-sequence=\"Tabelle\" class=\"polarion-rte-caption\">#</span>: TAB_IDP_DIENST_0005 Befüllung der Attribute &quot;given_name&quot;, &quot;family_name&quot;, &quot;organizationName&quot;, &quot;professionOID&quot; und &quot;idNummer&quot;  \n</p>\n \n<table id=\"polarion_wiki macro name=table;params=width=100%\" class=\"polarion-Document-table\" style=\"width: 100%;margin-left: auto;margin-right: auto;border: 1px solid #CCCCCC;empty-cells: show;border-collapse: collapse;\">\n  <tbody>\n    <tr>\n      <th style=\"font-weight: bold;background-color: #F0F0F0;text-align: left;vertical-align: top;width: 131px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\">Attribute</th>\n      <th style=\"font-weight: bold;background-color: #F0F0F0;text-align: left;vertical-align: top;width: 171px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\">Leistungserbringer (HBA)<br/>\n        Quell-Zertifikat: C.HP.AUT</th>\n      <th style=\"font-weight: bold;background-color: #F0F0F0;text-align: left;vertical-align: top;width: 231px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\">Leistungserbringerinstitution (SMC-B)<br/>\n        Quell-Zertifikat: C.HCI.AUT</th>\n      <th style=\"font-weight: bold;background-color: #F0F0F0;text-align: left;vertical-align: top;width: 179px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\">Versicherte (eGK)<br/>\n        Quell-Zertifikat: C.CH.AUT</th>\n    </tr>\n    <tr>\n      <td style=\"text-align: left;vertical-align: top;width: 131px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\">Attribute <span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">&quot;given_name&quot;<br/>\n          (</span>Zertifikatsfeld<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">)</span></td>\n      <td style=\"text-align: left;vertical-align: top;width: 171px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\">Vorname<br/>\n        (givenName)</td>\n      <td style=\"text-align: left;vertical-align: top;width: 231px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\">Vorname des Verantwortlichen/ Inhabers<br/>\n        givenName)</td>\n      <td style=\"text-align: left;vertical-align: top;width: 179px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\">Vorname<br/>\n        (givenName)</td>\n    </tr>\n    <tr>\n      <td style=\"text-align: left;vertical-align: top;width: 131px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\">Attribute <span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">&quot;family_name&quot;</span><br/>\n        <span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">(</span>Zertifikatsfeld<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">)</span></td>\n      <td style=\"text-align: left;vertical-align: top;width: 171px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\">Nachname<br/>\n        (surname)</td>\n      <td style=\"text-align: left;vertical-align: top;width: 231px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\">Nachname des Verantwortlichen/<br/>\n        Inhabers<br/>\n        (surname)</td>\n      <td style=\"text-align: left;vertical-align: top;width: 179px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\">Nachname<br/>\n        (surname)</td>\n    </tr>\n    <tr>\n      <td style=\"text-align: left;vertical-align: top;width: 131px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\">Attribute &quot;<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">organizationName</span>&quot;<br/>\n        <span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">(</span>Zertifikatsfeld<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">)</span></td>\n      <td style=\"text-align: left;vertical-align: top;width: 171px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\">leer<br/>\n        (organizationName)</td>\n      <td style=\"text-align: left;vertical-align: top;width: 231px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\">Organisationsbezeichnung<br/>\n        (organizationName)</td>\n      <td style=\"text-align: left;vertical-align: top;width: 179px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\">Herausgeber<br/>\n        (organizationName)</td>\n    </tr>\n    <tr>\n      <td style=\"text-align: left;vertical-align: top;width: 131px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\">Attribute &quot;<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">professionOID</span>&quot;<br/>\n        <span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">(</span>Zertifikatsfeld<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">)</span></td>\n      <td style=\"text-align: left;vertical-align: top;width: 171px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\">professionOID<br/>\n        (Admission/professionOID)</td>\n      <td style=\"text-align: left;vertical-align: top;width: 231px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\">professionOID<br/>\n        (Admission/professionOID)</td>\n      <td style=\"text-align: left;vertical-align: top;width: 179px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\">professionOID<br/>\n        (Admission/professionOID)</td>\n    </tr>\n    <tr>\n      <td style=\"text-align: left;vertical-align: top;width: 131px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\">Identifier <span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">&quot;idNummer&quot;<br/>\n          (</span><span style=\"font-size: 10pt;line-height: 1.5;\">Zertifikatsfeld</span><span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">)</span></td>\n      <td style=\"text-align: left;vertical-align: top;width: 171px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\">Telematik-ID<br/>\n        (Admission/<br/>\n        registrationNumber)</td>\n      <td style=\"text-align: left;vertical-align: top;width: 231px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\">Telematik-ID<br/>\n        (Admission/<br/>\n        registrationNumber)</td>\n      <td style=\"text-align: left;vertical-align: top;width: 179px;height: 12px;border: 1px solid #CCCCCC;border-top: 1px solid #CCCCCC;border-bottom: 1px solid #CCCCCC;border-right: 1px solid #CCCCCC;border-left: 1px solid #CCCCCC;padding: 5px;\"><span style=\"font-size: 10pt;line-height: 1.5;\">unveränderlicher Anteil der </span>KVNR<br/>\n        (organizationalUnitName)</td>\n    </tr>\n  </tbody>\n</table>\n <br/>\nTabelle <span data-sequence=\"Tabelle\" class=\"polarion-rte-caption\">#</span>: TAB_IDP_DIENST_0006 Befüllung der Attribute &quot;acr&quot; und &quot;amr&quot;<br/>\n <br/>\n \n<table id=\"polarion_wiki macro name=table;params=width=99.56%\" class=\"polarion-Document-table\" style=\"width: 99.56%;margin-left: 0px;margin-right: auto;border: 1px solid #CCCCCC;empty-cells: show;border-collapse: collapse;\">\n  <tbody>\n    <tr>\n      <th style=\"font-weight: bold;background-color: #F0F0F0;text-align: left;vertical-align: top;width: 53px;height: 12px;border: 1px solid #CCCCCC;padding: 5px;\">Attribut</th>\n      <th style=\"font-weight: bold;background-color: #F0F0F0;text-align: left;vertical-align: top;width: 184px;height: 12px;border: 1px solid #CCCCCC;padding: 5px;\">Leistungserbringer (HBA)</th>\n      <th style=\"font-weight: bold;background-color: #F0F0F0;text-align: left;vertical-align: top;width: 203px;height: 12px;border: 1px solid #CCCCCC;padding: 5px;\">Leistungserbringerinstitution (SMC-B)</th>\n      <th style=\"font-weight: bold;background-color: #F0F0F0;text-align: left;vertical-align: top;width: 207px;height: 12px;border: 1px solid #CCCCCC;padding: 5px;\">Versicherte (eGK)</th>\n      <th style=\"font-weight: bold;background-color: #F0F0F0;text-align: left;vertical-align: top;width: 466px;height: 12px;border: 1px solid #CCCCCC;padding: 5px;\">Versicherte (Abgeleitete Authentisierungsmittel)</th>\n    </tr>\n    <tr>\n      <td style=\"text-align: left;vertical-align: top;width: 53px;height: 12px;border: 1px solid #CCCCCC;padding: 5px;\"><span style=\"font-size: 10pt;line-height: 1.5;\">Attribut &quot;amr&quot;</span></td>\n      <td style=\"text-align: left;vertical-align: top;width: 184px;height: 12px;border: 1px solid #CCCCCC;padding: 5px;\"><span style=\"font-size: 10pt;line-height: 1.5;\">[„mfa“,“sc“,“pin“]</span></td>\n      <td style=\"text-align: left;vertical-align: top;width: 203px;height: 12px;border: 1px solid #CCCCCC;padding: 5px;\"><span style=\"font-size: 10pt;line-height: 1.5;\">[„mfa“,“sc“,“pin“]</span></td>\n      <td style=\"text-align: left;vertical-align: top;width: 207px;height: 12px;border: 1px solid #CCCCCC;padding: 5px;\"><span style=\"font-size: 10pt;line-height: 1.5;\">[„mfa“,“sc“,“pin“]</span></td>\n      <td style=\"text-align: left;vertical-align: top;width: 466px;height: 12px;border: 1px solid #CCCCCC;padding: 5px;\"><span style=\"font-size: 10pt;line-height: 1.5;\">Gemäß des übertragenen Werts des Authenticator-Moduls in der Datenstruktur &quot;Signed_Authentication_Data&quot;</span></td>\n    </tr>\n    <tr>\n      <td style=\"text-align: left;vertical-align: top;width: 53px;height: 12px;border: 1px solid #CCCCCC;padding: 5px;\"><span style=\"font-size: 10pt;line-height: 1.5;\">Attribut &quot;acr&quot;</span></td>\n      <td style=\"text-align: left;vertical-align: top;width: 184px;height: 12px;border: 1px solid #CCCCCC;padding: 5px;\"><span style=\"font-size: 10pt;line-height: 1.5;\">gematik-ehealth-loa-high<br/>\n          </span></td>\n      <td style=\"text-align: left;vertical-align: top;width: 203px;height: 12px;border: 1px solid #CCCCCC;padding: 5px;\"><span style=\"font-size: 10pt;line-height: 1.5;\">gematik-ehealth-loa-high<br/>\n          </span></td>\n      <td style=\"text-align: left;vertical-align: top;width: 207px;height: 12px;border: 1px solid #CCCCCC;padding: 5px;\"><span style=\"font-size: 10pt;line-height: 1.5;\">gematik-ehealth-loa-high<br/>\n          </span></td>\n      <td style=\"text-align: left;vertical-align: top;width: 466px;height: 12px;border: 1px solid #CCCCCC;padding: 5px;\"><span style=\"font-size: 10pt;line-height: 1.5;\">gematik-ehealth-loa-high</span><br/>\n        </td>\n    </tr>\n  </tbody>\n</table>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_20524-02"
+  },
+  {
+    "id": "A_20588",
+    "version": "01",
+    "title": "IdP-Dienst - Erkennung Clientsystem User-Agent",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der IdP-Dienst MUSS das vom aufrufenden Nutzer verwendete Clientsystem (Authenticator-Modul, E-Rezept-FdV oder Primärsystem) anhand des im HTTP-Request enthaltenen Header-Feld &quot;User-Agent&quot; gemäß [RFC7231] erkennen und in den Einträgen zur Performance-Rohdatenerfassung gemäß [gemSpec_Perf] protokollieren. Der IdP-Dienst MUSS bei fehlendem User-Agent-Header den Request mit dem HTTP-Status-Code 403 beantworten, damit in der Betriebsüberwachung des IdP-Dienstes die Nutzung unzulässiger Clientsysteme erkannt werden kann.",
+    "petStatus": "technicalConfirmed",
+    "idAndVersion": "A_20588-01"
   },
   {
     "id": "A_20591",
-    "version": null,
+    "version": "01",
     "title": "Festlegungen zur Signatur der Discovery Documents",
     "status": null,
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der IdP-Dienst MUSS die Signatur der Discovery Documents dabei durch die Verwendung einer JSON Web Signature (JWS) [RFC7515 # section-3 - Compact Serialization] und des Schüssels PrK_DISC_SIG gewährleisten. Als Algorithmus ist dementsprechend &quot;BP256R1&quot; zu wählen.<br/>\nDer IdP-Dienst MUSS bei der Signaturerstellung das Signaturzertifikat des PUK_DISC_SIG im x5c Claim einbetten.",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_20591-01"
   },
   {
     "id": "A_20604",
@@ -516,18 +461,11 @@
     "status": null,
     "results": null,
     "afoStatus": "NOTSET",
-    "refName": null,
-    "refURL": null
-  },
-  {
-    "id": "A_20645",
-    "version": null,
-    "title": "Inhalt der Fachdienste im Discovery Document",
-    "status": null,
-    "results": null,
-    "afoStatus": "NOTSET",
-    "refName": "Wir können am Außeninterface nur indirekt prüfen, ob der IDP den OCSP-Responder abfragt. Wird von der Ref nicht umgesetzt.",
-    "refURL": null
+    "refName": "Manuell hinzugefügt, Nicht in Baseline",
+    "refURL": null,
+    "description": null,
+    "petStatus": null,
+    "idAndVersion": "A_20604"
   },
   {
     "id": "A_20686",
@@ -537,17 +475,23 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Authorization Server <span style=\"font-weight: normal;\">MUSS d</span>ie einzelnen Schnittstellen (AUTH, DISC, TOKEN) mit getrennten Interfaces bedienen.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20686"
   },
   {
     "id": "A_20687",
-    "version": null,
-    "title": "Bereitstellung der PUK",
+    "version": "01",
+    "title": "Bereitstellung der öffentlichen Schlüsselteile",
     "status": null,
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Authorization Server MUSS zu allen verwendeten privaten Schlüsseln &quot;PrK_IDP_SIG&quot;, &quot;PrK_IDP_ENC&quot; und &quot;PrK_DISC_SIG&quot; das öffentliche Pendant &quot;PuK_IDP_SIG&quot;, &quot;PuK_IDP_ENC&quot; und &quot;PuK_DISC_SIG&quot; zum Download bereitstellen. Dies ermöglicht die Prüfung der von den einzelnen Schnittstellen vorgenommenen Signaturen ebenso wie die zielgerichtete Verschlüsselung des Payloads für den bestimmten Empfänger.",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_20687-01"
   },
   {
     "id": "A_20688",
@@ -557,47 +501,36 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": "erst wirklich getestet, wenn Testsuite im Internet und in der TI durchgelaufen ist",
-    "refURL": null
-  },
-  {
-    "id": "A_20689",
-    "version": null,
-    "title": "Internes Discovery Document - Prüfung vor Veröffentlichung",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "Nachweisart wird geändert, siehe STIDPD-96",
-    "refURL": null
-  },
-  {
-    "id": "A_20690",
-    "version": null,
-    "title": "Externes Discovery Document - Prüfung vor Veröffentlichung",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "kann durch einen Produkttest nicht geprüft werden, siehe auch STIDPD-96",
-    "refURL": null
+    "refURL": null,
+    "description": "Der Discovery-Endpunkt MUSS <span style=\"font-size: 10pt;line-height: 1.5;\">die Discovery Documents für interne und externe Adressierung</span> sowohl innerhalb der TI als auch im Internet veröffentlichen.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20688"
   },
   {
     "id": "A_20691",
-    "version": null,
+    "version": "01",
     "title": "Das Discovery Document ist maximal 24 Stunden alt",
-    "status": null,
+    "status": "UNKNOWN",
     "results": null,
     "afoStatus": "deleted",
     "refName": "entfällt, siehe STIDPD-94",
-    "refURL": null
+    "refURL": null,
+    "description": "Der Discovery-Endpunkt MUSS das Discovery Document regelmäßig alle 24 Stunden oder nach durchgeführten Änderungen umgehend neu erstellen, mit dem <span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">&quot;PrK_DISC_SIG&quot; </span>signieren und und am mit der gematik vereinbarten Downloadpunkt <span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">&quot;URI_DISC&quot; </span>bereitstellen.<br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_20691-01"
   },
   {
     "id": "A_20692",
-    "version": null,
-    "title": "Maximale Gültigkeitsdauer einer \"SUBJECT_SESSION\"",
+    "version": "01",
+    "title": "Maximale Gültigkeitsdauer eine SSO_TOKENS",
     "status": null,
     "results": null,
     "afoStatus": "NOTSET",
     "refName": "Wir testen, dass veraltete Token abgelehnt werden. Wir testen nicht den operationellen Aspekt, dass max. Gültigkeitsdauer 24 h betragen darf",
-    "refURL": null
+    "refURL": null,
+    "description": "Der Authorization Server DARF die zeitliche Gültigkeit eines SSO_TOKEN <span style=\"font-weight: normal;\">NICHT</span> länger als 86400 Sekunden (24 Stunden) einstellen.<br/>\nDer Parameter <span style=\"font-weight: bold;font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;color: #000000;\">&quot;</span><span style=\"font-weight: normal;font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;color: #000000;\">auth_time</span><span style=\"font-weight: bold;font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;color: #000000;\">&quot;</span> beinhaltet den Zeitpunkt der letzten Authentisierung.",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_20692-01"
   },
   {
     "id": "A_20693",
@@ -607,7 +540,10 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der IdP-Dienst MUSS den &quot;<span style=\"font-family: 'Courier New', Courier, monospace, HanWangKanTan;\">AUTHORIZATION_CODE</span>&quot; und den &quot;<span style=\"font-family: 'Courier New', Courier, monospace, HanWangKanTan;\">SSO_TOKEN</span>&quot; an das Authenticator-Modul über eine Redirection an die registrierte &quot;<span style=\"font-family: 'Courier New', Courier, monospace, HanWangKanTan;\">REDIRECT_URI</span>&quot; des Anwendungsfrontends senden.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20693"
   },
   {
     "id": "A_20694",
@@ -617,17 +553,23 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt MUSS den &quot;<span style=\"font-family: 'Courier New', Courier, monospace, HanWangKanTan;\">SSO_TOKEN</span>&quot; so zusammenstellen, dass alle Informationen, welche für die Ausstellung eines neuen &quot;<span style=\"font-family: 'Courier New', Courier, monospace, HanWangKanTan;\">ACCESS_TOKEN</span>&quot; benötigt werden, im Token vorhanden sind.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20694"
   },
   {
     "id": "A_20695",
-    "version": null,
+    "version": "01",
     "title": "Signieren des \"SSO_TOKEN\"",
     "status": null,
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt MUSS den &quot;<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">SSO_TOKEN</span>&quot; mit seinem eigenen privaten Schlüssel &quot;PrK_IDP_SIG&quot; signieren. Als Algorithmus ist dementsprechend &quot;BP256R1&quot; zu wählen.",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_20695-01"
   },
   {
     "id": "A_20696",
@@ -637,7 +579,10 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt verschlüsselt den &quot;<span style=\"font-family: 'Courier New', Courier, monospace, HanWangKanTan;\">SSO_TOKEN</span>&quot; für sich selbst mit eigenem Schlüsselmaterial, welches die gemSpec_Krypt beachtet.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20696"
   },
   {
     "id": "A_20697",
@@ -647,27 +592,36 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt erzeugt den &quot;<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">AUTHORIZATION_CODE</span>&quot; anhand der vom Authenticator-Modul übergebenen Daten im &quot;<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">CHALLENGE</span>&quot;.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20697"
   },
   {
     "id": "A_20698",
     "version": null,
     "title": "Annahme des Authorization Request",
-    "status": null,
+    "status": "UNKNOWN",
     "results": null,
     "afoStatus": "deleted",
     "refName": "kann durch einen Produkttest nicht geprüft werden, siehe auch STIDPD-96",
-    "refURL": null
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt MUSS die im Authorization Request des Authenticator-Moduls mitgelieferten &quot;<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">CODE_CHALLENGE</span>&quot; und den &quot;<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">SCOPE</span>&quot; annehmen.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20698"
   },
   {
     "id": "A_20699",
-    "version": null,
-    "title": "Annahme der signierten \"CHALLENGE\"",
+    "version": "02",
+    "title": "Annahme von CHALLENGE_TOKEN / Authentication_Data-Struktur",
     "status": null,
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt MUSS<br/>\n \n<ul>\n  <li>entweder das CHALLENGE_TOKEN, signiert mit dem Signaturschlüssel der Smartcard des Nutzers, oder,<br/>\n    </li>\n</ul>\n \n<ul>\n  <li>im Fall der Verwendung von alternativen Authentisierungsmitteln, die signierte Authentication_Data-Struktur, signiert mit dem privaten Schlüssel des Endgeräts</li>\n</ul>\nannehmen und mit dem PrK.IDP.ENC entschlüsseln.",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_20699-02"
   },
   {
     "id": "A_20731",
@@ -677,7 +631,10 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt <span style=\"font-weight: normal;\">MUSS</span> den Parameter <span style=\"font-weight: normal;font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;color: #000000;\">&quot;auth_time&quot;</span> mit dem Zeitpunkt der letzten Authentisierung gegen das zugelassene Authentifizierungsmittel (z.B. <span style=\"font-size: 10pt;line-height: 1.5;\">Auslösen der Signatur durch Smartcard in freigeschaltetem Zustand</span>) setzen.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20731"
   },
   {
     "id": "A_20732",
@@ -687,17 +644,23 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Authorization Server MUSS zu jedem privaten Schlüssel dessen öffentlichen Teil mit einer eigenen absoluten URI in das Discovery Document aufnehmen.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20732"
   },
   {
     "id": "A_20742",
     "version": null,
     "title": "Vergabe der \"client_id\" durch den IdP-Dienst",
-    "status": null,
+    "status": "UNKNOWN",
     "results": null,
     "afoStatus": "deleted",
     "refName": "organisatorischer Prozess nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "refURL": null,
+    "description": "Der IdP-Dienst MUSS bei der organisatorischen Registrierung des Anwendungsfrontends diesem eine eindeutige &quot;<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">client_id</span>&quot; zur Nutzung des IdP-Dienstes zuweisen.<br/>",
+    "petStatus": "binding",
+    "idAndVersion": "A_20742"
   },
   {
     "id": "A_20946",
@@ -707,7 +670,10 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt MUSS einen vom Autenticator-Modul übertragenen &quot;<span style=\"font-family: 'Courier New', Courier, monospace, HanWangKanTan;\">SSO_TOKEN</span>&quot; annehmen.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20946"
   },
   {
     "id": "A_20947",
@@ -717,17 +683,23 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt MUSS den angenommenen &quot;<span style=\"font-family: 'Courier New', Courier, monospace, HanWangKanTan;\">SSO_TOKEN</span>&quot; mit seinem eigenen Schlüsselmaterial, welches zur Verschlüsselung genutzt wurde, entschlüsseln.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20947"
   },
   {
     "id": "A_20948",
-    "version": null,
+    "version": "01",
     "title": "Validierung des \"SSO_TOKEN\"",
     "status": null,
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt MUSS den angenommenen und entschlüsselten &quot;<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">SSO_TOKEN</span>&quot; validieren. Die Validierung MUSS die Überprüfung der Signatur anhand seines öffentlichen Schlüssels PuK_IDP_SIG und die Überprüfung der zeitlichen Gültigkeit des &quot;SSO_TOKEN&quot; anhand des Attributs &quot;<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">auth_time</span>&quot; umfassen.",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_20948-01"
   },
   {
     "id": "A_20949",
@@ -737,17 +709,23 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt MUSS eine neue Authentisierung vom Authenticator-Modul anfordern, wenn die Validierung des vom Authenticator-Moduls eingereichten &quot;<span style=\"font-family: 'Courier New', Courier, monospace, HanWangKanTan;\">SSO_TOKEN</span>&quot; fehlschlägt.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20949"
   },
   {
     "id": "A_20950",
-    "version": null,
+    "version": "01",
     "title": "Positive Validierung des \"SSO_TOKEN\"",
     "status": null,
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt MUSS bei der positiven Validierung des vom Authenticator-Moduls eingereichten &quot;SSO_TOKEN&quot; einen &quot;<span style=\"font-weight: bold;\">AUTHORIZATION_CODE</span>&quot; für den angefragten Fachdienst ausstellen.",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_20950-01"
   },
   {
     "id": "A_20951",
@@ -757,7 +735,10 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "<span style=\"font-family: Arial, Helvetica;\">Der Authorization-Endpunkt MUSS die Signatur der vom Authenticator-Modul übertragenen, signierten &quot;CHALLENGE&quot; anhand des mitgelieferten Authentifizierungs-Zertifikats überprüfen. Die Überprüfung MUSS neben der Signatur auch das Authentifizierungszertifikat anhand von OCSP umfassen. </span>",
+    "petStatus": "binding",
+    "idAndVersion": "A_20951"
   },
   {
     "id": "A_20952",
@@ -767,486 +748,607 @@
     "results": null,
     "afoStatus": "NOTSET",
     "refName": null,
-    "refURL": null
+    "refURL": null,
+    "description": "Der<span id=\"polarion-comment:1458\"></span> IdP-Dienst MUSS den Claim &quot;<span style=\"font-family: 'Courier New', Courier, monospace, HanWangKanTan;\">aud</span>&quot; im &quot;<span style=\"font-family: 'Courier New', Courier, monospace, HanWangKanTan;\">ACCESS_TOKEN</span>&quot; entsprechend des angefragten Scopes des Authenticator-Moduls mit der URL des Fachdienstes füllen.",
+    "petStatus": "binding",
+    "idAndVersion": "A_20952"
   },
   {
-    "id": "A_21275",
+    "id": "A_21258",
+    "version": null,
+    "title": "Sichere Übertragung des SSO_TOKENS",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "<span style=\"font-weight: bold;\">Der Authorization Endpunkt MUSS den SSO_TOKEN beim Transport mit Transport Layer Security (TLS) gemäß [gemSpec_Krypt] schützen.</span>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21258"
+  },
+  {
+    "id": "A_21315",
     "version": "01",
-    "title": "TLS-Verbindungen, zulässige Hashfunktionen bei Signaturen im TLS-Handshake",
+    "title": "Bereitstellung einer URI zum Einreichen von SSO_TOKEN",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende Krypt-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der IdP-Dienst MUSS für den Authorization-Endpunkt eine zusätzliche Adresse mit der URI-Bezeichnung &quot;sso_endpoint&quot; anbieten, über den im Authorization Code Flow (<a href=\"https://openid.net/specs/openid-connect-core-1_0.html#CodeFlowAuth\" target=\"_top\" class=\"descriptionLink\">openid-connect-core-1_0 # CodeFlowAuth</a>) ein Client einen &quot;<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">SSO_TOKEN</span>&quot; einliefern kann, um einen &quot;<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">AUTHORIZATION_CODE</span>&quot; zu erhalten.",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21315-01"
   },
   {
-    "id": "A_21332",
+    "id": "A_21316",
     "version": null,
-    "title": "E-Rezept: TLS-Vorgaben",
+    "title": "Festlegung der Lieferung eines SSO Tokens durch den IdP-Dienst",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "TLS nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der IdP-Dienst MUSS bei der organisatorischen Registrierung eines Clients - beispielsweise des Anwendungsfrontends oder eines Primärsystems - festlegen, ob im Authorization Code Flow bei der Ausgabe eines &quot;<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">AUTHORIZATION_CODE</span>&quot; auch ein &quot;<span style=\"font-family: &#39;Courier New&#39;, Courier, monospace, HanWangKanTan;\">SSO_TOKEN</span>&quot; vom IDP-Dienst ausgegeben werden muss.",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21316"
   },
   {
-    "id": "GS-A_3695",
+    "id": "A_21317",
     "version": null,
-    "title": "Grundlegender Aufbau Versionsnummern",
+    "title": "Verschlüsselung des \" AUTHORIZATION_CODE\"",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "Versionierung nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt des IDP-Dienst MUSS den &quot;AUTHORIZATION_CODE &quot; für den Token-Endpunkt mit eigenem Schlüsselmaterial verschlüsseln, welches den Anforderungen aus gemSpec_Krypt genügt.",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21317"
   },
   {
-    "id": "GS-A_3702",
+    "id": "A_21318",
     "version": null,
-    "title": "Inhalt der Selbstauskunft von Produkten außer Karten",
+    "title": "Prüfung des \"AUTHORIZATION_CODE“",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "Selbstauskunft nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Token-Endpunkt MUSS die Signatur des &quot;AUTHORIZATION_CODE“ unter Verwendung des Schlüssels PuK_IDP_SIG prüfen.",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21318"
   },
   {
-    "id": "GS-A_4359",
+    "id": "A_21319",
     "version": null,
-    "title": "X.509-Identitäten für die Durchführung einer TLS-Authentifizierung",
+    "title": "Prüfung des CODE_VERIFIER",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Token-Endpunkt MUSS den &quot;CODE_VERIFIER&quot; aus dem mittels PuK_IDP_ENC verschlüsselten &quot;KEY_VERIFIER&quot; extrahieren und die Überprüfung gegen die &quot;CODE_CHALLENGE&quot; mit S256 (Algorithmus nach [<a href=\"https://tools.ietf.org/html/rfc7636#section-4.2\" target=\"_top\" class=\"descriptionLink\">RFC7636 # section-4.2</a>]) durchführen.",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21319"
   },
   {
-    "id": "GS-A_4361",
+    "id": "A_21320",
     "version": null,
-    "title": "X.509-Identitäten für die Erstellung und Prüfung digitaler Signaturen",
+    "title": "Entschlüsseln des „Token-Key“",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende Krypt-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Token-Endpunkt MUSS den „Token-Key“ aus dem mittels PuK_IDP_ENC verschlüsselten &quot;KEY_VERIFIER&quot; extrahieren.",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21320"
   },
   {
-    "id": "GS-A_4362",
+    "id": "A_21321",
     "version": null,
-    "title": "X.509-Identitäten für Verschlüsselungszertifikate",
+    "title": "Verschlüsselung von \"ACCESS_TOKEN\" und „ID_TOKEN“",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "Details zu X.509-Zertifikaten nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Token-Endpunkt MUSS &quot;ACCESS_TOKEN&quot; und „ID_TOKEN“, nach der Signatur, mittels JWE [<a href=\"https://tools.ietf.org/html/rfc7516\" target=\"_top\" class=\"descriptionLink\">RFC7516</a>]) unter Nutzung des „Token-Key“ des Anwendungsfrontend verschlüsseln.",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21321"
   },
   {
-    "id": "GS-A_4384",
+    "id": "A_21330",
     "version": null,
-    "title": "TLS-Verbindungen",
+    "title": "Ablaufzeitpunkt von \"AUTHORIZATION_CODE\" und \"SSO_TOKEN\"",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende Krypt-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt des IDP-Dienst MUSS im exp Claim des jeweiligen JWE Headers den Ablaufzeitpunkt des &quot;AUTHORIZATION_CODE&quot; bzw. &quot;SSO_TOKEN&quot; liefern.",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21330"
   },
   {
-    "id": "GS-A_4385",
+    "id": "A_21406",
     "version": null,
-    "title": "TLS-Verbindungen, Version 1.2",
+    "title": "Anforderungen an Transaktionalität der Freischaltung der Einstufung von Gerätetypen",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende Krypt-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Innerhalb eines Service-Requests vom CERT der gematik wird der vollständige, ab Freischaltung zur Einstufung zu verwendende, Datenbestand der Block/Allow-Liste übermittelt. Der IDP-Dienst MUSS genau diese Daten innerhalb eines festgelegten Zeitraums zum Zweck der Einstufung wirksam werden lassen, die alte Datenbasis wird hierbei vollständig ersetzt. <br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21406"
   },
   {
-    "id": "GS-A_4387",
+    "id": "A_21407",
     "version": null,
-    "title": "TLS-Verbindungen, nicht Version 1.0",
+    "title": "Vorhalten von Backup-Daten zur Einstufung von Gerätetypen",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der IDP-Dienst MUSS die Transaktionen der Datenbasis zur Einstufung der Gerätetypen (Block/Allow-Liste) der letzten 6 Monate speichern und in der Lage sein, bei Bedarf auf eine vorherige Version des Bestandes zurückfallen zu können. <br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21407"
   },
   {
-    "id": "GS-A_4637",
+    "id": "A_21410",
     "version": null,
-    "title": "TUCs, Durchführung Fehlerüberprüfung",
+    "title": "Registrierung des Pairing-Endpunkts und des Authenticator-Moduls am IDP-Dienst",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Pairing-Endpunkt MUSS beim IDP-Dienst im Sinne von Abschnitt 4, [gemSpec_IDP_FD] registriert sein. Der registrierte Scope MUSS „openid pairing“ sein, die beantragten Claims MÜSSEN die folgenden sein: <br/>\n <span style=\"font-family: Symbol, &#39;Symbol Regular&#39;;\">·<span style=\"font-weight: normal;font-style: normal;font-size: 8pt;font-family: &#39;Times New Roman&#39;, Times;line-height: 1.5;\">       </span></span>acr <br/>\n <span style=\"font-family: Symbol, &#39;Symbol Regular&#39;;\">·<span style=\"font-weight: normal;font-style: normal;font-size: 8pt;font-family: &#39;Times New Roman&#39;, Times;line-height: 1.5;\">       </span></span>amr <br/>\n <span style=\"font-family: Symbol, &#39;Symbol Regular&#39;;\">·<span style=\"font-weight: normal;font-style: normal;font-size: 8pt;font-family: &#39;Times New Roman&#39;, Times;line-height: 1.5;\">       </span></span>idNummer <br/>\n  <br/>\n Weitere Body-Claims DÜRFEN nicht angefordert werden. Bestehende Header-Claims die zur Prüfung der Gültigkeit von ACCESS_TOKENS verwendet werden sind hiervon unberührt. Andere Fachdienste DÜRFEN mit dem genannten Scope NICHT registrierbar sein.<br/>\n<br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21410"
   },
   {
-    "id": "GS-A_4642",
+    "id": "A_21411",
     "version": null,
-    "title": "TUC_PKI_001: Periodische Aktualisierung TI-Vertrauensraum",
+    "title": "Registrierungsfunktion des IDP-Dienstes / Fehlermeldungen",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "<span style=\"font-weight: bold;\"> </span>Der Pairing-Endpunkt MUSS im Zusammenhang mit der Registrierungsfunktion die folgenden Fehlermeldungen produzieren: <br/>\n  <br/>\n \n<table style=\"border: none;border-collapse: collapse;\">\n  <tbody>\n    <tr>\n      <td style=\"vertical-align: top;width: 36.95pt;border: 1pt solid windowtext;border-top: 1pt solid windowtext;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: 1pt solid windowtext;padding: 0cm 5.4pt;\"> <span style=\"font-weight: bold;\">Nummer</span><br/>\n        </td>\n      <td style=\"vertical-align: top;width: 156.75pt;border-top: 1pt solid windowtext;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: none;padding: 0cm 5.4pt;\"> <span style=\"font-weight: bold;\">Fehlermeldungstext</span><br/>\n        </td>\n    </tr>\n    <tr>\n      <td style=\"vertical-align: top;width: 36.95pt;border-top: none;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: 1pt solid windowtext;padding: 0cm 5.4pt;\"> REG.1<br/>\n        </td>\n      <td style=\"vertical-align: top;width: 156.75pt;border-top: none;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: none;padding: 0cm 5.4pt;\"> Der Zugriff auf den Dienst kann nicht gewährt werden<br/>\n        </td>\n    </tr>\n    <tr>\n      <td style=\"vertical-align: top;width: 36.95pt;border-top: none;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: 1pt solid windowtext;padding: 0cm 5.4pt;\"> REG.2<br/>\n        </td>\n      <td style=\"vertical-align: top;width: 156.75pt;border-top: none;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: none;padding: 0cm 5.4pt;\"> Das verwendete Gerät ist nicht für die Authentisierung geeignet.<br/>\n        </td>\n    </tr>\n    <tr>\n      <td style=\"vertical-align: top;width: 36.95pt;border-top: none;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: 1pt solid windowtext;padding: 0cm 5.4pt;\"> REG.3<br/>\n        </td>\n      <td style=\"vertical-align: top;width: 156.75pt;border-top: none;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: none;padding: 0cm 5.4pt;\"> Der erzeugte Schlüssel konnte aufgrund eines internen Fehlers nicht registriert werden. <br/>\n        </td>\n    </tr>\n    <tr>\n      <td style=\"vertical-align: top;width: 36.95pt;border-top: none;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: 1pt solid windowtext;padding: 0cm 5.4pt;\"> REG.4<br/>\n        </td>\n      <td style=\"vertical-align: top;width: 156.75pt;border-top: none;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: none;padding: 0cm 5.4pt;\"> Der erzeugte Schlüssel konnte aufgrund eines bestehenden Eintrags nicht registriert werden. <br/>\n        </td>\n    </tr>\n  </tbody>\n</table>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21411"
   },
   {
-    "id": "GS-A_4643",
+    "id": "A_21412",
     "version": null,
-    "title": "TUC_PKI_013: Import TI-Vertrauensanker aus TSL",
+    "title": "Registrierungsfunktion des IDP-Dienstes / Registrierung",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "<span style=\"font-size: 9pt;line-height: 1.5;\">Die Registrierungs-Funktion des Pairing-Endpunktes MUSS zulassen, dass mehrere Geräte pro Nutzer registriert werden. </span>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21412"
   },
   {
-    "id": "GS-A_4646",
+    "id": "A_21413",
     "version": null,
-    "title": "TUC_PKI_017: Lokalisierung TSL Download-Adressen",
+    "title": "Registrierungsfunktion des IDP-Dienstes / Prüfung des Scope",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Pairing-Endpunkt MUSS die Nutzung der Registrierungsfunktion ausschließlich auf Basis eines vom IDP-Dienst für das Authenticator-Modul erstellten ACCESS_TOKEN mit dem Scope &quot;openid pairing&quot; ermöglichen.<br/>\n<br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21413"
   },
   {
-    "id": "GS-A_4647",
+    "id": "A_21415",
     "version": null,
-    "title": "TUC_PKI_016: Download der TSL-Datei",
+    "title": "Registrierungsfunktion des IDP-Dienstes / Datenformate und Syntax zur Kommunikation mit dem Authenticator-Modul",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Die Registrierungsfunktion des IDP-Dienstes MUSS die folgenden Datentypen zur Kommunikation mit dem Authenticator-Modul verwenden: <br/>\n <br/>\n \n<ul>\n  <li>Device_Type</li>\n  <li>Device_Information</li>\n  <li>Pairing_Data</li>\n  <li>Signed_Pairing_Data</li>\n  <li>Registration_Data</li>\n  <li>Encrypted_Registration_Data</li>\n</ul>\nDie hierin enthaltenen Informationen und die syntaktische Ausgestaltung sind in TAB_IDP_DIENST_0006 dargelegt. <br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21415"
   },
   {
-    "id": "GS-A_4648",
+    "id": "A_21418",
     "version": null,
-    "title": "TUC_PKI_019: Prüfung der Aktualität der TSL",
+    "title": "Registrierungsfunktion des IDP-Dienstes / Validierung des ACCESS_TOKENS",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Pairing-Endpunkt MUSS die verschlüsselten Registrierungsdaten und den übermittelten ACCESS_TOKEN annehmen. Die Prüfung des ACCESS_TOKENS erfolgt wie in gemSpec_IDP_FD, Abschnitte 6 und 7 beschrieben. Das zur Entschlüsselung des ACCESS_TOKEN zu verwendende Verfahren ist ECDH-ES.<br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21418"
   },
   {
-    "id": "GS-A_4649",
+    "id": "A_21419",
     "version": null,
-    "title": "TUC_PKI_020: XML-Dokument validieren",
+    "title": "Registrierungsfunktion des IDP-Dienstes / Anforderung an die Authentifizierung des Nutzers",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Andoferungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Pairing-Endpunkt des IDP-Dienst MUSS sicherstellen, dass die Registrierung ausschließlich auf Basis von ACCESS_TOKEN durchgeführt wird, die belegen, dass sich der Nutzer auf Basis der eGK authentifiziert hat. Dieser Beleg MUSS aus den Werten für die Claims „amr“ und „acr“ abgeleitet werden, diese MÜSSEN wie folgt belegt sein: acr=“gematik-ehealth-loa-high“, amr=“[„mfa“,“sc“,“pin“]. <br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21419"
   },
   {
-    "id": "GS-A_4650",
+    "id": "A_21420",
     "version": null,
-    "title": "TUC_PKI_011: Prüfung des TSL-Signer-Zertifikates",
+    "title": "Registrierungsfunktion des IDP-Dienstes / Entschlüsselung der Registrierungsdaten",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Pairing Dienst MUSS die übermittelten Registrierungsdaten mit dem PrK.IDP.ENC entschlüsseln. <br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21420"
   },
   {
-    "id": "GS-A_4651",
+    "id": "A_21421",
     "version": null,
-    "title": "TUC_PKI_012: XML-Signatur-Prüfung",
+    "title": "Registrierungsfunktion des IDP-Dienstes / Validierung der signierten Pairing-Daten",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Andoferungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Pairing Dienst MUSS die in den übermittelten Registrierungsdaten enthaltenen Pairing-Daten extrahieren und MUSS die Signatur des Nutzers zu den Pairing-Daten prüfen. Die Prüfung des Authentifizierungszertifikats MUSS hierbei auf Basis der aktuellen Systemzeit des Pairing-Endpunkts als Referenzzeit und gemäß [gemSpec_PKI], Abschnitt 8.3.1.1 „TUC_PKI_018“ erfolgen. <span style=\"font-size: 10pt;line-height: 1.5;\">Der IDP-Dienst MUSS zur Validierung alle Algorithmen unterstützen, die im Zusammenhang mit den Authentisierungsmitteln verwendet werden, die zur Authentisierung am IDP-Dienst zugelassen sind (siehe [gemSpec_IDP_Frontend], Abschnitt 3), hierbei MÜSSEN die Vorgaben aus Abschnitt 9.3.4 [gemSpec_IDP_Frontend] beachtet werden, andere Algorithmen DÜRFEN NICHT unterstützt werden. </span>Kann die Authentizität der Pairing-Daten nicht belegt werden oder ist das übermittelte Authentifizierungs-Zertifikat zum aktuellen Zeitpunkt ungültig oder gesperrt, MUSS der Pairing-Endpunkt die Anfrage mit der Fehlermeldung REG.1 beenden. <span style=\"font-size: 10pt;line-height: 1.5;\">Unter &quot;Authentifizierungszertifikat&quot; wird ein Zertifikat des Typs C.CH.AUT verstanden.</span><br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21421"
   },
   {
-    "id": "GS-A_4652",
-    "version": "01",
-    "title": "TUC_PKI_018: Zertifikatsprüfung in der TI",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "GS-A_4653",
-    "version": "01",
-    "title": "TUC_PKI_002: Gültigkeitsprüfung des Zertifikats",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "GS-A_4654",
-    "version": "01",
-    "title": "TUC_PKI_003: CA-Zertifikat finden",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "GS-A_4655",
-    "version": "01",
-    "title": "TUC_PKI_004: Mathematische Prüfung der Zertifikatssignatur",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "GS-A_4656",
+    "id": "A_21422",
     "version": null,
-    "title": "TUC_PKI_005: Adresse für Status- und Sperrprüfung ermitteln",
+    "title": "Registrierungsfunktion des IDP-Dienstes / Validierung des Zusammenhangs von ACCESS_TOKEN und Pairing-Daten",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "<span style=\"font-weight: bold;\"></span>Der Pairing-Dienst MUSS überprüfen, ob das sich das übermittelte ACCESS_TOKEN und die im Signaturzertifikat eingebetteten Identitätsinformationen sich auf ein und dieselbe Entität zurückführen lassen. Der Pairing-Dienst MUSS dafür prüfen, ob die im ACCESS_TOKEN eingebettete Claim „idNummer“ identisch mit der im Signaturzertifikat der signierten Pairing-Daten übermittelten „idNummer“ ist. Sind diese nicht identisch MUSS der Pairing-Endpunkt die Anfrage mit der Fehlermeldung REG.1 beenden.<br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21422"
   },
   {
-    "id": "GS-A_4657",
-    "version": "03",
-    "title": "TUC_PKI_006: OCSP-Abfrage",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "GS-A_4660",
-    "version": "02",
-    "title": "TUC_PKI_009: Rollenermittlung",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "GS-A_4661",
-    "version": "01",
-    "title": "kritische Erweiterungen in Zertifikaten",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "GS-A_4662",
+    "id": "A_21423",
     "version": null,
-    "title": "Bedingungen für TLS-Handshake",
+    "title": "Registrierungsfunktion des IDP-DIenstes / Bewertung des Gerätetyps",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende Krypt-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Die Registrierungsfunktion des IDP-DIenstes MUSS die vom Authenticator-Modul übertragenen Geräteinformationen gegen die Block/Allow-Liste prüfen. Bei Zuordenbarkeit der Geräteinformationen zu einem Gerätetyp auf der Block-Liste MUSS der Pairing-Endpunkt den Registrierungsvorgang mit der Fehlermeldung REG.2 beenden. Zur Realisierung der Zuordnung zwischen den vom Authenticator-Modul produzierten Daten und den Inhalten auf der Block/Allow-Liste vergleiche die Normalisierungsregeln in Abschnitt XXYY. <br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21423"
   },
   {
-    "id": "GS-A_4663",
+    "id": "A_21424",
     "version": null,
-    "title": "Zertifikats-Prüfparameter für den TLS-Handshake",
+    "title": "Registrierungsfunktion des IDP-Dienstes / Speicherung der Pairing-Daten",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Pairing-Dienst MUSS die folgenden Daten und den Zeitpunkt der Speicherung in seiner Pairing-Datenbank speichern:<br/>\n  <br/>\n <span style=\"font-family: Symbol, &#39;Symbol Regular&#39;;\">·<span style=\"font-weight: normal;font-style: normal;font-size: 8pt;font-family: &#39;Times New Roman&#39;, Times;line-height: 1.5;\">       </span></span>den Namen des Geräts (aus den in den Registrierungsdaten übertragenen DeviceInformationen)<br/>\n <span style=\"font-family: Symbol, &#39;Symbol Regular&#39;;\">·<span style=\"font-weight: normal;font-style: normal;font-size: 8pt;font-family: &#39;Times New Roman&#39;, Times;line-height: 1.5;\">       </span></span>die signierten Pairing-Daten <br/>\n <span style=\"font-family: Symbol, &#39;Symbol Regular&#39;;\">·<span style=\"font-weight: normal;font-style: normal;font-size: 8pt;font-family: &#39;Times New Roman&#39;, Times;line-height: 1.5;\">       </span></span>den aktuellen Zeitpunkt <br/>\n  <br/>\n Die logische Kombination dieser Daten MUSS über die idNummer referenzierbar sein und sie MUSS über die Kombination aus (idNummer, keyIdentifier) eindeutig referenzierbar sein. Unter „keyIdentifier“ wird hierbei das Feld „keyIdentifier“ aus den Pairing-Daten verstanden. Eventuelle Kollisionen mit bestehenden Pairing-Daten MÜSSEN mit der Fehlermeldung REG.4 begegnet werden.  Der Pairing-Endpunkt DARF die übermittelten Daten in diesem Fall NICHT speichern.<br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21424"
   },
   {
-    "id": "GS-A_4749",
-    "version": "01",
-    "title": "TUC_PKI_007: Prüfung Zertifikatstyp",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "GS-A_4751",
+    "id": "A_21425",
     "version": null,
-    "title": "Fehlercodes bei TSL- und Zertifikatsprüfung",
+    "title": "Registrierungsfunktion des IDP-Dienstes / Validierung des übermittelten ACCESS_TOKENS",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Andoferungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "<span style=\"font-size: 10pt;font-family: Arial, Helvetica;line-height: 1.5;\">Der Pairing-Endpunkt MUSS die verschlüsselten Registrierungsdaten und den übermittelten ACCESS_TOKEN annehmen. Der Pairing-Endpunkt MUSS das bezogene ACCESS_TOKEN mit dem PrK.IDP.ENC entschlüsseln. Die Prüfung des ACCESS_TOKENS erfolgt wie in [gemSpec_IDP_FD], Abschnitt 6 beschreiben. </span>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21425"
   },
   {
-    "id": "GS-A_4829",
+    "id": "A_21427",
     "version": null,
-    "title": "TUCs, Fehlerbehandlung",
+    "title": "Registrierungsfunktion des IDP-Dienstes / Rückmeldung an den Nutzer",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Die Registrierungsfunktion MUSS dem Authenticator-Modul eine eindeutige Rückmeldung über den Erfolg oder Misserfolg der Anlage des Pairings übermitteln. <br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21427"
   },
   {
-    "id": "GS-A_4864",
+    "id": "A_21428",
     "version": null,
-    "title": "Logging-Vorgaben nach dem Übergang zum Produktivbetrieb",
+    "title": "Erweiterung des Authorization-Endpunkts / Fehlermeldungen",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "Logging nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt MUSS bei Authentifizierung von Nutzern auf Basis von abgeleiteten Authentisierungsmitteln die folgenden Fehlermeldungen produzieren: <br/>\n  <br/>\n \n<table style=\"width: 521px;border: none;border-collapse: collapse;\">\n  <tbody>\n    <tr>\n      <td style=\"vertical-align: top;width: 64.25pt;border: 1pt solid windowtext;border-top: 1pt solid windowtext;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: 1pt solid windowtext;padding: 0cm 5.4pt;\"> <span style=\"font-weight: bold;\">Fehlermeldungscode</span><br/>\n        </td>\n      <td style=\"vertical-align: top;width: 36.4pt;border-top: 1pt solid windowtext;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: none;padding: 0cm 5.4pt;\"> <span style=\"font-weight: bold;\">Nummer</span><br/>\n        </td>\n      <td style=\"vertical-align: top;width: 332px;border-top: 1pt solid windowtext;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: none;padding: 0cm 5.4pt;\"> <span style=\"font-weight: bold;\">Fehlermeldungstext</span><br/>\n        </td>\n    </tr>\n    <tr>\n      <td style=\"vertical-align: top;width: 64.25pt;border-top: none;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: 1pt solid windowtext;padding: 0cm 5.4pt;\"> In Abstimmung<br/>\n        </td>\n      <td style=\"vertical-align: top;width: 36.4pt;border-top: none;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: none;padding: 0cm 5.4pt;\"> VAL.1<br/>\n        </td>\n      <td style=\"vertical-align: top;width: 332px;border-top: none;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: none;padding: 0cm 5.4pt;\"> Die Authentifizierung mit einem abgeleiteten Authentifizierungsmittel konnte nicht erfolgreich durchgeführt werden. <br/>\n        </td>\n    </tr>\n  </tbody>\n</table>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21428"
   },
   {
-    "id": "GS-A_4898",
+    "id": "A_21429",
     "version": null,
-    "title": "TSL-Grace-Period einer TSL",
+    "title": "Erweiterung des Authorization-Endpunkts / Realisierung verschiedener Authentifizierungsmethoden",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Pairing-Endpunkt MUSS über eine dedizierte URL bereitgestellt werden, die URL MUSS im Discovery-Document aufgenommen werden. Die URL MUSS über das Attribut &quot;uri-pair&quot; im Discovery-Document hinterlegt werden.",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21429"
   },
   {
-    "id": "GS-A_4899",
+    "id": "A_21432",
     "version": null,
-    "title": "TSL Update-Prüfintervall",
+    "title": "Erweiterung des Authorization-Endpunkts / Prüfung der vorliegenden Gerätedaten",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt MUSS die in der Authentication_Data/Device_Information-Struktur dargelegten Informationen zum Gerätetyp auf Basis der Block/Allow-Liste bewerten. Sofern das Gerät als nicht geeignet im Sinne der Anforderung A_21404 eingestuft ist, MUSS der Authentifizierungsvorgang mit der Fehlermeldung „access_denied“ und der „error_description“ VAL.1 genannt abgebrochen werden. Die Zuordnung zwischen gelieferten Informationen zum Gerätetyp und der Datenbasis der Block/Allow-Liste MUSS auf Basis des Vergleichs der in den einzelnen Claims enthaltenen Strings erfolgen. Hierbei MÜSSEN Normalisierungen gemäß Tabelle XXXXYYY durchgeführt werden.  <br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21432"
   },
   {
-    "id": "GS-A_4943",
+    "id": "A_21433",
     "version": null,
-    "title": "Alter der OCSP-Responses für eGK-Zertifikate",
+    "title": "Erweiterung des Authorization-Endpunkts / Validierung des Authentifizierungszertifikats",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "OCSP Protokoll selbst nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt MUSS die Gültigkeit des in der SignedAuthenticationData-Struktur gelieferten Authentifizierungs-Zertifikats überprüfen. Die Zertifikatsprüfung des Authentifizierungszertifikats muss hierbei auf Basis der Systemzeit des Pairing-Endpunkts als Referenzzeit erfolgen, die Prüfung des Zertifikats MUSS gemäß [gemSpec_PKI], Abschnitt 8.3.1.1 „TUC_PKI_018“ erfolgen. Bei ungültigem oder gesperrtem Zertifikat MUSS der Authorization-Endpunkt die Verarbeitung abbrechen. <span style=\"font-size: 10pt;line-height: 1.5;\">Die</span> Fehlermeldungen MUSS „access_denied“ mit „error_description“ VAL.1 sein. Unter &quot;Authentifizierungszertifikat&quot; wird ein Zertifikat des Typs C.CH.AUT verstanden. <br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21433"
   },
   {
-    "id": "GS-A_4957",
-    "version": "01",
-    "title": "Beschränkungen OCSP-Request",
-    "status": null,
-    "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
-  },
-  {
-    "id": "GS-A_5025",
+    "id": "A_21434",
     "version": null,
-    "title": "Versionierung von Produkten auf Basis von zentralen Produkttypen der TI-Plattform und fachanwendungsspezifischen Diensten durch die Produktidentifikation",
+    "title": "Erweiterung des Authorization-Endpunkts / Auslesen der gespeicherten Pairing-Daten",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "Versionierung nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt MUSS die idNummer aus dem übermittelten Authentifizierungs-Zertifikat entnehmen (vergleiche A_20524 [gemSpec_IDP_Dienst] und [gemSpec_Krypt], Abschnitt 4.2 zur Eräuterung). Der Authorization-Endpunkt MUSS anhand des in den SignedAuthenticationData übermittelten KeyIdentifiers und der extrahierten idNummer die Pairing-Daten aus der Pairing-Datenbank beziehen. Falls kein solcher Datensatz existiert, MUSS der Authorization-Endpunkt den Prozess mit einer Fehlermeldung abbrechen. Die Fehlermeldungen MUSS „access_denied“ mit „error_description“ VAL.1 sein. <span style=\"font-size: 10pt;line-height: 1.5;\">Unter &quot;Authentifizierungszertifikat&quot; wird ein Zertifikat des Typs C.CH.AUT verstanden.</span><br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21434"
   },
   {
-    "id": "GS-A_5035",
+    "id": "A_21435",
     "version": null,
-    "title": "Nichtverwendung des SSL-Protokolls",
+    "title": "Erweiterung des Authorization-Endpunkts / Validierung der mathematischen Integrität der gespeicherten Pairing-Daten",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende Krypt-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt MUSS die Integrität der hinterlegten Pairing-Daten mithilfe des öffentlichen Schlüssels des Authentifizierungszertifikats überprüfen. Erweisen sich die (mathematische) Integrität der Daten nicht als gewährleistet, MUSS die Verarbeitung mit einer Fehlermeldung abgebrochen werden. Die Fehlermeldungen MUSS „access_denied“ mit „error_description“ VAL.1 sein. <span style=\"font-size: 10pt;line-height: 1.5;\">Unter &quot;Authentifizierungszertifikat&quot; wird ein Zertifikat des Typs C.CH.AUT verstanden.</span><br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21435"
   },
   {
-    "id": "GS-A_5038",
+    "id": "A_21436",
     "version": null,
-    "title": "Festlegungen zur Vergabe einer Produktversion",
+    "title": "Erweiterung des Authorization-Endpunkts / Prüfung des Bezugs zwischen Authentisierungszertifikat und Pairing-Daten",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "Versionierung nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt MUSS überprüfen, ob die in den signierten Pairing-Daten „issuer“, „serialnumber“, „public_Key“, „notAfter“ identisch zu den Zertifikatsfeldern „issuer“, „serialnumber“, „publickey“, „notAfter“ des übermittelten Authentifizierungs-Zertifikats sind. <span style=\"font-size: 10pt;line-height: 1.5;\">Unter &quot;Authentifizierungszertifikat&quot; wird ein Zertifikat des Typs C.CH.AUT verstanden.</span><br/>\n Im Fall der nicht-Übereinstimmung MUSS die Verarbeitung mit einer Fehlermeldung abgebrochen werden.<span style=\"font-weight: bold;\"> </span>Die Fehlermeldungen MUSS „access_denied“ mit „error_description“ VAL.1 sein. <br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21436"
   },
   {
-    "id": "GS-A_5054",
+    "id": "A_21437",
     "version": null,
-    "title": "Versionierung von Produkten durch die Produktidentifikation erweitert um Klartextnamen",
+    "title": "Erweiterung des Authorization-Endpunkts / Bewertung der Gültigkeit des öffentlichen Schlüssels in den Pairing-Daten",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "Versionierung nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt MUSS die Eignung des in den Pairing-Daten gespeicherten öffentlichen Schlüssels PUK_SE_AUT zur Prüfung der Integrität der Signed_Authentication_Data-Struktur wie folgt bewerten: <br/>\n  <br/>\n <span style=\"font-family: Symbol, &#39;Symbol Regular&#39;;\">·<span style=\"font-weight: normal;font-style: normal;font-size: 8pt;font-family: &#39;Times New Roman&#39;, Times;line-height: 1.5;\">       </span></span>Falls der Typ des Geräts des Endnutzers eine Einstufung als uneingeschränkt geeignet im Sinne von A_21404 besitzt, ist, ist der öffentliche Schlüssel für die Validierung der Signed_Authentication_Data-Struktur zu verwenden <br/>\n <span style=\"font-family: Symbol, &#39;Symbol Regular&#39;;\">·<span style=\"font-weight: normal;font-style: normal;font-size: 8pt;font-family: &#39;Times New Roman&#39;, Times;line-height: 1.5;\">       </span></span>Falls andernfalls der Typ des Geräts des Endnutzers eine Einstufung als eingeschränkt geeignet im Sinne von A_21404 besitzt, ist der öffentliche Schlüssel für die Validierung der Signed_Authentication_Data-Struktur geeignet, wenn der Anlagezeitpunkt des Pairings nicht mehr als 6 Monate zurückliegt. Das heißt, sofern die aktuelle Zeit &lt; pairing_entry.creationTime+6 Monate ist. Hierbei DARF auf den vollen Tag aufgerundet werden. Ist dies nicht der Fall, so MUSS die Verarbeitung mit einer Fehlermeldung abgebrochen werden. Die Fehlermeldungen MUSS „access_denied“ mit „error_description“ VAL.1 sein.<br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21437"
   },
   {
-    "id": "GS-A_5077",
+    "id": "A_21438",
     "version": null,
-    "title": "FQDN-Prüfung beim TLS-Handshake",
+    "title": "Erweiterung des Authorization-Endpunkts / Validierung der mathematischen Integrität der signierten Authentication_Data-Struktur",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt MUSS die Integrität der übermittelten SignedAuthenticationData mithilfe des öffentlichen Schlüssels aus dem Pairing-Datensatz überprüfen. Sofern sich die Daten als nicht (mathematisch) integer erweisen MUSS der Authorization-Endpunkt den Prozess mit einer Fehlermeldung abbrechen.   Die Fehlermeldungen MUSS „access_denied“ mit „error_description“ VAL.1 sein.<br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21438"
   },
   {
-    "id": "GS-A_5215",
+    "id": "A_21439",
     "version": null,
-    "title": "Festlegung der zeitlichen Toleranzen in einer OCSP-Response",
+    "title": "Erweiterung des Authorization-Endpunkts / Zu unterstützende Algorithmen zur Prüfung der mathematischen Integrität der signierten Authentication_Data-Struktur",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt MUSS im Zuge der Validierung der mathematischen Integrität der Signed_Authentication_Data-Struktur die folgenden Algorithmen unterstützen: ECDSA mit Kurve P-256 und SHA-256.<br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21439"
   },
   {
-    "id": "GS-A_5322",
+    "id": "A_21440",
     "version": null,
-    "title": "Weitere Vorgaben für TLS-Verbindungen",
+    "title": "Erweiterung des Authorization-Endpunkts / Produktion des Authorization Code und eines SSO_TOKEN",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt MUSS nach erfolgreicher Prüfung der Signed_Authentication_Data einen Authorization Code und einen SSO_TOKEN produzieren. Basis für die Claims liefert das übertragene Authentifizierungs-Zertifikat und die Claims aus der Datenstruktur Authentication_Data. <span style=\"font-size: 10pt;line-height: 1.5;\">Unter &quot;Authentifizierungszertifikat&quot; wird ein Zertifikat des Typs C.CH.AUT verstanden. </span>Die produzierten SSO_TOKEN und AUTHORIZATION_CODES MÜSSEN den „amr“-Claim wie den entsprechende Claim in der AuthenticationData-Struktur enthalten.<br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21440"
   },
   {
-    "id": "GS-A_5336",
+    "id": "A_21441",
     "version": null,
-    "title": "Zertifikatsprüfung nach Ablauf TSL-Graceperiod",
+    "title": "Inspektions- und De-Registrierungsfunktion des IDP-Dienstes / Fehlermeldungen",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende PKI-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Pairing-Endpunkt des IDP-Dienstes MUSS im Zusammenhang mit der Inspektions- und De-Registrierungsfunktion die folgenden Fehlermeldungen produzieren: <br/>\n  <br/>\n \n<table style=\"width: 604px;border: none;border-collapse: collapse;\">\n  <tbody>\n    <tr>\n      <td style=\"vertical-align: top;width: 107.7pt;border: 1pt solid windowtext;border-top: 1pt solid windowtext;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: 1pt solid windowtext;padding: 0cm 5.4pt;\"> <span style=\"font-weight: bold;\">Fehlermeldungscode</span><br/>\n        </td>\n      <td style=\"vertical-align: top;width: 566px;border-top: 1pt solid windowtext;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: none;padding: 0cm 5.4pt;\"> <span style=\"font-weight: bold;\">Fehlermeldungstext</span><br/>\n        </td>\n    </tr>\n    <tr>\n      <td style=\"vertical-align: top;width: 107.7pt;border-top: none;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: 1pt solid windowtext;padding: 0cm 5.4pt;\"> AC.1<br/>\n        </td>\n      <td style=\"vertical-align: top;width: 566px;border-top: none;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: none;padding: 0cm 5.4pt;\"> Der Zugriff auf den Dienst kann nicht gewährt werden<br/>\n        </td>\n    </tr>\n    <tr>\n      <td style=\"vertical-align: top;width: 107.7pt;border-top: none;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: 1pt solid windowtext;padding: 0cm 5.4pt;\"> REG.1<br/>\n        </td>\n      <td style=\"vertical-align: top;width: 566px;border-top: none;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: none;padding: 0cm 5.4pt;\"> Die Registrierungsdaten konnten nicht bezogen werden. <br/>\n        </td>\n    </tr>\n    <tr>\n      <td style=\"vertical-align: top;width: 107.7pt;border-top: none;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: 1pt solid windowtext;padding: 0cm 5.4pt;\"> REG.2<br/>\n        </td>\n      <td style=\"vertical-align: top;width: 566px;border-top: none;border-bottom: 1pt solid windowtext;border-right: 1pt solid windowtext;border-left: none;padding: 0cm 5.4pt;\"> Die Registrierungsdaten konnten nicht gelöscht werden. <br/>\n        </td>\n    </tr>\n  </tbody>\n</table>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21441"
   },
   {
-    "id": "GS-A_5339",
+    "id": "A_21442",
     "version": null,
-    "title": "TLS-Verbindungen, erweiterte Webbrowser-Interoperabilität",
+    "title": "Inspektions- und De-Registrierungsfunktion des IDP-Dienstes / Authentisierung des Nutzers",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende Krypt-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Die Authentisierung des Nutzers und die Autorisierung des Authenticator-Moduls am Pairing-Endpunkt zur Nutzung Inspektions- und De-Registrierungsfunktion MUSS über den IDP-Dienst auf Basis eines von ihm erstellten ACCESS_TOKENS erfolgen. Der Scope der Anfrage ist „openid pairing“. <br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21442"
   },
   {
-    "id": "GS-A_5526",
+    "id": "A_21445",
     "version": null,
-    "title": "TLS-Renegotiation-Indication-Extension",
+    "title": "Inspektions- und De-Registrierungsfunktion des IDP-Dienstes / Validierung und Verarbeitung des ACCESS_TOKENS",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende Krypt-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Pairing-Endpunkt MUSS das bezogene ACCESS_TOKEN mit dem privaten Schlüssel PrK.IDP.ENC entschlüsseln. Das zur Entschlüsselung des ACCESS_TOKEN zu verwendende Verfahren ist ECDH-ES. Die Prüfung des ACCESS_TOKENS erfolgt wie in [gemSpec_IDP_FD], Abschnitt 6 beschrieben. Sofern das ACCESS_TOKEN ungültig ist, MUSS dem Authenticator-Modul die Fehlermeldung AC.1 übermittelt werden.  <br/>\n <br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21445"
   },
   {
-    "id": "GS-A_5542",
+    "id": "A_21447",
     "version": null,
-    "title": "TLS-Verbindungen (fatal Alert bei Abbrüchen)",
+    "title": "Inspektions- und De-Registrierungsfunktion des IDP-Dienstes / Annahme des Löschkommandos des Nutzers",
     "status": null,
     "results": null,
-    "afoStatus": "deleted",
-    "refName": "übergreifende Krypt-Anforderungen nicht im Scope der Zulassungstestsuite",
-    "refURL": null
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Pairing-Endpunkt MUSS das Kommando zum Löschen eines Pairing-Eintrags annehmen, das Kommando umfasst das  ACCESS_TOKEN und den Key-Identifier des zu löschenden Pairing-Eintrages. Der Pairing-Dienst MUSS übermittelten ACCESS_TOKEN mit dem PrK.IDP.ENC entschlüsseln, er MUSS das ACCESS_TOKEN wie in [gemSpec_IDP_FD], Abschnitt 6 beschrieben validieren. Sofern das ACCESS_TOKEN ungültig ist MUSS dem Authenticator-Modul die Fehlermeldung AC.1 übermittelt werden. Der Pairing Eintrag MUSS anhand von Key-Identifier und der im ACCESS_TOKEN enthaltenen idNummer identifiziert und gelöscht werden. <br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21447"
+  },
+  {
+    "id": "A_21448",
+    "version": null,
+    "title": "Inspektions- und De-Registrierungsfunktion des IDP-Dienstes / Löschung des identifizierten Pairing-Datensatzes",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "<span style=\"font-size: 10pt;line-height: 1.5;\">Der Pairing-Endpunkt MUSS den zur Löschung angefragten Pairing-Datensatz anhand der Kombination aus dem übermittelten Key-Identifier und der aus dem ACCESS_TOKEN bezogenen idNummer identifizieren. Das verwendete Pairing MUSS dauerhaft unwirksam sein. Die hierbei verwendeten Authentisierungsschlüssel dürfen bei Anwendung nicht mehr zu einer erfolgreichen Authentifizierung führen. Hierbei zu vollziehende Löschung innerhalb der Pairing-Datenbank MÜSSEN physisch vollzogen werden. Sofern eine Löschung nicht möglich, war MUSS der Pairing-Endpunkt dem Authenticator-Modul die Fehlermeldung REG.2 übermitteln. </span>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21448"
+  },
+  {
+    "id": "A_21449",
+    "version": null,
+    "title": "Erweiterung des Authorization-Endpunkts / Datenmodell und Syntax zur Kommunikation mit dem Authenticator-Modul",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Authorization-Endpunkt des IDP-Dienstes MUSS bei der Verwendung von alternativen Authentisierungsmitteln die folgenden Datentypen zur Kommunikation mit dem Authenticator-Modul verwenden: <br/>\n <br/>\n \n<ul>\n  <li><span style=\"font-size: 10pt;line-height: 1.5;\">Authentication_Data</span></li>\n  <li><span style=\"font-size: 10pt;line-height: 1.5;\">Signed_Authentication_Data</span></li>\n  <li><span style=\"font-size: 10pt;line-height: 1.5;\">Encrypted_Signed_Authentication_Data</span></li>\n</ul>\n <br/>\n <span style=\"font-size: 10pt;line-height: 1.5;\">Die hierin enthaltenen Informationen und die syntaktische Ausgestaltung sind in Tabelle TAB_IDP_DIENST_0006 dargelegt. </span><br/>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21449"
+  },
+  {
+    "id": "A_21450",
+    "version": null,
+    "title": "Inspektions- und De-Registrierungsfunktion des IDP-Dienstes / Datenmodell und Syntax zur Kommunikation mit dem Authenticator-Modul",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Die Inspektions- und De-Registrierungsfunktion des IDP-Dienstes MUSS die folgenden Datentypen zur Kommunikation mit dem Authenticator-Modul verwenden: <br/>\n \n<ul>\n  <li>Pairing_Entry</li>\n  <li>Pairing_Entries</li>\n</ul>\nDie hierin enthaltenen Informationen und die syntaktische Ausgestaltung sind in TAB_IDP_DIENST_0006 dargelegt. ",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21450"
+  },
+  {
+    "id": "A_21452",
+    "version": null,
+    "title": "Inspektions- und De-Registrierungsfunktion des IDP-Dienstes / Rückgabe der Pairing-Daten",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Pairing-Dienst MUSS die idNummer des Benutzers aus den Claims des ACCESS_TOKEN extrahieren und die Pairing-Datenbank anhand der idNummer nach den bestehenden Pairings des Benutzers abfragen. Die bezogenen Pairing-Daten MÜSSEN dem Authenticator-Modul übermittelt werden. Die Antwort MUSS eine Liste von Pairing_Entry-Daten sein. Sofern die Daten nicht bezogen werden konnten MUSS dem Authenticator-Modul die Fehlermeldung REG.1 übermittelt werden.",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21452"
+  },
+  {
+    "id": "A_21454",
+    "version": null,
+    "title": "Performance - IdP-Dienst - De-Registrierung eines Pairings",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "Der Anbieter des IDP-Dienstes MUSS sicherstellen, dass ein in der Pairing-Datenbank gespeichertes Pairing auf Anfrage des Nutzers innerhalb einer Stunde unwirksam wird, dies gilt auch für eine standortübergreifende Realisierung der einzelnen Endpunkte des IDP. Vergleiche A_21448. ",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21454"
+  },
+  {
+    "id": "A_21470",
+    "version": null,
+    "title": "Registrierungsfunktion des IDP-Dienstes / Prüfung des Zusammenhangs zwischen Pairing-Daten und übermittelten Authentifizierungs-Zertifikats",
+    "status": null,
+    "results": null,
+    "afoStatus": "NOTSET",
+    "refName": null,
+    "refURL": null,
+    "description": "<span style=\"font-size: 10pt;line-height: 1.5;\">Der Pairing-Endpunkt des IDP-Dienst MUSS überprüfen, ob sich die in den Pairing-Daten befindlichen Daten „issuer“, „serialnumber“, „public_Key“, „notAfter“ identisch zu den Zertifikatsfeldern „issuer“, „serialnumber“, „publickey“, „notAfter“ des übermittelten Authentifizierungs-Zertifikats sind. Schlägt einer dieser Vergleiche fehl, MUSS der Pairing-Endpunkt die Anfrage mit der Fehlermeldung REG.1 beenden. Anforderungen an die Ausgestaltung der Vergleichsoperationen finden sich in Abschnitt XXYY. Unter &quot;Authentifizierungszertifikat&quot; wird ein Zertifikat des Typs C.CH.AUT verstanden.<br/>\n  </span>",
+    "petStatus": "notBinding",
+    "idAndVersion": "A_21470"
   }
 ]

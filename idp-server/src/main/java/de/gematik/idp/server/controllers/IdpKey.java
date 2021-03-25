@@ -28,6 +28,9 @@ public class IdpKey {
     private final PkiIdentity identity;
 
     public IdpKeyDescriptor buildJwk(final boolean addX5C) {
-        return IdpKeyDescriptor.constructFromX509Certificate(identity.getCertificate(), identity.getKeyId(), addX5C);
+        final IdpKeyDescriptor keyDesc = IdpKeyDescriptor
+            .constructFromX509Certificate(identity.getCertificate(), identity.getKeyId(), addX5C);
+        keyDesc.setPublicKeyUse(identity.getUse().orElse(null));
+        return keyDesc;
     }
 }

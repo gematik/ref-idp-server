@@ -42,7 +42,7 @@
   </div>
 </nav>
 
-<main role="main" class="container">
+<main role="main" class="full-width-container">
 
   <div class="starter-template">
     <h1 class="mb-4">
@@ -53,14 +53,10 @@
     </h1>
 
     <div class="section mb-4">
-      <h2><a href="index.html" style="margin-right: 4rem;">[ Serenity Report ]</a>Übersicht Anforderungen</h2>
-      <div class="row">
-        <div class="col-6 text-right">
-          <div>${AfoNum} Anforderungen</div>
-          <div>${TCAfoNum} Verlinkte Testszenarien</div>
-          <div>${TCNum} Testszenarien Gesamt</div>
-        </div>
-      </div>
+      <div class="row mb-4">
+		<h2 class="col-6"> [ <a href="index.html"> &larr; Serenity </a> ] </h2>
+		<h2 class="col-6">Übersicht</h2>
+	  </div>
       <div class="row">
         <div class="col-6">
           <svg viewBox="-1 -1 2 2" style="transform: rotate(-90deg)"></svg>
@@ -72,7 +68,7 @@
           </div>
           <div>
             <div class="skipped square30px">&nbsp;</div>
-            Ausgekassen
+            Ausgelassen
           </div>
           <div>
             <div class="failed square30px">&nbsp;</div>
@@ -86,6 +82,14 @@
             <div class="unknown square30px">&nbsp;</div>
             Unbekannt
           </div>
+          <div>
+            <div class="total square30px">&nbsp;</div>
+            Afos Gesamt
+          </div>
+          <div>
+            <div class="total square30px">&nbsp;</div>
+            Szenarien Gesamt
+          </div>
         </div>
         <div class="col-3 afocounts text-left">
           <div>${passedAfo}</div>
@@ -93,11 +97,15 @@
           <div>${failedAfo}</div>
           <div>${errorAfo}</div>
           <div>${unknownAfo}</div>
+          <div>${AfoNum}</div>
+          <div>${TCNum}</div>
         </div>
 
       </div>
       <div class="row mt-4">
-        <div class="col-12 text-right text-muted small">Erstellt am ${ReportDate}</div>
+        <div class="col-12 text-right text-muted small">AfoReporter V${ReporterVersion}&nbsp;&nbsp;&nbsp;&nbsp;erstellt
+          am ${ReportDate}
+        </div>
       </div>
     </div>
     <div class="section">
@@ -121,6 +129,13 @@
         </a></div>
         <span id="untestedAfos" class="collapse">
           ${AfosUnTested}
+        </span>
+        <div class="row afoseparator"><a data-toggle="collapse" href="#unrefScenarios" aria-expanded="false"
+                                         aria-controls="unrefScenarios">
+          Testszenarien ohne Afo Referenz Afos (${unrefScenarios})
+        </a></div>
+        <span id="unrefScenarios" class="collapse">
+          ${ScenariosUnreferenced}
         </span>
       </section>
     </div>
@@ -5389,6 +5404,24 @@
         $(this).text("Blende manuell entfernte Afos aus");
       }
       return false;
+    });
+
+    $('.afodiv a').hover(function (e) { // Hover event
+      var titleText = $(this).attr('title');
+      $(this).data('tiptext', titleText).removeAttr('title');
+      if (titleText === '') {
+        return;
+      }
+      $('<p class="tooltip"></p>').html(titleText).appendTo('body').css(
+          {'top': (e.pageY - 10) + 'px', 'left': (e.pageX + 20) + 'px'}).show();
+    }, function () { // Hover off event
+      $(this).attr('title', $(this).data('tiptext'));
+      if ($(this).attr('title') === '') {
+        return;
+      }
+      $('.tooltip').remove();
+    }).mousemove(function (e) { // Mouse move event
+      $('.tooltip').css('top', (e.pageY - 10) + 'px').css('left', (e.pageX + 20) + 'px');
     });
   });
 </script>

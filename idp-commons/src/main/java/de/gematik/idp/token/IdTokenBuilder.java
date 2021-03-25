@@ -26,14 +26,12 @@ import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.field.ClaimName;
 import java.time.ZonedDateTime;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Data;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jose4j.jwt.NumericDate;
 
 @Data
@@ -43,6 +41,9 @@ public class IdTokenBuilder {
         ORGANIZATION_NAME, ID_NUMBER, AUTHENTICATION_CLASS_REFERENCE, CLIENT_ID, SCOPE, AUTH_TIME)
         .map(ClaimName::getJoseName)
         .collect(Collectors.toSet());
+    private static final List<ClaimName> CLAIMS_TO_TAKE_FROM_AUTHENTICATION_TOKEN = List
+        .of(GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER, AUTH_TIME, NONCE);
+
     private final IdpJwtProcessor jwtProcessor;
     private final String issuerUrl;
     private final String serverSubjectSalt;
@@ -59,18 +60,15 @@ public class IdTokenBuilder {
         claimsMap.put(AUDIENCE.getJoseName(), clientId);
         claimsMap.put(ISSUED_AT.getJoseName(), now.toEpochSecond());
 
-        claimsMap.put(PROFESSION_OID.getJoseName(), authenticationToken.getBodyClaim(PROFESSION_OID).orElse(""));
-        claimsMap
-            .put(ORGANIZATION_NAME.getJoseName(), authenticationToken.getBodyClaim(ORGANIZATION_NAME).orElse(""));
-        claimsMap.put(ID_NUMBER.getJoseName(), authenticationToken.getBodyClaim(ID_NUMBER).orElse(""));
-        claimsMap.put(GIVEN_NAME.getJoseName(), authenticationToken.getBodyClaim(GIVEN_NAME).orElse(""));
-        claimsMap.put(FAMILY_NAME.getJoseName(), authenticationToken.getBodyClaim(FAMILY_NAME).orElse(""));
-        claimsMap.put(AUTH_TIME.getJoseName(), authenticationToken.getBodyClaim(AUTH_TIME).orElse(""));
-        claimsMap.put(NONCE.getJoseName(), authenticationToken.getBodyClaim(NONCE).orElse(""));
+        CLAIMS_TO_TAKE_FROM_AUTHENTICATION_TOKEN.stream()
+            .map(claimName -> Pair.of(claimName, authenticationToken.getBodyClaim(claimName)))
+            .filter(pair -> pair.getValue().isPresent())
+            .forEach(pair -> claimsMap.put(pair.getKey().getJoseName(), pair.getValue().get()));
+
         claimsMap.put(AUTHORIZED_PARTY.getJoseName(),
             authenticationToken.getBodyClaim(CLIENT_ID)
                 .orElseThrow(() -> new IdpJoseException("Missing '" + AUTHORIZED_PARTY.getJoseName() + "' claim!")));
-        claimsMap.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), "[\"mfa\", \"sc\", \"pin\"]");
+        claimsMap.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), getAmrString());
         claimsMap.put(AUTHENTICATION_CLASS_REFERENCE.getJoseName(), IdpConstants.EIDAS_LOA_HIGH);
         claimsMap.put(ACCESS_TOKEN_HASH.getJoseName(), atHashValue);
         claimsMap.put(SUBJECT.getJoseName(),
@@ -88,5 +86,9 @@ public class IdTokenBuilder {
         return jwtProcessor.buildJwt(new JwtBuilder()
             .addAllBodyClaims(claimsMap)
             .addAllHeaderClaims(headerClaims));
+    }
+
+    private String[] getAmrString() {
+        return new String[]{"mfa", "sc", "pin"};
     }
 }

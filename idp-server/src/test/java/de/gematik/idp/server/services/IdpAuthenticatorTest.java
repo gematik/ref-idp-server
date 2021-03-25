@@ -56,8 +56,6 @@ class IdpAuthenticatorTest {
 
     @Test
     public void validateRedirectUriWithInvalidValue_ExpectCorrectError() {
-        final IdpClientConfiguration idpClientConfiguration = idpConfiguration.getRegisteredClient()
-            .get(TestConstants.CLIENT_ID_E_REZEPT_APP);
         assertThatThrownBy(() -> idpAuthenticator.validateRedirectUri(TestConstants.CLIENT_ID_E_REZEPT_APP, "test"))
             .isInstanceOf(IdpServerException.class)
             .hasFieldOrPropertyWithValue("errorType", IdpErrorType.INVALID_REQUEST);

@@ -63,7 +63,7 @@ public class IdpJwtProcessor {
     public JsonWebToken buildJwt(@NonNull final JwtBuilder jwtBuilder) {
         Objects.requireNonNull(privateKey, "No private key supplied, cancelling JWT signing");
         Objects.requireNonNull(jwtBuilder, "No Descriptor supplied, cancelling JWT signing");
-        keyId.ifPresent(keyId -> jwtBuilder.addHeaderClaim(ClaimName.KEY_ID, keyId));
+        keyId.ifPresent(keyIdValue -> jwtBuilder.addHeaderClaim(ClaimName.KEY_ID, keyIdValue));
         return jwtBuilder
             .setSignerKey(privateKey)
             .setCertificate(certificate)
@@ -78,11 +78,9 @@ public class IdpJwtProcessor {
         jws.setKey(privateKey);
         jws.setAlgorithmHeaderValue(algorithm);
 
-        for (final String key : headerClaims.keySet()) {
-            jws.setHeader(key, headerClaims.get(key));
-        }
+        headerClaims.keySet().forEach(key -> jws.setHeader(key, headerClaims.get(key)));
 
-        keyId.ifPresent(keyId -> jws.setHeader(ClaimName.KEY_ID.getJoseName(), keyId));
+        keyId.ifPresent(keyIdValue -> jws.setHeader(ClaimName.KEY_ID.getJoseName(), keyIdValue));
 
         if (includeSignerCertificateInHeader) {
             jws.setCertificateChainHeaderValue(certificate);

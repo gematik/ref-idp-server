@@ -24,9 +24,12 @@ import java.security.spec.ECFieldFp;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPoint;
 import java.security.spec.EllipticCurve;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.jose4j.jwa.AlgorithmFactoryFactory;
 import org.jose4j.keys.EllipticCurves;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class BrainpoolCurves {
 
     public static final String BP_256 = "BP-256";

@@ -16,6 +16,9 @@
 
 package de.gematik.idp.token;
 
+import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
+import static de.gematik.idp.field.ClaimName.NESTED_JWT;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -66,7 +69,7 @@ public class IdpJwe extends IdpJoseObject {
 
         jwe.setPlaintext(payload);
         if (key instanceof PublicKey) {
-            jwe.setAlgorithmHeaderValue(KeyManagementAlgorithmIdentifiers.ECDH_ES_A256KW);
+            jwe.setAlgorithmHeaderValue(KeyManagementAlgorithmIdentifiers.ECDH_ES);
         } else {
             jwe.setAlgorithmHeaderValue(KeyManagementAlgorithmIdentifiers.DIRECT);
         }
@@ -85,15 +88,24 @@ public class IdpJwe extends IdpJoseObject {
     }
 
     public JsonWebToken decryptNestedJwt(final Key key) {
-        return new JsonWebToken(decryptJweAndReturnPayloadString(key));
+        setDecryptionKey(key);
+        return new JsonWebToken(getStringBodyClaim(NESTED_JWT)
+            .orElseThrow(() -> new IdpJoseException("Could not find njwt")));
+    }
+
+    @Override
+    public ZonedDateTime getExpiresAt() {
+        return getDateTimeClaim(EXPIRES_AT, this::getHeaderClaims)
+            .orElseThrow();
     }
 
     public String decryptJweAndReturnPayloadString(final Key key) {
         final JsonWebEncryption receiverJwe = new JsonWebEncryption();
 
         receiverJwe.setAlgorithmConstraints(
-            new AlgorithmConstraints(ConstraintType.PERMIT, KeyManagementAlgorithmIdentifiers.DIRECT,
-                KeyManagementAlgorithmIdentifiers.ECDH_ES_A256KW));
+            new AlgorithmConstraints(ConstraintType.PERMIT,
+                KeyManagementAlgorithmIdentifiers.DIRECT,
+                KeyManagementAlgorithmIdentifiers.ECDH_ES));
         receiverJwe.setContentEncryptionAlgorithmConstraints(
             new AlgorithmConstraints(ConstraintType.PERMIT,
                 ContentEncryptionAlgorithmIdentifiers.AES_256_GCM));
@@ -117,6 +129,11 @@ public class IdpJwe extends IdpJoseObject {
         } catch (final JoseException e) {
             throw new IdpJoseException(e);
         }
+    }
+
+    public IdpJwe setDecryptionKey(final Key decryptionKey) {
+        this.decryptionKey = decryptionKey;
+        return this;
     }
 
     @Override

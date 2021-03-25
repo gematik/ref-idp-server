@@ -16,6 +16,7 @@
 
 package de.gematik.idp.server.data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
@@ -30,17 +31,26 @@ import lombok.*;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 @AllArgsConstructor
 @NoArgsConstructor
-public class DeviceInformation {
+public class DeviceInformation implements DataVersion {
 
     @NotBlank
-    private String deviceName;
+    private String name;
     @NotNull
     @Valid
     private DeviceType deviceType;
+    @NotBlank
+    private String deviceInformationDataVersion;
+
 
     @SneakyThrows
     public String toJson() {
         final ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         return ow.writeValueAsString(this);
+    }
+
+    @Override
+    @JsonIgnore
+    public String getDataVersion() {
+        return deviceInformationDataVersion;
     }
 }

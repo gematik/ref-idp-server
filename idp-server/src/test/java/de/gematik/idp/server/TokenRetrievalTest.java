@@ -59,6 +59,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
@@ -374,7 +375,7 @@ public class TokenRetrievalTest {
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
             .isInstanceOf(IdpClientRuntimeException.class)
-            .hasMessageContaining("Server-Response");
+            .hasMessageContaining("2002", "state wurde nicht übermittelt");
     }
 
     @Afo("A_20377")
@@ -413,7 +414,7 @@ public class TokenRetrievalTest {
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
             .isInstanceOf(IdpClientRuntimeException.class)
-            .hasMessageContaining("1020: redirect_uri ist ungültig");
+            .hasMessageContaining("1020", "redirect_uri ist ungültig");
     }
 
     @Test
@@ -422,8 +423,7 @@ public class TokenRetrievalTest {
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
             .isInstanceOf(IdpClientRuntimeException.class)
-            .hasMessageContaining("\"gematik_code\":1022")
-            .hasMessageContaining("\"gematik_error_text\":\"scope ist ungültig\"");
+            .hasMessageContaining("1022", "scope ist ungültig");
     }
 
     @Test
@@ -444,7 +444,7 @@ public class TokenRetrievalTest {
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
             .isInstanceOf(IdpClientRuntimeException.class)
-            .hasMessageContaining("2013: Der Request besitzt keine gültige Signatur");
+            .hasMessageContaining("2013", "Der Request besitzt keine gültige Signatur");
     }
 
     @Test
@@ -465,7 +465,7 @@ public class TokenRetrievalTest {
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
             .isInstanceOf(IdpClientRuntimeException.class)
-            .hasMessageContaining("3010: Authorization Code Signatur ungültig");
+            .hasMessageContaining("3010", "Authorization Code Signatur ungültig");
     }
 
     @Test
@@ -474,8 +474,7 @@ public class TokenRetrievalTest {
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
             .isInstanceOf(IdpClientRuntimeException.class)
-            .hasMessageContaining("\"gematik_code\":1022")
-            .hasMessageContaining("\"gematik_error_text\":\"scope ist ungültig\"");
+            .hasMessageContaining("1022", "scope ist ungültig");
     }
 
     @Test
@@ -552,16 +551,10 @@ public class TokenRetrievalTest {
                     .build())
                 .build();
         });
-        idpClient.setAfterAuthenticationCallback(response -> {
-            assertThat(response.getStatus())
-                .isEqualTo(302);
-            assertThat(UriUtils.extractParameterValue(response.getHeaders().getFirst("Location"), "state"))
-                .isEqualTo(stateReference.get());
-        });
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
             .isInstanceOf(IdpClientRuntimeException.class)
-            .hasMessageContaining("2032: Challenge ist abgelaufen");
+            .hasMessageContaining("2032", "Challenge ist abgelaufen");
     }
 
     @Test
@@ -580,19 +573,18 @@ public class TokenRetrievalTest {
 
         assertThatThrownBy(() -> idpClient.loginWithSsoToken(ssoToken))
             .isInstanceOf(IdpClientRuntimeException.class)
-            .hasMessageContaining("2032: Challenge ist abgelaufen");
+            .hasMessageContaining("2032", "Challenge ist abgelaufen");
     }
 
     @Test
-    public void authenticationWithSso_missingParameter_shouldGiveFound() throws UnirestException {
+    public void authenticationWithSso_missingParameter_shouldGiveError() throws UnirestException {
         final IdpJwe ssoToken = idpClient.login(egkUserIdentity).getSsoToken();
         idpClient.setBeforeAuthenticationMapper(request -> Unirest.post(request.getUrl())
             .multiPartContent().field("ssotoken", request.multiParts().stream()
                 .filter(part -> part.getName().equals("ssotoken"))
                 .findAny().get().getValue().toString())
+            .header(org.springframework.http.HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
         );
-        idpClient.setAfterAuthenticationCallback(response -> assertThat(response.getStatus())
-            .isEqualTo(302));
 
         assertThatThrownBy(() -> idpClient.loginWithSsoToken(ssoToken))
             .isInstanceOf(IdpClientRuntimeException.class);
@@ -603,7 +595,7 @@ public class TokenRetrievalTest {
         @Filename("smcb-idp-expired") final PkiIdentity illegalIdentity) throws UnirestException {
         assertThatThrownBy(() -> idpClient.login(illegalIdentity))
             .isInstanceOf(IdpClientRuntimeException.class)
-            .hasMessageContaining("2020: Das AUT Zertifikat ist ungültig");
+            .hasMessageContaining("2020", "Das AUT Zertifikat ist ungültig");
     }
 
     @Test
@@ -627,7 +619,7 @@ public class TokenRetrievalTest {
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
             .isInstanceOf(IdpClientRuntimeException.class)
-            .hasMessageContaining("3011: Authorization Code ist abgelaufen");
+            .hasMessageContaining("3011", "Authorization Code ist abgelaufen");
     }
 
     @Test
@@ -644,7 +636,7 @@ public class TokenRetrievalTest {
 
         assertThatThrownBy(() -> idpClient.loginWithSsoToken(expiredSsoToken))
             .isInstanceOf(IdpClientRuntimeException.class)
-            .hasMessageContaining("2040: SSO_TOKEN nicht valide, bitte um neuerliche Authentisierung");
+            .hasMessageContaining("2040", "SSO_TOKEN nicht valide, bitte um neuerliche Authentisierung");
     }
 
     @Test
@@ -665,7 +657,7 @@ public class TokenRetrievalTest {
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
             .isInstanceOf(IdpClientRuntimeException.class)
-            .hasMessageContaining("2032: Challenge ist abgelaufen");
+            .hasMessageContaining("2032", "Challenge ist abgelaufen");
     }
 
     @Test

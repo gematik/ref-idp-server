@@ -18,6 +18,7 @@ package de.gematik.idp.test.steps.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
+import de.gematik.idp.test.steps.IdpStepsBase;
 import de.gematik.idp.test.steps.helpers.TestEnvironmentConfigurator;
 import java.io.*;
 import java.math.BigInteger;
@@ -34,7 +35,6 @@ import java.util.Enumeration;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import net.serenitybdd.rest.SerenityRest;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
@@ -103,7 +103,7 @@ public class DiscoveryDocument {
             return null;
         } else if (uri.startsWith("http")) {
             log.info("Retrieving key from URI " + uri);
-            return new JSONObject(SerenityRest.get(uri).getBody().asString());
+            return new JSONObject(IdpStepsBase.simpleGet(uri).getBody().asString());
         } else {
             final int hash = uri.indexOf("#");
             String certalias = null;
@@ -141,9 +141,9 @@ public class DiscoveryDocument {
                 .isEqualTo("brainpoolP256r1");
             final ECPoint generator = bcecPublicKey.getQ();
             json.put("crv", "BP-256"); // hard coded as we assert the curve type above
-            json.put("x", Base64.getEncoder()
+            json.put("x", Base64.getUrlEncoder()
                 .encodeToString(generator.getAffineXCoord().toBigInteger().toByteArray()));
-            json.put("y", Base64.getEncoder()
+            json.put("y", Base64.getUrlEncoder()
                 .encodeToString(generator.getAffineYCoord().toBigInteger().toByteArray()));
             return json;
         }
@@ -160,9 +160,13 @@ public class DiscoveryDocument {
     }
 
     @SneakyThrows
-    public static PublicKey getPublicKeyFromCertFromJWK(final ContextKey key) {
+    public static PublicKey getPublicKeyFromContextKey(final ContextKey key) {
         final JSONObject jwk = new JSONObject(String.valueOf(Context.getThreadContext().get(key)));
+        return getPublicKeyFromJWK(jwk);
+    }
 
+    @SneakyThrows
+    public static PublicKey getPublicKeyFromJWK(final JSONObject jwk) {
         if (!jwk.has("x5c")) {
             assertThat(jwk.getString("kty")).isEqualTo("EC");
             assertThat(jwk.getString("crv")).isEqualTo("BP-256");
@@ -172,7 +176,6 @@ public class DiscoveryDocument {
             final ECPublicKeySpec keySpec = new ECPublicKeySpec(ecPoint, BrainpoolCurves.BP256);
             return KeyFactory.getInstance("EC").generatePublic(keySpec);
         } else {
-
             final String certString = jwk.getJSONArray("x5c").getString(0);
             final byte[] decode = Base64.getDecoder().decode(certString);
             final CertificateFactory certFactory = CertificateFactory.getInstance("X.509", BOUNCY_CASTLE_PROVIDER);

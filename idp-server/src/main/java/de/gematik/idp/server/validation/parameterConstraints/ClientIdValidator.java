@@ -16,9 +16,7 @@
 
 package de.gematik.idp.server.validation.parameterConstraints;
 
-import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.services.ClientRegistrationService;
-import java.util.Objects;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import lombok.RequiredArgsConstructor;

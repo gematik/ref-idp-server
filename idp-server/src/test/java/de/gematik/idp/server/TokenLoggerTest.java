@@ -59,6 +59,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -79,8 +80,6 @@ public class TokenLoggerTest {
     private static final String CODE_SEPERATOR = "\n```\n";
     @Autowired
     private IdpConfiguration idpConfiguration;
-    @Autowired
-    private IdpKey idpSig;
     @Autowired
     private IdpKey idpEnc;
     @Autowired
@@ -193,103 +192,107 @@ public class TokenLoggerTest {
 
     @Test
     public void writeAllTokensToFile() {
-        // Authorization Request
-        idpClient
-            .setBeforeAuthorizationCallback(getRequest -> appendRequestToFile("Authorization Request", getRequest));
+        Assertions.assertDoesNotThrow(() -> {
+            // Authorization Request
+            idpClient
+                .setBeforeAuthorizationCallback(getRequest -> appendRequestToFile("Authorization Request", getRequest));
 
-        // Challenge Token
-        idpClient.setAfterAuthorizationCallback(response -> {
-            appendResponseToFile("Authorization Response", response);
+            // Challenge Token
+            idpClient.setAfterAuthorizationCallback(response -> {
+                appendResponseToFile("Authorization Response", response);
 
-            appendTokenToFile("Challenge Token", response.getBody().getChallenge());
-        });
+                appendTokenToFile("Challenge Token", response.getBody().getChallenge());
+            });
 
-        // Authentication Request
-        idpClient
-            .setBeforeAuthenticationCallback(getRequest -> {
-                    appendRequestToFile("Authentication Request", getRequest);
+            // Authentication Request
+            idpClient
+                .setBeforeAuthenticationCallback(getRequest -> {
+                        appendRequestToFile("Authentication Request", getRequest);
 
-                    appendMultipartAndDecrypt(getRequest.getBody().get().multiParts(), "signed_challenge",
-                        "Challenge Response", idpEnc.getIdentity().getPrivateKey());
-                    appendMultipartAndDecrypt(getRequest.getBody().get().multiParts(), "ssotoken",
-                        "SSO Token", symmetricEncryptionKey);
-                    appendMultipartAndDecrypt(getRequest.getBody().get().multiParts(), "unsigned_challenge",
-                        "Unsigned Challenge", null);
+                        appendMultipartAndDecrypt(getRequest.getBody().get().multiParts(), "signed_challenge",
+                            "Challenge Response", idpEnc.getIdentity().getPrivateKey());
+                        appendMultipartAndDecrypt(getRequest.getBody().get().multiParts(), "ssotoken",
+                            "SSO Token", symmetricEncryptionKey);
+                        appendMultipartAndDecrypt(getRequest.getBody().get().multiParts(), "unsigned_challenge",
+                            "Unsigned Challenge", null);
+                    }
+                );
+
+            // Authorization Code
+            idpClient.setAfterAuthenticationCallback(response -> {
+                    appendResponseToFile("Authentication Response", response);
+                    final Map<String, String> parameterMap = extractParameterMap(
+                        response.getHeaders().getFirst("Location"));
+
+                    if (parameterMap.containsKey("code")) {
+                        appendJwe(new IdpJwe(parameterMap.get("code")), "Authorization Code",
+                            symmetricEncryptionKey);
+                    }
+
+                    if (parameterMap.containsKey("ssotoken")) {
+                        appendJwe(new IdpJwe(parameterMap.get("ssotoken")), "SSO Token", symmetricEncryptionKey);
+                    }
                 }
             );
 
-        // Authorization Code
-        idpClient.setAfterAuthenticationCallback(response -> {
-                appendResponseToFile("Authentication Response", response);
-                final Map<String, String> parameterMap = extractParameterMap(response.getHeaders().getFirst("Location"));
+            final AtomicReference<Key> clientTokenKey = new AtomicReference<>();
 
-                if (parameterMap.containsKey("code")) {
-                    appendJwe(new IdpJwe(parameterMap.get("code")), "Authorization Code", symmetricEncryptionKey);
+            // Token Request
+            idpClient.setBeforeTokenCallback(getRequest -> {
+                    appendRequestToFile("Token Request", getRequest);
+                    final IdpJwe keyVerifier = getRequest.getBody().get().multiParts().stream()
+                        .filter(p -> p.getName().equals("key_verifier"))
+                        .map(p -> new IdpJwe(p.getValue().toString()))
+                        .findAny().get();
+
+                    appendTokenToFile("Key verifier (Encryption Header)", keyVerifier);
+                    keyVerifier.setDecryptionKey(idpEnc.getIdentity().getPrivateKey());
+
+                    appendToFile(
+                        "Key verifier (Body)\n\n" + CODE_SEPERATOR + prettyPrintJsonString(
+                            gson.toJson(keyVerifier.getBodyClaims()), "") + CODE_SEPERATOR + "\n");
+                    clientTokenKey.set(new SecretKeySpec(
+                        Base64.getUrlDecoder().decode(keyVerifier.getStringBodyClaim(ClaimName.TOKEN_KEY).get()),
+                        "AES"));
                 }
+            );
 
-                if (parameterMap.containsKey("ssotoken")) {
-                    appendJwe(new IdpJwe(parameterMap.get("ssotoken")), "SSO Token", symmetricEncryptionKey);
-                }
-            }
-        );
+            idpClient.setAfterTokenCallback(response -> {
+                appendResponseToFile("Token Response", response);
 
-        final AtomicReference<Key> clientTokenKey = new AtomicReference<>();
+                final JSONObject responseObject = response.getBody().getObject();
+                final IdpJwe accessToken = new IdpJwe(responseObject.getString("access_token"));
+                appendTokenToFile("Access Token (Encryption Header)", accessToken);
+                appendTokenToFile("Access Token (Decrypted)", accessToken.decryptNestedJwt(clientTokenKey.get()));
 
-        // Token Request
-        idpClient.setBeforeTokenCallback(getRequest -> {
-                appendRequestToFile("Token Request", getRequest);
-                final IdpJwe keyVerifier = getRequest.getBody().get().multiParts().stream()
-                    .filter(p -> p.getName().equals("key_verifier"))
-                    .map(p -> new IdpJwe(p.getValue().toString()))
-                    .findAny().get();
+                final IdpJwe idToken = new IdpJwe(responseObject.getString("id_token"));
+                appendTokenToFile("ID Token (Encryption Header)", idToken);
+                appendTokenToFile("ID Token (Decrypted)", idToken.decryptNestedJwt(clientTokenKey.get()));
+            });
+            addSeperator("# Basic FLOW", "=");
+            appendToFile("Log-In attempt using egk with DN '"
+                + egkUserIdentity.getCertificate().getSubjectX500Principal().toString() + "'\n\n\n");
 
-                appendTokenToFile("Key verifier (Encryption Header)", keyVerifier);
-                keyVerifier.setDecryptionKey(idpEnc.getIdentity().getPrivateKey());
+            final IdpJwe ssoToken = idpClient.login(egkUserIdentity).getSsoToken();
 
-                appendToFile(
-                    "Key verifier (Body)\n\n" + CODE_SEPERATOR + prettyPrintJsonString(
-                        gson.toJson(keyVerifier.getBodyClaims()), "") + CODE_SEPERATOR + "\n");
-                clientTokenKey.set(new SecretKeySpec(
-                    Base64.getUrlDecoder().decode(keyVerifier.getStringBodyClaim(ClaimName.TOKEN_KEY).get()),
-                    "AES"));
-            }
-        );
+            addSeperator("# SSO Flow", "=");
 
-        idpClient.setAfterTokenCallback(response -> {
-            appendResponseToFile("Token Response", response);
+            idpClient.loginWithSsoToken(ssoToken);
 
-            final JSONObject responseObject = response.getBody().getObject();
-            final IdpJwe accessToken = new IdpJwe(responseObject.getString("access_token"));
-            appendTokenToFile("Access Token (Encryption Header)", accessToken);
-            appendTokenToFile("Access Token (Decrypted)", accessToken.decryptNestedJwt(clientTokenKey.get()));
+            // Discovery Document
+            final HttpResponse<String> ddResponse = Unirest.get(idpClient.getDiscoveryDocumentUrl()).asString();
 
-            final IdpJwe idToken = new IdpJwe(responseObject.getString("id_token"));
-            appendTokenToFile("ID Token (Encryption Header)", idToken);
-            appendTokenToFile("ID Token (Decrypted)", idToken.decryptNestedJwt(clientTokenKey.get()));
+            addSeperator("# Discovery Document", "=");
+            final JsonWebToken dd = new JsonWebToken(ddResponse.getBody());
+            appendResponseToFile(idpClient.getDiscoveryDocumentUrl(), ddResponse);
+
+            // JWKS
+            final String jwksUri = dd.getBodyClaims().get("jwks_uri").toString();
+            final HttpResponse<JsonNode> jwksResponse = Unirest.get(jwksUri).asJson();
+
+            addSeperator("# JWKS", "=");
+            appendResponseToFile(jwksUri, jwksResponse);
         });
-        addSeperator("# Basic FLOW", "=");
-        appendToFile("Log-In attempt using egk with DN '"
-            + egkUserIdentity.getCertificate().getSubjectX500Principal().toString() + "'\n\n\n");
-
-        final IdpJwe ssoToken = idpClient.login(egkUserIdentity).getSsoToken();
-
-        addSeperator("# SSO Flow", "=");
-
-        idpClient.loginWithSsoToken(ssoToken);
-
-        // Discovery Document
-        final HttpResponse<String> ddResponse = Unirest.get(idpClient.getDiscoveryDocumentUrl()).asString();
-
-        addSeperator("# Discovery Document", "=");
-        final JsonWebToken dd = new JsonWebToken(ddResponse.getBody());
-        appendResponseToFile(idpClient.getDiscoveryDocumentUrl(), ddResponse);
-
-        // JWKS
-        final String jwksUri = dd.getBodyClaims().get("jwks_uri").toString();
-        final HttpResponse<JsonNode> jwksResponse = Unirest.get(jwksUri).asJson();
-
-        addSeperator("# JWKS", "=");
-        appendResponseToFile(jwksUri, jwksResponse);
     }
 
     private void appendMultipartAndDecrypt(

@@ -29,7 +29,9 @@ import de.gematik.idp.field.ClaimName;
 import java.io.IOException;
 import java.security.Key;
 import java.security.PublicKey;
+import java.time.ZonedDateTime;
 import java.util.Map;
+import java.util.Optional;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.jose4j.jwt.consumer.ErrorCodes;
@@ -77,8 +79,26 @@ public class JsonWebToken extends IdpJoseObject {
     }
 
     public IdpJwe encrypt(final Key key) {
-        return IdpJwe.createWithPayloadAndExpiryAndEncryptWithKey(getRawString(),
-            getBodyDateTimeClaim(ClaimName.EXPIRES_AT), key, "JWT");
+        return IdpJwe.createWithPayloadAndExpiryAndEncryptWithKey("{\"njwt\":\"" + getRawString() + "\"}",
+            findExpClaimInNestedJwts(), key, "JWT");
+    }
+
+    public Optional<ZonedDateTime> findExpClaimInNestedJwts() {
+        final Optional<ZonedDateTime> expClaim = getBodyDateTimeClaim(ClaimName.EXPIRES_AT);
+        if (expClaim.isPresent()) {
+            return expClaim;
+        } else {
+            final Optional<Object> njwtClaim = getBodyClaim(ClaimName.NESTED_JWT);
+            if (njwtClaim.isPresent()) {
+                try {
+                    return new JsonWebToken(njwtClaim.get().toString())
+                        .findExpClaimInNestedJwts();
+                } catch (final Exception e) {
+                    return Optional.empty();
+                }
+            }
+            return Optional.empty();
+        }
     }
 
     @Override

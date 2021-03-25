@@ -16,9 +16,7 @@
 
 package de.gematik.idp.token;
 
-import static de.gematik.idp.field.ClaimName.CONFIRMATION;
-import static de.gematik.idp.field.ClaimName.CONTENT_TYPE;
-import static de.gematik.idp.field.ClaimName.ENCRYPTION_ALGORITHM;
+import static de.gematik.idp.field.ClaimName.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import de.gematik.idp.authentication.IdpJwtProcessor;
@@ -29,6 +27,7 @@ import de.gematik.idp.tests.PkiKeyResolver.Filename;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.api.InstanceOfAssertFactories;
@@ -153,5 +152,47 @@ public class JsonWebTokenTest {
             .decryptNestedJwt(aesKey).getBodyClaim(CONFIRMATION))
             .get()
             .isEqualTo("foobarschmar");
+    }
+
+    @Test
+    public void encryptJwt_shouldHaveNjwtClaim() {
+        final Map<String, Object> bodyClaims = idpJwtProcessor.buildJwt(new JwtBuilder()
+            .addAllBodyClaims(Map.of("foo", "bar")))
+            .encrypt(aesKey)
+            .setDecryptionKey(aesKey)
+            .extractBodyClaims();
+
+        assertThat(bodyClaims)
+            .containsOnlyKeys(NESTED_JWT.getJoseName());
+    }
+
+    @Test
+    public void encryptJwt_shouldHaveExpClaimForNestedJwt() {
+        final long expValue = 1234567l;
+        final Optional<Object> expHeaderClaim = idpJwtProcessor.buildJwt(new JwtBuilder()
+            .addAllBodyClaims(Map.of(EXPIRES_AT.getJoseName(), expValue)))
+            .encrypt(aesKey)
+            .getHeaderClaim(EXPIRES_AT);
+
+        assertThat(expHeaderClaim)
+            .isPresent()
+            .get()
+            .isEqualTo(expValue);
+    }
+
+    @Test
+    public void encryptJwt_shouldHaveExpClaimForNestedNestedJwt() {
+        final long expValue = 1234567l;
+        final JsonWebToken innerJwt = idpJwtProcessor.buildJwt(new JwtBuilder()
+            .addAllBodyClaims(Map.of(EXPIRES_AT.getJoseName(), expValue)));
+        final Optional<Object> expHeaderClaim = idpJwtProcessor.buildJwt(new JwtBuilder()
+            .addAllBodyClaims(Map.of(NESTED_JWT.getJoseName(), innerJwt.getRawString())))
+            .encrypt(aesKey)
+            .getHeaderClaim(EXPIRES_AT);
+
+        assertThat(expHeaderClaim)
+            .isPresent()
+            .get()
+            .isEqualTo(expValue);
     }
 }

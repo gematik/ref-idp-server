@@ -16,9 +16,12 @@
 
 package de.gematik.idp.token;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TokenBuilderUtil {
 
     public static String buildSubjectClaim(final String audClaim, final String idNummerClaim,

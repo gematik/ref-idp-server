@@ -109,7 +109,8 @@ public class DiscoveryDocumentTest {
                 "iat",
                 "uri_puk_idp_enc",
                 "uri_puk_idp_sig",
-                "uri_disc");
+                "uri_disc",
+                "code_challenge_methods_supported");
     }
 
     @Remark("Ruecksprache mit Tommy in IDP-123, wir verwenden pairwise")
@@ -243,6 +244,17 @@ public class DiscoveryDocumentTest {
     public void testValueIssuedAt() throws UnirestException {
         assertThat(retrieveAndParseDiscoveryDocument().getIssuedAt())
             .isBetween(ZonedDateTime.now().minusMinutes(1), ZonedDateTime.now());
+    }
+
+    @Remark("Nach RFC 8414, wir verwenden S256, Section 2")
+    @Rfc("https://tools.ietf.org/html/rfc8414")
+    @Test
+    public void testValueForCodeChallengeMethodsSupported() throws UnirestException {
+        final List<String> codeChallengeMethodsSupported = (List) extractClaimMapFromResponse(
+            retrieveDiscoveryDocument())
+            .get("code_challenge_methods_supported");
+        assertThat(codeChallengeMethodsSupported)
+            .containsExactlyInAnyOrder("S256");
     }
 
     @Test

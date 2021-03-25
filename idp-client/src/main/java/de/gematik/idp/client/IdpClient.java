@@ -16,16 +16,28 @@
 
 package de.gematik.idp.client;
 
+import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
+import static de.gematik.idp.crypto.KeyAnalysis.isEcKey;
+import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.authentication.AuthenticationResponseBuilder;
 import de.gematik.idp.authentication.UriUtils;
 import de.gematik.idp.client.data.*;
 import de.gematik.idp.crypto.model.PkiIdentity;
+import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.field.CodeChallengeMethod;
 import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.token.IdpJwe;
+import de.gematik.idp.token.JsonWebToken;
+import java.security.cert.X509Certificate;
+import java.util.Base64;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -38,9 +50,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.jwt.JwtClaims;
+import org.jose4j.lang.JoseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
 
 @Data
 @ToString
@@ -80,9 +96,56 @@ public class IdpClient implements IIdpClient {
     private Function<AuthenticationResponse, AuthenticationResponse> authenticationResponseMapper = Function.identity();
     private DiscoveryDocumentResponse discoveryDocumentResponse;
 
+    private String signServerChallenge(final String challengeToSign, final X509Certificate certificate,
+        final Function<Pair<String, String>, String> contentSigner) {
+        final JwtClaims claims = new JwtClaims();
+        claims.setClaim(ClaimName.NESTED_JWT.getJoseName(), challengeToSign);
+        final JsonWebSignature jsonWebSignature = new JsonWebSignature();
+        jsonWebSignature.setPayload(claims.toJson());
+        jsonWebSignature.setHeader("typ", "JWT");
+        jsonWebSignature.setHeader("cty", "NJWT");
+        if (isEcKey(certificate.getPublicKey())) {
+            jsonWebSignature.setAlgorithmHeaderValue(BRAINPOOL256_USING_SHA256);
+        } else {
+            jsonWebSignature.setAlgorithmHeaderValue(RSA_PSS_USING_SHA256);
+        }
+        return new JsonWebToken(
+            contentSigner.apply(Pair.of(
+                jsonWebSignature.getHeaders().getEncodedHeader(),
+                jsonWebSignature.getEncodedPayload())))
+            .encrypt(discoveryDocumentResponse.getIdpEnc())
+            .getRawString();
+    }
+
     @Override
     public IdpTokenResult login(final PkiIdentity idpIdentity) {
         assertThatIdpIdentityIsValid(idpIdentity);
+        return login(idpIdentity.getCertificate(),
+            jwtPair -> {
+                final JsonWebSignature jws = new JsonWebSignature();
+                jws.setPayload(new String(Base64.getUrlDecoder().decode(jwtPair.getRight())));
+                Optional.ofNullable(jwtPair.getLeft())
+                    .map(b64Header -> new String(Base64.getUrlDecoder().decode(b64Header)))
+                    .map(JsonParser::parseString)
+                    .map(JsonElement::getAsJsonObject)
+                    .map(JsonObject::entrySet)
+                    .stream()
+                    .flatMap(Set::stream)
+                    .forEach(entry -> jws.setHeader(entry.getKey(),
+                        entry.getValue().getAsString()));
+
+                jws.setCertificateChainHeaderValue(idpIdentity.getCertificate());
+                jws.setKey(idpIdentity.getPrivateKey());
+                try {
+                    return jws.getCompactSerialization();
+                } catch (final JoseException e) {
+                    throw new IdpClientRuntimeException("Error during encryption", e);
+                }
+            });
+    }
+
+    public IdpTokenResult login(final X509Certificate certificate,
+        final Function<Pair<String, String>, String> contentSigner) {
         assertThatClientIsInitialized();
 
         final String codeVerifier = ClientUtilities.generateCodeVerifier();
@@ -115,9 +178,10 @@ public class IdpClient implements IIdpClient {
                 .performAuthentication(AuthenticationRequest.builder()
                         .authenticationEndpointUrl(
                             discoveryDocumentResponse.getAuthorizationEndpoint())
-                        .signedChallenge(
-                            signChallenge(authorizationResponse.getAuthenticationChallenge(),
-                                idpIdentity))
+                        .signedChallenge(new IdpJwe(
+                            signServerChallenge(
+                                authorizationResponse.getAuthenticationChallenge().getChallenge().getRawString(),
+                                certificate, contentSigner)))
                         .build(),
                     beforeAuthenticationMapper,
                     afterAuthenticationCallback));

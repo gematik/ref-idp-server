@@ -16,7 +16,6 @@
 
 package de.gematik.idp.server.exceptions.handler;
 
-import de.gematik.idp.IdpConstants;
 import de.gematik.idp.data.IdpErrorResponse;
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.exceptions.IdpJoseException;
@@ -30,7 +29,6 @@ import de.gematik.idp.token.JsonWebToken;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.Optional;
@@ -43,23 +41,21 @@ import javax.validation.ValidationException;
 import javax.ws.rs.core.UriBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.dao.NonTransientDataAccessException;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.util.UriUtils;
 
 @ControllerAdvice
@@ -81,7 +77,7 @@ public class IdpServerExceptionHandler {
         }
         logEntry(body, exc);
 
-        if (isAuthorizationRequest(request)) {
+        if (exc.getStatus().is3xxRedirection()) {
             return buildForwardingError(body, request, response, exc);
         }
         return new ResponseEntity<>(body, getHeader(), exc.getStatus());
@@ -140,18 +136,6 @@ public class IdpServerExceptionHandler {
         }
     }
 
-    private boolean isAuthorizationRequest(final WebRequest webRequest) {
-        if (!(webRequest instanceof ServletWebRequest)) {
-            return false;
-        }
-        final ServletWebRequest servletWebRequest = (ServletWebRequest) webRequest;
-        final Path normalizedRequestPath = Path.of(servletWebRequest.getRequest().getRequestURI()).normalize();
-        final boolean isForwardingEnpointUrl =
-            normalizedRequestPath.equals(Path.of(IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)) ||
-                normalizedRequestPath.equals(Path.of(IdpConstants.SSO_ENDPOINT));
-        return isForwardingEnpointUrl && servletWebRequest.getHttpMethod() == HttpMethod.POST;
-    }
-
     @ExceptionHandler({ConstraintViolationException.class, ValidationException.class,
         MethodArgumentNotValidException.class, IdpJoseException.class})
     public ResponseEntity<IdpErrorResponse> handleValidationException(final Exception exc,
@@ -182,7 +166,7 @@ public class IdpServerExceptionHandler {
             .filter(idpConfiguration.getErrors().getErrorCodeMap()::containsKey)
             .map(idpConfiguration.getErrors().getErrorCodeMap()::get)
             .map(errorCode -> new IdpServerException(errorCode, exc))
-            .findAny();
+            .findFirst();
     }
 
     private Optional<IdpServerException> tryToExtractErrorCodeFromExceptionMessageAndConvertToIdpException(
@@ -196,8 +180,7 @@ public class IdpServerExceptionHandler {
             .map(errorCode -> new IdpServerException(errorCode, exc));
     }
 
-    private Optional<IdpServerException> tryToMapJoseExceptionToIdpException(
-        final Exception exc) {
+    private Optional<IdpServerException> tryToMapJoseExceptionToIdpException(final Exception exc) {
         return Optional.of(exc)
             .map(Exception::getClass)
             .map(Class::getSimpleName)
@@ -214,8 +197,9 @@ public class IdpServerExceptionHandler {
                 HttpStatus.INTERNAL_SERVER_ERROR), request, response);
     }
 
-    @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
-    public ResponseEntity<IdpErrorResponse> handleHttpMediaTypeNotAcceptableException() {
+    @ExceptionHandler({HttpMediaTypeNotAcceptableException.class, HttpMediaTypeNotSupportedException.class})
+    public ResponseEntity<IdpErrorResponse> handleHttpMediaTypeNotAcceptableException(final Exception exc) {
+        log.debug("", exc);
         return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
     }
 
@@ -230,18 +214,13 @@ public class IdpServerExceptionHandler {
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<IdpErrorResponse> handleMissingServletRequestParameter(
         final MissingServletRequestParameterException ex, final WebRequest request,
-        final HttpServletResponse response, final HandlerMethod handlerMethod) {
-        if (idpConfiguration.getErrors().getGenericErrorMap().containsKey(ex.getParameterName())) {
-            return new ResponseEntity(idpConfiguration.getErrors().getGenericErrorMap().get(ex.getParameterName())
-                .toBuilder()
-                .errorUuid(UUID.randomUUID().toString())
-                .timestamp(String.valueOf(ZonedDateTime.now().toEpochSecond()))
-                .build(), getHeader(), HttpStatus.BAD_REQUEST);
-        }
-
+        final HttpServletResponse response) {
         return handleIdpServerException(
-            new IdpServerException(ex.getMessage(), ex, IdpErrorType.INVALID_REQUEST,
-                HttpStatus.BAD_REQUEST), request, response);
+            Optional.ofNullable(idpConfiguration.getErrors().getGenericErrorMap().get(ex.getParameterName()))
+                .map(resp -> new IdpServerException(resp, ex))
+                .orElseGet(() -> new IdpServerException(ex.getMessage(), ex, IdpErrorType.INVALID_REQUEST,
+                    HttpStatus.BAD_REQUEST)),
+            request, response);
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
@@ -261,8 +240,8 @@ public class IdpServerExceptionHandler {
     private HttpHeaders getHeader() {
         final HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8");
-        responseHeaders.add(HttpHeaders.CACHE_CONTROL, "no-store");
-        responseHeaders.add(HttpHeaders.PRAGMA, "no-cache");
+        responseHeaders.remove(HttpHeaders.CACHE_CONTROL);
+        responseHeaders.remove(HttpHeaders.PRAGMA);
         return responseHeaders;
     }
 

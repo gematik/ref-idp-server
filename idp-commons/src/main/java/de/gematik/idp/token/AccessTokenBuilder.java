@@ -18,7 +18,6 @@ package de.gematik.idp.token;
 
 import static de.gematik.idp.field.ClaimName.*;
 import static de.gematik.idp.token.TokenBuilderUtil.buildSubjectClaim;
-
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtBuilder;
@@ -30,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.Data;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jose4j.jwt.NumericDate;
 
@@ -65,8 +65,8 @@ public class AccessTokenBuilder {
             .orElseThrow(() -> new RequiredClaimException("Unable to obtain " + CLIENT_ID.getJoseName() + "!")));
         claimsMap.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
         claimsMap.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(),
-            authenticationToken.getStringBodyClaim(AUTHENTICATION_METHODS_REFERENCE)
-                .orElse("[\"mfa\", \"sc\", \"pin\"]"));
+            authenticationToken.getBodyClaim(AUTHENTICATION_METHODS_REFERENCE)
+                .orElse(getAmrString()));
         claimsMap.put(EXPIRES_AT.getJoseName(), NumericDate.fromSeconds(now.plusMinutes(5).toEpochSecond()).getValue());
 
         final Map<String, Object> headerClaimsMap = new HashMap<>();
@@ -75,5 +75,10 @@ public class AccessTokenBuilder {
         return jwtProcessor.buildJwt(new JwtBuilder()
             .replaceAllBodyClaims(claimsMap)
             .replaceAllHeaderClaims(headerClaimsMap));
+    }
+
+    @SneakyThrows
+    private String[] getAmrString() {
+        return new String[]{"mfa", "sc", "pin"};
     }
 }

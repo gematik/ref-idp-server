@@ -30,6 +30,10 @@ import org.json.JSONObject;
 
 public class IdpAuthenticationSteps extends IdpStepsBase {
 
+    public void setCodeVerifier(final String codeverifier) {
+        Context.getThreadContext().put(ContextKey.CODE_VERIFIER, codeverifier);
+    }
+
     @SneakyThrows
     public String generateCodeChallenge(final String codeVerifier) {
         final byte[] bytes = codeVerifier.getBytes(StandardCharsets.UTF_8);
@@ -43,11 +47,11 @@ public class IdpAuthenticationSteps extends IdpStepsBase {
             ctxt.put(ContextKey.CLIENT_ID, cid);
         }
         ctxt.put(ContextKey.RESPONSE, requestResponseAndAssertStatus(
-            Context.getDiscoveryDocument().getAuthorizationEndpoint(), null, HttpMethods.GET, mapParsedParams, null,
-            status));
+            Context.getDiscoveryDocument().getAuthorizationEndpoint(), null, HttpMethods.GET,
+            mapParsedParams, null, status));
 
         final HttpStatus responseStatus = new HttpStatus(Context.getCurrentResponse().getStatusCode());
-        if (responseStatus.isError()) {
+        if (responseStatus.isError() || responseStatus.is3xxRedirection()) {
             ctxt.put(ContextKey.CHALLENGE, null);
             ctxt.put(ContextKey.USER_CONSENT, null);
         } else {

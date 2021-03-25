@@ -75,6 +75,7 @@ public class KeyConfiguration {
                 StreamUtils.copyToByteArray(inputStream), "00");
 
             pkiIdentity.setKeyId(Optional.ofNullable(keyConfiguration.getKeyId()));
+            pkiIdentity.setUse(Optional.ofNullable(keyConfiguration.getUse()));
             return new IdpKey(pkiIdentity);
         } catch (final IOException e) {
             throw new IdpServerStartupException(

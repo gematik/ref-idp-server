@@ -1,0 +1,176 @@
+package de.gematik.idp.test.steps.helpers;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.fail;
+
+import de.gematik.idp.test.steps.model.Context;
+import de.gematik.idp.test.steps.model.ContextKey;
+import de.gematik.idp.test.steps.model.DiscoveryDocument;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.security.*;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Date;
+import java.util.Map.Entry;
+import lombok.SneakyThrows;
+import org.apache.commons.collections.IteratorUtils;
+import org.assertj.core.api.Assertions;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.PEMParser;
+import org.jose4j.jwa.AlgorithmConstraints;
+import org.jose4j.jwa.AlgorithmConstraints.ConstraintType;
+import org.jose4j.jwe.ContentEncryptionAlgorithmIdentifiers;
+import org.jose4j.jwe.JsonWebEncryption;
+import org.jose4j.jwe.KeyManagementAlgorithmIdentifiers;
+import org.jose4j.jwt.consumer.InvalidJwtException;
+import org.jose4j.jwt.consumer.JwtConsumer;
+import org.jose4j.jwt.consumer.JwtConsumerBuilder;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+public class KeyAndCertificateStepsHelper {
+
+    public KeyAndCertificateStepsHelper() {
+    }
+
+    public X509Certificate readCertFrom(final String certFile)
+        throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException {
+        final InputStream is = getClass().getResourceAsStream(certFile);
+        Assertions.assertThat(is).withFailMessage("Unable to locate cert resource '" + certFile + "'").isNotNull();
+        final KeyStore keyStore = KeyStore.getInstance("pkcs12", new BouncyCastleProvider());
+        try (final ByteArrayInputStream bis = new ByteArrayInputStream(is.readAllBytes())) {
+            keyStore.load(bis, "00".toCharArray());
+        }
+        return (X509Certificate) keyStore.getCertificate(keyStore.aliases().nextElement());
+    }
+
+    public Key readPrivateKeyFromKeyStore(final String keyStoreFileName)
+        throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException {
+        final InputStream is = getClass().getResourceAsStream(keyStoreFileName);
+        Assertions.assertThat(is).withFailMessage("Unable to locate key resource '" + keyStoreFileName + "'")
+            .isNotNull();
+        final KeyStore keyStore = KeyStore.getInstance("pkcs12", new BouncyCastleProvider());
+        keyStore.load(new ByteArrayInputStream(is.readAllBytes()), "00".toCharArray());
+        return keyStore.getKey(keyStore.aliases().nextElement(), "00".toCharArray());
+    }
+
+    @SneakyThrows
+    public PrivateKey readPrivatKeyFromPkcs8(final String keyFile) {
+        final InputStream is = getClass().getResourceAsStream(keyFile);
+        Assertions.assertThat(is).withFailMessage("Unable to locate key resource '" + keyFile + "'").isNotNull();
+        final PKCS8EncodedKeySpec privKeySpec = new PKCS8EncodedKeySpec(is.readAllBytes());
+        final KeyFactory factory = KeyFactory.getInstance("EC");
+        return factory.generatePrivate(privKeySpec);
+    }
+
+    @SneakyThrows
+    public SubjectPublicKeyInfo readSubjectPublicKeyInfoFromPem(final String keyFile) {
+        final InputStream is = getClass().getResourceAsStream(keyFile);
+        final PEMParser pemParser = new PEMParser(new InputStreamReader(is));
+        return SubjectPublicKeyInfo.getInstance(pemParser.readObject());
+    }
+
+    @SafeVarargs
+    @SneakyThrows
+    public final String encrypt(final String payload, final Key puk,
+        final Entry<String, Object>... additionalHeaderValues) {
+        final JsonWebEncryption jwe = new JsonWebEncryption();
+        jwe.setPlaintext(payload);
+        if (puk instanceof PublicKey) {
+            jwe.setAlgorithmHeaderValue(KeyManagementAlgorithmIdentifiers.ECDH_ES);
+        } else {
+            jwe.setAlgorithmHeaderValue(KeyManagementAlgorithmIdentifiers.DIRECT);
+        }
+        jwe.setEncryptionMethodHeaderParameter(ContentEncryptionAlgorithmIdentifiers.AES_256_GCM);
+        jwe.setKey(puk);
+        for (final Entry<String, Object> entry : additionalHeaderValues) {
+            if (entry != null) {
+                jwe.setHeader(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return jwe.getCompactSerialization();
+    }
+
+    @SneakyThrows
+    public String decryptAndExtractNjwt(final String payload, final Key puk) {
+        return new JSONObject(decrypt(payload, puk))
+            .getString("njwt");
+    }
+
+    @SneakyThrows
+    public String decrypt(final String payload, final Key puk) {
+        final JsonWebEncryption receiverJwe = new JsonWebEncryption();
+
+        receiverJwe.setAlgorithmConstraints(
+            new AlgorithmConstraints(ConstraintType.PERMIT, KeyManagementAlgorithmIdentifiers.DIRECT,
+                KeyManagementAlgorithmIdentifiers.ECDH_ES));
+        receiverJwe.setContentEncryptionAlgorithmConstraints(
+            new AlgorithmConstraints(ConstraintType.PERMIT,
+                ContentEncryptionAlgorithmIdentifiers.AES_256_GCM));
+
+        receiverJwe.setCompactSerialization(payload);
+        receiverJwe.setKey(puk);
+        return receiverJwe.getPlaintextString();
+    }
+
+    public void assertJWTIsSignedWithCertificate(final String jwt, final Certificate cert) {
+        final PublicKey publicKey = cert.getPublicKey();
+        final JwtConsumer jwtConsumer = new JwtConsumerBuilder()
+            .setVerificationKey(publicKey)
+            .setSkipDefaultAudienceValidation()
+            .build();
+        try {
+            jwtConsumer.process(jwt).getJwtClaims().getClaimsMap();
+        } catch (final InvalidJwtException ije) {
+            fail("Checking signature failed", ije);
+        }
+    }
+
+    public void assertContextIsSignedWithCertificate(final ContextKey key, final ContextKey certName)
+        throws CertificateException, JSONException {
+        final Certificate cert = DiscoveryDocument.getCertificateFromJWK(
+            (JSONObject) Context.getThreadContext().get(certName));
+        assertJWTIsSignedWithCertificate(Context.getThreadContext().get(key).toString(), cert);
+    }
+
+    @SneakyThrows
+    public void jsonObjectShouldBeValidCertificate(final JSONObject jsonObject) {
+        final X509Certificate cert = DiscoveryDocument.getCertificateFromJWK(jsonObject);
+
+        // check for self signed
+        assertThatThrownBy(() -> cert.verify(cert.getPublicKey())).isInstanceOf(SignatureException.class);
+        assertThat(cert.getSubjectDN().getName()).isNotEqualTo(cert.getIssuerDN().getName());
+
+        // TODO pkilib check revocation of cert once pkilib is able to do it
+
+        // check for outdated
+        cert.checkValidity(new Date());
+    }
+
+    @SneakyThrows
+    public void jsonArrayPathShouldContainValidCertificatesWithKeyId(final String arrStr, final String keyid) {
+        final JSONObject json = new JSONObject(Context.getCurrentResponse().getBody().asString());
+        assertThat(IteratorUtils.toArray(json.keys())).contains(arrStr);
+        assertThat(json.get(arrStr)).isInstanceOf(JSONArray.class);
+        final JSONArray jarr = json.getJSONArray(arrStr);
+        for (int i = 0; i < jarr.length(); i++) {
+            final JSONObject jsonCert = jarr.getJSONObject(i);
+            if (jsonCert.getString("kid").equals(keyid)) {
+                jsonObjectShouldBeValidCertificate(jsonCert);
+            }
+        }
+    }
+
+    public void jsonObjectShouldBeValidPublicKey(final JSONObject jsonObject) {
+        DiscoveryDocument.getPublicKeyFromJWK(jsonObject);
+    }
+}

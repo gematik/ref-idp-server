@@ -20,11 +20,12 @@ import static de.gematik.idp.IdpConstants.ALTERNATIVE_AUTHORIZATION_ENDPOINT;
 import static de.gematik.idp.IdpConstants.BASIC_AUTHORIZATION_ENDPOINT;
 import static de.gematik.idp.IdpConstants.SSO_ENDPOINT;
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
-
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
+import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.server.ServerUrlService;
 import de.gematik.idp.server.data.TokenResponse;
+import de.gematik.idp.server.exceptions.IdpServerException;
 import de.gematik.idp.server.services.IdpAuthenticator;
 import de.gematik.idp.server.services.TokenService;
 import de.gematik.idp.server.validation.clientSystem.ValidateClientSystem;
@@ -45,6 +46,7 @@ import javax.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import net.dracoblue.spring.web.mvc.method.annotation.HttpResponseHeader;
 import net.dracoblue.spring.web.mvc.method.annotation.HttpResponseHeaders;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -71,13 +73,13 @@ public class IdpController {
     private final IdpAuthenticator idpAuthenticator;
     private final TokenService tokenService;
 
-    @GetMapping(value = BASIC_AUTHORIZATION_ENDPOINT, consumes = {MediaType.ALL_VALUE,
-        MediaType.APPLICATION_JSON_VALUE, "application/*"})
+    @GetMapping(value = BASIC_AUTHORIZATION_ENDPOINT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(httpMethod = "GET", value = "Endpunkt für Authentifizierung", notes = "Die übergebenen Parameter"
         + " werden zu einer Liste von JWTClaims zusammengefasst und daraus dann die zurückgelieferte "
         + "AuthenticationChallenge gebaut.", response = AuthenticationChallenge.class)
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Erfolgreich Daten für Autorisierung erhalten"),
+        @ApiResponse(responseCode = "302", description = "Ungültige Anfrage (Parameter fehlen/ungültig)"),
         @ApiResponse(responseCode = "400", description = "Ungültige Anfrage (Parameter fehlen/ungültig)"),
         @ApiResponse(responseCode = "401", description = "Nicht autorisierter Zugriff"),
         @ApiResponse(responseCode = "403", description = "Nicht erlaubter Zugriff"),
@@ -85,14 +87,14 @@ public class IdpController {
     })
     @ValidateClientSystem
     public AuthenticationChallenge getAuthenticationChallenge(
-        @RequestParam(name = "client_id") @CheckClientId @ApiParam(value = "Identifier für den zugreifenden Client") final String clientId,
-        @RequestParam(name = "state") @ApiParam(value = "Eine Sicherheitsmaßnahme gegen CSRF-Angriffe") @NotEmpty(message = "2006") final String state,
-        @RequestParam(name = "redirect_uri") @ApiParam(value = "TODO redirect_uri") final String redirectUri,
-        @RequestParam(name = "nonce", required = false) @ApiParam(value = "TODO nonce") @Pattern(regexp = ".+", message = "2007") final String nonce,
-        @RequestParam(name = "response_type") @NotNull(message = "2004") @Pattern(regexp = "code", message = "2005") @ApiParam(value = "response_type, muss 'code' sein") final String responseType,
-        @RequestParam(name = "code_challenge") @NotNull(message = "2009") @Pattern(regexp = SHA256_AS_BASE64_REGEX, message = "2010") @ApiParam(value = "Authentifizierungscode") final String codeChallenge,
-        @RequestParam(name = "code_challenge_method") @Pattern(regexp = "S256", message = "2008") @ApiParam(value = "Hash Methode für die Code challenge, derzeit wird nur 'S256' unterstützt") final String codeChallengeMethod,
-        @RequestParam(name = "scope") @CheckScope @ApiParam(value = "Scope der Anfrage, derzeit werden 'openid e-rezept', 'openid', 'openid pairing' und 'openid e-rezept pairing' unterstützt") final String scope,
+        @RequestParam(name = "client_id") @NotEmpty(message = "1002") @CheckClientId final String clientId,
+        @RequestParam(name = "state") @NotEmpty(message = "2002") @Pattern(regexp = ".+", message = "2006") final String state,
+        @RequestParam(name = "redirect_uri") @NotNull(message = "1004") final String redirectUri,
+        @RequestParam(name = "nonce", required = false) @Pattern(regexp = ".+", message = "2007") final String nonce,
+        @RequestParam(name = "response_type") @NotEmpty(message = "2004") @Pattern(regexp = "code", message = "2005") final String responseType,
+        @RequestParam(name = "code_challenge") @NotEmpty(message = "2009") @Pattern(regexp = SHA256_AS_BASE64_REGEX, message = "2010") final String codeChallenge,
+        @RequestParam(name = "code_challenge_method") @Pattern(regexp = "S256", message = "2008") final String codeChallengeMethod,
+        @RequestParam(name = "scope") @CheckScope final String scope,
         final HttpServletResponse response) {
         idpAuthenticator.validateRedirectUri(clientId, redirectUri);
         setNoCacheHeader(response);
@@ -130,7 +132,7 @@ public class IdpController {
     })
     @ValidateClientSystem
     public void validateSignedAuthenticationDataAndGetTokenCode(
-        @RequestParam(value = "signed_authentication_data", required = false) @NotNull @ApiParam(value = "Signierte Autorisierungsdaten") final IdpJwe signedAuthenticationData,
+        @RequestParam(value = "encrypted_signed_authentication_data", required = false) @NotNull @ApiParam(value = "Signierte Autorisierungsdaten") final IdpJwe signedAuthenticationData,
         final HttpServletResponse response,
         final HttpServletRequest request) {
         setNoCacheHeader(response);
@@ -139,8 +141,7 @@ public class IdpController {
         response.setHeader(HttpHeaders.LOCATION, tokenLocation);
     }
 
-    @PostMapping(value = SSO_ENDPOINT, consumes = {MediaType.ALL_VALUE, MediaType.APPLICATION_JSON_VALUE,
-        "application/*"})
+    @PostMapping(value = SSO_ENDPOINT, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     @ApiOperation(httpMethod = "POST", value = "Endpunkt für SSO-Authorisierung", notes =
         "Wird ein SSO-Token übergeben, so wird aus diesem der Code für die Tokenabfrage generiert. "
             + "Der Code wird dann als Query parameter mit der URL zum Token Endpunkt zurückgeliefert.")
@@ -162,8 +163,7 @@ public class IdpController {
         response.setHeader(HttpHeaders.LOCATION, tokenLocation);
     }
 
-    @PostMapping(value = TOKEN_ENDPOINT, consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.ALL_VALUE,
-        "application/*"})
+    @PostMapping(value = TOKEN_ENDPOINT, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     @ApiOperation(httpMethod = "POST", value = "Endpunkt für Tokenabfrage", notes = "Es wird der Token Code mit "
         + "dem Code Verifier geprüft, entwertet und bei Erfolg daraus ein Zugangstoken erstellt. Der Zugangstoken "
         + "wird gemeinsam mit einem ID Token zurückgeliefert.", response = TokenResponse.class)
@@ -175,14 +175,17 @@ public class IdpController {
     })
     @ValidateClientSystem
     public TokenResponse getTokensForCode(
-        @RequestParam("code") @NotNull @ApiParam(value = "Tokenzugriffscode") final IdpJwe authenticationToken,
+        @RequestParam("code") @NotNull(message = "3005") @ApiParam(value = "Tokenzugriffscode") final IdpJwe authenticationToken,
         @RequestParam("key_verifier") @NotNull @ApiParam(value = "Für den Server verschlüsseltes JWE, welches den code_verifier und den token_code enthält") final IdpJwe keyVerifier,
         @RequestParam("grant_type") @NotNull(message = "3006") @Pattern(regexp = "authorization_code", message = "3014") @ApiParam(value = "Grant_type. Wert muss 'authorization_code' sein") final String grantType,
-        @RequestParam("redirect_uri") @NotNull(message = "1004") @NotEmpty(message = "1020") @ApiParam(value = "Redirect-URI aus dem Authorization-Request") final String redirectUri,
-        @RequestParam("client_id") @CheckClientId(message = "3007") @NotEmpty @ApiParam(value = "Client-ID") final String clientId,
+        @RequestParam("redirect_uri") @ApiParam(value = "Redirect-URI aus dem Authorization-Request") final String redirectUri,
+        @RequestParam("client_id") @NotEmpty(message = "1002") @CheckClientId(message = "3007") @ApiParam(value = "Client-ID") final String clientId,
         final HttpServletResponse response) {
+        if (StringUtils.isEmpty(authenticationToken.getRawString())) {
+            throw new IdpServerException(3005, IdpErrorType.INVALID_REQUEST,
+                "Authorization Code wurde nicht übermittelt");
+        }
         setNoCacheHeader(response);
-
         return tokenService.getTokenResponse(authenticationToken, keyVerifier, redirectUri, clientId);
     }
 

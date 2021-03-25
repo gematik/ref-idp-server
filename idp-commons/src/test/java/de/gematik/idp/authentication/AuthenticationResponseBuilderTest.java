@@ -20,6 +20,7 @@ import static de.gematik.idp.field.ClaimName.NESTED_JWT;
 import static de.gematik.idp.field.ClaimName.X509_CERTIFICATE_CHAIN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.data.UserConsentConfiguration;
@@ -107,8 +108,9 @@ public class AuthenticationResponseBuilderTest {
     public void verifyResponseIsSignedByClientIdentity() throws InvalidJwtException {
         final AuthenticationResponse authenticationResponse =
             authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
-
-        serverJwtConsumer.process(authenticationResponse.getSignedChallenge().getRawString());
+        assertDoesNotThrow(() ->
+            serverJwtConsumer.process(authenticationResponse.getSignedChallenge().getRawString())
+        );
     }
 
     @Test

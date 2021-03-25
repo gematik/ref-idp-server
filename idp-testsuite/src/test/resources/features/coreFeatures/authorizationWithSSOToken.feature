@@ -24,24 +24,23 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
     And I retrieve public keys from URIs
 
   @Afo:A_20946 @Afo:A_20950
-  @Approval @Todo:ClarifyTokenCodeContentRelevant
-  Scenario: Author mit SSO Token - Gutfall - Validiere Antwortstruktur
+  @Approval @Ready
+  Scenario: AuthorSSO - Gutfall - Validiere Antwortstruktur
 
   ```
   Wir wählen einen gültigen Code verifier, fordern einen Challenge Token an, signieren diesen und
   fordern einen TOKEN_CODE mit der signierten Challenge an.
-  Dann löschen wir den Context mit Ausnahme des erhaltenen SSO Tokens und wiederholen die Schritte nur fordern wir nun
+  Dann löschen wir den Context mit Ausnahme des erhaltenen SSO Tokens und wiederholen die Schritte, nur fordern wir nun
   einen TOKEN_CODE mit dem SSO Token an.
 
   Die TOKEN_CODE Antwort muss den Code 302 die richtigen HTTP Header haben.
-  - im Location header state, code aber NICHT SSO Token als Query Parameter enthalten
-  - die richtigen Claims im Token haben.
+  - im Location header state, code aber
+  - NICHT SSO Token als Query Parameter enthalten
 
-
-    Given I choose code verifier 'sfnejkgsjknsfeknsknvgsrlgmreklgmnksrnvgjksnvgseklgvsrklmslrkbmsrklgnrvsgklsrgnksrf'
+    Given I choose code verifier '${TESTENV.code_verifier02}'
     And I request a challenge with
-      | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state        | nonce  | response_type |
-      | eRezeptApp | e-rezept openid | ds7JaEfpdLidWekR52OhoVpjXHDlplLyV3GtUezxfY0 | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx1 | 123456 | code          |
+      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce  | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1 | 123456 | code          |
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And I request a code token with signed challenge
     And the response status is 302
@@ -49,21 +48,10 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
       | SSO_TOKEN           |
       | SSO_TOKEN_ENCRYPTED |
     And I initialize scenario from discovery document endpoint
-    And I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+    And I choose code verifier '${TESTENV.code_verifier01}'
     And I request a challenge with
-      | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state        | nonce  | response_type |
-      | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx2 | 234567 | code          |
-
-   # When I extract the header claims from token SSO_TOKEN_ENCRYPTED
-   # Then the header claims should match in any order
-   #     """
-   #       {
-   #         cty: "JWT",
-   #         exp: "[\\d]*",
-   #         enc: "A256GCM",
-   #         alg: "dir"
-   #       }
-   #     """
+      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce  | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx2 | 234567 | code          |
 
     When I request a code token with sso token
     Then the response status is 302
@@ -72,14 +60,14 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
         Cache-Control=no-store
         Pragma=no-cache
         Content-Length=0
-        Location=http://redirect.gematik.de/erezept/token[?]code=.*
+        Location=${TESTENV.redirect_uri_regex}[?|&]code=.*
         """
     And I expect the Context with key SSO_TOKEN to match '$NULL'
     And I expect the Context with key STATE to match 'xxxstatexxx2'
 
   @Afo:A_20946 @Afo:A_20950 @Afo:A_20377
-  @Approval @Todo:ClarifyTokenCodeContentRelevant
-  Scenario: Author mit SSO Token - Gutfall - Validiere Location Header und Code Token Claims
+  @Approval @Ready
+  Scenario: AuthorSSO - Gutfall - Validiere Location Header und Code Token Claims
 
   ```
   Wir wählen einen gültigen Code verifier, fordern einen Challenge Token an, signieren diesen und
@@ -91,10 +79,10 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
   die richtigen Claims im Token haben.
 
 
-    Given I choose code verifier 'sfnejkgsjknsfeknsknvgsrlgmreklgmnksrnvgjksnvgseklgvsrklmslrkbmsrklgnrvsgklsrgnksrf'
+    Given I choose code verifier '${TESTENV.code_verifier02}'
     And I request a challenge with
-      | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state        | nonce  | response_type |
-      | eRezeptApp | e-rezept openid | ds7JaEfpdLidWekR52OhoVpjXHDlplLyV3GtUezxfY0 | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx1 | 123456 | code          |
+      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce  | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1 | 123456 | code          |
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And I request a code token with signed challenge
     And the response status is 302
@@ -102,52 +90,51 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
       | SSO_TOKEN           |
       | SSO_TOKEN_ENCRYPTED |
     And I initialize scenario from discovery document endpoint
-    And I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+    And I choose code verifier '${TESTENV.code_verifier01}'
     And I request a challenge with
-      | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state        | nonce  | response_type |
-      | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx2 | 234567 | code          |
+      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce  | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx2 | 234567 | code          |
     And I request a code token with sso token
 
     When I extract the header claims from token TOKEN_CODE
     Then the header claims should match in any order
         """
           { alg: "BP256R1",
-            exp: "[\\d]*",
             kid: "${json-unit.ignore}",
             typ: "JWT"
           }
         """
+
     When I extract the body claims from token TOKEN_CODE
     Then the body claims should match in any order
         """
           { auth_time:             "${json-unit.ignore}",
-            client_id:             "eRezeptApp",
-            code_challenge:        "Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg",
+            client_id:             "${TESTENV.client_id}",
+            code_challenge:        "${TESTENV.code_challenge01}",
             code_challenge_method: "S256",
             exp:                   "[\\d]*",
             jti:                   "${json-unit.ignore}",
+            iat:                   ".*",
             idNummer:              "[A-Z][\\d]{9,10}",
-            iss:                   "https:\\/\\/idp.*\\.zentral\\.idp\\.splitdns\\.ti\\-dienste\\.de",
+            iss:                   "https:\\/\\/idp.*\\.idp\\.splitdns\\.ti\\-dienste\\.de",
             family_name:           "(.{1,64})",
             given_name:            "(.{1,64})",
             nonce:                 "234567",
             organizationName:      "(.{1,64})",
             professionOID:         "1\\.2\\.276\\.0\\.76\\.4\\.(3\\d|4\\d|178|23[2-90]|240|241)",
-            redirect_uri:          "http://redirect.gematik.de/erezept",
+            redirect_uri:          "${TESTENV.redirect_uri}",
             response_type:         "code",
-            scope:                 "(e-rezept openid|openid e-rezept)",
+            scope:                 "${TESTENV.scopes_basisflow_regex}",
             snc:                   ".*",
             state:                 "xxxstatexxx2",
             token_type:            "code"
           }
         """
-    # TODO Inhalt ist laut Spec nicht vorgegeben, daher evt. nur für Referenzimplementierung relevant
 
-
-  @Afo:A_20624 @Afo:A_20319
+  @Afo:A_20319
   @Approval @Ready
   @Signature
-  Scenario: Author mit SSO Token - Validiere Signatur des Code Token
+  Scenario: AuthorSSO - Validiere Signatur des Code Token
 
   ```
   Wir wählen einen gültigen Code verifier, fordern einen Challenge Token an, signieren diesen und
@@ -155,13 +142,13 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
   Dann löschen wir den Context mit Ausnahme des erhaltenen SSO Tokens und wiederholen die Schritte nur fordern wir nun
   einen TOKEN_CODE mit dem SSO Token an.
 
-  Der Code Token muss mit dem Auth Zertifikat gültig signiert sein.
+  Der Code Token muss mit dem puk_idp_sig Zertifikat gültig signiert sein.
 
 
-    Given I choose code verifier 'sfnejkgsjknsfeknsknvgsrlgmreklgmnksrnvgjksnvgseklgvsrklmslrkbmsrklgnrvsgklsrgnksrf'
+    Given I choose code verifier '${TESTENV.code_verifier02}'
     And I request a challenge with
-      | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state        | nonce | response_type |
-      | eRezeptApp | e-rezept openid | ds7JaEfpdLidWekR52OhoVpjXHDlplLyV3GtUezxfY0 | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx1 | 4444  | code          |
+      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1 | 4444  | code          |
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And I request a code token with signed challenge
     And the response status is 302
@@ -170,10 +157,10 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
       | SSO_TOKEN_ENCRYPTED |
     And I initialize scenario from discovery document endpoint
     And I retrieve public keys from URIs
-    And I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+    And I choose code verifier '${TESTENV.code_verifier01}'
     And I request a challenge with
-      | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state        | nonce | response_type |
-      | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx2 | 3434  | code          |
+      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx2 | 3434  | code          |
 
     When I request a code token with sso token
     Then the context TOKEN_CODE must be signed with cert PUK_SIGN
@@ -182,7 +169,7 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
   @Approval @Ready
   @Timeout
   @LongRunning
-  Scenario: Author mit SSO Token - Veralteter Challenge Token wird abgelehnt
+  Scenario: AuthorSSO - Veralteter Challenge Token wird abgelehnt
 
   ```
   Wir wählen einen gültigen Code verifier, fordern einen Challenge Token an, signieren diesen und
@@ -192,10 +179,10 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
 
   Der Server muss diese Anfrage mit einem Timeout Fehler ablehnen.
 
-    Given I choose code verifier 'sfnejkgsjknsfeknsknvgsrlgmreklgmnksrnvgjksnvgseklgvsrklmslrkbmsrklgnrvsgklsrgnksrf'
+    Given I choose code verifier '${TESTENV.code_verifier02}'
     And I request a challenge with
-      | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state        | nonce | response_type |
-      | eRezeptApp | e-rezept openid | ds7JaEfpdLidWekR52OhoVpjXHDlplLyV3GtUezxfY0 | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx1 | 4444  | code          |
+      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1 | 4444  | code          |
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And I request a code token with signed challenge
     And the response status is 302
@@ -204,10 +191,10 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
       | SSO_TOKEN_ENCRYPTED |
     And I initialize scenario from discovery document endpoint
     And I retrieve public keys from URIs
-    And I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+    And I choose code verifier '${TESTENV.code_verifier01}'
     And I request a challenge with
-      | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state        | nonce | response_type |
-      | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx2 | 3434  | code          |
+      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx2 | 3434  | code          |
 
     When I wait PT3M5S
     And I request a code token with sso token
@@ -218,7 +205,7 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
     # negative cases
 
   @Approval @Ready
-  Scenario: Author mit SSO Token - Challenge Token fehlt beim SSO Token Aufruf
+  Scenario: AuthorSSO - Challenge Token fehlt beim SSO Token Aufruf
 
   ```
   Wir wählen einen gültigen Code verifier, fordern einen Challenge Token an, signieren diesen und
@@ -229,10 +216,10 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
   Der Server muss diese Anfrage mit HTTP Status 302 und einer Fehlermeldung im Location Header ablehnen.
 
 
-    Given I choose code verifier 'sfnejkgsjknsfeknsknvgsrlgmreklgmnksrnvgjksnvgseklgvsrklmslrkbmsrklgnrvsgklsrgnksrf'
+    Given I choose code verifier '${TESTENV.code_verifier02}'
     And I request a challenge with
-      | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state        | nonce  | response_type |
-      | eRezeptApp | e-rezept openid | ds7JaEfpdLidWekR52OhoVpjXHDlplLyV3GtUezxfY0 | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx1 | 131313 | code          |
+      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce  | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1 | 131313 | code          |
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And I request a code token with signed challenge
     And the response status is 302
@@ -240,19 +227,18 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
       | SSO_TOKEN           |
       | SSO_TOKEN_ENCRYPTED |
     And I initialize scenario from discovery document endpoint
-    And I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+    And I choose code verifier '${TESTENV.code_verifier01}'
     And I request a challenge with
-      | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state        | nonce  | response_type |
-      | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx2 | 242424 | code          |
+      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce  | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx2 | 242424 | code          |
 
     When I request a code token with sso token no challenge
-    Then the response is an 302 error with gematik code 2030 and error 'invalid_request'
+    Then the response is an 400 error with gematik code 2030 and error 'invalid_request'
 
 
   @Afo:A_20948  @Afo:A_20949
-  @Todo:ErrorMessageEntsprechendSTIDPD48
   @WiP
-  Scenario: Author mit SSO Token - Anfrage mit modifiziertem SSO Token
+  Scenario: AuthorSSO - Anfrage mit modifiziertem SSO Token
 
   ```
   Wir wählen einen gültigen Code verifier, fordern einen Challenge Token an, signieren diesen und
@@ -263,10 +249,10 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
   Die Server muss diese Anfrage mit HTTP Status 302 und einer Fehlermeldung im Location Header ablehnen.
 
 
-    Given I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+    Given I choose code verifier '${TESTENV.code_verifier01}'
     And I request a challenge with
-      | client_id  | scope           | code_challenge                              | code_challenge_method | redirect_uri                       | state       | nonce | response_type |
-      | eRezeptApp | e-rezept openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 9999  | code          |
+      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 9999  | code          |
         # TODO first perform with signed challenge then modify sso token then retry with modified sso token
         # TODO how to modify the sso token to ensure that the idp checks the signature correctly
 

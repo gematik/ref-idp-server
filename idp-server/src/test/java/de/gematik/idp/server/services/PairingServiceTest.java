@@ -19,7 +19,7 @@ package de.gematik.idp.server.services;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-import de.gematik.idp.server.data.PairingDto;
+import de.gematik.idp.server.pairing.PairingData;
 import de.gematik.idp.tests.PkiKeyResolver;
 import java.time.ZonedDateTime;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,8 +62,8 @@ public class PairingServiceTest {
         assertThat(pairingService.getPairingList(testIdNumber)).isEmpty();
     }
 
-    private PairingDto createPairingDto(final String keyIdentifier) {
-        return PairingDto.builder()
+    private PairingData createPairingDto(final String keyIdentifier) {
+        return PairingData.builder()
             .id(null)
             .idNumber(testIdNumber)
             .keyIdentifier(keyIdentifier)

@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.data;
+package de.gematik.idp.server.data;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 
-@RequiredArgsConstructor
-public enum PublicKeyUse {
-    SIGNATURE("sig"), ENCRYPTION("enc");
+@Data
+@Builder
+@AllArgsConstructor
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+public class PairingList {
 
-    private final String serializationValue;
-
-    @JsonValue
-    public String getSerializationValue() {
-        return serializationValue;
-    }
+    private final List<PairingDto> pairingEntries;
 }

@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.JwtBuilder;
+import de.gematik.idp.authentication.UriUtils;
 import de.gematik.idp.client.IdpClient;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.error.IdpErrorType;
@@ -36,6 +37,7 @@ import de.gematik.idp.token.IdpJwe;
 import java.security.Key;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -66,8 +68,6 @@ public class IdpControllerParameterValidationTest {
         Pair.of("response_type", "code"),
         Pair.of("nonce", "foobarschmar"),
         Pair.of("scope", "openid e-rezept"));
-
-    private static List<Pair<String, String>> getAccessTokenParameterMap;
 
     @LocalServerPort
     private int port;
@@ -103,31 +103,33 @@ public class IdpControllerParameterValidationTest {
 
     @Test
     public void getAuthenticationChallenge_missingResponseType_shouldGiveError() {
-        assertErrorResponseMatches(buildGetChallengeRequest(getInvalidationFunction("response_type", null)),
+        assertForwardErrorResponseMatches(buildGetChallengeRequest(getInvalidationFunction("response_type", null)),
             2004, INVALID_REQUEST, "response_type wurde nicht übermittelt");
     }
 
     @Test
     public void getAuthenticationChallenge_invalidResponseType_shouldGiveError() {
-        assertErrorResponseMatches(buildGetChallengeRequest(getInvalidationFunction("response_type", "something_else")),
+        assertForwardErrorResponseMatches(
+            buildGetChallengeRequest(getInvalidationFunction("response_type", "something_else")),
             2005, UNSUPPORTED_RESPONSE_TYPE, "response_type wird nicht unterstützt");
     }
 
     @Test
     public void getAuthenticationChallenge_invalidScope_shouldGiveError() {
-        assertErrorResponseMatches(buildGetChallengeRequest(getInvalidationFunction("scope", "invalidScope")),
-            1030, INVALID_SCOPE, "Fachdienst ist unbekannt");
+        assertForwardErrorResponseMatches(buildGetChallengeRequest(getInvalidationFunction("scope", "invalidScope")),
+            1022, INVALID_SCOPE, "scope ist ungültig");
     }
 
     @Test
     public void getAuthenticationChallenge_validPlusInvalidScope_shouldGiveError() {
-        assertErrorResponseMatches(buildGetChallengeRequest(getInvalidationFunction("scope", "openid e-rezept x")),
+        assertForwardErrorResponseMatches(
+            buildGetChallengeRequest(getInvalidationFunction("scope", "openid e-rezept x")),
             1030, INVALID_SCOPE, "Fachdienst ist unbekannt");
     }
 
     @Test
     public void getAuthenticationChallenge_onlyOpenidScope_shouldGiveError() {
-        assertErrorResponseMatches(buildGetChallengeRequest(getInvalidationFunction("scope", "openid")),
+        assertForwardErrorResponseMatches(buildGetChallengeRequest(getInvalidationFunction("scope", "openid")),
             1022, INVALID_SCOPE, "scope ist ungültig");
     }
 
@@ -146,14 +148,14 @@ public class IdpControllerParameterValidationTest {
 
     @Test
     public void getAuthenticationChallenge_missingState_shouldGiveError() {
-        assertErrorResponseMatches(buildGetChallengeRequest(getInvalidationFunction("state", null)),
+        assertForwardErrorResponseMatches(buildGetChallengeRequest(getInvalidationFunction("state", null)),
             2002, INVALID_REQUEST, "state wurde nicht übermittelt");
     }
 
     @Test
     public void getAuthenticationChallenge_emptyState_shouldGiveError() {
-        assertErrorResponseMatches(buildGetChallengeRequest(getInvalidationFunction("state", "")),
-            2006, INVALID_REQUEST, "state ist ungültig");
+        assertForwardErrorResponseMatches(buildGetChallengeRequest(getInvalidationFunction("state", "")),
+            2002, INVALID_REQUEST, "state wurde nicht übermittelt");
     }
 
     @Test
@@ -278,6 +280,25 @@ public class IdpControllerParameterValidationTest {
         assertThat(response.getBody().getObject().get("gematik_code"))
             .isEqualTo(errorCode);
         assertThat(response.getBody().getObject().get("gematik_error_text"))
+            .isEqualTo(errorText);
+    }
+
+    @SneakyThrows
+    private void assertForwardErrorResponseMatches(final HttpRequest getRequest, final int errorCode,
+        final IdpErrorType errorType, final String errorText) {
+        final HttpResponse<String> response = getRequest.asJson();
+
+        assertThat(response.getStatus())
+            .isEqualTo(302);
+
+        final Map<String, String> locationUrlParameterMap =
+            UriUtils.extractParameterMap(response.getHeaders().getFirst("Location"));
+
+        assertThat(locationUrlParameterMap.get("error"))
+            .isEqualTo(errorType.getSerializationValue());
+        assertThat(locationUrlParameterMap.get("gematik_code"))
+            .isEqualTo(Integer.toString(errorCode));
+        assertThat(locationUrlParameterMap.get("gematik_error_text"))
             .isEqualTo(errorText);
     }
 

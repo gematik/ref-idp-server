@@ -112,7 +112,8 @@ public class MockIdpClient implements IIdpClient {
 
     @Override
     public MockIdpClient initialize() {
-        serverIdentity.setKeyId(Optional.of("idpSig"));
+        serverIdentity.setKeyId(Optional.of("puk_idp_sig"));
+        serverIdentity.setUse(Optional.of("sig"));
         jwtProcessor = new IdpJwtProcessor(serverIdentity);
         accessTokenBuilder = new AccessTokenBuilder(jwtProcessor, uriIdpServer, serverSubSalt);
         authenticationChallengeBuilder = AuthenticationChallengeBuilder.builder()

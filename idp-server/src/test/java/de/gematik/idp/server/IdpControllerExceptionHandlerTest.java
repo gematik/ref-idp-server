@@ -24,6 +24,8 @@ import static org.mockito.Mockito.when;
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.UriUtils;
+import de.gematik.idp.error.IdpErrorType;
+import de.gematik.idp.server.exceptions.IdpServerException;
 import de.gematik.idp.server.exceptions.oauth2spec.IdpServerInvalidRequestException;
 import de.gematik.idp.server.services.IdpAuthenticator;
 import de.gematik.idp.tests.PkiKeyResolver;
@@ -88,7 +90,7 @@ public class IdpControllerExceptionHandlerTest {
     @Test
     public void authentication_idpServerException_expectRedirect() {
         when(idpAuthenticator.getBasicFlowTokenLocation(any()))
-            .thenThrow(new IdpServerInvalidRequestException(EXCEPTION_TEXT));
+            .thenThrow(new IdpServerException(EXCEPTION_TEXT, IdpErrorType.INVALID_REQUEST, HttpStatus.FOUND));
         final HttpResponse response = Unirest.post(serverUrl + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
             .queryString("signed_challenge", "signed_challenge")
             .accept(MediaType.APPLICATION_JSON.toString())
@@ -106,7 +108,7 @@ public class IdpControllerExceptionHandlerTest {
     @Test
     public void authentication_genericError_expectRedirect() {
         when(idpAuthenticator.getBasicFlowTokenLocation(any()))
-            .thenThrow(new RuntimeException(EXCEPTION_TEXT));
+            .thenThrow(new IdpServerException(EXCEPTION_TEXT, IdpErrorType.SERVER_ERROR, HttpStatus.FOUND));
         final HttpResponse response = Unirest
             .post(serverUrl + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
             .queryString("signed_challenge", "signed_challenge")
@@ -116,7 +118,7 @@ public class IdpControllerExceptionHandlerTest {
         assertThat(response.getStatus()).isEqualTo(HttpStatus.FOUND.value());
         assertThat(UriUtils.extractParameterMap(response.getHeaders().getFirst(HttpHeaders.LOCATION)))
             .containsEntry("error", "server_error")
-            .containsEntry("error_description", "Invalid Request");
+            .containsEntry("error_description", EXCEPTION_TEXT);
         assertThat(response.getHeaders().getFirst("Cache-Control"))
             .containsOnlyOnce("no-store");
     }

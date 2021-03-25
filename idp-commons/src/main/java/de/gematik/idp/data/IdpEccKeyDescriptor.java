@@ -41,7 +41,8 @@ public class IdpEccKeyDescriptor extends IdpKeyDescriptor {
     private String eccPointYValue;
 
     @Builder
-    public IdpEccKeyDescriptor(final String[] x5c, final PublicKeyUse publicKeyUse, final String keyId, final String keyType,
+    public IdpEccKeyDescriptor(final String[] x5c, final String publicKeyUse, final String keyId,
+        final String keyType,
         final String eccCurveName, final String eccPointXValue, final String eccPointYValue) {
         super(x5c, publicKeyUse, keyId, keyType);
         this.eccCurveName = eccCurveName;
@@ -70,9 +71,11 @@ public class IdpEccKeyDescriptor extends IdpKeyDescriptor {
             descriptorBuilder
                 .eccCurveName("BP-256")
                 .eccPointXValue(
-                    Base64.getUrlEncoder().encodeToString(generator.getAffineXCoord().toBigInteger().toByteArray()))
+                    Base64.getUrlEncoder().withoutPadding()
+                        .encodeToString(generator.getAffineXCoord().toBigInteger().toByteArray()))
                 .eccPointYValue(
-                    Base64.getUrlEncoder().encodeToString(generator.getAffineYCoord().toBigInteger().toByteArray()));
+                    Base64.getUrlEncoder().withoutPadding()
+                        .encodeToString(generator.getAffineYCoord().toBigInteger().toByteArray()));
 
             return descriptorBuilder.build();
         } catch (final ClassCastException e) {

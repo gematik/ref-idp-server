@@ -16,6 +16,7 @@
 
 package de.gematik.idp.server.data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,6 +24,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.gematik.idp.exceptions.IdpJoseException;
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,15 +37,17 @@ import org.jose4j.json.internal.json_simple.JSONAware;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegistrationData implements JSONAware {
+public class RegistrationData implements JSONAware, DataVersion {
 
     @NotNull
     private String signedPairingData;
     @NotNull
-    private String authenticationCert;
+    private String authCert;
     @NotNull
     @Valid
     private DeviceInformation deviceInformation;
+    @NotEmpty
+    private String registrationDataVersion;
 
     @Override
     public String toJSONString() {
@@ -55,5 +59,11 @@ public class RegistrationData implements JSONAware {
         } catch (final JsonProcessingException e) {
             throw new IdpJoseException("Error during Claim serialization", e);
         }
+    }
+
+    @Override
+    @JsonIgnore
+    public String getDataVersion() {
+        return registrationDataVersion;
     }
 }

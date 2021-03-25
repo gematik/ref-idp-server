@@ -99,7 +99,7 @@ public class PkceServerTest {
     public void pkceNegativPlainInAuthorization() throws UnirestException {
         idpClient.setCodeChallengeMethod(CodeChallengeMethod.PLAIN);
 
-        idpClient.setAfterAuthorizationCallback(r -> assertThat(r.getStatus()).isEqualTo(400));
+        idpClient.setAfterAuthorizationCallback(r -> assertThat(r.getStatus()).isEqualTo(302));
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
             .isInstanceOf(IdpClientRuntimeException.class)
@@ -116,7 +116,7 @@ public class PkceServerTest {
                 .replaceFirst("&code_challenge=[\\w-_.~]*&code_challenge_method=S256", ""))
             .headers(getAllHeaderElementsAsMap(request)));
 
-        idpClient.setAfterAuthorizationCallback(r -> assertThat(r.getStatus()).isEqualTo(400));
+        idpClient.setAfterAuthorizationCallback(r -> assertThat(r.getStatus()).isEqualTo(302));
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
             .isInstanceOf(IdpClientRuntimeException.class)

@@ -35,7 +35,8 @@ public class IdpRsaKeyDescriptor extends IdpKeyDescriptor {
     private String rsaExponentValue;
 
     @Builder
-    public IdpRsaKeyDescriptor(final String[] x5c, final PublicKeyUse publicKeyUse, final String keyId, final String keyType,
+    public IdpRsaKeyDescriptor(final String[] x5c, final String publicKeyUse, final String keyId,
+        final String keyType,
         final String rsaModulusValue, final String rsaExponentValue) {
         super(x5c, publicKeyUse, keyId, keyType);
         this.rsaModulusValue = rsaModulusValue;
@@ -54,9 +55,11 @@ public class IdpRsaKeyDescriptor extends IdpKeyDescriptor {
 
             final BCRSAPublicKey bcrsaPublicKey = (BCRSAPublicKey) certificate.getPublicKey();
             descriptorBuilder
-                .rsaModulusValue(Base64.getUrlEncoder().encodeToString(bcrsaPublicKey.getModulus().toByteArray()))
+                .rsaModulusValue(
+                    Base64.getUrlEncoder().withoutPadding().encodeToString(bcrsaPublicKey.getModulus().toByteArray()))
                 .rsaExponentValue(
-                    Base64.getUrlEncoder().encodeToString(bcrsaPublicKey.getPublicExponent().toByteArray()));
+                    Base64.getUrlEncoder().withoutPadding()
+                        .encodeToString(bcrsaPublicKey.getPublicExponent().toByteArray()));
 
             return descriptorBuilder.build();
         } catch (final ClassCastException e) {

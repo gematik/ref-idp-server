@@ -16,8 +16,10 @@
 
 package de.gematik.idp.test.steps;
 
+import de.gematik.idp.test.steps.helpers.ClaimsStepHelper;
 import de.gematik.idp.test.steps.helpers.TestEnvironmentConfigurator;
 import de.gematik.idp.test.steps.model.*;
+import io.restassured.response.Response;
 import java.io.File;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +27,25 @@ import net.thucydides.core.annotations.Step;
 
 @Slf4j
 public class IdpDiscoveryDocumentSteps extends IdpStepsBase {
+
+    private final ClaimsStepHelper claimsStepHelper = new ClaimsStepHelper();
+
+    @SneakyThrows
+    protected void initializeFromDiscoveryDocument() {
+        final String idpLocalDiscdoc = System.getenv("IDP_LOCAL_DISCDOC");
+        if (idpLocalDiscdoc == null || idpLocalDiscdoc.isBlank()) {
+            final Response r = IdpStepsBase.simpleGet(TestEnvironmentConfigurator.getDiscoveryDocumentURL());
+            Context.getThreadContext()
+                .put(ContextKey.DISC_DOC, new DiscoveryDocument(
+                    claimsStepHelper.getClaims(r.getBody().asString()),
+                    claimsStepHelper.extractHeaderClaimsFromJWSString(r.getBody().asString())));
+        } else {
+            Context.getThreadContext()
+                .put(ContextKey.DISC_DOC, new DiscoveryDocument(new File(idpLocalDiscdoc + "_body.json"),
+                    new File(idpLocalDiscdoc + "_header.json")));
+        }
+    }
+
 
     @Step
     @SneakyThrows

@@ -2,10 +2,12 @@ idp:
   version: @project.version@
   idpSig:
     fileName: classpath:authenticatorModule_idpServer.p12
-    keyId: idpSig
+    keyId: puk_idp_sig
+    use: sig
   idpEnc:
     fileName: classpath:idp-fd-sig-refimpl-2.p12
-    keyId: idpEnc
+    keyId: puk_idp_enc
+    use: enc
   discSig:
     fileName: classpath:idp-fd-sig-refimpl-3.p12
     keyId: discSig
@@ -54,22 +56,27 @@ idp:
         detailMessage: "scope wurde nicht übermittelt"
         error: INVALID_REQUEST
         code: 1005
+        httpStatusCode: 302
       state:
         detailMessage: "state wurde nicht übermittelt"
         error: INVALID_REQUEST
         code: 2002
+        httpStatusCode: 302
       response_type:
         detailMessage: "response_type wurde nicht übermittelt"
         error: INVALID_REQUEST
         code: 2004
+        httpStatusCode: 302
       code_challenge_method:
         detailMessage: "code_challenge_method wurde nicht übermittelt"
         error: INVALID_REQUEST
         code: 2008
+        httpStatusCode: 302
       code_challenge:
         detailMessage: "code_challenge wurde nicht übermittelt"
         error: INVALID_REQUEST
         code: 2009
+        httpStatusCode: 302
       key_verifier:
         detailMessage: "key_verifier wurde nicht übermittelt"
         error: INVALID_REQUEST
@@ -83,6 +90,10 @@ idp:
         error: INVALID_REQUEST
         code: 3006
     errorCodeMap:
+      1002:
+        detailMessage: "client_id wurde nicht übermittelt"
+        error: INVALID_REQUEST
+        code: 1002
       1004:
         detailMessage: "redirect_uri wurde nicht übermittelt"
         error: INVALID_REQUEST
@@ -91,18 +102,26 @@ idp:
         detailMessage: "redirect_uri ist ungültig"
         error: INVALID_REQUEST
         code: 1020
+      2002:
+        detailMessage: "state wurde nicht übermittelt"
+        error: INVALID_REQUEST
+        code: 2002
+        httpStatusCode: 302
       2004:
         detailMessage: "response_type wurde nicht übermittelt"
         error: INVALID_REQUEST
         code: 2004
+        httpStatusCode: 302
       2005:
         detailMessage: "response_type wird nicht unterstützt"
         error: UNSUPPORTED_RESPONSE_TYPE
         code: 2005
+        httpStatusCode: 302
       2006:
         detailMessage: "state ist ungültig"
         error: INVALID_REQUEST
         code: 2006
+        httpStatusCode: 302
       2007:
         detailMessage: "nonce ist ungültig"
         error: INVALID_REQUEST
@@ -111,6 +130,7 @@ idp:
         detailMessage: "code_challenge_method ist ungültig"
         error: INVALID_REQUEST
         code: 2008
+        httpStatusCode: 302
       2009:
         detailMessage: "code_challenge wurde nicht übermittelt"
         error: INVALID_REQUEST
@@ -119,6 +139,7 @@ idp:
         detailMessage: "code_challenge ist ungültig"
         error: INVALID_REQUEST
         code: 2010
+        httpStatusCode: 302
       2012:
         detailMessage: "client_id ist ungültig"
         error: INVALID_REQUEST

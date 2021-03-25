@@ -7,8 +7,8 @@
   "uri_pair": "https://idp-test.zentral.idp.splitdns.ti-dienste.de/pairings",
   "issuer": "https://idp.zentral.idp.splitdns.ti-dienste.de",
   "jwks_uri": "https://idp-test.zentral.idp.splitdns.ti-dienste.de/jwks",
-  "uri_puk_idp_enc": "accesskeeper.p12#auth",
-  "uri_puk_idp_sig": "accesskeeper.p12#auth",
+  "uri_puk_idp_enc": "https://idp-test.zentral.idp.splitdns.ti-dienste.de/certs/puk_idp_enc",
+  "uri_puk_idp_sig": "https://idp-test.zentral.idp.splitdns.ti-dienste.de/certs/puk_idp_sig",
   "subject_types_supported": [
     "pairwise"
   ],
@@ -33,5 +33,8 @@
   ],
   "token_endpoint_auth_methods_supported": [
     "none"
+  ],
+  "code_challenge_methods_supported": [
+    "S256"
   ]
 }

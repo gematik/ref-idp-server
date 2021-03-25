@@ -121,4 +121,40 @@ public class IdTokenBuilderTest {
             .isEqualTo(ArrayUtils.subarray(accesTokenHash, 0, (128 / 8)))
             .hasSize(128 / 8);
     }
+
+    @Test
+    public void checkIdTokenWithoutNotExistingUserConsentTokenFromAuthenticationToken(
+        @PkiKeyResolver.Filename("authz_rsa") final PkiIdentity clientIdentity) {
+        final Map<String, Object> bodyClaims = new HashMap<>();
+        bodyClaims.put(ID_NUMBER.getJoseName(), "id_number");
+        bodyClaims.put(GIVEN_NAME.getJoseName(), "given_name");
+        bodyClaims.put(FAMILY_NAME.getJoseName(), "family_name");
+        bodyClaims.put(JWKS_URI.getJoseName(), "jwks_uri");
+        bodyClaims.put(NONCE.getJoseName(), NONCE_VALUE);
+        bodyClaims.put(CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP);
+        authenticationToken = new JwtBuilder()
+            .replaceAllHeaderClaims(Map.of("headerNotCopy", "headerNotCopy"))
+            .replaceAllBodyClaims(bodyClaims)
+            .setSignerKey(clientIdentity.getPrivateKey())
+            .buildJwt();
+
+        final JsonWebToken idToken = idTokenBuilder
+            .buildIdToken(TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, "fdsjkfldsöaf".getBytes(
+                StandardCharsets.UTF_8));
+
+        assertThat(idToken.getBodyClaims())
+            .containsEntry(ISSUER.getJoseName(), uriIdpServer)
+            .containsKey(SUBJECT.getJoseName())
+            .containsEntry(AUDIENCE.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP)
+            .containsKey(EXPIRES_AT.getJoseName())
+            .containsKey(ISSUED_AT.getJoseName())
+            .containsEntry(ID_NUMBER.getJoseName(), "id_number")
+            .containsEntry(GIVEN_NAME.getJoseName(), "given_name")
+            .containsEntry(FAMILY_NAME.getJoseName(), "family_name")
+            .containsEntry(NONCE.getJoseName(), NONCE_VALUE)
+            .doesNotContainKey(JWKS_URI.getJoseName())
+            .doesNotContainKey(ORGANIZATION_NAME.getJoseName())
+            .doesNotContainKey(PROFESSION_OID.getJoseName());
+    }
+
 }

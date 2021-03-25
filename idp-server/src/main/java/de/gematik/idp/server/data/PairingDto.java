@@ -16,9 +16,8 @@
 
 package de.gematik.idp.server.data;
 
-import de.gematik.idp.server.validation.accessToken.ValidateKvnrWithAccessToken;
-import java.time.ZonedDateTime;
-import javax.validation.constraints.NotEmpty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,15 +27,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class PairingDto {
 
-    private Long id;
-    @NotEmpty
-    @ValidateKvnrWithAccessToken
-    private String idNumber;
-    private String keyIdentifier;
-    private String deviceName;
+    private String name;
     private String signedPairingData;
-    private ZonedDateTime timestampPairing;
-
+    private long creationTime;
+    private String pairingEntryVersion;
 }

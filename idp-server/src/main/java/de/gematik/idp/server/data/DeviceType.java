@@ -16,6 +16,7 @@
 
 package de.gematik.idp.server.data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import javax.validation.constraints.NotBlank;
@@ -29,16 +30,24 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 @AllArgsConstructor
 @NoArgsConstructor
-public class DeviceType {
+public class DeviceType implements DataVersion {
 
     @NotBlank
-    private String deviceManufacturer;
+    private String manufacturer;
     @NotBlank
-    private String deviceProduct;
+    private String product;
     @NotBlank
-    private String deviceModel;
+    private String model;
     @NotBlank
-    private String deviceOs;
+    private String os;
     @NotBlank
-    private String deviceVersion;
+    private String osVersion;
+    @NotBlank
+    private String deviceTypeDataVersion;
+
+    @Override
+    @JsonIgnore
+    public String getDataVersion() {
+        return deviceTypeDataVersion;
+    }
 }

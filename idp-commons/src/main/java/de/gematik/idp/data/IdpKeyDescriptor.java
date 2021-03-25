@@ -17,7 +17,6 @@
 package de.gematik.idp.data;
 
 import static de.gematik.idp.crypto.KeyAnalysis.isEcKey;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -46,7 +45,7 @@ public class IdpKeyDescriptor implements JSONAware {
     private String[] x5c;
     @JsonInclude(Include.NON_NULL)
     @JsonProperty("use")
-    private PublicKeyUse publicKeyUse;
+    private String publicKeyUse;
     @JsonProperty("kid")
     private String keyId;
     @JsonProperty("kty")

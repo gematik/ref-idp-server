@@ -1,3 +1,16 @@
+# Release 12.0.0
+* Korrekte Umsetzung des signed challenge flows
+* Anpassung alternative Authentisierung CR/Datenformate Version 1.1.7
+* Diverse Bugfixes im Basis- sowie Altauthflow 
+* IDP-Client erweitert zur Nutzung externer Schlüssel
+* Zusätzliche Testfälle in der Testsuite für 
+  * Validierung von RSA-Zertifikaten als eGK
+  * Validierung ungültiger Inhalte auf eGK
+* Einbindung RBelLogger in Testsuite https://github.com/gematik/app-RbelLogger
+* Konfigurierbare Variablen in der Testsuite 
+* Überarbeitung der IDP Fehlermeldungen (nicht final)
+* Aktualisierung der Requirements auf Baseline für Testsuite
+
 # Release 11.1.0
 * GemLibPki-Version auf Version 0.4.1 aktualisiert
 

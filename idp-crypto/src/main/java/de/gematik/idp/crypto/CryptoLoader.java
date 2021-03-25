@@ -76,7 +76,7 @@ public class CryptoLoader {
                 final String alias = e.nextElement();
                 final X509Certificate certificate = (X509Certificate) p12.getCertificate(alias);
                 final PrivateKey privateKey = (PrivateKey) p12.getKey(alias, p12Password.toCharArray());
-                return new PkiIdentity(certificate, privateKey, Optional.empty());
+                return new PkiIdentity(certificate, privateKey, Optional.empty(), null);
             }
         } catch (final IOException | KeyStoreException | NoSuchAlgorithmException
             | UnrecoverableKeyException | CertificateException e) {

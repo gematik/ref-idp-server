@@ -27,4 +27,8 @@ public class IdpClientRuntimeException extends RuntimeException {
     public IdpClientRuntimeException(final String s) {
         super(s);
     }
+
+    public IdpClientRuntimeException(final String message, final Exception e) {
+        super(message, e);
+    }
 }

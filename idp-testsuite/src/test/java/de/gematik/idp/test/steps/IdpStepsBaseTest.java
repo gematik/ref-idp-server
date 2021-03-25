@@ -18,7 +18,6 @@ package de.gematik.idp.test.steps;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.data.IdpKeyDescriptor;
 import java.security.cert.CertificateExpiredException;
@@ -39,7 +38,8 @@ public class IdpStepsBaseTest {
         final IdpKeyDescriptor desc = IdpKeyDescriptor.constructFromX509Certificate(cert);
 
         assertThatThrownBy(() ->
-            new IdpStepsBase().jsonObjectShouldBeValidCertificate(new JSONObject(desc.toJSONString())))
+            new IdpStepsBase().keyAndCertificateStepsHelper
+                .jsonObjectShouldBeValidCertificate(new JSONObject(desc.toJSONString())))
             .isInstanceOf(AssertionError.class);
     }
 
@@ -52,7 +52,8 @@ public class IdpStepsBaseTest {
         final IdpKeyDescriptor desc = IdpKeyDescriptor.constructFromX509Certificate(cert);
 
         assertThatThrownBy(() ->
-            new IdpStepsBase().jsonObjectShouldBeValidCertificate(new JSONObject(desc.toJSONString())))
+            new IdpStepsBase().keyAndCertificateStepsHelper
+                .jsonObjectShouldBeValidCertificate(new JSONObject(desc.toJSONString())))
             .isInstanceOf(CertificateExpiredException.class);
     }
 
@@ -64,6 +65,7 @@ public class IdpStepsBaseTest {
         final X509Certificate cert = CryptoLoader.getCertificateFromP12(data, "00");
         assertThat(cert).isNotNull();
         final IdpKeyDescriptor desc = IdpKeyDescriptor.constructFromX509Certificate(cert);
-        new IdpStepsBase().jsonObjectShouldBeValidCertificate(new JSONObject(desc.toJSONString()));
+        new IdpStepsBase().keyAndCertificateStepsHelper
+            .jsonObjectShouldBeValidCertificate(new JSONObject(desc.toJSONString()));
     }
 }

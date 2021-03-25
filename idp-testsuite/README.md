@@ -1,4 +1,4 @@
-# ![Logo](doc/images/IDPLogo-64.png) Gematik IDP Zulassungstestsuite v11.0.0
+# ![Logo](doc/images/IDPLogo-64.png) Gematik IDP Zulassungstestsuite
 
 Die Gematik IDP Zulassungstestsuite dient zur Pr&uuml;fung externer IDP Dienst Drittanbieter. Sie ist derzeit in
 Entwicklung und noch **NICHT** fertiggestellt. Ziel der Suite ist es sowohl externe IDP Dienste, als auch die Gematik
@@ -281,6 +281,27 @@ Für Stacktrace Informationen gibt es rechts in den Details auch den **"More Det
 
 ![Serenity07](doc/images/SerenityReport007.png)
 
+### Anforderungsüberdeckungsbericht
+
+Durch Wechseln in des Verzeichnis idp-testsuite und dem Ausführen des folgenden maven Kommandos kann der
+Anforderungsüberdeckungsbericht erstellt werden:
+
+```
+mvn exec:java@aforeporter
+```
+
+Auf der Übersichtsseite des Serenity Reports wird dadurch ein zusätzlicher Tab eingefügt. Der eigentliche Bericht liegt
+im target/site/serenity Verzeichnis als aforeport.html Datei.
+
+![AfoReportLink](doc/images/AfoReportLink.png)
+
+Der Anforderungsüberdeckungsbericht listet alle Anforderungen auf und die mit ihnen verlinkten Testszenarien.
+
+![AfoReportExample](doc/images/AfoReportExample.png)
+
+Die Liste der Anforderungen entnimmt der Bericht aus der im idp-testsuite Verzeichnis abgelegten requirements.json
+Datei.
+
 ## Anpassung der Testsuite an Drittanbieter
 
 ### Lokales Discovery Dokument
@@ -320,20 +341,6 @@ Wert) um ein temporäres Hochfahren des Referenzservers (auf einem anderen Port)
 export IDP_SERVER=1
 ```
 
-~~### Abweichende Pfade an den Endpunkten~~
-
-~~Sollten die Pfade zu den Anfragen an die Endpunkte vom Standardwert ("") abweichen so können diese in der
-`testsuite_config.properties` Datei im idp-testsuite Ordner angepasst werden.~~
-
-~~Zum Aktivieren der entsprechenden Settings ist die Umgebungsvariable IDP_SERVER_TYPE zu setzen. Der Wert entspricht
-dem ersten Teil der Properties Gruppe in der property Datei.~~
-
-**DEPRECATED since v7.0.0**
-
-```
-export IDP_SERVER_TYPE=rise
-```
-
 ### Deaktivieren der Tokenverschlüsselung
 
 In der aktuellen Version der Referenzimplementierung werden die Tokens bereits verschlüsselt. Die Testsuite ist
@@ -359,6 +366,11 @@ Das für die symmetrische Verschlüsselung zu verwendende Passwort wird in folge
 ```
 encryption.symmetric.key=geheimerSchluesselDerNochGehashtWird
 ```
+
+### Nutzung / Anpassung von Testumgebungsvariablen
+
+In der testsuite_config.properties sind ein Set von mit TESTENV beginnenden Variablen definiert, welche in der Testsuite
+bei der Übergabe von String Werten durch Angabe von ${TESTENV.variablenname} genutzt werden können.
 
 ## Remarks
 

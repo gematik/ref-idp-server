@@ -58,7 +58,7 @@ public class AccessTokenInterceptor implements HandlerInterceptor, WebMvcConfigu
             .filter(StringUtils::isNotEmpty)
             .filter(authorizationHeader -> authorizationHeader.startsWith("Bearer "))
             .map(authorizationHeader -> authorizationHeader.split("Bearer ")[1])
-            .map(token -> new JsonWebToken(token))
+            .map(JsonWebToken::new)
             .orElseThrow(() -> new IdpServerAccessDeniedException("No authorization-Header with Bearer-Token given"));
 
         try {

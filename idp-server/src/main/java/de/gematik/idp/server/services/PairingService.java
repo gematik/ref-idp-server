@@ -43,7 +43,6 @@ import java.util.stream.Collectors;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -52,14 +51,14 @@ import org.springframework.stereotype.Service;
 public class PairingService {
 
     private static final Set<ClaimName> SIGNED_PAIRING_DATA_CLAIMS = Set
-        .of(KEY_DATA, KEY_IDENTIFIER, DEVICE_PRODUCT, CERTIFICATE_SERIALNUMBER, CERTIFICATE_ISSUER,
-            CERTIFICATE_NOT_AFTER, CERTIFICATE_PUBLIC_KEY, SIGNATURE_ALGORITHM_IDENTIFIER);
+        .of(CERTIFICATE_NOT_AFTER, AUTH_CERT_SUBJECT_PUBLIC_KEY_INFO, CERTIFICATE_SERIALNUMBER, KEY_IDENTIFIER,
+            SE_SUBJECT_PUBLIC_KEY_INFO, CERTIFICATE_ISSUER, DEVICE_PRODUCT);
     private final PairingRepository pairingRepository;
-    private final ModelMapper modelMapper;
     private final DeviceValidationService deviceValidationService;
     private final AuthenticationChallengeVerifier authenticationChallengeVerifier;
     private final IdpKey idpEnc;
     private final Validator validator;
+    private final DataVersionService dataVersionService;
 
     public List<PairingDto> validateTokenAndGetPairingList(final JsonWebToken accessToken) {
         validateAccessTokenClaims(accessToken);
@@ -70,8 +69,7 @@ public class PairingService {
     }
 
     public List<PairingData> getPairingList(final String idNumber) {
-        return pairingRepository
-            .findByIdNumber(idNumber);
+        return pairingRepository.findByIdNumber(idNumber);
     }
 
     public void validateTokenAndDeleteSelectedPairing(final JsonWebToken accessToken, final String keyIdentifier) {
@@ -88,16 +86,20 @@ public class PairingService {
         pairingRepository.deleteByIdNumber(idNumber);
     }
 
-    public Long validateAndInsertPairingData(final JsonWebToken accessToken, final IdpJwe encryptedRegistrationData) {
+    public PairingDto validateAndInsertPairingData(final JsonWebToken accessToken,
+        final IdpJwe encryptedRegistrationData) {
         final RegistrationData registrationData = decryptAndValidateRegistrationData(encryptedRegistrationData);
 
         validateAccessTokenClaims(accessToken);
         final String idNumber = retrieveIdNumberFromAccessToken(accessToken);
         final JsonWebToken signedPairingData = new JsonWebToken(registrationData.getSignedPairingData());
         final DeviceInformation deviceInformation = registrationData.getDeviceInformation();
+
+        dataVersionService.checkDataVersion(deviceInformation);
+        dataVersionService.checkDataVersion(deviceInformation.getDeviceType());
+
         final X509Certificate authCert = CryptoLoader
-            .getCertificateFromPem(Base64.getDecoder().decode(registrationData.getAuthenticationCert()));
-        //TODO OCSP-Check(authCert)
+            .getCertificateFromPem(Base64.getUrlDecoder().decode(registrationData.getAuthCert()));
         checkIdNumberIntegrity(authCert, idNumber);
         checkSignedPairingDataClaims(signedPairingData);
         authenticationChallengeVerifier
@@ -107,9 +109,9 @@ public class PairingService {
             throw new IdpServerException("Device validation matched with not allowed devices!",
                 IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
         }
-        final PairingDto data = createPairingDtoFromRegistrationData(signedPairingData, idNumber,
-            deviceInformation.getDeviceName());
-        return insertPairing(data);
+        final PairingData data = createPairingDtoFromRegistrationData(signedPairingData, idNumber,
+            deviceInformation.getName());
+        return convertToDto(insertPairing(data));
     }
 
     private RegistrationData decryptAndValidateRegistrationData(final IdpJwe encryptedRegistrationData) {
@@ -124,9 +126,11 @@ public class PairingService {
                     IdpErrorType.INVALID_REQUEST,
                     HttpStatus.BAD_REQUEST);
             }
+            dataVersionService.checkDataVersion(registrationData);
+
             return registrationData;
         } catch (final JsonProcessingException e) {
-            throw new IdpServerInvalidRequestException("Invalid Registration Data");
+            throw new IdpServerInvalidRequestException("Invalid Registration Data", e);
         }
     }
 
@@ -140,15 +144,16 @@ public class PairingService {
                 "Unable to find " + missingClaim.get().getJoseName() + " in signed_pairing_data",
                 IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
         }
+        dataVersionService.checkSignedPairingDataVersion(signedPairingData);
     }
 
-    public long insertPairing(final PairingDto pairingData) {
+    public PairingData insertPairing(final PairingData pairingData) {
         if (pairingRepository.findByIdNumberAndKeyIdentifier(pairingData.getIdNumber(), pairingData.getKeyIdentifier())
             .isPresent()) {
             throw new IdpServerException("Pairing for this ID/Key-ID combination already in DB",
                 IdpErrorType.INVALID_REQUEST, HttpStatus.CONFLICT);
         }
-        return pairingRepository.save(convertToEntity(pairingData)).getId();
+        return pairingRepository.save(pairingData);
     }
 
     public String retrieveIdNumberFromAccessToken(final JsonWebToken accessToken) {
@@ -159,18 +164,20 @@ public class PairingService {
     }
 
     private void validateAccessTokenClaims(final JsonWebToken accessToken) {
-        //TODO further validation of AMR/ACR
-        accessToken.getStringBodyClaim(AUTHENTICATION_METHODS_REFERENCE)
-            .orElseThrow(() -> new IdpServerException("Claim amr not found in accessToken",
-                IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST));
-        accessToken.getStringBodyClaim(AUTHENTICATION_CLASS_REFERENCE)
-            .orElseThrow(() -> new IdpServerException("Claim acr not found in accessToken",
-                IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST));
+        if (!accessToken.getBodyClaim(AUTHENTICATION_METHODS_REFERENCE).isPresent()) {
+            throw new IdpServerException("Claim amr not found in accessToken",
+                IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+        }
+        if (!accessToken.getBodyClaim(AUTHENTICATION_CLASS_REFERENCE).isPresent()) {
+            throw new IdpServerException("Claim acr not found in accessToken",
+                IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+        }
     }
 
-    private PairingDto createPairingDtoFromRegistrationData(final JsonWebToken signedPairingData, final String idNumber,
+    private PairingData createPairingDtoFromRegistrationData(final JsonWebToken signedPairingData,
+        final String idNumber,
         final String deviceName) {
-        return PairingDto.builder()
+        return PairingData.builder()
             .id(null)
             .idNumber(idNumber)
             .keyIdentifier(signedPairingData.getStringBodyClaim(KEY_IDENTIFIER)
@@ -208,11 +215,12 @@ public class PairingService {
     }
 
     private PairingDto convertToDto(final PairingData pairingData) {
-        return modelMapper.map(pairingData, PairingDto.class);
-    }
 
-    private PairingData convertToEntity(final PairingDto pairingDto) {
-        return modelMapper.map(pairingDto, PairingData.class);
+        return PairingDto.builder()
+            .creationTime(pairingData.getTimestampPairing().toEpochSecond())
+            .signedPairingData(pairingData.getSignedPairingData())
+            .name(pairingData.getDeviceName())
+            .pairingEntryVersion(dataVersionService.getCurrentVersion())
+            .build();
     }
 }
-

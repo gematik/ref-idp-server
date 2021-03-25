@@ -50,4 +50,5 @@ public class IdpDiscoveryDocument {
     private String[] grantTypesSupported;
     private String[] acrValuesSupported;
     private String[] tokenEndpointAuthMethodsSupported;
+    private String[] codeChallengeMethodsSupported;
 }

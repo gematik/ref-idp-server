@@ -22,7 +22,7 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <argLine>${surefireArgLine}</argLine>
+                    <argLine>${surefireArgLine} -Dfile.encoding=UTF-8</argLine>
                     <skipTests>${skip.unittests}</skipTests>
                 </configuration>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -63,7 +63,7 @@
             <dependency>
                 <artifactId>bcprov-jdk16</artifactId>
                 <groupId>org.bouncycastle</groupId>
-                <version>${version.bouncycastle.bcprov}</version>
+                <version>${version.bouncycastle.bcpprov}</version>
             </dependency>
             <dependency>
                 <artifactId>bcpkix-jdk15on</artifactId>
@@ -107,7 +107,7 @@
     <parent>
         <artifactId>spring-boot-starter-parent</artifactId>
         <groupId>org.springframework.boot</groupId>
-        <version>2.3.4.RELEASE</version>
+        <version>2.4.3</version>
     </parent>
 
     <properties>
@@ -122,7 +122,7 @@
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
         <sonar.language>java</sonar.language>
         <version.bouncycastle.bcpkix>1.66</version.bouncycastle.bcpkix>
-        <version.bouncycastle.prov>1.46</version.bouncycastle.prov>
+        <version.bouncycastle.bcpprov>1.46</version.bouncycastle.bcpprov>
         <version.build-helper-maven-plugin>3.2.0</version.build-helper-maven-plugin>
         <version.jsoniter>0.9.16</version.jsoniter>
         <version.lombok>1.18.16</version.lombok>
@@ -142,5 +142,5 @@
         <version.test.regex>none</version.test.regex>
     </properties>
 
-    <version>11.1.0</version>
+    <version>12.0.0</version>
 </project>

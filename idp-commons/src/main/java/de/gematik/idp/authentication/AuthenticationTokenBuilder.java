@@ -17,7 +17,6 @@
 package de.gematik.idp.authentication;
 
 import static de.gematik.idp.field.ClaimName.*;
-
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.crypto.Nonce;
@@ -80,7 +79,7 @@ public class AuthenticationTokenBuilder {
     }
 
     public IdpJwe buildAuthenticationTokenFromSsoToken(final JsonWebToken ssoToken,
-        final JsonWebToken challengeToken) {
+        final JsonWebToken challengeToken, final ZonedDateTime issueingTime) {
         final X509Certificate confirmationCertificate = extractConfirmationCertificate(ssoToken);
 
         final Map<String, Object> claimsMap = new HashMap<>();
@@ -94,6 +93,7 @@ public class AuthenticationTokenBuilder {
         claimsMap.put(CLIENT_ID.getJoseName(), extractClaimFromChallengeToken(challengeToken, CLIENT_ID));
         claimsMap.put(REDIRECT_URI.getJoseName(), extractClaimFromChallengeToken(challengeToken, REDIRECT_URI));
         claimsMap.put(SCOPE.getJoseName(), extractClaimFromChallengeToken(challengeToken, SCOPE));
+        claimsMap.put(ISSUED_AT.getJoseName(), issueingTime.toEpochSecond());
         claimsMap.put(STATE.getJoseName(), extractClaimFromChallengeToken(challengeToken, STATE));
         claimsMap.put(RESPONSE_TYPE.getJoseName(), extractClaimFromChallengeToken(challengeToken, RESPONSE_TYPE));
         claimsMap.put(TOKEN_TYPE.getJoseName(), "code");
@@ -102,7 +102,7 @@ public class AuthenticationTokenBuilder {
         claimsMap.put(ISSUER.getJoseName(), extractClaimFromChallengeToken(challengeToken, ISSUER));
         claimsMap.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
 
-        final Map headerClaims = new HashMap<>(ssoToken.getHeaderClaims());
+        final Map<String, Object> headerClaims = new HashMap<>(ssoToken.getHeaderClaims());
         headerClaims.put(TYPE.getJoseName(), "JWT");
 
         return jwtProcessor.buildJwt(new JwtBuilder()

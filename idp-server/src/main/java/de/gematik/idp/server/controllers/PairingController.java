@@ -20,6 +20,7 @@ import static de.gematik.idp.IdpConstants.PAIRING_ENDPOINT;
 
 import de.gematik.idp.server.RequestAccessToken;
 import de.gematik.idp.server.data.PairingDto;
+import de.gematik.idp.server.data.PairingList;
 import de.gematik.idp.server.services.PairingService;
 import de.gematik.idp.server.validation.accessToken.ValidateAccessToken;
 import de.gematik.idp.server.validation.clientSystem.ValidateClientSystem;
@@ -33,6 +34,9 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import net.dracoblue.spring.web.mvc.method.annotation.HttpResponseHeader;
+import net.dracoblue.spring.web.mvc.method.annotation.HttpResponseHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,14 +44,17 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Transactional
 @Valid
-@Api(tags = {
-    "Pairing-Dienst"}, description = "REST Endpunkte Abrufen, Einfügen und löschen von Pairing Daten")
+@Api(tags = {"Pairing-Dienst"})
+@HttpResponseHeaders({
+    @HttpResponseHeader(name = "Cache-Control", value = "no-store"),
+    @HttpResponseHeader(name = "Pragma", value = "no-cache")
+})
 public class PairingController {
 
     private final PairingService pairingService;
     private final RequestAccessToken requestAccessToken;
 
-    @GetMapping(PAIRING_ENDPOINT)
+    @GetMapping(value = PAIRING_ENDPOINT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(httpMethod = "GET", value = "Endpunkt für Abrufen der Pairingdaten", notes = "Es werden zur übergebenen KVNR alle Pairingdaten abgerufen.", response = List.class)
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Erfolgreich Pairingdaten erhalten"),
@@ -57,11 +64,11 @@ public class PairingController {
     })
     @ValidateClientSystem
     @ValidateAccessToken
-    public List<PairingDto> getAllPairingsForKvnr() {
-        return pairingService.validateTokenAndGetPairingList(requestAccessToken.getAccessToken());
+    public PairingList getAllPairingsForKvnr() {
+        return new PairingList(pairingService.validateTokenAndGetPairingList(requestAccessToken.getAccessToken()));
     }
 
-    @DeleteMapping(PAIRING_ENDPOINT + "/{key_identifier}")
+    @DeleteMapping(value = PAIRING_ENDPOINT + "/{key_identifier}")
     @ApiOperation(httpMethod = "DELETE", value = "Endpunkt zum Löschen eines spezifischen Pairingdatensatzes",
         notes = "Es wird zur übergebenen KVNR und ID der entsprechende Pairingdatensatz gelöscht. ")
     @ApiResponses(value = {
@@ -79,8 +86,9 @@ public class PairingController {
             .validateTokenAndDeleteSelectedPairing(requestAccessToken.getAccessToken(), keyIdentifier);
     }
 
-    @PutMapping(value = PAIRING_ENDPOINT)
-    @ApiOperation(httpMethod = "PUT", value = "Endpunkt zum Hinzufügen von Pairingdaten",
+    @PostMapping(value = PAIRING_ENDPOINT, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @ApiOperation(httpMethod = "POST", value = "Endpunkt zum Hinzufügen von Pairingdaten",
         notes = "Die hier engereichten Pairingdaten werden in der Pairing-DB hinterlegt. Ist dies erfolgreich, wird die ID für den DB-Eintrag zurückgegeben.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Erfolgreich Pairingdaten hinzugefügt"),
@@ -90,8 +98,9 @@ public class PairingController {
     })
     @ValidateAccessToken
     @ValidateClientSystem
-    public void insertPairing(
-        @RequestBody @ApiParam(value = "Registrierungsdaten") @NotNull final String registrationData) {
-        pairingService.validateAndInsertPairingData(requestAccessToken.getAccessToken(), new IdpJwe(registrationData));
+    public PairingDto insertPairing(
+        @RequestParam(value = "encrypted_registration_data", required = false) @NotNull final String registrationData) {
+        return pairingService
+            .validateAndInsertPairingData(requestAccessToken.getAccessToken(), new IdpJwe(registrationData));
     }
 }

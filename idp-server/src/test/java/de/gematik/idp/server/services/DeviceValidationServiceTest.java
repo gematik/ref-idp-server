@@ -18,7 +18,6 @@ package de.gematik.idp.server.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.server.data.DeviceType;
 import de.gematik.idp.server.data.DeviceValidationDto;
@@ -165,10 +164,10 @@ class DeviceValidationServiceTest {
 
     private DeviceType createDeviceType(final DeviceValidationData data) {
         return DeviceType.builder()
-            .deviceManufacturer(data.getManufacturer())
-            .deviceProduct(data.getProduct())
-            .deviceOs(data.getOs())
-            .deviceVersion(data.getOsVersion())
+            .manufacturer(data.getManufacturer())
+            .product(data.getProduct())
+            .os(data.getOs())
+            .osVersion(data.getOsVersion())
             .build();
     }
 

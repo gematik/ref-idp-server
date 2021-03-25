@@ -29,7 +29,17 @@ public class IdpServerException extends ResponseStatusException {
     private int errorCode = -1;
 
     public IdpServerException(final IdpErrorResponse errorResponse, final Exception e) {
-        this(errorResponse.getCode(), errorResponse.getError(), errorResponse.getDetailMessage(), e);
+        super(mapToStatus(errorResponse), errorResponse.getDetailMessage(), e);
+        errorType = errorResponse.getError();
+        errorCode = errorResponse.getCode();
+    }
+
+    private static HttpStatus mapToStatus(final IdpErrorResponse errorResponse) {
+        if (errorResponse.getHttpStatusCode() > 100 && errorResponse.getHttpStatusCode() < 600) {
+            return HttpStatus.valueOf(errorResponse.getHttpStatusCode());
+        } else {
+            return HttpStatus.BAD_REQUEST;
+        }
     }
 
     public IdpServerException(final String message, final Exception e, final IdpErrorType errorType,
@@ -50,6 +60,13 @@ public class IdpServerException extends ResponseStatusException {
 
     public IdpServerException(final int errorCode, final IdpErrorType errorType, final String message) {
         super(HttpStatus.BAD_REQUEST, message);
+        this.errorType = errorType;
+        this.errorCode = errorCode;
+    }
+
+    public IdpServerException(final int errorCode, final IdpErrorType errorType, final String message,
+        final HttpStatus returnStatus) {
+        super(returnStatus, message);
         this.errorType = errorType;
         this.errorCode = errorCode;
     }

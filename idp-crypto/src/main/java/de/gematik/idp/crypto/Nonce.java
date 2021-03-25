@@ -39,7 +39,7 @@ public class Nonce {
         final Random random = ThreadLocalRandom.current();
         final byte[] randomArray = new byte[randomByteAmount];
         random.nextBytes(randomArray);
-        return new String(Base64.getUrlEncoder().encode(randomArray));
+        return new String(Base64.getUrlEncoder().withoutPadding().encode(randomArray));
     }
 
     public String getNonceAsHex(final int strlen) {

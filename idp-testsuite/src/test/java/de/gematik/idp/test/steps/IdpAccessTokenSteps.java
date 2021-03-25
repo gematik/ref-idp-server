@@ -18,9 +18,12 @@ package de.gematik.idp.test.steps;
 
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import de.gematik.idp.test.steps.helpers.CucumberValuesConverter;
 import de.gematik.idp.test.steps.helpers.TestEnvironmentConfigurator;
 import de.gematik.idp.test.steps.model.*;
 import io.cucumber.datatable.DataTable;
+import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.security.PublicKey;
 import java.security.Security;
@@ -34,9 +37,10 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jose4j.jwt.JwtClaims;
 import org.json.JSONObject;
-import org.springframework.http.MediaType;
 
 public class IdpAccessTokenSteps extends IdpStepsBase {
+
+    private final CucumberValuesConverter cucumberValuesConverter = new CucumberValuesConverter();
 
     @SneakyThrows
     public void getToken(final HttpStatus result, final DataTable paramsTable) {
@@ -57,7 +61,7 @@ public class IdpAccessTokenSteps extends IdpStepsBase {
 
         final Map<String, String> params = new HashMap<>();
         if (paramsTable != null) {
-            params.putAll(getMapFromDatatable(paramsTable));
+            params.putAll(cucumberValuesConverter.getMapFromDatatable(paramsTable));
             if (params.containsKey("redirect_uri")) {
                 ctxt.put(ContextKey.REDIRECT_URI, params.get("redirect_uri"));
             }
@@ -67,8 +71,10 @@ public class IdpAccessTokenSteps extends IdpStepsBase {
                 ctxt.put(ContextKey.TOKEN_CODE, token_code);
                 if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
                     if (token_code != null) {
-                        ctxt.put(ContextKey.TOKEN_CODE_ENCRYPTED, encrypt(params.get("token_code"),
-                            TestEnvironmentConfigurator.getSymmetricEncryptionKey()));
+                        ctxt.put(ContextKey.TOKEN_CODE_ENCRYPTED,
+                            keyAndCertificateStepsHelper.encrypt(
+                                "{\"njwt\":\"" + params.get("token_code") + "\"}",
+                                TestEnvironmentConfigurator.getSymmetricEncryptionKey()));
                     } else {
                         ctxt.put(ContextKey.TOKEN_CODE_ENCRYPTED, null);
                     }
@@ -94,6 +100,7 @@ public class IdpAccessTokenSteps extends IdpStepsBase {
         }
 
         // map token_code to request param code
+        // TODO RISE ??? strange sure we remove the same param?
         if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
             params.put("code", params.remove("token_code"));
         } else {
@@ -105,16 +112,14 @@ public class IdpAccessTokenSteps extends IdpStepsBase {
         final SecretKey tokenKey = new SecretKeySpec(tokenKeyBytes, "AES");
         if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
             Context.getDiscoveryDocument();
-            final PublicKey pukToken = DiscoveryDocument.getPublicKeyFromCertFromJWK(ContextKey.PUK_ENC);
+            final PublicKey pukToken = DiscoveryDocument.getPublicKeyFromContextKey(ContextKey.PUK_ENC);
             params.put(
                 "key_verifier",
                 buildKeyVerifierToken(tokenKeyBytes, params.get("code_verifier"), pukToken));
         }
-        final Map<String, String> headers = new HashMap<>();
-        headers.put(CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
         final Response r = requestResponseAndAssertStatus(
             Context.getDiscoveryDocument().getTokenEndpoint(),
-            headers,
+            Map.of(CONTENT_TYPE, ContentType.URLENC.withCharset("UTF-8")),
             HttpMethods.POST,
             params,
             null, result);
@@ -124,8 +129,10 @@ public class IdpAccessTokenSteps extends IdpStepsBase {
             final JSONObject json = new JSONObject(r.getBody().asString());
             if (TestEnvironmentConfigurator.isTokenEncryptionActive()) {
                 // decrypt access and id token
-                ctxt.put(ContextKey.ACCESS_TOKEN, decrypt(json.getString("access_token"), tokenKey));
-                ctxt.put(ContextKey.ID_TOKEN, decrypt(json.getString("id_token"), tokenKey));
+                ctxt.put(ContextKey.ACCESS_TOKEN, keyAndCertificateStepsHelper
+                    .decryptAndExtractNjwt(json.getString("access_token"), tokenKey));
+                ctxt.put(ContextKey.ID_TOKEN,
+                    keyAndCertificateStepsHelper.decryptAndExtractNjwt(json.getString("id_token"), tokenKey));
             } else {
                 ctxt.put(ContextKey.ACCESS_TOKEN, json.getString("access_token"));
                 ctxt.put(ContextKey.ID_TOKEN, json.getString("id_token"));
@@ -140,8 +147,8 @@ public class IdpAccessTokenSteps extends IdpStepsBase {
     private String buildKeyVerifierToken(final byte[] tokenKeyBytes, final String codeVerifier,
         final PublicKey pukToken) {
         final JwtClaims claims = new JwtClaims();
-        claims.setStringClaim("token_key", new String(Base64.getEncoder().encode(tokenKeyBytes)));
+        claims.setStringClaim("token_key", new String(Base64.getUrlEncoder().withoutPadding().encode(tokenKeyBytes)));
         claims.setStringClaim("code_verifier", codeVerifier);
-        return encrypt(claims.toJson(), pukToken);
+        return keyAndCertificateStepsHelper.encrypt(claims.toJson(), pukToken);
     }
 }

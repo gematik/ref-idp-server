@@ -19,7 +19,7 @@ package de.gematik.idp.client;
 import static de.gematik.idp.authentication.UriUtils.extractParameterValue;
 import static de.gematik.idp.crypto.CryptoLoader.getCertificateFromPem;
 import static de.gematik.idp.field.ClaimName.*;
-import static org.apache.http.HttpHeaders.CONTENT_TYPE;
+
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.authentication.UriUtils;
 import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
@@ -48,17 +48,18 @@ import kong.unirest.*;
 import kong.unirest.jackson.JacksonObjectMapper;
 import kong.unirest.json.JSONObject;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.http.HttpStatus;
 import org.jose4j.jwt.JwtClaims;
 import org.springframework.http.MediaType;
 
 public class AuthenticatorClient {
 
-    {
+    private static final String USER_AGENT = "IdP-Client";
+
+    public AuthenticatorClient() {
+        Unirest.config().reset();
+        Unirest.config().followRedirects(false);
         Unirest.config().setObjectMapper(new JacksonObjectMapper());
     }
-
-    private static final String USER_AGENT = "IdP-Client";
 
     public static Map<String, String> getAllHeaderElementsAsMap(final HttpRequest request) {
         return request.getHeaders().all().stream()
@@ -96,11 +97,7 @@ public class AuthenticatorClient {
             .apply(request)
             .asObject(AuthenticationChallenge.class);
         afterCallback.accept(authorizationResponse);
-        if (authorizationResponse.getStatus() != HttpStatus.SC_OK) {
-            throw new IdpClientRuntimeException(
-                "Unexpected Server-Response " + authorizationResponse.getStatus() + " with details "
-                    + authorizationResponse.mapError(String.class));
-        }
+        checkResponseForErrorsAndThrowIfAny(authorizationResponse);
         return AuthorizationResponse.builder()
             .authenticationChallenge(authorizationResponse.getBody())
             .build();
@@ -114,20 +111,29 @@ public class AuthenticatorClient {
         final MultipartBody request = Unirest
             .post(authenticationRequest.getAuthenticationEndpointUrl())
             .field("signed_challenge", authenticationRequest.getSignedChallenge().getRawString())
-            .header("Content-Type", "application/x-www-form-urlencoded")
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .header(HttpHeaders.USER_AGENT, USER_AGENT);
 
         final HttpResponse<String> loginResponse = beforeAuthenticationCallback.apply(request).asString();
         afterAuthenticationCallback.accept(loginResponse);
+        checkResponseForErrorsAndThrowIfAny(loginResponse);
         final String location = retrieveLocationFromResponse(loginResponse);
-
-        checkForForwardingExceptionAndThrowIfPresent(location);
 
         return AuthenticationResponse.builder()
             .code(extractParameterValue(location, "code"))
             .location(location)
             .ssoToken(extractParameterValue(location, "ssotoken"))
             .build();
+    }
+
+    private void checkResponseForErrorsAndThrowIfAny(final HttpResponse<?> loginResponse) {
+        if (loginResponse.getStatus() == 302) {
+            checkForForwardingExceptionAndThrowIfPresent(loginResponse.getHeaders().getFirst("Location"));
+        }
+        if (loginResponse.getStatus() / 100 == 4) {
+            throw new IdpClientRuntimeException(
+                "Unexpected Server-Response " + loginResponse.getStatus() + " " + loginResponse.mapError(String.class));
+        }
     }
 
     private void checkForForwardingExceptionAndThrowIfPresent(final String location) {
@@ -149,13 +155,13 @@ public class AuthenticatorClient {
         final MultipartBody request = Unirest.post(authenticationRequest.getAuthenticationEndpointUrl())
             .field("ssotoken", authenticationRequest.getSsoToken())
             .field("unsigned_challenge", authenticationRequest.getChallengeToken().getRawString())
-            .header(CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .header(HttpHeaders.USER_AGENT, USER_AGENT)
             .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
         final HttpResponse<String> loginResponse = beforeAuthenticationCallback.apply(request).asString();
         afterAuthenticationCallback.accept(loginResponse);
+        checkResponseForErrorsAndThrowIfAny(loginResponse);
         final String location = retrieveLocationFromResponse(loginResponse);
-        checkForForwardingExceptionAndThrowIfPresent(location);
         return AuthenticationResponse.builder()
             .code(extractParameterValue(location, "code"))
             .location(location)
@@ -179,24 +185,19 @@ public class AuthenticatorClient {
             tokenRequest.getIdpEnc());
 
         final MultipartBody request = Unirest.post(tokenRequest.getTokenUrl())
-            .header(CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .field("grant_type", "authorization_code")
             .field("client_id", tokenRequest.getClientId())
             .field("code", tokenRequest.getCode())
             .field("key_verifier", keyVerifierToken.getRawString())
             .field("redirect_uri", tokenRequest.getRedirectUrl())
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .header(HttpHeaders.USER_AGENT, USER_AGENT)
             .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 
         final HttpResponse<JsonNode> tokenResponse = beforeTokenCallback.apply(request)
             .asJson();
         afterTokenCallback.accept(tokenResponse);
-        if (tokenResponse.getStatus() != HttpStatus.SC_OK) {
-            throw new IdpClientRuntimeException(
-                "Unexpected Server-Response " + tokenResponse.getStatus() + " "
-                    + tokenResponse.getBody().getObject().getString("gematik_code") + ": "
-                    + tokenResponse.getBody().getObject().getString("gematik_error_text"));
-        }
+        checkResponseForErrorsAndThrowIfAny(tokenResponse);
         final JSONObject jsonObject = tokenResponse.getBody().getObject();
 
         final String tokenType = tokenResponse.getBody().getObject().getString("token_type");
@@ -223,7 +224,8 @@ public class AuthenticatorClient {
     private IdpJwe buildKeyVerifierToken(final byte[] tokenKeyBytes, final String codeVerifier,
         final PublicKey idpEnc) {
         final JwtClaims claims = new JwtClaims();
-        claims.setStringClaim(TOKEN_KEY.getJoseName(), new String(Base64.getEncoder().encode(tokenKeyBytes)));
+        claims.setStringClaim(TOKEN_KEY.getJoseName(),
+            new String(Base64.getUrlEncoder().withoutPadding().encode(tokenKeyBytes)));
         claims.setStringClaim(CODE_VERIFIER.getJoseName(), codeVerifier);
 
         return IdpJwe.createWithPayloadAndEncryptWithKey(claims.toJson(), idpEnc, "JSON");
@@ -242,9 +244,6 @@ public class AuthenticatorClient {
             .header(HttpHeaders.USER_AGENT, USER_AGENT)
             .asJson();
         final JSONObject keyObject = pukAuthResponse.getBody().getObject();
-
-        final String verificationCertificate = keyObject.getJSONArray(X509_CERTIFICATE_CHAIN.getJoseName())
-            .getString(0);
 
         return DiscoveryDocumentResponse.builder()
             .authorizationEndpoint(discoveryClaims.get("authorization_endpoint").toString())

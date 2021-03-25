@@ -17,29 +17,29 @@
 package de.gematik.idp.server.services;
 
 import static de.gematik.idp.field.ClaimName.*;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
 import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.crypto.X509ClaimExtraction;
+import de.gematik.idp.data.IdpErrorResponse;
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.field.AuthenticationMethodReference;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.server.data.DeviceInformation;
-import de.gematik.idp.server.data.PairingDto;
 import de.gematik.idp.server.devicevalidation.DeviceValidationState;
 import de.gematik.idp.server.exceptions.IdpServerException;
+import de.gematik.idp.server.pairing.PairingData;
+import de.gematik.idp.server.pairing.PairingRepository;
 import de.gematik.idp.token.JsonWebToken;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -47,15 +47,20 @@ import org.springframework.stereotype.Service;
 @Service
 public class ChallengeTokenValidationService {
 
-    private final PairingService pairingService;
+    private final PairingRepository pairingRepository;
     private final AuthenticationChallengeVerifier authenticationChallengeVerifier;
     private final DeviceValidationService deviceValidationService;
+    private final DataVersionService dataVersionService;
 
     public void validateChallengeToken(final JsonWebToken signedChallenge) {
-        final boolean isAltAuth = signedChallenge
-            .getStringBodyClaim(ClaimName.AUTHENTICATION_METHODS_REFERENCE)
-            .map(this::isAlternateAuthentication)
-            .orElse(false);
+        final Set<String> amr = (Set<String>) signedChallenge.getBodyClaim(ClaimName.AUTHENTICATION_METHODS_REFERENCE)
+            .filter(List.class::isInstance)
+            .map(List.class::cast)
+            .stream()
+            .flatMap(List::stream)
+            .collect(Collectors.toSet());
+        final boolean isAltAuth = amr.containsAll(Arrays.asList("mfa", "hwk")) &&
+            (amr.contains("fpt") || amr.contains("face") || amr.contains("pin") || amr.contains("pwd"));
         if (isAltAuth) {
             validateAlternateAuthenticationDataAndThrowExceptionIfFail(signedChallenge);
         } else {
@@ -71,12 +76,18 @@ public class ChallengeTokenValidationService {
             () -> new IdpServerException("Unable to find key identifier in authentication data",
                 IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST));
         final String idNumber = getIdNumberFromAuthDataCertClaims(authDataCert);
-        final PairingDto pairingData = pairingService
-            .getPairingDtoForIdNumberAndKeyIdentifier(idNumber, keyIdentifier)
+        final PairingData pairingData = pairingRepository
+            .findByIdNumberAndKeyIdentifier(idNumber, keyIdentifier)
             .orElseThrow(
                 () -> new IdpServerException("Unable to find pairing entry with given id-number and key-identifier",
                     IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST));
+
+        dataVersionService.checkSignedAuthDataVersion(signedAuthData);
+
         final DeviceInformation deviceInformation = retrieveDeviceInformationFromAuthData(signedAuthData);
+        dataVersionService.checkDataVersion(deviceInformation);
+        dataVersionService.checkDataVersion(deviceInformation.getDeviceType());
+
         if (deviceValidationService.assess(deviceInformation.getDeviceType())
             .equals(DeviceValidationState.NOT_ALLOWED)) {
             throw new IdpServerException("Device validation matched with not allowed devices!",
@@ -88,25 +99,24 @@ public class ChallengeTokenValidationService {
                 IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
         }
         final JsonWebToken signedPairingDataFromDto = new JsonWebToken(pairingData.getSignedPairingData());
-        signedPairingDataFromDto.verify(retrieveKeyFromPairingDto(pairingData, PUBLIC_KEY));
+        signedPairingDataFromDto.verify(retrieveKeyFromPairingDto(pairingData, AUTH_CERT_SUBJECT_PUBLIC_KEY_INFO));
         validateCertSn(authDataCert, signedPairingDataFromDto.getStringBodyClaim(CERTIFICATE_SERIALNUMBER)
             .orElseThrow(() -> new IdpServerException("CertID not found in pairing data",
                 IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST)));
-        signedAuthData.verify(retrieveKeyFromPairingDto(pairingData, KEY_DATA));
+        signedAuthData.verify(retrieveKeyFromPairingDto(pairingData, SE_SUBJECT_PUBLIC_KEY_INFO));
     }
 
     private void validateCertSn(final X509Certificate authDataCert, final String pairingCertSN) {
-        final String authDataCertSN = authDataCert.getSerialNumber().toString();
-        if (!pairingCertSN.equals(authDataCertSN)) {
-            throw new IdpServerException("Serial number of cert did not match pairing data",
-                IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+        final String authDataCertSn = authDataCert.getSerialNumber().toString();
+        if (!pairingCertSN.equals(authDataCertSn)) {
+            throw new IdpServerException(4666, null, "Serial number of cert did not match pairing data");
         }
     }
 
-    private PublicKey retrieveKeyFromPairingDto(final PairingDto pairingData, final ClaimName claimName) {
+    private PublicKey retrieveKeyFromPairingDto(final PairingData pairingData, final ClaimName claimName) {
         return new JsonWebToken(pairingData.getSignedPairingData())
             .getStringBodyClaim(claimName)
-            .map(Base64.getDecoder()::decode)
+            .map(Base64.getUrlDecoder()::decode)
             .map(CryptoLoader::getEcPublicKeyFromBytes)
             .orElseThrow(() -> new IdpServerException("PublicKey not found in pairing data",
                 IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST));
@@ -123,8 +133,10 @@ public class ChallengeTokenValidationService {
 
     private DeviceInformation retrieveDeviceInformationFromAuthData(final JsonWebToken signedAuthData) {
         return signedAuthData.getBodyClaim(DEVICE_INFORMATION)
-            .filter(String.class::isInstance)
-            .map(String.class::cast)
+            .filter(Map.class::isInstance)
+            .map(Map.class::cast)
+            .map(JSONObject::new)
+            .map(JSONObject::toString)
             .map(this::createDeviceInfoFromJson)
             .orElseThrow(() -> new IdpServerException("Device information not found in auth data",
                 IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST));
@@ -136,18 +148,20 @@ public class ChallengeTokenValidationService {
         try {
             deviceInformation = mapper.readValue(json, DeviceInformation.class);
         } catch (final JsonProcessingException e) {
-            throw new IdpServerException("Device information in auth data invalid",
-                IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+            throw new IdpServerException(IdpErrorResponse.builder()
+                .detailMessage("Device information in auth data invalid")
+                .code(4666)
+                .error(null)
+                .build(), e);
         }
         return deviceInformation;
     }
 
-    private boolean isAlternateAuthentication(final String amr) {
+    private boolean isAlternateAuthentication(final String[] amr) {
         final List<String> altAuthList = Arrays.stream(AuthenticationMethodReference.values())
             .filter(AuthenticationMethodReference::isAlternativeAuthentication)
             .map(AuthenticationMethodReference::getDescription)
             .collect(Collectors.toList());
-        return Stream.of(amr.split(" "))
-            .anyMatch(altAuthList::contains);
+        return Arrays.stream(amr).anyMatch(altAuthList::contains);
     }
 }

@@ -17,7 +17,6 @@
 package de.gematik.idp.server.controllers;
 
 import static de.gematik.idp.IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.authentication.IdpJwtProcessor;
@@ -25,7 +24,6 @@ import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.data.IdpDiscoveryDocument;
 import de.gematik.idp.data.IdpJwksDocument;
 import de.gematik.idp.data.IdpKeyDescriptor;
-import de.gematik.idp.data.PublicKeyUse;
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.server.ServerUrlService;
 import de.gematik.idp.server.exceptions.IdpServerException;
@@ -77,11 +75,9 @@ public class DiscoveryDocumentController {
                         .constructFromX509Certificate(identity.getCertificate(),
                             identity.getKeyId(),
                             identity.getKeyId()
-                                .map(id -> !id.equals("idpEnc"))
+                                .map(id -> !id.equals("puk_idp_enc"))
                                 .orElse(false));
-                    keyDesc.setPublicKeyUse(identity.getKeyId()
-                        .map(id -> id.equals("idpEnc") ? PublicKeyUse.ENCRYPTION : PublicKeyUse.SIGNATURE)
-                        .orElse(null));
+                    keyDesc.setPublicKeyUse(identity.getUse().orElse(null));
                     return keyDesc;
                 })
                 .collect(Collectors.toList()))

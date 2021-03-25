@@ -18,7 +18,6 @@ package de.gematik.idp.crypto;
 
 import static de.gematik.idp.crypto.CertificateAnalysis.determineCertificateType;
 import static de.gematik.idp.crypto.model.CertificateExtractedFieldEnum.*;
-
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
@@ -73,7 +72,7 @@ public class X509ClaimExtraction {
                     .orElse(null));
         } else if (certificateType == TiCertificateType.EGK) {
             claimMap.put(ORGANIZATION_NAME.getFieldname(),
-                getValueFromDn(certificate.getIssuerX500Principal(), RFC4519Style.o)
+                getValueFromDn(certificate.getSubjectX500Principal(), RFC4519Style.o)
                     .orElse(null));
         }
 
@@ -146,9 +145,12 @@ public class X509ClaimExtraction {
 
     private static Optional<DLSequence> getAdmissionEntry(final X509Certificate certificate) {
         try {
-            final ASN1Encodable parsedValue = JcaX509ExtensionUtils.parseExtensionValue(
-                certificate.getExtensionValue(ISISMTTObjectIdentifiers.id_isismtt_at_admission.getId()));
+            final byte[] data = certificate.getExtensionValue(ISISMTTObjectIdentifiers.id_isismtt_at_admission.getId());
+            if (data == null) {
+                return Optional.empty();
+            }
 
+            final ASN1Encodable parsedValue = JcaX509ExtensionUtils.parseExtensionValue(data);
             final DLSequence a = (DLSequence) parsedValue;
             DLSequence b = null;
             final Iterator<ASN1Encodable> iterator = a.iterator();

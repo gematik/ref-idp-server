@@ -28,91 +28,94 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
   Scenario: Biometrie Pairingliste - Gutfall - Erzeuge einen Pairingeintrag für IDNummer und fordere Pairingliste an
     Given I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
     And I create a device information token with
-      | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
+      | name                 | manufacturer | product     | model | os      | os_version |
+      | ${TESTENV.client_id} | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidlist100   | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-d-valid-ecc.p12 |
+      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidlist100   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-d-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
     And I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
     When I request all pairings
     Then the response status is 200
-    And the JSON Array response should match
+    And the response http headers match
+        """
+        Cache-Control=no-store
+        Pragma=no-cache
+        """
+    And the JSON response should match
       """
-        [
-          {
-            keyIdentifier:      "keyidlist100",
-            timestampPairing:   ".*",
-            signedPairingData:  "ey.*",
-            id:                 ".*",
-            idNumber:           "X764228433",
-            deviceName:         "eRezeptApp"
-          }
-        ]
+        {
+          pairing_entries: [
+            {
+              creation_time:         ".*",
+              signed_pairing_data:   "ey.*",
+              name:                  "eRezeptApp",
+              pairing_entry_version: ".*"
+            }
+          ]
+        }
       """
+    When I deregister the device with 'keyidlist100'
+    Then the response status is 200
 
   @Approval @Ready
   Scenario: Biometrie Pairingliste - Gutfall - Erzeuge mehrere Pairingeinträge für IDNummer und fordere Pairingliste an
     Given I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
     And I create a device information token with
-      | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
+      | name       | manufacturer | product     | model | os      | os_version |
+      | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidlist200   | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-d-valid-ecc.p12 |
+      | se_subject_public_key_info   | key_identifier | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             | product     |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidlist200   | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-d-valid-ecc.p12 | FairPhone 3 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
     And I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
     And I create a device information token with
-      | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
+      | name       | manufacturer | product     | model | os      | os_version |
+      | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidlist201   | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-d-valid-ecc.p12 |
+      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidlist201   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-d-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
     And I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
     When I request all pairings
     Then the response status is 200
-    And the JSON Array response should match
+    And the JSON response should match
       """
-        [
-          {
-            keyIdentifier:      "keyidlist100",
-            timestampPairing:   ".*",
-            signedPairingData:  "ey.*",
-            id:                 ".*",
-            idNumber:           "X764228433",
-            deviceName:         "eRezeptApp"
-          },
-          {
-            keyIdentifier:      "keyidlist200",
-            timestampPairing:   ".*",
-            signedPairingData:  "ey.*",
-            id:                 ".*",
-            idNumber:           "X764228433",
-            deviceName:         "eRezeptApp"
-          },
-          {
-            keyIdentifier:      "keyidlist201",
-            timestampPairing:   ".*",
-            signedPairingData:  "ey.*",
-            id:                 ".*",
-            idNumber:           "X764228433",
-            deviceName:         "eRezeptApp"
-          }
-        ]
+        {
+          pairing_entries: [
+            {
+              creation_time:         ".*",
+              signed_pairing_data:   "ey.*",
+              name:                  "eRezeptApp",
+              pairing_entry_version: ".*"
+            },
+            {
+              creation_time:         ".*",
+              signed_pairing_data:   "ey.*",
+              name:                  "eRezeptApp",
+              pairing_entry_version: ".*"
+            }
+          ]
+        }
       """
+    When I deregister the device with 'keyidlist200'
+    Then the response status is 200
+    When I deregister the device with 'keyidlist201'
+    Then the response status is 200
 
   @Approval @Ready
   Scenario: Biometrie Pairingliste - Fordere Pairingliste an für IdNummer, welche kein Pairing hat
     And I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-e-valid-ecc.p12'
     When I request all pairings
     Then the response status is 200
-    And the JSON Array response should match
+    And the JSON response should match
       """
-        []
+        {
+          pairing_entries: []
+        }
       """
 
   @Approval @Ready
@@ -147,4 +150,3 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
 
   # obsolet da wir keinen access token kriegen
   # Scenario: Biometrie Pairingliste - Fordere Pairingliste an mit Zertifikat ohne IDNummer
-

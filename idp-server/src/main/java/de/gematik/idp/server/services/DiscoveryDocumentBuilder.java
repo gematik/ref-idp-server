@@ -52,6 +52,7 @@ public class DiscoveryDocumentBuilder {
             .iat(currentTime.toEpochSecond())
             .uriPukIdpEnc(serverUrl + KeyInformationController.PUK_URI_ENC)
             .uriPukIdpSig(serverUrl + KeyInformationController.PUK_URI_SIG)
+            .codeChallengeMethodsSupported(new String[]{"S256"})
             .build();
     }
 }

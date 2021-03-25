@@ -26,17 +26,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import net.thucydides.core.annotations.Step;
 import org.assertj.core.util.Lists;
 import org.json.JSONObject;
 
 public class Context {
 
     private static final Map<String, Map<ContextKey, Object>> threadedContexts = new HashMap<>();
+    private static final Map<String, Map<String, String>> threadedVariables = new HashMap<>();
+
+    private static String getThreadId() {
+        return String.valueOf(Thread.currentThread().getId());
+    }
 
     public static Map<ContextKey, Object> getThreadContext() {
         return threadedContexts
-            .computeIfAbsent(String.valueOf(Thread.currentThread().getId()), threadid -> new HashMap<>());
+            .computeIfAbsent(getThreadId(), threadid -> new HashMap<>());
     }
 
     public static Response getCurrentResponse() {
@@ -61,14 +65,13 @@ public class Context {
         return (DiscoveryDocument) (getThreadContext().get(ContextKey.DISC_DOC));
     }
 
-    public static Map<String, String> getMap(final ContextKey key) {
+    public static Map<String, Object> getObjectMapCopy(final ContextKey key) {
         assertThat(key)
             .withFailMessage("Key is not supported as of now, feel fre to implement it")
-            .isIn(ContextKey.PAIRING_DATA, ContextKey.DEVICE_INFO);
+            .isIn(ContextKey.PAIRING_DATA, ContextKey.DEVICE_INFO, ContextKey.AUTHENTICATION_DATA);
         assertThat(getThreadContext().get(key)).isInstanceOf(Map.class);
         //noinspection unchecked
-        return (Map<String, String>) getThreadContext().get(key);
-
+        return new HashMap<>((Map<String, Object>) getThreadContext().get(key));
     }
 
     public void setValue(final ContextKey key, final String value) {
@@ -97,7 +100,6 @@ public class Context {
         }
     }
 
-    @Step
     public void iStartNewInteractionKeepingOnly(final List<ContextKey> keys) {
         final Map<ContextKey, Object> ctxt = Context.getThreadContext();
         if (!TestEnvironmentConfigurator.isTokenEncryptionActive()) {
@@ -128,5 +130,14 @@ public class Context {
         final String flippedValue = new String(bytes);
         assertThat(flippedValue).isNotEqualTo(value);
         Context.getThreadContext().put(key, flippedValue);
+    }
+
+    public static void storeVariable(final String name, final String value) {
+        threadedVariables.computeIfAbsent(getThreadId(), threadid -> new HashMap<>()).put(name, value);
+    }
+
+
+    public static String getVariable(final String name) {
+        return threadedVariables.computeIfAbsent(getThreadId(), threadid -> new HashMap<>()).get(name);
     }
 }

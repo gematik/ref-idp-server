@@ -16,6 +16,10 @@
 
 package de.gematik.idp.brainPoolExtension;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class BrainpoolAlgorithmSuiteIdentifiers {
 
     protected static final String INTERNAL_BRAINPOOL256_USING_SHA256 = "BP256R1";

@@ -16,14 +16,12 @@
 
 package de.gematik.idp.token;
 
-import de.gematik.idp.crypto.CryptoLoader;
-import de.gematik.idp.exceptions.*;
-import de.gematik.idp.field.ClaimName;
-import java.security.cert.X509Certificate;
+import de.gematik.idp.exceptions.IdpJoseException;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jose4j.json.JsonUtil;
@@ -86,17 +84,4 @@ public class TokenClaimExtraction {
             throw new IllegalArgumentException("Couldn't convert claim: " + claim.getClass().getSimpleName());
         }
     }
-
-    public static Optional<X509Certificate> extractX509ClientCertificate(final JsonWebToken jwt) {
-        return Optional.ofNullable(jwt.getHeaderClaims()
-            .get(ClaimName.X509_CERTIFICATE_CHAIN.getJoseName()))
-            .filter(List.class::isInstance)
-            .map(List.class::cast)
-            .stream()
-            .flatMap(List::stream)
-            .map(b64String -> Base64.getDecoder().decode(b64String.toString()))
-            .map(encodedCert -> CryptoLoader.getCertificateFromPem((byte[]) encodedCert))
-            .findAny();
-    }
-
 }

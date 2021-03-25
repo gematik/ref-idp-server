@@ -16,31 +16,39 @@
 
 @testsuite
 @biometrics
-@TODO:GematikErrId
+@Todo:IDP-553
 Feature: Registrierung für Alternative Authentisierung am IDP Server
 
   Frontends müssen mit einer eGK und einem pairing Access oder SSO Token Geräte registrieren können.
 
-  not_after 1893456000 entspricht dem 1.1.2030
+  Der not_after Wert von 1893456000 entspricht dem 1.1.2030
 
   Background: Initialisiere Testkontext durch Abfrage des Discovery Dokuments
     Given I initialize scenario from discovery document endpoint
     And I retrieve public keys from URIs
 
   @Approval @Ready
-  Scenario: Biometrie Register - Gutfall - Registriere ein Pairing
+  Scenario: AltAutReg - Gutfall - Registriere ein Pairing
     Given I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
     When I create a device information token with
-      | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
+      | name       | manufacturer | product     | model | os      | os_version |
+      | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyident001    | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyident001    | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     Then the response status is 200
-    And the response is empty
+    And the JSON response should match
+        """
+          {
+            name:                  "eRezeptApp",
+            signed_pairing_data:   "ey.*",
+            creation_time:         "[\\d]*",
+            pairing_entry_version: ".*"
+          }
+        """
 
   # TODO user agent ? Relevanz, add testcases without user agents if relevant
 
@@ -49,60 +57,76 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
   # TODO add variants for different PukSE AUThs
   @TODOErlaubenWir2PairingsAufDemselbenDevice?
   @Approval @Ready
-  Scenario: Biometrie Register - Gutfall - Zwei Pairings mit identem Identifier und Pub SE Auth aber unterschiedlicher IdNummer
+  Scenario: AltAutReg - Gutfall - Zwei Pairings mit identem Identifier und Pub SE Auth aber unterschiedlicher IdNummer
     Given I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I create a device information token with
-      | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
+      | name       | manufacturer | product     | model | os      | os_version |
+      | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyident002    | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyident002    | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-b-valid-ecc.p12'
     And I create a device information token with
-      | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
+      | name       | manufacturer | product     | model | os      | os_version |
+      | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyident002    | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-b-valid-ecc.p12 |
+      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyident002    | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-b-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-b-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-b-valid-ecc.p12'
     Then the response status is 200
-    And the response is empty
+    And the JSON response should match
+        """
+          {
+            name:                  "eRezeptApp",
+            signed_pairing_data:   "ey.*",
+            creation_time:         "[\\d]*",
+            pairing_entry_version: ".*"
+          }
+        """
 
   @Approval @Ready
-  Scenario: Biometrie Register - Gutfall - Zwei Pairings mit unterschiedlichem key identifier und unterschiedlicher IDNummer
+  Scenario: AltAutReg - Gutfall - Zwei Pairings mit unterschiedlichem key identifier und unterschiedlicher IDNummer
     Given I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I create a device information token with
-      | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
+      | name       | manufacturer | product     | model | os      | os_version |
+      | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyident003    | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyident003    | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-b-valid-ecc.p12'
     And I create a device information token with
-      | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
+      | name       | manufacturer | product     | model | os      | os_version |
+      | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyident004    | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-b-valid-ecc.p12 |
+      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyident004    | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-b-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-b-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-b-valid-ecc.p12'
     Then the response status is 200
-    And the response is empty
+    And the JSON response should match
+        """
+          {
+            name:                  "eRezeptApp",
+            signed_pairing_data:   "ey.*",
+            creation_time:         "[\\d]*",
+            pairing_entry_version: ".*"
+          }
+        """
 
   @Approval @Ready
-  Scenario: Biometrie Register - Zweifacher Eintragungsversuch Idente Daten
+  Scenario: AltAutReg - Zweifacher Eintragungsversuch Idente Daten
     Given I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I create a device information token with
-      | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
+      | name       | manufacturer | product     | model | os      | os_version |
+      | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And I create pairing data with
-      | key_data                     | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel01 | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | se_subject_public_key_info   | key_identifier   | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel01 | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -120,24 +144,24 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
         """
 
   @Approval @Ready
-  Scenario: Biometrie Register - Zweifacher Eintragungsversuch Devicedaten unterschiedlich
+  Scenario: AltAutReg - Zweifacher Eintragungsversuch Devicedaten unterschiedlich
     Given I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I create a device information token with
-      | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | eRezeptApp  | Motorola            | GOTA 1         | G2           | Android   | 1.3.2          |
+      | name       | manufacturer | product | model | os      | os_version |
+      | eRezeptApp | Motorola     | GOTA 1  | G2    | Android | 1.3.2      |
     And I create pairing data with
-      | key_data                     | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel02 | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | se_subject_public_key_info   | key_identifier   | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel02 | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I request an access token
 
     When I create a device information token with
-      | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
+      | name       | manufacturer | product     | model | os      | os_version |
+      | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And I create pairing data with
-      | key_data                     | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel02 | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | se_subject_public_key_info   | key_identifier   | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel02 | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     Then the response status is 409
@@ -152,63 +176,45 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
         """
 
   @Approval @Ready
-  Scenario: Biometrie Register - Zweifacher Eintragungsversuch alles bis auf key identifier und Zertifikat unterschiedlich
+  Scenario: AltAutReg - Zweifacher Eintragungsversuch alles bis auf key identifier und Zertifikat unterschiedlich
     Given I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I create a device information token with
-      | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | eRezeptApp  | Motorola            | GOTA 1         | G2           | Ubuntu    | 1.3.2          |
+      | name       | manufacturer | product | model | os     | os_version |
+      | eRezeptApp | Motorola     | GOTA 1  | G2    | Ubuntu | 1.3.2      |
     And I create pairing data with
-      | key_data                     | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer | not_after  | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel03 | ES256                          | GOTA 1         | 419094927676993 | Ubuntu | 2208988800 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | se_subject_public_key_info   | key_identifier   | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel03 | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I request an access token
 
     When I create a device information token with
-      | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
+      | name       | manufacturer | product     | model | os      | os_version |
+      | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And I create pairing data with
-      | key_data                     | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel03 | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | se_subject_public_key_info   | key_identifier   | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel03 | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
-    Then the response status is 409
-    And the JSON response should match
-        """
-          { error:              "invalid_request",
-	        gematik_error_text: ".*",
-	        gematik_timestamp:  "[\\d]*",
-	        gematik_uuid:       ".*",
-	        gematik_code:       "-1"
-          }
-        """
+    Then the response is an 409 error with gematik code -1 and error "invalid_request"
 
     # TODO check variants regarding new info about keys/certs
 
   @issue:IDP-453 @OpenBug
     @Approval
-  Scenario Outline: Biometrie Register - Unterschiedliche Zertifikate mit identer IDNummer in Verwendung
+  Scenario Outline: AltAutReg - Unterschiedliche Zertifikate mit identer IDNummer in Verwendung
     # Real world scenario: alte Karte verloren, neue Karte, neues Zert, alte Karte wieder verwendet, bevor diese abgelaufen ist/gesperrt wurde
     Given I request an pairing access token with eGK cert '/certs/valid/<cert_access>'
 
     When I create a device information token with
-      | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
+      | name       | manufacturer | product     | model | os      | os_version |
+      | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And I create pairing data with
-      | key_data                   | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                     |
-      | /keys/valid/<cert_keydata> | <key_identifier> | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/<cert_public_key> |
+      | se_subject_public_key_info | key_identifier   | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info |
+      | /keys/valid/<cert_keydata> | <key_identifier> | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/<cert_public_key>    |
     And I sign pairing data with '/certs/valid/<cert_sign>'
     And I register the device with '/certs/valid/<cert_register>'
-    Then the response status is <status>
-    And the JSON response should match
-        """
-          { error:              "<errcode>",
-	        gematik_error_text: ".*",
-	        gematik_timestamp:  "[\\d]*",
-	        gematik_uuid:       ".*",
-	        gematik_code:       "<errid>"
-          }
-        """
+    And the response is an <status> error with gematik code <status> and error '<errcode>'
 
     #TODO Clarify with Spec: first and second scenario is OK?
     Examples: Liste mit Einträgen wo immer ein Zertifikat unterschiedlich aber gültig ist
@@ -220,27 +226,19 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
 
   @Approval @Ready
     @OpenBug
-  Scenario Outline: Biometrie Register - Unterschiedliche Zertifikate mit unterschiedlicher IDNummer in Verwendung
+  Scenario Outline: AltAutReg - Unterschiedliche Zertifikate mit unterschiedlicher IDNummer in Verwendung
     Given I request an pairing access token with eGK cert '/certs/valid/<cert_access>'
 
     When I create a device information token with
-      | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
+      | name       | manufacturer | product     | model | os      | os_version |
+      | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And I create pairing data with
-      | key_data                   | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                     |
-      | /keys/valid/<cert_keydata> | <key_identifier> | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/<cert_public_key> |
+      | se_subject_public_key_info | key_identifier   | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info |
+      | /keys/valid/<cert_keydata> | <key_identifier> | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/<cert_public_key>    |
     And I sign pairing data with '/certs/valid/<cert_sign>'
     And I register the device with '/certs/valid/<cert_register>'
     Then the response status is <status>
-    And the JSON response should match
-        """
-          { error:              "<errcode>",
-	        gematik_error_text: ".*",
-	        gematik_timestamp:  "[\\d]*",
-	        gematik_uuid:       ".*",
-	        gematik_code:       "<errid>"
-          }
-        """
+    And the response is an <status> error with gematik code <errid> and error '<errcode>'
 
     Examples: Liste mit Einträgen wo immer ein Zertifikat mit anderer IDNummer unterschiedlich aber gültig ist
       | status | errcode                 | errid | key_identifier     | cert_access                      | cert_keydata     | cert_public_key                  | cert_sign                        | cert_register                    |
@@ -250,188 +248,132 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | 400    | invalid_parameter_value | -1    | keyidentdiffcert05 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-b-valid-ecc.p12 |
 
   @Approval
-  Scenario Outline: Biometrie Register - Null Werte in device info
+  Scenario Outline: AltAutReg - Null Werte in device info
 
     Given I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
     When I create a device information token with
-      | device_name   | device_manufacturer   | device_product   | device_model   | device_os   | device_version   |
-      | <device_name> | <device_manufacturer> | <device_product> | <device_model> | <device_os> | <device_version> |
+      | name   | manufacturer   | product   | model   | os   | os_version |
+      | <name> | <manufacturer> | <product> | <model> | <os> | <version>  |
     And I create pairing data with
-      | key_data                     | key_identifier  | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | <keyidentifier> | ES256                          | Fair Phone 3   | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | se_subject_public_key_info   | key_identifier  | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
+      | /keys/valid/Pub_Se_Aut-1.pem | <keyidentifier> | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
-    Then the response status is 400
-    And the JSON response should match
-        """
-          { error:              "invalid_request",
-	        gematik_error_text: ".*",
-	        gematik_timestamp:  "[\\d]*",
-	        gematik_uuid:       ".*",
-	        gematik_code:       "-1"
-          }
-        """
+    Then the response is an 400 error with gematik code -1 and error 'invalid_request'
 
-    Examples: Biometrie Register - Null Device Info Beispiele
-      | keyidentifier  | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | keyidentnull01 | $NULL       | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
-      | keyidentnull02 | eRezeptApp  | $NULL               | FairPhone 3    | F3           | Android   | 1.0.2 f        |
-      | keyidentnull03 | eRezeptApp  | Fair Phone          | $NULL          | F3           | Android   | 1.0.2 f        |
-      | keyidentnull04 | eRezeptApp  | Fair Phone          | FairPhone 3    | $NULL        | Android   | 1.0.2 f        |
-      | keyidentnull05 | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | $NULL     | 1.0.2 f        |
-      | keyidentnull06 | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | $NULL          |
+    Examples: AltAutReg - Null Device Info Beispiele
+      | keyidentifier  | name       | manufacturer | product     | model | os      | version |
+      | keyidentnull01 | $NULL      | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f |
+      | keyidentnull02 | eRezeptApp | $NULL        | FairPhone 3 | F3    | Android | 1.0.2 f |
+      | keyidentnull03 | eRezeptApp | Fair Phone   | $NULL       | F3    | Android | 1.0.2 f |
+      | keyidentnull04 | eRezeptApp | Fair Phone   | FairPhone 3 | $NULL | Android | 1.0.2 f |
+      | keyidentnull05 | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | $NULL   | 1.0.2 f |
+      | keyidentnull06 | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | $NULL   |
 
   @Approval
-  Scenario Outline: Biometrie Register - Fehlende Werte in device info
+  Scenario Outline: AltAutReg - Fehlende Werte in device info
     Given I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
     When I create a device information token with
-      | device_name   | device_manufacturer   | device_product   | device_model   | device_os   | device_version   |
-      | <device_name> | <device_manufacturer> | <device_product> | <device_model> | <device_os> | <device_version> |
+      | name   | manufacturer   | product   | model   | os   | os_version |
+      | <name> | <manufacturer> | <product> | <model> | <os> | <version>  |
     And I create pairing data with
-      | key_data                     | key_identifier  | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | <keyidentifier> | ES256                          | Fair Phone 3   | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | se_subject_public_key_info   | key_identifier  | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
+      | /keys/valid/Pub_Se_Aut-1.pem | <keyidentifier> | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
-    Then the response status is 400
-    And the JSON response should match
-        """
-          { error:              "invalid_request",
-	        gematik_error_text: ".*",
-	        gematik_timestamp:  "[\\d]*",
-	        gematik_uuid:       ".*",
-	        gematik_code:       "-1"
-          }
-        """
+    Then the response is an 400 error with gematik code -1 and error 'invalid_request'
 
-    Examples: Biometrie Register - Fehlende Device info Beispiele
-      | keyidentifier    | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | keyidentremove01 | $REMOVE     | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
-      | keyidentremove02 | eRezeptApp  | $REMOVE             | FairPhone 3    | F3           | Android   | 1.0.2 f        |
-      | keyidentremove03 | eRezeptApp  | Fair Phone          | $REMOVE        | F3           | Android   | 1.0.2 f        |
-      | keyidentremove04 | eRezeptApp  | Fair Phone          | FairPhone 3    | $REMOVE      | Android   | 1.0.2 f        |
-      | keyidentremove05 | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | $REMOVE   | 1.0.2 f        |
-      | keyidentremove06 | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | $REMOVE        |
+    Examples: AltAutReg - Fehlende Device info Beispiele
+      | keyidentifier    | name       | manufacturer | product     | model   | os      | version |
+      | keyidentremove01 | $REMOVE    | Fair Phone   | FairPhone 3 | F3      | Android | 1.0.2 f |
+      | keyidentremove02 | eRezeptApp | $REMOVE      | FairPhone 3 | F3      | Android | 1.0.2 f |
+      | keyidentremove03 | eRezeptApp | Fair Phone   | $REMOVE     | F3      | Android | 1.0.2 f |
+      | keyidentremove04 | eRezeptApp | Fair Phone   | FairPhone 3 | $REMOVE | Android | 1.0.2 f |
+      | keyidentremove05 | eRezeptApp | Fair Phone   | FairPhone 3 | F3      | $REMOVE | 1.0.2 f |
+      | keyidentremove06 | eRezeptApp | Fair Phone   | FairPhone 3 | F3      | Android | $REMOVE |
 
   @Approval
-  Scenario Outline: Biometrie Register - Null Werte in pairing data
+  Scenario Outline: AltAutReg - Null Werte in pairing data
 
     Given I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
     When I create a device information token with
-      | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | eRezeptApp  | Motorola            | GOTA 1         | G2           | Android   | 1.3.2          |
+      | name       | manufacturer | product | model | os      | os_version |
+      | eRezeptApp | Motorola     | GOTA 1  | G2    | Android | 1.3.2      |
     And I create pairing data with
-      | key_data   | key_identifier  | signature_algorithm_identifier   | device_product   | serialnumber   | issuer   | not_after   | public_key   |
-      | <key_data> | <keyidentifier> | <signature_algorithm_identifier> | <device_product> | <serialnumber> | <issuer> | <not_after> | <public_key> |
+      | se_subject_public_key_info | key_identifier  | product   | serialnumber   | issuer   | not_after   | auth_cert_subject_public_key_info |
+      | <key_data>                 | <keyidentifier> | <product> | <serialnumber> | <issuer> | <not_after> | <public_key>                      |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
-    Then the response status is 400
-    And the JSON response should match
-        """
-          { error:              "invalid_request",
-	        gematik_error_text: ".*",
-	        gematik_timestamp:  "[\\d]*",
-	        gematik_uuid:       ".*",
-	        gematik_code:       "-1"
-          }
-        """
+    Then the response is an 400 error with gematik code -1 and error 'invalid_request'
 
-    Examples: Biometrie Register - Null Pairing Data Beispiele
-      | keyidentifier  | key_data                     | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
-      | keyidentnull11 | $NULL                        | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentnull12 | /keys/valid/Pub_Se_Aut-1.pem | $NULL                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentnull13 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | $NULL          | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentnull14 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | $NULL           | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentnull15 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | 419094927676993 | $NULL   | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentnull16 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | 419094927676993 | Android | $NULL      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentnull17 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | $NULL                                         |
+    Examples: AltAutReg - Null Pairing Data Beispiele
+      | keyidentifier  | key_data                     | product     | serialnumber    | issuer  | not_after  | public_key                                    |
+      | keyidentnull11 | $NULL                        | FairPhone 3 | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | keyidentnull13 | /keys/valid/Pub_Se_Aut-1.pem | $NULL       | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | keyidentnull14 | /keys/valid/Pub_Se_Aut-1.pem | FairPhone 3 | $NULL           | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | keyidentnull15 | /keys/valid/Pub_Se_Aut-1.pem | FairPhone 3 | 419094927676993 | $NULL   | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | keyidentnull16 | /keys/valid/Pub_Se_Aut-1.pem | FairPhone 3 | 419094927676993 | Android | $NULL      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | keyidentnull17 | /keys/valid/Pub_Se_Aut-1.pem | FairPhone 3 | 419094927676993 | Android | 1893456000 | $NULL                                         |
 
   @Approval
-  Scenario Outline: Biometrie Register - Fehlende Werte in pairing data
+  Scenario Outline: AltAutReg - Fehlende Werte in pairing data
     Given I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
     When I create a device information token with
-      | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | eRezeptApp  | Motorola            | GOTA 1         | G2           | Android   | 1.3.2          |
+      | name       | manufacturer | product | model | os      | os_version |
+      | eRezeptApp | Motorola     | GOTA 1  | G2    | Android | 1.3.2      |
     And I create pairing data with
-      | key_data   | key_identifier  | signature_algorithm_identifier   | device_product   | serialnumber   | issuer   | not_after   | public_key   |
-      | <key_data> | <keyidentifier> | <signature_algorithm_identifier> | <device_product> | <serialnumber> | <issuer> | <not_after> | <public_key> |
+      | se_subject_public_key_info | key_identifier  | product   | serialnumber   | issuer   | not_after   | auth_cert_subject_public_key_info |
+      | <key_data>                 | <keyidentifier> | <product> | <serialnumber> | <issuer> | <not_after> | <public_key>                      |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
-    Then the response status is 400
-    And the JSON response should match
-        """
-          { error:              "invalid_request",
-	        gematik_error_text: ".*",
-	        gematik_timestamp:  "[\\d]*",
-	        gematik_uuid:       ".*",
-	        gematik_code:       "-1"
-          }
-        """
+    Then the response is an 400 error with gematik code -1 and error 'invalid_request'
 
-    Examples: Biometrie Register - Fehlende Pairing Data Beispiele
-      | keyidentifier    | key_data                     | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
-      | keyidentremove11 | $REMOVE                      | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentremove12 | /keys/valid/Pub_Se_Aut-1.pem | $REMOVE                        | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentremove13 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | $REMOVE        | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentremove14 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | $REMOVE         | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentremove15 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | 419094927676993 | $REMOVE | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentremove16 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | 419094927676993 | Android | $REMOVE    | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-      | keyidentremove17 | /keys/valid/Pub_Se_Aut-1.pem | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | $REMOVE                                       |
+    Examples: AltAutReg - Fehlende Pairing Data Beispiele
+      | keyidentifier    | key_data                     | product     | serialnumber    | issuer  | not_after  | public_key                                    |
+      | keyidentremove11 | $REMOVE                      | FairPhone 3 | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | keyidentremove13 | /keys/valid/Pub_Se_Aut-1.pem | $REMOVE     | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | keyidentremove14 | /keys/valid/Pub_Se_Aut-1.pem | FairPhone 3 | $REMOVE         | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | keyidentremove15 | /keys/valid/Pub_Se_Aut-1.pem | FairPhone 3 | 419094927676993 | $REMOVE | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | keyidentremove16 | /keys/valid/Pub_Se_Aut-1.pem | FairPhone 3 | 419094927676993 | Android | $REMOVE    | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | keyidentremove17 | /keys/valid/Pub_Se_Aut-1.pem | FairPhone 3 | 419094927676993 | Android | 1893456000 | $REMOVE                                       |
 
   @Approval @issue:IDP-470 @OpenBug
-  Scenario Outline: Biometrie Register - Ungültige Zertifikate (selfsigned, outdated, revoced)
+  Scenario Outline: AltAutReg - Ungültige Zertifikate (selfsigned, outdated, revoced)
     Given I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
     When I create a device information token with
-      | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | eRezeptApp  | Motorola            | GOTA 1         | G2           | Android   | 1.3.2          |
+      | name       | manufacturer | product | model | os      | os_version |
+      | eRezeptApp | Motorola     | GOTA 1  | G2    | Android | 1.3.2      |
     And I create pairing data with
-      | key_data                     | key_identifier  | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key    |
-      | /keys/valid/Pub_Se_Aut-1.pem | <keyidentifier> | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | <invalidcert> |
+      | se_subject_public_key_info   | key_identifier  | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info |
+      | /keys/valid/Pub_Se_Aut-1.pem | <keyidentifier> | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | <invalidcert>                     |
     And I sign pairing data with '<invalidcert>'
     And I register the device with '<invalidcert>'
-    Then the response status is 500
-    And the JSON response should match
-        """
-          { error:              "invalid_request",
-	        gematik_error_text: ".*",
-	        gematik_timestamp:  "[\\d]*",
-	        gematik_uuid:       ".*",
-	        gematik_code:       "-1"
-          }
-        """
+    Then the response is an 500 error with gematik code -1 and error 'invalid_request'
 
-    Examples: Biometrie Register - Ungültige Zertifikate
+    Examples: AltAutReg - Ungültige Zertifikate
       | keyidentifier     | invalidcert                                              |
       | keyidentinvcert01 | /certs/invalid/egk-idp-idnumber-a-expired-ecc.p12        |
       | keyidentinvcert02 | /certs/invalid/egk-idp-idnumber-a-invalid-issuer-ecc.p12 |
       | keyidentinvcert03 | /certs/invalid/egk-idp-idnumber-a-revoked-ecc.p12        |
 
   @Approval @OpenBug
-  Scenario Outline: Biometrie Register - Registriere Pairing mit Zertifikat ohne IDNummer
+  Scenario Outline: AltAutReg - Registriere Pairing mit Zertifikat ohne IDNummer
     Given I request an pairing access token with eGK cert '/certs/valid/<cert_access>'
 
     When I create a device information token with
-      | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
+      | name       | manufacturer | product     | model | os      | os_version |
+      | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And I create pairing data with
-      | key_data                   | key_identifier   | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                     |
-      | /keys/valid/<cert_keydata> | <key_identifier> | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/<cert_public_key> |
+      | se_subject_public_key_info | key_identifier   | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info |
+      | /keys/valid/<cert_keydata> | <key_identifier> | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/<cert_public_key>    |
     And I sign pairing data with '/certs/valid/<cert_sign>'
     And I register the device with '/certs/valid/<cert_register>'
-    Then the response status is <status>
-    And the JSON response should match
-         """
-          { error:              "<errcode>",
-	        gematik_error_text: ".*",
-	        gematik_timestamp:  "[\\d]*",
-	        gematik_uuid:       ".*",
-	        gematik_code:       "<errid>"
-          }
-        """
+    Then the response is an <status> error with gematik code <errid> and error '<errcode>'
 
     Examples: Liste mit Einträgen wo immer ein Zertifikat ohne IdNummer verwendet wird
       | status | errcode               | errid | key_identifier | cert_access                      | cert_keydata     | cert_public_key                   | cert_sign                         | cert_register                     |
@@ -440,86 +382,84 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | 500    | internal_server_error | -1    | keyidentnoid05 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12  | egk-idp-idnumber-a-valid-ecc.p12  | egk-idp-idnumber-missing1-ecc.p12 |
 
   @manual
-  @manual-result:passed
-  Scenario: Biometrie Register - Ungültige Werte in device info, derzeit keine Einschränkung, daher OK
+  @Approval @Ready
+  Scenario: AltAutReg - Ungültige Werte in device info
+  Derzeit gibt es für die Geräteinformationen keine Einschränkung, daher OK per definitionem
 
-  @Todo:Implementieren
+
   @WiP
   @Approval
-  Scenario: Biometrie Register - Ungültige Werte in pairing data
-    #TODO derzeit macht nur certid / nach Umstellung cert sn sinn
-    # TODO Gerriet/Hannes was ist eine gültig SN, welche ist nicht gültig?
+  Scenario: AltAutReg - Ungültige Serial number in pairing data
 
   @Afo:A_20463
   @LongRunning
   @Approval @Ready
-  Scenario: Biometrie Register - Pairing mit veraltetem Access Token wird abgelehnt
+  Scenario: AltAutReg - Pairing mit veraltetem Access Token wird abgelehnt
     Given I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I create a device information token with
-      | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
+      | name       | manufacturer | product     | model | os      | os_version |
+      | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidentacc001 | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidentacc001 | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
     When I wait PT5M
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
-    Then the response status is 403
-    And the JSON response should match
-        """
-          { error:              "access_denied",
-	        gematik_error_text: ".*",
-	        gematik_timestamp:  "[\\d]*",
-	        gematik_uuid:       ".*",
-	        gematik_code:       "-1"
-          }
-        """
+    Then the response is an 403 error with gematik code -1 and error 'access_denied'
 
-  # TODO Hannes klärt Scenario: Biometrie Register - Gültigkeitsdauer der signierten Pairing data?
+  # TODO Hannes klärt Scenario: AltAutReg - Gültigkeitsdauer der signierten Pairing data?
 
   @Approval
-  Scenario: Biometrie Register - Zugriff mit ACCESS_TOKEN von signierter Challenge mit falschem Scope (erezept)
+  Scenario: AltAutReg - Zugriff mit ACCESS_TOKEN von signierter Challenge mit falschem Scope (erezept)
     Given I request an erezept access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
     When I create a device information token with
-      | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
+      | name       | manufacturer | product     | model | os      | os_version |
+      | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidentacc001 | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidentacc002 | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
-    Then the response status is 403
-    And the JSON response should match
-        """
-          { error:              "access_denied",
-	        gematik_error_text: ".*",
-	        gematik_timestamp:  "[\\d]*",
-	        gematik_uuid:       ".*",
-	        gematik_code:       "-1"
-          }
-        """
+    Then the response is an 403 error with gematik code -1 and error 'access_denied'
 
   @Approval
-  Scenario: Biometrie Register - Zugriff mit ACCESS_TOKEN via SSO Token mit falschem Scope (erezept)
+  Scenario: AltAutReg - Zugriff mit ACCESS_TOKEN via SSO Token mit falschem Scope (erezept)
     Given I request an erezept access token via SSO token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
     When I create a device information token with
-      | device_name | device_manufacturer | device_product | device_model | device_os | device_version |
-      | eRezeptApp  | Fair Phone          | FairPhone 3    | F3           | Android   | 1.0.2 f        |
+      | name       | manufacturer | product     | model | os      | os_version |
+      | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And I create pairing data with
-      | key_data                     | key_identifier | signature_algorithm_identifier | device_product | serialnumber    | issuer  | not_after  | public_key                                    |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidentacc001 | ES256                          | FairPhone 3    | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidentacc003 | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
-    Then the response status is 403
-    And the JSON response should match
-        """
-          { error:              "access_denied",
-	        gematik_error_text: ".*",
-	        gematik_timestamp:  "[\\d]*",
-	        gematik_uuid:       ".*",
-	        gematik_code:       "-1"
-          }
-        """
+    Then the response is an 403 error with gematik code -1 and error 'access_denied'
+
+  @Approval @Ready
+  Scenario Outline: AltAutReg - Registriere ein Pairing mit falschen Versionen
+    Given I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
+
+    When I create a device information token with
+      | device_information_data_version | name                 | device_type_data_version | manufacturer | product     | model | os      | os_version |
+      | <versionDevInfo>                | ${TESTENV.client_id} | <versionDevTyp>          | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
+    And I create pairing data with
+      | pairing_data_version | se_subject_public_key_info   | key_identifier | signature_algorithm_identifier | product     | serialnumber    | issuer  | not_after  | auth_cert_subject_public_key_info             |
+      | <versionPairingData> | /keys/valid/Pub_Se_Aut-1.pem | <keyid>        | ES256                          | FairPhone 3 | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+    And I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
+    And I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12' and version '<versionReg>'
+    Then the response is an 400 error with gematik code -1 and error 'invalid_request'
+
+    Examples: invalid versions
+      | versionDevInfo | versionDevTyp | versionReg | versionPairingData | keyid           |
+      | 0.9            | 1.0           | 1.0        | 1.0                | keyinvversreg01 |
+      | 1.1            | 1.0           | 1.0        | 1.0                | keyinvversreg02 |
+      | 2.0            | 1.0           | 1.0        | 1.0                | keyinvversreg03 |
+      | 1.0            | 0.9           | 1.0        | 1.0                | keyinvversreg10 |
+      | 1.0            | 1.1           | 1.0        | 1.0                | keyinvversreg11 |
+      | 1.0            | 1.0           | 0.9        | 1.0                | keyinvversreg20 |
+      | 1.0            | 1.0           | 1.1        | 1.0                | keyinvversreg21 |
+      | 1.0            | 1.0           | 1.0        | 0.9                | keyinvversreg30 |
+      | 1.0            | 1.0           | 1.0        | 1.1                | keyinvversreg31 |

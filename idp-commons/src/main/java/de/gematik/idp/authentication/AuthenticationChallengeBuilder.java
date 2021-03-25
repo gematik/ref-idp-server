@@ -17,6 +17,7 @@
 package de.gematik.idp.authentication;
 
 import static de.gematik.idp.field.ClaimName.*;
+
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.data.UserConsent;
@@ -70,8 +71,6 @@ public class AuthenticationChallengeBuilder {
 
         final Map<String, Object> headerClaims = new HashMap<>();
         headerClaims.put(TYPE.getJoseName(), "JWT");
-        headerClaims
-            .put(EXPIRES_AT.getJoseName(), now.plusMinutes(CHALLENGE_TOKEN_VALIDITY_IN_MINUTES).toEpochSecond());
 
         final UserConsent userConsent = getUserConsent(scope);
         return AuthenticationChallenge.builder()

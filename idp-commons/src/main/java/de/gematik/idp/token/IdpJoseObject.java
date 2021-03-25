@@ -61,7 +61,7 @@ public abstract class IdpJoseObject {
     }
 
     public ZonedDateTime getExpiresAt() {
-        return getDateTimeClaim(EXPIRES_AT, this::getHeaderClaims)
+        return getDateTimeClaim(EXPIRES_AT, this::getBodyClaims)
             .orElseThrow();
     }
 
@@ -163,7 +163,7 @@ public abstract class IdpJoseObject {
 
     public Optional<X509Certificate> getAuthenticationCertificate() {
         return getStringBodyClaim(AUTHENTICATION_CERTIFICATE)
-            .map(java.util.Base64.getDecoder()::decode)
+            .map(java.util.Base64.getUrlDecoder()::decode)
             .map(CryptoLoader::getCertificateFromPem);
     }
 

@@ -16,37 +16,60 @@
 
 package de.gematik.idp.test.steps;
 
+import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import de.gematik.idp.field.ClaimName;
+import de.gematik.idp.test.steps.helpers.JsonChecker;
 import de.gematik.idp.test.steps.helpers.TestEnvironmentConfigurator;
 import de.gematik.idp.test.steps.model.*;
+import de.gematik.idp.token.JsonWebToken;
+import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.net.URISyntaxException;
 import java.security.Key;
-import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.time.chrono.ChronoZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import lombok.SneakyThrows;
-import net.thucydides.core.annotations.Step;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
+import org.jose4j.jws.AlgorithmIdentifiers;
+import org.jose4j.jws.JsonWebSignature;
+import org.json.JSONObject;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
 public class IdpAuthorizationSteps extends IdpStepsBase {
 
-    @Step
+    private final JsonChecker jsoncheck = new JsonChecker();
+
     @SneakyThrows
     public void signChallenge(final String keyfile) {
         final Map<ContextKey, Object> ctxt = Context.getThreadContext();
         final String challenge = (String) ctxt.get(ContextKey.CHALLENGE);
 
-        final Key pkey = readPrivateKeyFrom(keyfile);
-        final Certificate cert = readCertFrom(keyfile);
+        final Key pkey = keyAndCertificateStepsHelper.readPrivateKeyFromKeyStore(keyfile);
+        final X509Certificate cert = keyAndCertificateStepsHelper.readCertFrom(keyfile);
 
-        final String signedChallenge = signChallenge(challenge, pkey, cert);
+        final JSONObject claims = new JSONObject();
+        claims.put("njwt", challenge);
+        final JsonWebSignature jsonWebSignature = new JsonWebSignature();
+        jsonWebSignature.setPayload(claims.toString());
+        jsonWebSignature.setKey(pkey);
+        if (cert.getPublicKey().getAlgorithm().equals("EC")) {
+            jsonWebSignature.setAlgorithmHeaderValue(BRAINPOOL256_USING_SHA256);
+        } else {
+            jsonWebSignature.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_PSS_USING_SHA256);
+        }
+        jsonWebSignature.setHeader("typ", "JWT");
+        jsonWebSignature.setHeader("cty", "NJWT");
+        jsonWebSignature.setCertificateChainHeaderValue(cert);
 
-        ctxt.put(ContextKey.SIGNED_CHALLENGE, signedChallenge);
+        ctxt.put(ContextKey.SIGNED_CHALLENGE, jsonWebSignature.getCompactSerialization());
     }
 
     public void getCode(final CodeAuthType authType, final HttpStatus expectedStatus)
@@ -54,7 +77,8 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
         final Map<ContextKey, Object> ctxt = Context.getThreadContext();
         final Map<String, String> params = new HashMap<>();
         final String path = checkParamsNGetPath(authType, params);
-        final Response r = requestResponseAndAssertStatus(path, null, HttpMethods.POST,
+        final Response r = requestResponseAndAssertStatus(
+            path, Map.of("Content-Type", ContentType.URLENC.withCharset("UTF-8")), HttpMethods.POST,
             params, null, expectedStatus);
 
         ctxt.put(ContextKey.RESPONSE, r);
@@ -97,10 +121,19 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
                 checkContextAddToParams(ContextKey.SIGNED_CHALLENGE, "signed_challenge", params);
                 // encrypt signed challenge
                 if (TestEnvironmentConfigurator.isChallengeEncryptionActive()) {
-                    params.put(
-                        "signed_challenge",
-                        encrypt(params.get("signed_challenge"),
-                            DiscoveryDocument.getPublicKeyFromCertFromJWK(ContextKey.PUK_ENC)));
+                    final Optional<Pair<String, Object>> expHeader = extractExpHeader(
+                        params.get("signed_challenge"));
+                    if (expHeader.isPresent()) {
+                        params.put("signed_challenge",
+                            keyAndCertificateStepsHelper
+                                .encrypt("{\"njwt\":\"" + params.get("signed_challenge") + "\"}",
+                                    DiscoveryDocument.getPublicKeyFromContextKey(ContextKey.PUK_ENC), expHeader.get()));
+                    } else {
+                        params.put("signed_challenge",
+                            keyAndCertificateStepsHelper
+                                .encrypt("{\"njwt\":\"" + params.get("signed_challenge") + "\"}",
+                                    DiscoveryDocument.getPublicKeyFromContextKey(ContextKey.PUK_ENC)));
+                    }
                 }
                 break;
             case SSO_TOKEN:
@@ -129,16 +162,31 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
                 }
                 break;
             case ALTERNATIVE_AUTHENTICATION:
-                checkContextAddToParams(ContextKey.SIGEND_AUTHENTICATION_DATA, "signed_authentication_data", params);
+                checkContextAddToParams(ContextKey.SIGEND_AUTHENTICATION_DATA, "encrypted_signed_authentication_data",
+                    params);
                 // encrypt signed challenge
                 params.put(
-                    "signed_authentication_data",
-                    encrypt(params.get("signed_authentication_data"),
-                        DiscoveryDocument.getPublicKeyFromCertFromJWK(ContextKey.PUK_ENC)));
+                    "encrypted_signed_authentication_data",
+                    keyAndCertificateStepsHelper
+                        .encrypt("{\"njwt\":\"" + params.get("encrypted_signed_authentication_data") + "\"}",
+                            DiscoveryDocument.getPublicKeyFromContextKey(ContextKey.PUK_ENC),
+                            Pair.of("cty", "NJWT"),
+                            Pair.of("typ", "JWT"),
+                            extractExpHeader(params.get("encrypted_signed_authentication_data")).orElse(null)));
                 path = Context.getDiscoveryDocument().getAltAuthEndpoint();
                 break;
         }
         return path;
+    }
+
+    private Optional<Pair<String, Object>> extractExpHeader(final String signedChallenge) {
+        try {
+            return new JsonWebToken(signedChallenge).findExpClaimInNestedJwts()
+                .map(ChronoZonedDateTime::toEpochSecond)
+                .map(epoch -> Pair.of(ClaimName.EXPIRES_AT.getJoseName(), epoch));
+        } catch (final Exception e) {
+            return Optional.empty();
+        }
     }
 
     @SneakyThrows
@@ -156,7 +204,8 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
             //noinspection OptionalGetWithoutIsPresent
             Context.getThreadContext().put(
                 ContextKey.TOKEN_CODE,
-                decrypt(encTokenCode.get(), TestEnvironmentConfigurator.getSymmetricEncryptionKey())
+                keyAndCertificateStepsHelper
+                    .decryptAndExtractNjwt(encTokenCode.get(), TestEnvironmentConfigurator.getSymmetricEncryptionKey())
             );
         } else {
             storeParamOfReloc(reloc, "code", ContextKey.TOKEN_CODE);
@@ -170,7 +219,8 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
                 Context.getThreadContext().put(
                     ContextKey.SSO_TOKEN,
                     encSsoToken
-                        .map(s -> decrypt(s, TestEnvironmentConfigurator.getSymmetricEncryptionKey()))
+                        .map(s -> keyAndCertificateStepsHelper
+                            .decryptAndExtractNjwt(s, TestEnvironmentConfigurator.getSymmetricEncryptionKey()))
                         .orElse(null)
                 );
             } else {
@@ -183,15 +233,6 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
                 ctxt.put(ContextKey.SSO_TOKEN_ENCRYPTED, null);
             }
         }
-    }
-
-    private String getLocationHeader(final Response r) {
-        assertThat(r.getHeaders()).anySatisfy(h -> assertThat(h.getName().toLowerCase()).isEqualTo("location"));
-        String loc = r.getHeader("location");
-        if (loc == null) {
-            loc = r.getHeader("Location");
-        }
-        return loc;
     }
 
     private Optional<String> storeParamOfReloc(final String reloc, final String paramName, final ContextKey key)
@@ -220,21 +261,31 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
         params.put(paramName, String.valueOf(ctxt.get(key)));
     }
 
-    public void responseIs302ErrorWithMessageMatching(final int errid, final String errcode) {
+    public void responseIsErrorWithMessageMatching(final int httpStatus, final int errid, final String errcode) {
         final Response r = Context.getCurrentResponse();
-        assertThat(r.getStatusCode()).isEqualTo(302);
-        final String location = getLocationHeader(r);
-        final MultiValueMap<String, String> parameters = UriComponentsBuilder.fromUriString(location).build()
-            .getQueryParams();
+        assertThat(r.getStatusCode()).isEqualTo(httpStatus);
+        if (httpStatus == 302) {
+            final String location = getLocationHeader(r);
+            final MultiValueMap<String, String> parameters = UriComponentsBuilder.fromUriString(location).build()
+                .getQueryParams();
 
-        assertThat(parameters)
-            .containsKeys("error", "gematik_error_text", "gematik_timestamp", "gematik_uuid", "gematik_code");
-        final String returnedErrCode = parameters.getFirst("error");
-        if (!errcode.equals(returnedErrCode)) {
-            assertThat(returnedErrCode).matches(errcode);
+            assertThat(parameters)
+                .containsKeys("error", "gematik_error_text", "gematik_timestamp", "gematik_uuid", "gematik_code");
+            final String returnedErrCode = parameters.getFirst("error");
+            if (!errcode.equals(returnedErrCode)) {
+                assertThat(returnedErrCode).matches(errcode);
+            }
+            assertThat(parameters.getFirst("gematik_code")).isEqualTo(String.valueOf(errid));
+
+            // TODO Clarify if state should be also sent with errors
+        } else {
+            jsoncheck.assertJsonShouldMatchInAnyOrder(Context.getCurrentResponse().getBody().asString(),
+                " { error:              \"" + errcode + "\",\n"
+                    + "\t        gematik_error_text: \".*\",\n"
+                    + "\t        gematik_timestamp:  \"[\\\\d]*\",\n"
+                    + "\t        gematik_uuid:       \".*\",\n"
+                    + "\t        gematik_code:       \"" + errid + "\"\n"
+                    + "          }");
         }
-        assertThat(parameters.getFirst("gematik_code")).isEqualTo(String.valueOf(errid));
-
-        // TODO Clarify if state should be also sent with errors
     }
 }

@@ -18,7 +18,10 @@ package de.gematik.idp.crypto;
 
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import java.security.*;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class EcSignerUtility {
 
     public static byte[] createEcSignature(final byte[] toBeSignedData, final PrivateKey privateKey) {

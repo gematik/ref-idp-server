@@ -16,6 +16,7 @@
 
 package de.gematik.idp.data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -49,5 +50,6 @@ public class IdpErrorResponse {
     @ApiModelProperty(notes = "Fehlertext für den Endbenutzer.")
     @JsonProperty("gematik_error_text")
     private String detailMessage;
-
+    @JsonIgnore
+    private int httpStatusCode;
 }

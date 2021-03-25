@@ -72,10 +72,10 @@ public class DeviceValidationService {
 
     private DeviceValidationData convertDeviceTypeToDeviceValidationData(final DeviceType deviceType) {
         return DeviceValidationData.builder()
-            .manufacturer(deviceType.getDeviceManufacturer())
-            .product(deviceType.getDeviceProduct())
-            .os(deviceType.getDeviceOs())
-            .osVersion(deviceType.getDeviceVersion())
+            .manufacturer(deviceType.getManufacturer())
+            .product(deviceType.getProduct())
+            .os(deviceType.getOs())
+            .osVersion(deviceType.getOsVersion())
             .build();
     }
 

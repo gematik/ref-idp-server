@@ -15,6 +15,7 @@
 #
 
 @testsuite
+@Todo:CheckAfos
 @biometrics
 Feature: Fordere Access Token für Pairing an
   Frontends müssen mit einer eGK einen pairing Access/SSO/ID Token für den Zugriff auf die Pairing-Schnittstelle des IDP bekommen.
@@ -40,8 +41,8 @@ Feature: Fordere Access Token für Pairing an
     Given I choose code verifier 'zdrfcvz3iw47fgderuzbq834werb3q84wgrb3zercb8q3wbd834wefb348ch3rq9e8fd9sac'
         # REM code_challenge for given verifier can be obtained from https://tonyxu-io.github.io/pkce-generator/
     When I request a challenge with
-      | client_id  | scope          | code_challenge                              | code_challenge_method | redirect_uri                       | state       | nonce     | response_type |
-      | eRezeptApp | pairing openid | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 123456789 | code          |
+      | client_id            | scope          | code_challenge                              | code_challenge_method | redirect_uri            | state       | nonce     | response_type |
+      | ${TESTENV.client_id} | pairing openid | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | code          |
     Then the response status is 200
     And the response http headers match
             """
@@ -68,7 +69,6 @@ Feature: Fordere Access Token für Pairing an
             """
               { typ: "JWT",
                 alg: "BP256R1",
-                exp: "[\\d]*",
                 kid: "${json-unit.ignore}"
               }
             """
@@ -76,12 +76,12 @@ Feature: Fordere Access Token für Pairing an
     Then the body claims should match in any order
             """
               { scope:                 "pairing openid",
-                iss:                   "https:\\/\\/idp.*\\.zentral\\.idp\\.splitdns\\.ti\\-dienste\\.de",
+                iss:                   "${TESTENV.issuer}",
                 response_type:         "code",
                 code_challenge_method: "S256",
-                redirect_uri:          "http://redirect.gematik.de/erezept",
+                redirect_uri:          "${TESTENV.redirect_uri}",
                 state:                 "xxxstatexxx",
-                client_id:             "eRezeptApp",
+                client_id:             "${TESTENV.client_id}",
                 code_challenge:        "P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk",
                 exp:                   "[\\d]*",
                 jti:                   "${json-unit.ignore}",
@@ -92,8 +92,7 @@ Feature: Fordere Access Token für Pairing an
               }
             """
 
-  @Afo:A_20699 @Afo:A_20951 @Afo:A_20460 @Afo:A_20699
-  @Todo:CheckAfos
+  @Afo:A_20699 @Afo:A_20951 @Afo:A_20699
   @Approval
   Scenario: Biometrie Author mit signierter Challenge - Gutfall - Validiere Antwortstruktur
 
@@ -103,10 +102,10 @@ Feature: Fordere Access Token für Pairing an
 
   Die TOKEN_CODE Antwort muss den Code 302 und die richtigen HTTP Header haben.
 
-    Given I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+    Given I choose code verifier '${TESTENV.code_verifier01}'
     And I request a challenge with
-      | client_id  | scope          | code_challenge                              | code_challenge_method | redirect_uri                       | state       | nonce | response_type |
-      | eRezeptApp | pairing openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 12345 | code          |
+      | client_id            | scope          | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
+      | ${TESTENV.client_id} | pairing openid | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 12345 | code          |
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
 
     When I request a code token with signed challenge
@@ -117,25 +116,24 @@ Feature: Fordere Access Token für Pairing an
         Pragma=no-cache
         Content-Length=0
 
-        Location=http://redirect.gematik.de/erezept/token[?]code=.*
+        Location=${TESTENV.redirect_uri_regex}[?|&]code=.*
         """
     And I expect the Context with key STATE to match 'xxxstatexxx'
     And I expect the Context with key SSO_TOKEN to match '.*'
 
-  @Afo:A_20731 @Afo:A_20310 @Afo:A_20464 @Afo:A_20952
-  @Todo:CheckAfosReferences
+  @Afo:A_20731 @Afo:A_20464 @Afo:A_20952
   @Todo:CompareSubjectInfosInAccessTokenAndInCert
   @Todo:audFestlegen
   @Approval
     # TODO: wollen wir noch den Wert der auth_time gegen den Zeitpunkt der Authentifizierung pruefen
   Scenario: Biometrie GetToken mit signierter Challenge - Gutfall - Validiere Access Token Claims
-    Given I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+    Given I choose code verifier '${TESTENV.code_verifier01}'
     And I request a challenge with
-      | client_id  | scope          | code_challenge                              | code_challenge_method | redirect_uri                       | state       | nonce  | response_type |
-      | eRezeptApp | pairing openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 887766 | code          |
+      | client_id            | scope          | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
+      | ${TESTENV.client_id} | pairing openid | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And I request a code token with signed challenge
-    And I set the context with key REDIRECT_URI to 'http://redirect.gematik.de/erezept'
+    And I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     And I request an access token
 
     When I extract the header claims from token ACCESS_TOKEN
@@ -150,11 +148,11 @@ Feature: Fordere Access Token für Pairing an
     Then the body claims should match in any order
         """
           { acr:              "gematik-ehealth-loa-high",
-            amr:              '["mfa", "sc", "pin"]',
+            amr:              ["mfa", "sc", "pin"],
             aud:              "https://.*",
             auth_time:        "[\\d]*",
-            azp:              "eRezeptApp",
-            client_id:        "eRezeptApp",
+            azp:              "${TESTENV.client_id}",
+            client_id:        "${TESTENV.client_id}",
             exp:              "[\\d]*",
             jti:              "${json-unit.ignore}",
             iat:              "[\\d]*",
@@ -163,14 +161,13 @@ Feature: Fordere Access Token für Pairing an
             organizationName: ".*",
             given_name:       ".*",
             family_name:      ".*",
-            iss:              "http.*",
+            iss:              "${TESTENV.issuer}",
             scope:            "(openid pairing|pairing openid)",
             sub:              ".*"
           }
         """
 
-  @Afo:A_20699 @Afo:A_20951 @Afo:A_20460 @Afo:A_20699
-  @Todo:CheckAfos
+  @Afo:A_20699 @Afo:A_20951 @Afo:A_20699
   @Approval
   Scenario: Biometrie Author mit SSO Token - Gutfall - Validiere Antwortstruktur
 
@@ -181,10 +178,10 @@ Feature: Fordere Access Token für Pairing an
 
   Die TOKEN_CODE Antwort muss den Code 302 und die richtigen HTTP Header haben.
 
-    Given I choose code verifier 'sfnejkgsjknsfeknsknvgsrlgmreklgmnksrnvgjksnvgseklgvsrklmslrkbmsrklgnrvsgklsrgnksrf'
+    Given I choose code verifier '${TESTENV.code_verifier02}'
     And I request a challenge with
-      | client_id  | scope          | code_challenge                              | code_challenge_method | redirect_uri                       | state        | nonce  | response_type |
-      | eRezeptApp | pairing openid | ds7JaEfpdLidWekR52OhoVpjXHDlplLyV3GtUezxfY0 | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx1 | 123456 | code          |
+      | client_id            | scope          | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce  | response_type |
+      | ${TESTENV.client_id} | pairing openid | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1 | 123456 | code          |
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And I request a code token with signed challenge
     And the response status is 302
@@ -193,10 +190,10 @@ Feature: Fordere Access Token für Pairing an
       | SSO_TOKEN_ENCRYPTED |
     And I initialize scenario from discovery document endpoint
     And I retrieve public keys from URIs
-    And I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+    And I choose code verifier '${TESTENV.code_verifier01}'
     And I request a challenge with
-      | client_id  | scope          | code_challenge                              | code_challenge_method | redirect_uri                       | state       | nonce | response_type |
-      | eRezeptApp | pairing openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 12345 | code          |
+      | client_id            | scope          | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
+      | ${TESTENV.client_id} | pairing openid | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 12345 | code          |
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
 
     When I request a code token with sso token
@@ -206,13 +203,12 @@ Feature: Fordere Access Token für Pairing an
         Cache-Control=no-store
         Pragma=no-cache
         Content-Length=0
-        Location=http://redirect.gematik.de/erezept/token[?]code=.*
+        Location=${TESTENV.redirect_uri_regex}[?|&]code=.*
         """
     And I expect the Context with key STATE to match 'xxxstatexxx'
     And I expect the Context with key SSO_TOKEN to match '$NULL'
 
-  @Afo:A_20731 @Afo:A_20310 @Afo:A_20464 @Afo:A_20952
-  @Todo:CheckAfosReferences
+  @Afo:A_20731 @Afo:A_20464 @Afo:A_20952
   @Todo:CompareSubjectInfosInAccessTokenAndInCert
   @Todo:audFestlegen
   @Approval
@@ -220,10 +216,10 @@ Feature: Fordere Access Token für Pairing an
   Scenario: Biometrie GetToken mit SSO Token - Gutfall - Validiere Access Token Claims
 
 
-    Given I choose code verifier 'sfnejkgsjknsfeknsknvgsrlgmreklgmnksrnvgjksnvgseklgvsrklmslrkbmsrklgnrvsgklsrgnksrf'
+    Given I choose code verifier '${TESTENV.code_verifier02}'
     And I request a challenge with
-      | client_id  | scope          | code_challenge                              | code_challenge_method | redirect_uri                       | state        | nonce  | response_type |
-      | eRezeptApp | pairing openid | ds7JaEfpdLidWekR52OhoVpjXHDlplLyV3GtUezxfY0 | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx1 | 123456 | code          |
+      | client_id            | scope          | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce  | response_type |
+      | ${TESTENV.client_id} | pairing openid | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1 | 123456 | code          |
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And I request a code token with signed challenge
     And the response status is 302
@@ -232,13 +228,13 @@ Feature: Fordere Access Token für Pairing an
       | SSO_TOKEN_ENCRYPTED |
     And I initialize scenario from discovery document endpoint
     And I retrieve public keys from URIs
-    And I choose code verifier 'drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj'
+    And I choose code verifier '${TESTENV.code_verifier01}'
     And I request a challenge with
-      | client_id  | scope          | code_challenge                              | code_challenge_method | redirect_uri                       | state       | nonce  | response_type |
-      | eRezeptApp | pairing openid | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | http://redirect.gematik.de/erezept | xxxstatexxx | 887766 | code          |
+      | client_id            | scope          | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
+      | ${TESTENV.client_id} | pairing openid | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
     And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And I request a code token with sso token
-    And I set the context with key REDIRECT_URI to 'http://redirect.gematik.de/erezept'
+    And I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     And I request an access token
 
     When I extract the header claims from token ACCESS_TOKEN
@@ -253,11 +249,11 @@ Feature: Fordere Access Token für Pairing an
     Then the body claims should match in any order
         """
           { acr:              "gematik-ehealth-loa-high",
-            amr:              '["mfa", "sc", "pin"]',
+            amr:              ["mfa", "sc", "pin"],
             aud:              "https://.*",
             auth_time:        "[\\d]*",
-            azp:              "eRezeptApp",
-            client_id:        "eRezeptApp",
+            azp:              "${TESTENV.client_id}",
+            client_id:        "${TESTENV.client_id}",
             exp:              "[\\d]*",
             jti:              "${json-unit.ignore}",
             iat:              "[\\d]*",
@@ -266,7 +262,7 @@ Feature: Fordere Access Token für Pairing an
             organizationName: ".*",
             given_name:       ".*",
             family_name:      ".*",
-            iss:              "http.*",
+            iss:              "${TESTENV.issuer}",
             scope:            "(openid pairing|pairing openid)",
             sub:              ".*"
           }

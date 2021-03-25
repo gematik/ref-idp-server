@@ -162,11 +162,11 @@ public class AuthenticationChallengeBuilderTest {
     }
 
     @Test
-    public void verifyThatAuthenticationChallengeCarriesExpButNotIatClaimInHeader() {
+    public void verifyThatAuthenticationChallengeCarriesNeitherExpNorIatClaimInHeader() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
             .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
         assertThat(response.getChallenge().getHeaderClaims().keySet())
-            .contains(EXPIRES_AT.getJoseName())
+            .doesNotContain(EXPIRES_AT.getJoseName())
             .doesNotContain(ISSUED_AT.getJoseName());
     }
 

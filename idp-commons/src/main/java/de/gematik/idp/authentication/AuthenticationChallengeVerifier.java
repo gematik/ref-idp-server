@@ -89,7 +89,7 @@ public class AuthenticationChallengeVerifier {
     private void performServerSignatureValidationOfNjwt(final JsonWebToken authenticationResponse) {
         final JsonWebToken serverChallenge = authenticationResponse.getBodyClaim(ClaimName.NESTED_JWT)
             .map(njwt -> new JsonWebToken(njwt.toString()))
-            .orElseThrow(() -> new NoNestedJwtFoundException());
+            .orElseThrow(NoNestedJwtFoundException::new);
 
         if (serverChallenge.getExpiresAt().isBefore(ZonedDateTime.now())
             || serverChallenge.getExpiresAtBody().isBefore(ZonedDateTime.now())) {

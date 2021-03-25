@@ -40,7 +40,6 @@ import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.tests.PkiKeyResolver.Filename;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
-import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateEncodingException;
 import java.util.Base64;
 import java.util.Set;
@@ -126,6 +125,7 @@ public class PairingControllerAccessTest {
         assertThat(
             Unirest.get("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer fdsafds.fdsafd.fdsafds")
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .asString().getStatus())
             .isEqualTo(HttpStatus.FORBIDDEN.value());
     }
@@ -137,6 +137,7 @@ public class PairingControllerAccessTest {
         assertThat(
             Unirest.get("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .asString().getStatus())
             .isEqualTo(HttpStatus.FORBIDDEN.value());
     }
@@ -149,6 +150,7 @@ public class PairingControllerAccessTest {
         assertThat(
             Unirest.get("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .asString().getStatus())
             .isEqualTo(HttpStatus.OK.value());
     }
@@ -157,9 +159,11 @@ public class PairingControllerAccessTest {
     public void insertPairing_correctToken_expect200() throws UnirestException, CertificateEncodingException {
         idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
         accessToken = idpClient.login(egkUserIdentity).getAccessToken();
-        assertThat(Unirest.put("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
-            .body(createIdpJweFromRegistrationData(createValidRegistrationData("123")))
+        assertThat(Unirest.post("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
+            .field("encrypted_registration_data", createIdpJweFromRegistrationData(createValidRegistrationData("123")))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
+            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString().getStatus())
             .isEqualTo(HttpStatus.OK.value());
 
@@ -173,15 +177,19 @@ public class PairingControllerAccessTest {
         idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
         accessToken = idpClient.login(egkUserIdentity).getAccessToken();
 
-        Unirest.put("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
-            .body(createIdpJweFromRegistrationData(createValidRegistrationData("abc")))
+        Unirest.post("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
+            .field("encrypted_registration_data", createIdpJweFromRegistrationData(createValidRegistrationData("abc")))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
+            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString().getStatus();
 
         final HttpResponse<JsonNode> httpResponse = Unirest
-            .put("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
-            .body(createIdpJweFromRegistrationData(createValidRegistrationData("abc")))
+            .post("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
+            .field("encrypted_registration_data", createIdpJweFromRegistrationData(createValidRegistrationData("abc")))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
+            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asJson();
 
         assertThat(httpResponse.getStatus())
@@ -197,12 +205,14 @@ public class PairingControllerAccessTest {
         accessToken = idpClient.login(egkUserIdentity).getAccessToken();
 
         final RegistrationData registrationData = createValidRegistrationData("abc");
-        registrationData.getDeviceInformation().setDeviceName(null);
+        registrationData.getDeviceInformation().setName(null);
 
         final HttpResponse<JsonNode> httpResponse = Unirest
-            .put("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
-            .body(createIdpJweFromRegistrationData(registrationData))
+            .post("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
+            .field("encrypted_registration_data", createIdpJweFromRegistrationData(registrationData))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
+            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asJson();
         assertThat(httpResponse.getStatus())
             .isEqualTo(HttpStatus.BAD_REQUEST.value());
@@ -216,9 +226,11 @@ public class PairingControllerAccessTest {
         accessToken = idpClient.login(rsaUserIdentity).getAccessToken();
 
         final HttpResponse<String> httpResponse = Unirest
-            .put("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
-            .body(createIdpJweFromRegistrationData(createValidRegistrationData("123")))
+            .post("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
+            .field("encrypted_registration_data", createIdpJweFromRegistrationData(createValidRegistrationData("123")))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
+            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString();
         assertThat(httpResponse.getStatus())
             .isEqualTo(HttpStatus.BAD_REQUEST.value());
@@ -229,12 +241,14 @@ public class PairingControllerAccessTest {
         idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
         accessToken = idpClient.login(egkUserIdentity).getAccessToken();
 
-        Unirest.put("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
-            .body(createIdpJweFromRegistrationData(createValidRegistrationData("456")))
+        Unirest.post("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
+            .field("encrypted_registration_data", createIdpJweFromRegistrationData(createValidRegistrationData("456")))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
+            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString();
 
-        final HttpResponse httpResponse = Unirest
+        final HttpResponse<String> httpResponse = Unirest
             .delete("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT + "/654321")
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
@@ -243,44 +257,42 @@ public class PairingControllerAccessTest {
             .isEqualTo(HttpStatus.OK.value());
     }
 
-    private byte[] createIdpJweFromRegistrationData(final RegistrationData registrationData) {
+    private String createIdpJweFromRegistrationData(final RegistrationData registrationData) {
         return IdpJwe
             .createWithPayloadAndEncryptWithKey(registrationData.toJSONString(),
                 idpEnc.getIdentity().getCertificate().getPublicKey(), "JSON")
-            .getRawString().getBytes(
-                StandardCharsets.UTF_8);
+            .getRawString();
     }
 
     private RegistrationData createValidRegistrationData(final String keyIdentifier)
         throws CertificateEncodingException {
         return RegistrationData.builder()
-            .authenticationCert(Base64.getEncoder()
+            .authCert(Base64.getUrlEncoder()
                 .encodeToString(egkUserIdentity.getCertificate().getEncoded()))
             .deviceInformation(createDeviceInformation(createTestDeviceValidationData()))
             .signedPairingData(createSignedPairingData(keyIdentifier).getRawString())
+            .registrationDataVersion("1.0")
             .build();
     }
 
     private JsonWebToken createSignedPairingData(final String keyIdentifier) {
         final JwtClaims claims = new JwtClaims();
 
-        claims.setClaim(KEY_DATA.getJoseName(),
-            java.util.Base64.getEncoder().encodeToString(
+        claims.setClaim(SE_SUBJECT_PUBLIC_KEY_INFO.getJoseName(),
+            java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(
                 rsaUserIdentity.getCertificate().getPublicKey().getEncoded()));
         if (keyIdentifier != null) {
             claims.setClaim(KEY_IDENTIFIER.getJoseName(), keyIdentifier);
         }
-        claims.setClaim(CERTIFICATE_SERIALNUMBER.getJoseName(), "fdklsaöfd");
         claims.setClaim(CERTIFICATE_ISSUER.getJoseName(), "gkropre");
-        claims.setClaim(CERTIFICATE_PUBLIC_KEY.getJoseName(), "htrbfd");
         claims.setClaim(CERTIFICATE_NOT_AFTER.getJoseName(), "fdsfdsa");
         claims.setClaim(SIGNATURE_ALGORITHM_IDENTIFIER.getJoseName(), "vjiw");
         claims.setClaim(DEVICE_PRODUCT.getJoseName(), "S8");
         claims.setClaim(CERTIFICATE_SERIALNUMBER.getJoseName(), "321654");
         claims.setClaim(AUTHORITY_INFO_ACCESS.getJoseName(), "blubblab");
-        claims.setClaim(PUBLIC_KEY.getJoseName(), java.util.Base64.getEncoder()
+        claims.setClaim(AUTH_CERT_SUBJECT_PUBLIC_KEY_INFO.getJoseName(), java.util.Base64.getEncoder()
             .encodeToString(egkUserIdentity.getCertificate().getPublicKey().getEncoded()));
-
+        claims.setClaim(PAIRING_DATA_VERSION.getJoseName(), "1.0");
         final JsonWebSignature jws = new JsonWebSignature();
         jws.setPayload(claims.toJson());
         jws.setKey(egkUserIdentity.getPrivateKey());
@@ -300,15 +312,17 @@ public class PairingControllerAccessTest {
 
     private DeviceInformation createDeviceInformation(final DeviceValidationData data) {
         final DeviceType deviceType = DeviceType.builder()
-            .deviceManufacturer(data.getManufacturer())
-            .deviceProduct(data.getProduct())
-            .deviceOs(data.getOs())
-            .deviceVersion(data.getOsVersion())
-            .deviceModel("foobarModel")
+            .manufacturer(data.getManufacturer())
+            .product(data.getProduct())
+            .os(data.getOs())
+            .osVersion(data.getOsVersion())
+            .model("foobarModel")
+            .deviceTypeDataVersion("1.0")
             .build();
         return DeviceInformation.builder()
             .deviceType(deviceType)
-            .deviceName("TestDevice")
+            .name("TestDevice")
+            .deviceInformationDataVersion("1.0")
             .build();
     }
 

@@ -33,6 +33,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -65,6 +66,9 @@ public class TokenService {
             throw new IdpServerException(3011, INVALID_GRANT, "Authorization Code ist abgelaufen");
         }
 
+        if (StringUtils.isEmpty(redirectUri)) {
+            throw new IdpServerException(1004, INVALID_REQUEST, "redirect_uri wurde nicht übermittelt");
+        }
         if (authenticationToken.getBodyClaim(REDIRECT_URI)
             .filter(originalRedirectUri -> originalRedirectUri.equals(redirectUri))
             .isEmpty()) {
@@ -73,7 +77,7 @@ public class TokenService {
 
         final JsonWebToken accessToken = getAccessToken(authenticationToken);
         final SecretKey tokenKey = keyVerifier.getStringBodyClaim(ClaimName.TOKEN_KEY)
-            .map(Base64.getDecoder()::decode)
+            .map(Base64.getUrlDecoder()::decode)
             .map(keyBytes -> new SecretKeySpec(keyBytes, "AES"))
             .orElseThrow(() -> new IdpServerException(3015, INVALID_REQUEST, "Claims unvollständig im key_verifier"));
         return TokenResponse.builder()

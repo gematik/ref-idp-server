@@ -83,7 +83,6 @@ public class JwtBuilder {
 
     public JwtBuilder expiresAt(final ZonedDateTime exp) {
         final NumericDate expDate = NumericDate.fromSeconds(exp.toEpochSecond());
-        headerClaims.put(ClaimName.EXPIRES_AT.getJoseName(), expDate.getValue());
         bodyClaims.put(ClaimName.EXPIRES_AT.getJoseName(), expDate.getValue());
         return this;
     }
@@ -115,9 +114,7 @@ public class JwtBuilder {
         jws.setKey(signerKey);
         jws.setAlgorithmHeaderValue(determineAlgorithm());
 
-        for (final String key : headerClaims.keySet()) {
-            jws.setHeader(key, headerClaims.get(key));
-        }
+        headerClaims.keySet().forEach(key -> jws.setHeader(key, headerClaims.get(key)));
 
         if (includeSignerCertificateInHeader) {
             if (certificate == null) {

@@ -18,7 +18,6 @@ package de.gematik.idp.server;
 
 import static de.gematik.idp.IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT;
 import static org.assertj.core.api.Assertions.assertThat;
-
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.Rfc;
@@ -60,7 +59,7 @@ public class KeyRetrievalTest {
 
     @Afo("A_20458")
     @Test
-    public void retrieveTokenKey_ShouldBeAvailable() throws UnirestException, JoseException {
+    public void retrieveIDPEncKey_ShouldBeAvailable() throws UnirestException, JoseException {
         final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
         final String pukUriToken = TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())
             .get("uri_puk_idp_enc").toString();
@@ -73,7 +72,7 @@ public class KeyRetrievalTest {
 
     @Afo("A_20458")
     @Test
-    public void retrieveAuthKey_ShouldBeAvailable() throws UnirestException, JoseException {
+    public void retrieveIDPSigKey_ShouldBeAvailable() throws UnirestException, JoseException {
         final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
         final String pukUriAuth = TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())
             .get("uri_puk_idp_sig").toString();
@@ -93,7 +92,26 @@ public class KeyRetrievalTest {
         final JsonNode jwk = Unirest.get(pukUriAuth).asJson().getBody();
         assertThat(jwk.getObject().has("n")).isFalse();
         assertThat(jwk.getObject().has("e")).isFalse();
-        assertThat(jwk.getObject().has("use")).isFalse();
+    }
+
+    @Test
+    public void retrieveSigKey_useFieldShouldBePresent() throws UnirestException {
+        final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
+        final String pukUriAuth = TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())
+            .get("uri_puk_idp_sig").toString();
+        final JsonNode jwk = Unirest.get(pukUriAuth).asJson().getBody();
+        assertThat(jwk.getObject().has("use")).isTrue();
+        assertThat(jwk.getObject().get("use")).isEqualTo("sig");
+    }
+
+    @Test
+    public void retrieveEndKey_useFieldShouldBePresent() throws UnirestException {
+        final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
+        final String pukUriAuth = TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())
+            .get("uri_puk_idp_enc").toString();
+        final JsonNode jwk = Unirest.get(pukUriAuth).asJson().getBody();
+        assertThat(jwk.getObject().has("use")).isTrue();
+        assertThat(jwk.getObject().get("use")).isEqualTo("enc");
     }
 
     @Afo("A_20458")

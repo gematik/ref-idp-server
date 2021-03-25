@@ -29,4 +29,5 @@ public class IdpKeyConfiguration {
 
     private String fileName;
     private String keyId;
+    private String use;
 }
