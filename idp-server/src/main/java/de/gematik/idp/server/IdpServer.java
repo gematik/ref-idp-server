@@ -29,13 +29,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
 @SpringBootApplication(scanBasePackages = {"de.gematik", "net.dracoblue"})
-@EnableWebMvc
 @RequiredArgsConstructor
 public class IdpServer implements WebMvcConfigurer {
 
@@ -64,6 +63,11 @@ public class IdpServer implements WebMvcConfigurer {
         if (idpConfiguration.getDefaultLocale() != null) {
             Locale.setDefault(idpConfiguration.getDefaultLocale());
         }
+    }
+
+    @Bean
+    public ResourceHttpRequestHandler resourceHttpRequestHandler() {
+        return new ResourceHttpRequestHandler();
     }
 
     @Bean

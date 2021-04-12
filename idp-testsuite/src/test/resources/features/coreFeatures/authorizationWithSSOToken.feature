@@ -14,15 +14,16 @@
 # limitations under the License.
 #
 
-@testsuite
+@Product:IDP-D
 @SsoTokenFlow
 Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
   Frontends von TI Diensten müssen vom IDP Server über ein HTTP POST an den Authorization Endpoint ein Code Token abfragen können.
 
   Background: Initialisiere Testkontext durch Abfrage des Discovery Dokuments
-    Given I initialize scenario from discovery document endpoint
-    And I retrieve public keys from URIs
+    Given IDP I initialize scenario from discovery document endpoint
+    And IDP I retrieve public keys from URIs
 
+  @TCID:IDP_REF_AUTH_101 @PRIO:1
   @Afo:A_20946 @Afo:A_20950
   @Approval @Ready
   Scenario: AuthorSSO - Gutfall - Validiere Antwortstruktur
@@ -37,36 +38,35 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
   - im Location header state, code aber
   - NICHT SSO Token als Query Parameter enthalten
 
-    Given I choose code verifier '${TESTENV.code_verifier02}'
-    And I request a challenge with
+    Given IDP I choose code verifier '${TESTENV.code_verifier02}'
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1 | 123456 | code          |
-    And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
-    And I request a code token with signed challenge
-    And the response status is 302
-    And I start new interaction keeping only
-      | SSO_TOKEN           |
+    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I request a code token with signed challenge successfully
+    And IDP I start new interaction keeping only
       | SSO_TOKEN_ENCRYPTED |
-    And I initialize scenario from discovery document endpoint
-    And I choose code verifier '${TESTENV.code_verifier01}'
-    And I request a challenge with
+    And IDP I initialize scenario from discovery document endpoint
+    And IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx2 | 234567 | code          |
 
-    When I request a code token with sso token
+    When IDP I request a code token with sso token
     Then the response status is 302
-    And the response http headers match
+    And IDP the response http headers match
         """
         Cache-Control=no-store
         Pragma=no-cache
         Content-Length=0
         Location=${TESTENV.redirect_uri_regex}[?|&]code=.*
         """
-    And I expect the Context with key SSO_TOKEN to match '$NULL'
-    And I expect the Context with key STATE to match 'xxxstatexxx2'
+    And IDP I expect the Context with key SSO_TOKEN to match '$NULL'
+    And IDP I expect the Context with key STATE to match 'xxxstatexxx2'
 
+  @TCID:IDP_REF_AUTH_102 @PRIO:1
   @Afo:A_20946 @Afo:A_20950 @Afo:A_20377
-  @Approval @Ready
+  @Approval @Ready @RefImplOnly
   Scenario: AuthorSSO - Gutfall - Validiere Location Header und Code Token Claims
 
   ```
@@ -79,25 +79,23 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
   die richtigen Claims im Token haben.
 
 
-    Given I choose code verifier '${TESTENV.code_verifier02}'
-    And I request a challenge with
+    Given IDP I choose code verifier '${TESTENV.code_verifier02}'
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1 | 123456 | code          |
-    And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
-    And I request a code token with signed challenge
-    And the response status is 302
-    And I start new interaction keeping only
-      | SSO_TOKEN           |
+    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I request a code token with signed challenge successfully
+    And IDP I start new interaction keeping only
       | SSO_TOKEN_ENCRYPTED |
-    And I initialize scenario from discovery document endpoint
-    And I choose code verifier '${TESTENV.code_verifier01}'
-    And I request a challenge with
+    And IDP I initialize scenario from discovery document endpoint
+    And IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx2 | 234567 | code          |
-    And I request a code token with sso token
+    And IDP I request a code token with sso token successfully
 
-    When I extract the header claims from token TOKEN_CODE
-    Then the header claims should match in any order
+    When IDP I extract the header claims from token TOKEN_CODE
+    Then IDP the header claims should match in any order
         """
           { alg: "BP256R1",
             kid: "${json-unit.ignore}",
@@ -105,8 +103,8 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
           }
         """
 
-    When I extract the body claims from token TOKEN_CODE
-    Then the body claims should match in any order
+    When IDP I extract the body claims from token TOKEN_CODE
+    Then IDP the body claims should match in any order
         """
           { auth_time:             "${json-unit.ignore}",
             client_id:             "${TESTENV.client_id}",
@@ -131,9 +129,10 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
           }
         """
 
+  @TCID:IDP_REF_AUTH_103 @PRIO:1
   @Afo:A_20319
   @Approval @Ready
-  @Signature
+  @Signature @RefImplOnly
   Scenario: AuthorSSO - Validiere Signatur des Code Token
 
   ```
@@ -145,27 +144,26 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
   Der Code Token muss mit dem puk_idp_sig Zertifikat gültig signiert sein.
 
 
-    Given I choose code verifier '${TESTENV.code_verifier02}'
-    And I request a challenge with
+    Given IDP I choose code verifier '${TESTENV.code_verifier02}'
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1 | 4444  | code          |
-    And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
-    And I request a code token with signed challenge
-    And the response status is 302
-    And I start new interaction keeping only
-      | SSO_TOKEN           |
+    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I request a code token with signed challenge successfully
+    And IDP I start new interaction keeping only
       | SSO_TOKEN_ENCRYPTED |
-    And I initialize scenario from discovery document endpoint
-    And I retrieve public keys from URIs
-    And I choose code verifier '${TESTENV.code_verifier01}'
-    And I request a challenge with
+    And IDP I initialize scenario from discovery document endpoint
+    And IDP I retrieve public keys from URIs
+    And IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx2 | 3434  | code          |
 
-    When I request a code token with sso token
-    Then the context TOKEN_CODE must be signed with cert PUK_SIGN
+    When IDP I request a code token with sso token successfully
+    Then IDP the context TOKEN_CODE must be signed with cert PUK_SIGN
 
 
+  @TCID:IDP_REF_AUTH_104 @PRIO:2
   @Approval @Ready
   @Timeout
   @LongRunning
@@ -179,31 +177,30 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
 
   Der Server muss diese Anfrage mit einem Timeout Fehler ablehnen.
 
-    Given I choose code verifier '${TESTENV.code_verifier02}'
-    And I request a challenge with
+    Given IDP I choose code verifier '${TESTENV.code_verifier02}'
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1 | 4444  | code          |
-    And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
-    And I request a code token with signed challenge
-    And the response status is 302
-    And I start new interaction keeping only
-      | SSO_TOKEN           |
+    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I request a code token with signed challenge successfully
+    And IDP I start new interaction keeping only
       | SSO_TOKEN_ENCRYPTED |
-    And I initialize scenario from discovery document endpoint
-    And I retrieve public keys from URIs
-    And I choose code verifier '${TESTENV.code_verifier01}'
-    And I request a challenge with
+    And IDP I initialize scenario from discovery document endpoint
+    And IDP I retrieve public keys from URIs
+    And IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx2 | 3434  | code          |
 
-    When I wait PT3M5S
-    And I request a code token with sso token
-    Then the response is an 302 error with gematik code 2040 and error 'access_denied'
+    When IDP I wait PT3M5S
+    And IDP I request a code token with sso token
+    Then IDP the response is an 302 error with gematik code 2040 and error 'access_denied'
 
     # ------------------------------------------------------------------------------------------------------------------
     #
     # negative cases
 
+  @TCID:IDP_REF_AUTH_105 @PRIO:2 @Negative
   @Approval @Ready
   Scenario: AuthorSSO - Challenge Token fehlt beim SSO Token Aufruf
 
@@ -216,27 +213,25 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
   Der Server muss diese Anfrage mit HTTP Status 302 und einer Fehlermeldung im Location Header ablehnen.
 
 
-    Given I choose code verifier '${TESTENV.code_verifier02}'
-    And I request a challenge with
+    Given IDP I choose code verifier '${TESTENV.code_verifier02}'
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1 | 131313 | code          |
-    And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
-    And I request a code token with signed challenge
-    And the response status is 302
-    And I start new interaction keeping only
-      | SSO_TOKEN           |
+    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I request a code token with signed challenge successfully
+    And IDP I start new interaction keeping only
       | SSO_TOKEN_ENCRYPTED |
-    And I initialize scenario from discovery document endpoint
-    And I choose code verifier '${TESTENV.code_verifier01}'
-    And I request a challenge with
+    And IDP I initialize scenario from discovery document endpoint
+    And IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx2 | 242424 | code          |
 
-    When I request a code token with sso token no challenge
-    Then the response is an 400 error with gematik code 2030 and error 'invalid_request'
+    When IDP I request a code token with sso token no challenge
+    Then IDP the response is an 400 error with gematik code 2030 and error 'invalid_request'
 
 
-  @Afo:A_20948  @Afo:A_20949
+  @Afo:A_20948  @Afo:A_20949 @Negative
   @WiP
   Scenario: AuthorSSO - Anfrage mit modifiziertem SSO Token
 
@@ -249,12 +244,12 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
   Die Server muss diese Anfrage mit HTTP Status 302 und einer Fehlermeldung im Location Header ablehnen.
 
 
-    Given I choose code verifier '${TESTENV.code_verifier01}'
-    And I request a challenge with
+    Given IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 9999  | code          |
         # TODO first perform with signed challenge then modify sso token then retry with modified sso token
         # TODO how to modify the sso token to ensure that the idp checks the signature correctly
 
-    When I request a code token with sso token
-    Then the response is an 302 error with gematik code 9999 and error 'TODO'
+    When IDP I request a code token with sso token
+    Then IDP the response is an 302 error with gematik code 9999 and error 'TODO'

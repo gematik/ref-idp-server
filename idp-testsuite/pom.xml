@@ -6,13 +6,13 @@
     <artifactId>idp-testsuite</artifactId>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
-    <version>12.0.0</version>
+    <version>13.0.0</version>
 
     <parent>
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>12.0.0</version>
+        <version>13.0.0</version>
     </parent>
 
     <properties>
@@ -260,13 +260,12 @@
         <dependency>
             <artifactId>aforeporter</artifactId>
             <groupId>de.gematik.idp.aforeporter</groupId>
-            <version>1.1.1</version>
+            <version>1.2.1</version>
         </dependency>
 
         <dependency>
             <groupId>de.gematik</groupId>
             <artifactId>rbellogger</artifactId>
-            <version>0.6.3</version>
         </dependency>
 
     </dependencies>
@@ -291,6 +290,31 @@
                 </executions>
             </plugin>
             <plugin>
+                <!-- Workaround maven not being able to set a property conditionally based on environment variable -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <exportAntProperties>true</exportAntProperties>
+                            <target>
+                                <property environment="env"/>
+                                <condition property="gematik.testconfig" value="${env.GEMATIK_TESTCONFIG}"
+                                    else="default">
+                                    <isset property="env.GEMATIK_TESTCONFIG"/>
+                                </condition>
+                                <echo message="${gematik.testconfig}"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>properties-maven-plugin</artifactId>
                 <version>1.0.0</version>
@@ -303,7 +327,7 @@
                         <configuration>
                             <files>
                                 <file>serenity.properties</file>
-                                <file>testsuite_config.properties</file>
+                                <file>testsuite_config.${gematik.testconfig}.properties</file>
                             </files>
                         </configuration>
                     </execution>
@@ -313,9 +337,28 @@
             <!-- ===================  COMPILE UNIT TEST PACKAGE -->
 
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <groupId>org.apache.maven.plugins</groupId>
                 <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
@@ -332,7 +375,9 @@
                  for multiple parallel batches run simultaneously
             -->
             <plugin>
+                <groupId>com.github.temyers</groupId>
                 <artifactId>cucumber-jvm-parallel-plugin</artifactId>
+                <version>4.2.0</version>
                 <executions>
                     <execution>
                         <configuration>
@@ -357,8 +402,6 @@
                         <phase>generate-test-sources</phase>
                     </execution>
                 </executions>
-                <groupId>com.github.temyers</groupId>
-                <version>4.2.0</version>
             </plugin>
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
@@ -372,6 +415,7 @@
                     <skipITs>${skip.inttests}</skipITs>
                     <systemPropertyVariables>
                         <IDP_SERVER_PORT>${tomcat.http.port}</IDP_SERVER_PORT>
+                        <GEMATIK_TESTCONFIG>${gematik.testconfig}</GEMATIK_TESTCONFIG>
                         <!--suppress UnresolvedMavenProperty -->
                         <cucumber.filter.tags>@Approval and not @OpenBug and not @WiP and not @LongRunning
                         </cucumber.filter.tags>
@@ -393,7 +437,7 @@
                     <dependency>
                         <artifactId>serenity-single-page-report</artifactId>
                         <groupId>net.serenity-bdd</groupId>
-                        <version>2.3.31</version>
+                        <version>2.3.33</version>
                     </dependency>
                 </dependencies>
                 <executions>
@@ -408,12 +452,6 @@
                                 <report.customfields.User>${user.name}</report.customfields.User>
                                 <!--suppress UnresolvedMavenProperty -->
                                 <report.customfields.Client>${testclient}</report.customfields.Client>
-                                <!--suppress UnresolvedMavenProperty -->
-                                <report.customfields.ChallengeEncryption>${encryption.challenge.active}
-                                </report.customfields.ChallengeEncryption>
-                                <!--suppress UnresolvedMavenProperty -->
-                                <report.customfields.TokenEncryption>${encryption.token.active}
-                                </report.customfields.TokenEncryption>
                             </systemPropertyVariables>
                         </configuration>
                         <goals>

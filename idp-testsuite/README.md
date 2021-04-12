@@ -51,8 +51,7 @@ mit dem aktuellen Release sind folgende Testszenarien abgedeckt:
 * Authorization Endpunkt - Anforderung Challenge Token
     * Tests über Erreichbarkeit des Endpunkts, Eingangsparameter, Struktur der Antwort, Inhalte der Claims, Signaturen,
       Negativtests auf Parameter, Fehlermeldungen, zeitliche Gültigkeit, Token Verschlüsselung
-    * _In Arbeit: Fehlermeldungen_
-    * _Noch nicht realisiert: kartenspezifische Szenarien_
+    * _In Arbeit: Fehlermeldungen, kartenspezifische Szenarien_
 * Authorization Endpunkt - Anforderung Tokencode
     * Tests über Erreichbarkeit des Endpunkts, Eingangsparameter, beide Flows (signed challenge, sso token), Signaturen,
       Negativtests auf Parameter, Fehlermeldungen, zeitliche Gültigkeit, ungültige Zertifikate, Token Verschlüsselung
@@ -63,7 +62,6 @@ mit dem aktuellen Release sind folgende Testszenarien abgedeckt:
     * Tests über Erreichbarkeit des Endpunkts, Eingangsparameter, beide Flows (signed challenge, sso token),
       Signaturen (ID Token), Negativtests auf Parameter, zeitliche Gültigkeit, Ungültige Zertifikate, Token
       Verschlüsselung
-    * _Abzuklären: Struktur der Antwort, Inhalte der Claims_
     * _In Arbeit: Fehlermeldungen_
     * _Noch nicht realisiert: kartenspezifische Szenarien_
 * Alternative Authentisierung
@@ -112,6 +110,13 @@ Main class           :  net.serenitybdd.cucumber.cli.Main
 Glue                 : de.gematik.idp.test.steps
 
 Environment variables: IDP_SERVER=http://localhost:8080/auth/realms/idp/.well-known/openid-configuration
+```
+
+![Anmerkung](doc/images/emblem-generic.png) Bei den Environment Variablen muss **ab Version 13** auch ein Wert für
+GEMATIK_TESTCONFIG gesetzt werden. Standardwert ist hier 'default'.
+
+```
+Environment variables: IDP_SERVER=https://idp-ref.zentral.idp.splitdns.ti-dienste.de/.well-known/openid-configuration;GEMATIK_TESTCONFIG=default
 ```
 
 ## Idp Server lokal starten
@@ -176,6 +181,7 @@ Um einen Idp Server zu testen muss die Umgebungsvariable IDP_SERVER entsprechend
 ```
 cd ......./idp-global
 export IDP_SERVER=http://localhost:8080/auth/realms/idp/.well-known/openid-configuration
+export GEMATIK_TESTCONFIG=default
 mvn clean verify -Dskip.unittests=true
 ```
 
@@ -302,75 +308,28 @@ Der Anforderungsüberdeckungsbericht listet alle Anforderungen auf und die mit i
 Die Liste der Anforderungen entnimmt der Bericht aus der im idp-testsuite Verzeichnis abgelegten requirements.json
 Datei.
 
-## Anpassung der Testsuite an Drittanbieter
+## Anpassung der Testsuite an Drittanbieter (OBSOLET mit Version 13)
 
-### Lokales Discovery Dokument
+### Lokales Discovery Dokument (OBSOLET mit Version 13)
 
-Zur Anpassung an Abweichungen von Drittanbietern im Vergleich zur Referenzimplementierung gibt es die Möglichkeit ein
-angepasstes Discovery Dokument aus dem Dateisystem der Testsuite zur Verfügung zu stellen und unter Umgehung der
-PUK_URIS öffentliche Schlüssel direkt aus dem Dateisystem in die Testumgebung zu laden. Diese Daten müssen natürlich mit
-den Einstellungen des Servers korrelieren, um einen erfolgreichen Lauf der Testsuite sicherzustellen.
+### Deaktivieren der Tokenverschlüsselung (OBSOLET mit Version 13)
 
-Hierfür muss die Umgebungsvariable IDP_LOCAL_DISCDOC auf ein Set von Dateien, welche den Inhalt des Discovery Dokuments
-enthalten verweisen. Für relative Pfade ist als Ausgangsordner idp-testsuite anzusetzen.
-
-Basierend auf dieser Umgebungsvariable werden drei Dateien erwartet:
-
-```
-{IDP_LOCAL_DISCDOC}_body.json
-{IDP_LOCAL_DISCDOC}_header.json
-{IDP_LOCAL_DISCDOC}_pkey.p12
-```
-
-Für die Signierung des Discovery Documents wird ein privater Schlüssel in der p12 Datei erwartet. Das Passwort für den
-Schlüssel kann über die Umgebungsvariable IDP_LOCAL_DISCDOC_PKEY_PWD festgelegt werden.
-
-Die zeitlichen Validierungs-Claims (exp, iat) werden von der Testsuite dynamisch ergänzt.
-
-Im idp-testsuite Ordner gibt es für den Referenzserver Beispieldateien `discover_document*.*`, welche die Schlüssel vom
-lokal zu startenden Server nutzt.
-
-Das Testszenario "Disc - Die Schlüssel URIs sind erreichbar und enthalten public X509 Schlüssel" scheitert naturgemäß
-bei der Verwendung von dateibasierten Referenzen. Deswegen ist dieses Szenario derzeit mit einer @OpenBug Annotation
-versehen.
-
-Bei der Verwendung der IDP_LOCAL_DISCDOC Funktionalität, ist trotzdem eine IDP_SERVER Umgebungsvariable zu setzen (dummy
-Wert) um ein temporäres Hochfahren des Referenzservers (auf einem anderen Port) beim Lauf der Testsuite zu unterbinden.
-
-```
-export IDP_SERVER=1
-```
-
-### Deaktivieren der Tokenverschlüsselung
-
-In der aktuellen Version der Referenzimplementierung werden die Tokens bereits verschlüsselt. Die Testsuite ist
-daraufhin abgestimmt und nimmt automatisch die Ver-/Entschlüsselung vor. Um dies abzuschalten, kann im
-testsuite_config.properties folgender Eintrag gesetzt werden.
-
-```
-encryption.token.active=0
-```
-
-### Deaktivieren der Verschlüsselung der signierten Challenge
-
-In der aktuellen Version der Referenzimplementierung wird die signierte CHallenge bereits verschlüsselt. Die Testsuite
-ist daraufhin abgestimmt und nimmt automatisch die Ver-/Entschlüsselung vor. Um dies abzuschalten, kann im
-testsuite_config.properties folgender Eintrag gesetzt werden.
-
-```
-encryption.challenge.active=0
-```
-
-Das für die symmetrische Verschlüsselung zu verwendende Passwort wird in folgendem Eintrag gesetzt:
-
-```
-encryption.symmetric.key=geheimerSchluesselDerNochGehashtWird
-```
+### Deaktivieren der Verschlüsselung der signierten Challenge (OBSOLET mit Version 13)
 
 ### Nutzung / Anpassung von Testumgebungsvariablen
 
-In der testsuite_config.properties sind ein Set von mit TESTENV beginnenden Variablen definiert, welche in der Testsuite
-bei der Übergabe von String Werten durch Angabe von ${TESTENV.variablenname} genutzt werden können.
+In der durch die Umgebungsvariable GEMATIK_TESTCONFIG definierten testsuite_config.${env.GEMATIK_TESTCONFIG}.properties
+sind ein Set von mit TESTENV beginnenden Variablen definiert, welche in der Testsuite bei der Übergabe von String Werten
+durch Angabe von ${TESTENV.variablenname} genutzt werden können.
+
+Das für die symmetrische Verschlüsselung von Challenge und Token zu verwendende Passwort wird in den folgenden Einträgen
+gesetzt:
+
+```
+encryption.signedchallenge.symmetric.key=geheimerSchluesselDerNochGehashtWird
+encryption.ssotoken.symmetric.key=geheimerSchluesselDerNochGehashtWird
+encryption.alternativeauthentication.symmetric.key=geheimerSchluesselDerNochGehashtWird
+```
 
 ## Remarks
 

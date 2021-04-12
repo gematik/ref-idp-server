@@ -1,8 +1,11 @@
 package de.gematik.idp.test.steps;
 
 import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
-import de.gematik.idp.test.steps.helpers.TestEnvironmentConfigurator;
-import de.gematik.idp.test.steps.model.*;
+import de.gematik.idp.test.steps.model.DiscoveryDocument;
+import de.gematik.idp.test.steps.model.HttpMethods;
+import de.gematik.idp.test.steps.model.HttpStatus;
+import de.gematik.test.bdd.Context;
+import de.gematik.test.bdd.ContextKey;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.security.Key;
@@ -29,10 +32,9 @@ public class IdpBiometricsSteps extends IdpStepsBase {
 
     @SneakyThrows
     public void signPairingData(final String keyfile) {
-        final Map<ContextKey, Object> ctxt = Context.getThreadContext();
         final Key pkey = keyAndCertificateStepsHelper.readPrivateKeyFromKeyStore(keyfile);
         final Certificate cert = keyAndCertificateStepsHelper.readCertFrom(keyfile);
-        final Map<String, Object> pairingData = Context.getObjectMapCopy(ContextKey.PAIRING_DATA);
+        final Map<String, Object> pairingData = Context.get().getObjectMapCopy(ContextKey.PAIRING_DATA);
 
         pairingData.putIfAbsent("pairing_data_version", "1.0");
         if (pairingData.get("key_identifier") != null) {
@@ -75,29 +77,30 @@ public class IdpBiometricsSteps extends IdpStepsBase {
             jsonWebSignature.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_PSS_USING_SHA256);
         }
         jsonWebSignature.setHeader("typ", "JWT");
-        ctxt.put(ContextKey.SIGNED_PAIRING_DATA, jsonWebSignature.getCompactSerialization());
+        Context.get().put(ContextKey.SIGNED_PAIRING_DATA, jsonWebSignature.getCompactSerialization());
     }
 
     public void createAuthenticationData(final Map<String, String> mapFromDatatable) {
         final Map<String, Object> processedMap = new HashMap<>(mapFromDatatable);
-        if (processedMap.containsKey("amr")) {
+        if (processedMap.containsKey("amr") && processedMap.get("amr") != null) {
             processedMap.put("amr", new JSONArray(processedMap.get("amr").toString()));
         }
-        Context.getThreadContext().put(ContextKey.AUTHENTICATION_DATA, processedMap);
+        Context.get().put(ContextKey.AUTHENTICATION_DATA, processedMap);
     }
 
     @SneakyThrows
     public void signAuthenticationData(final String keyfile, final String version) {
-        final Map<ContextKey, Object> ctxt = Context.getThreadContext();
         final Key pkey = keyAndCertificateStepsHelper.readPrivatKeyFromPkcs8(keyfile);
 
-        final Map<String, Object> authenticationData = Context.getObjectMapCopy(ContextKey.AUTHENTICATION_DATA);
-        authenticationData.put("challenge_token", ctxt.get(ContextKey.CHALLENGE));
+        final Map<String, Object> authenticationData = Context.get().getObjectMapCopy(ContextKey.AUTHENTICATION_DATA);
+        authenticationData.put("challenge_token", Context.get().get(ContextKey.CHALLENGE));
 
         authenticationData.put("device_information", createDeviceInfoJSON());
-        final String certFile = authenticationData.get("auth_cert").toString();
-        final Certificate cert = keyAndCertificateStepsHelper.readCertFrom(certFile);
-        authenticationData.put("auth_cert", Base64.encodeBase64URLSafeString(cert.getEncoded()));
+        if (authenticationData.get("auth_cert") != null) {
+            final String certFile = authenticationData.get("auth_cert").toString();
+            final Certificate cert = keyAndCertificateStepsHelper.readCertFrom(certFile);
+            authenticationData.put("auth_cert", Base64.encodeBase64URLSafeString(cert.getEncoded()));
+        }
         authenticationData.putIfAbsent("authentication_data_version", version);
         if (authenticationData.get("key_identifier") != null) {
             authenticationData
@@ -109,7 +112,7 @@ public class IdpBiometricsSteps extends IdpStepsBase {
         jsonWebSignature.setKey(pkey);
         jsonWebSignature.setAlgorithmHeaderValue("ES256");
         jsonWebSignature.setHeader("typ", "JWT");
-        ctxt.put(ContextKey.SIGEND_AUTHENTICATION_DATA, jsonWebSignature.getCompactSerialization());
+        Context.get().put(ContextKey.SIGEND_AUTHENTICATION_DATA, jsonWebSignature.getCompactSerialization());
     }
 
     @SneakyThrows
@@ -117,35 +120,36 @@ public class IdpBiometricsSteps extends IdpStepsBase {
         final Certificate cert = keyAndCertificateStepsHelper.readCertFrom(certFile);
 
         final JSONObject regData = new JSONObject();
-        regData.put("signed_pairing_data", Context.getThreadContext().get(ContextKey.SIGNED_PAIRING_DATA));
+        regData.put("signed_pairing_data", Context.get().get(ContextKey.SIGNED_PAIRING_DATA));
         regData.put("auth_cert", Base64.encodeBase64URLSafeString(cert.getEncoded()));
         regData.put("device_information", createDeviceInfoJSON());
         regData.put("registration_data_version", versionReg);
 
-        final Map<String, String> headers = getUAAndAuthHeaders();
+        final Map<String, String> headers = initializeAuthHeaders();
         headers.put("Accept", "application/json;charset=UTF-8");
         headers.put("Content-Type", ContentType.URLENC.withCharset("UTF-8"));
 
         final PublicKey pukEnc = DiscoveryDocument.getPublicKeyFromContextKey(ContextKey.PUK_ENC);
-        Context.getThreadContext().put(ContextKey.RESPONSE,
+        Context.get().put(ContextKey.RESPONSE,
             requestResponseAndAssertStatus(Context.getDiscoveryDocument().getPairingEndpoint(), headers,
                 HttpMethods.POST, null, "encrypted_registration_data="
                     + keyAndCertificateStepsHelper.encrypt(regData.toString(), pukEnc,
                     Pair.of("typ", "JWT"),
-                    Pair.of("cty", "JSON")), HttpStatus.NOCHECK));
+                    Pair.of("cty", "JSON")),
+                HttpStatus.NOCHECK));
     }
 
     public void requestAllPairings() {
-        final Map<String, String> headers = getUAAndAuthHeaders();
+        final Map<String, String> headers = initializeAuthHeaders();
         headers.put("Accept", "application/json;charset=UTF-8");
-        Context.getThreadContext().put(ContextKey.RESPONSE, requestResponseAndAssertStatus(
+        Context.get().put(ContextKey.RESPONSE, requestResponseAndAssertStatus(
             Context.getDiscoveryDocument().getPairingEndpoint(), headers,
             HttpMethods.GET, null, null, HttpStatus.NOCHECK));
     }
 
     @SneakyThrows
     public void deregisterDeviceWithKey(String keyVerifier) {
-        final Map<String, String> headers = getUAAndAuthHeaders();
+        final Map<String, String> headers = initializeAuthHeaders();
         if ("$NULL".equals(keyVerifier)) {
             keyVerifier = null;
         } else if ("$REMOVE".equals(keyVerifier)) {
@@ -156,7 +160,7 @@ public class IdpBiometricsSteps extends IdpStepsBase {
         final Response r = requestResponseAndAssertStatus(
             Context.getDiscoveryDocument().getPairingEndpoint() + "/" + keyVerifier, headers,
             HttpMethods.DELETE, null, null, HttpStatus.NOCHECK);
-        Context.getThreadContext().put(ContextKey.RESPONSE, r);
+        Context.get().put(ContextKey.RESPONSE, r);
     }
 
     private String normalizeKeyIdentifier(final String rawKeyId) {
@@ -170,12 +174,12 @@ public class IdpBiometricsSteps extends IdpStepsBase {
 
     @NotNull
     private JSONObject createDeviceInfoJSON() {
-        final Map<String, Object> devTypeInfo = Context.getObjectMapCopy(ContextKey.DEVICE_INFO);
+        final Map<String, Object> devTypeInfo = Context.get().getObjectMapCopy(ContextKey.DEVICE_INFO);
         devTypeInfo.remove("name");
         devTypeInfo.remove("device_information_data_version");
         devTypeInfo.putIfAbsent("device_type_data_version", "1.0");
 
-        final Map<String, Object> ctxtDevInfo = Context.getObjectMapCopy(ContextKey.DEVICE_INFO);
+        final Map<String, Object> ctxtDevInfo = Context.get().getObjectMapCopy(ContextKey.DEVICE_INFO);
         ctxtDevInfo.putIfAbsent("device_information_data_version", "1.0");
 
         final JSONObject devInfo = new JSONObject();
@@ -186,10 +190,9 @@ public class IdpBiometricsSteps extends IdpStepsBase {
     }
 
     @NotNull
-    private Map<String, String> getUAAndAuthHeaders() {
+    private Map<String, String> initializeAuthHeaders() {
         final Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", "Bearer " + Context.getThreadContext().get(ContextKey.ACCESS_TOKEN));
-        headers.put("User-Agent", TestEnvironmentConfigurator.getTestEnvVar("pairing_user_agent"));
+        headers.put("Authorization", "Bearer " + Context.get().get(ContextKey.ACCESS_TOKEN));
         return headers;
     }
 }

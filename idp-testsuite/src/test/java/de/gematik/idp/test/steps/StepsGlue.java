@@ -19,6 +19,9 @@ package de.gematik.idp.test.steps;
 import static org.assertj.core.api.Assertions.assertThat;
 import de.gematik.idp.test.steps.helpers.*;
 import de.gematik.idp.test.steps.model.*;
+import de.gematik.test.bdd.Context;
+import de.gematik.test.bdd.ContextKey;
+import de.gematik.test.bdd.Variables;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.*;
 import io.cucumber.java.en.And;
@@ -54,7 +57,7 @@ import org.json.JSONObject;
  * <lI>$REMOVE removing the current entry from parameter tables, and also partly from the arguments of
  * requests/steps</lI>
  * <li>${TESTENV.xxxxx} to replace this token with the configure test environment variable in
- * testsuite_config.properties</li>
+ * testsuite_config.XXXXXX.properties</li>
  * <lI>${VAR.xxxxx} to replace this token with the current value of the variable</lI>
  * <lI>$FILL_FROM_CERT used in alt auth registration to populate pairing data from given certificate</lI>
  * </ul>
@@ -75,9 +78,6 @@ public class StepsGlue {
 
     @Steps
     IdpAccessTokenSteps access;
-
-    @Steps
-    Context context;
 
     @Steps
     JsonChecker jsoncheck;
@@ -104,12 +104,13 @@ public class StepsGlue {
      * @param accessType type of access token to request
      * @param certFile   certificate to use for signing the challenge
      * @testenv client_id, redirect_uri
+     * @gematik.context.in USER_AGENT
      * @gematik.context.out RESPONSE, CLAIMS?, HEADER_CLAIMS?, DISC_DOC, CHALLENGE, USER_CONSENT, SIGNED_CHALLENGE,
      * SSO_TOKEN, SSO_TOKEN_ENCRYPTED, TOKEN_REDIRECT_URL, CODE_VERIFIER, CLIENT_ID, STATE, TOKEN_CODE,
      * TOKEN_CODE_ENCRYPTED, REDIRECT_URI, PUK_DISC, PUK_SIGN, PUK_ENC, ACCESS_TOKEN, ID_TOKEN
      * @see CucumberValuesConverter
      */
-    @Given("I request an {AccessTokenType} access token with eGK cert {string}")
+    @Given("IDP I request an {AccessTokenType} access token with eGK cert {string}")
     @SneakyThrows
     public void iRequestAnAccessTokenWitheGK(final AccessTokenType accessType, final String certFile) {
         final String state = RandomStringUtils.random(16, true, true);
@@ -117,23 +118,23 @@ public class StepsGlue {
         final String codeVerifier = RandomStringUtils.random(60, true, true);
         auth.setCodeVerifier(codeVerifier);
         final Map<String, String> data = Stream.of(new String[][]{
-            {"client_id", TestEnvironmentConfigurator.getTestEnvVar("client_id")},
+            {"client_id", IdpTestEnvironmentConfigurator.getTestEnvVar("client_id")},
             {"scope", accessType.toScope() + " openid"},
             {"code_challenge", auth.generateCodeChallenge(codeVerifier)},
             {"code_challenge_method", "S256"},
-            {"redirect_uri", TestEnvironmentConfigurator.getTestEnvVar("redirect_uri")},
+            {"redirect_uri", IdpTestEnvironmentConfigurator.getTestEnvVar("redirect_uri")},
             {"state", state},
             {"nonce", nonce},
             {"response_type", "code"}
         }).collect(Collectors.collectingAndThen(
             Collectors.toMap(d -> d[0], d -> d[1]),
             Collections::<String, String>unmodifiableMap));
-        auth.getChallenge(data, HttpStatus.NOCHECK);
+        auth.getChallenge(data, HttpStatus.SUCCESS);
         author.signChallenge(cucumberValuesConverter.parseDocString(certFile));
-        author.getCode(CodeAuthType.SIGNED_CHALLENGE, HttpStatus.NOCHECK);
-        Context.getThreadContext()
-            .put(ContextKey.REDIRECT_URI, TestEnvironmentConfigurator.getTestEnvVar("redirect_uri"));
-        access.getToken(HttpStatus.NOCHECK, null);
+        author.getCode(CodeAuthType.SIGNED_CHALLENGE, HttpStatus.SUCCESS);
+        Context.get()
+            .put(ContextKey.REDIRECT_URI, IdpTestEnvironmentConfigurator.getTestEnvVar("redirect_uri"));
+        access.getToken(HttpStatus.SUCCESS, null);
     }
 
     /**
@@ -144,12 +145,13 @@ public class StepsGlue {
      * @param accessType type of access token to request
      * @param certFile   certificate to use for signing the challenge
      * @testenv client_id, redirect_uri
+     * @gematik.context.in USER_AGENT
      * @gematik.context.out RESPONSE, CLAIMS?, HEADER_CLAIMS?, DISC_DOC, CHALLENGE, USER_CONSENT, SIGNED_CHALLENGE,
      * SSO_TOKEN, SSO_TOKEN_ENCRYPTED, TOKEN_REDIRECT_URL, CODE_VERIFIER, CLIENT_ID, STATE, TOKEN_CODE,
      * TOKEN_CODE_ENCRYPTED, REDIRECT_URI, PUK_DISC, PUK_SIGN, PUK_ENC, ACCESS_TOKEN, ID_TOKEN
      * @see CucumberValuesConverter
      */
-    @Given("I request an {AccessTokenType} access token via SSO token with eGK cert {string}")
+    @Given("IDP I request an {AccessTokenType} access token via SSO token with eGK cert {string}")
     @SneakyThrows
     public void iRequestAnAccessTokenViaSsoToken(final AccessTokenType accessType, final String certFile) {
         iRequestAnAccessTokenWitheGK(accessType, cucumberValuesConverter.parseDocString(certFile));
@@ -158,22 +160,22 @@ public class StepsGlue {
         final String codeVerifier = RandomStringUtils.random(60, true, true);
         auth.setCodeVerifier(codeVerifier);
         final Map<String, String> data = Stream.of(new String[][]{
-            {"client_id", TestEnvironmentConfigurator.getTestEnvVar("client_id")},
+            {"client_id", IdpTestEnvironmentConfigurator.getTestEnvVar("client_id")},
             {"scope", accessType.toScope() + " openid"},
             {"code_challenge", auth.generateCodeChallenge(codeVerifier)},
             {"code_challenge_method", "S256"},
-            {"redirect_uri", TestEnvironmentConfigurator.getTestEnvVar("redirect_uri")},
+            {"redirect_uri", IdpTestEnvironmentConfigurator.getTestEnvVar("redirect_uri")},
             {"state", state},
             {"nonce", nonce},
             {"response_type", "code"}
         }).collect(Collectors.collectingAndThen(
             Collectors.toMap(d -> d[0], d -> d[1]),
             Collections::<String, String>unmodifiableMap));
-        auth.getChallenge(data, HttpStatus.NOCHECK);
-        author.getCode(CodeAuthType.SSO_TOKEN, HttpStatus.NOCHECK);
-        Context.getThreadContext()
-            .put(ContextKey.REDIRECT_URI, TestEnvironmentConfigurator.getTestEnvVar("redirect_uri"));
-        access.getToken(HttpStatus.NOCHECK, null);
+        auth.getChallenge(data, HttpStatus.SUCCESS);
+        author.getCode(CodeAuthType.SSO_TOKEN, HttpStatus.SUCCESS);
+        Context.get()
+            .put(ContextKey.REDIRECT_URI, IdpTestEnvironmentConfigurator.getTestEnvVar("redirect_uri"));
+        access.getToken(HttpStatus.SUCCESS, null);
     }
 
     // =================================================================================================================
@@ -185,9 +187,10 @@ public class StepsGlue {
     /**
      * download the discovery document.
      *
+     * @gematik.context.in USER_AGENT
      * @gematik.context.out RESPONSE
      */
-    @Given("I request the discovery document")
+    @Given("IDP I request the discovery document")
     public void iRequestTheInternalDiscoveryDocument() {
         disc.iRequestTheInternalDiscoveryDocument(HttpStatus.NOCHECK);
     }
@@ -195,9 +198,10 @@ public class StepsGlue {
     /**
      * download discovery document and store it in test context.
      *
+     * @gematik.context.in USER_AGENT
      * @gematik.context.out RESPONSE, DISC_DOC
      */
-    @Given("I initialize scenario from discovery document endpoint")
+    @Given("IDP I initialize scenario from discovery document endpoint")
     @SneakyThrows
     public void iInitializeScenarioFromDiscoveryDocumentEndpoint() {
         disc.initializeFromDiscoveryDocument();
@@ -207,10 +211,10 @@ public class StepsGlue {
      * retrieve puk_idp_enc and puk_idp_sig from the uris specified in the discovery document and puk_disc from the x5c
      * header claim.
      *
-     * @gematik.context.in DISC_DOC
+     * @gematik.context.in DISC_DOC, USER_AGENT
      * @gematik.context.out PUK_ENC, PUK_SIGN, PUK_DISC
      */
-    @Given("I retrieve public keys from URIs")
+    @Given("IDP I retrieve public keys from URIs")
     @SneakyThrows
     public void iRetrievePublicKeysFromURIs() {
         Context.getDiscoveryDocument().readPublicKeysFromURIs();
@@ -230,7 +234,7 @@ public class StepsGlue {
      * @gematik.context.out CODE_VERIFIER
      * @see CucumberValuesConverter
      */
-    @Given("I choose code verifier {string}")
+    @Given("IDP I choose code verifier {string}")
     public void iChooseCodeVerifier(final String codeverifier) {
         auth.setCodeVerifier(cucumberValuesConverter.parseDocString(codeverifier));
     }
@@ -239,10 +243,11 @@ public class StepsGlue {
      * request a challenge from auth endpoint with given parameters.
      *
      * @param params list of params to be sent to the server
+     * @gematik.context.in USER_AGENT
      * @gematik.context.out CLIENT_ID, RESPONSE, CHALLENGE, USER_CONSENT
      * @see CucumberValuesConverter
      */
-    @When("I request a challenge with")
+    @When("IDP I request a challenge with")
     @SneakyThrows
     public void iRequestAChallengeWith(final DataTable params) {
         auth.getChallenge(cucumberValuesConverter.getMapFromDatatable(params), HttpStatus.NOCHECK);
@@ -262,7 +267,7 @@ public class StepsGlue {
      * @gematik.context.out SIGNED_CHALLENGE
      * @see CucumberValuesConverter
      */
-    @When("I sign the challenge with {string}")
+    @When("IDP I request a challenge with{string}")
     public void iSignTheChallengeWith(final String keyfile) {
         author.signChallenge(cucumberValuesConverter.parseDocString(keyfile));
     }
@@ -277,13 +282,32 @@ public class StepsGlue {
      *                     <li>Alt auth flow: SIGNED_AUTHENTICATION_DATA</li>
      *                  </ul>
      * @gematik.context.in DISC_DOC, PUK_ENC, CHALLENGE, SIGNED_CHALLENGE, SSO_TOKEN, SSO_TOKEN_ENCRYPTED,
-     * SIGEND_AUTHENTICATION_DATA
+     * SIGEND_AUTHENTICATION_DATA, USER_AGENT
      * @gematik.context.out RESPONSE, STATE, TOKEN_CODE, TOKEN_CODE_ENCRYPTED, SSO_TOKEN, SSO_TOKEN_ENCRYPTED
      */
-    @When("I request a code token with {CodeAuthType}")
+    @When("IDP I request a code token with {CodeAuthType}")
     @SneakyThrows
     public void iRequestACodeTokenWith(final CodeAuthType authType) {
         author.getCode(authType, HttpStatus.NOCHECK);
+    }
+
+    /**
+     * request a code token with given flow specifier. Parameters depend on flow type.
+     *
+     * @param authType type of flow to apply, defines which end point url and which parameters to use
+     *                 <ul>
+     *                     <li>Signed challenge flow: SIGNED_CHALLENGE</li>
+     *                     <li>SSO Token flow: CHALLENGE, SSO_TOKEN, SSO_TOKEN_ENCRYPTED</li>
+     *                     <li>Alt auth flow: SIGNED_AUTHENTICATION_DATA</li>
+     *                  </ul>
+     * @gematik.context.in DISC_DOC, PUK_ENC, CHALLENGE, SIGNED_CHALLENGE, SSO_TOKEN, SSO_TOKEN_ENCRYPTED,
+     * SIGEND_AUTHENTICATION_DATA, USER_AGENT
+     * @gematik.context.out RESPONSE, STATE, TOKEN_CODE, TOKEN_CODE_ENCRYPTED, SSO_TOKEN, SSO_TOKEN_ENCRYPTED
+     */
+    @When("IDP I request a code token with {CodeAuthType} successfully")
+    @SneakyThrows
+    public void iRequestACodeTokenWithSuccessfully(final CodeAuthType authType) {
+        author.getCode(authType, HttpStatus.SUCCESS);
     }
 
     // =================================================================================================================
@@ -297,12 +321,12 @@ public class StepsGlue {
      *
      * @param params table of parameters to be sent with the request. These parameters will be stored in the test
      *               context.
-     * @gematik.context.in TOKEN_CODE, CODE_VERIFIER, CLIENT_ID, TOKEN_CODE_ENCRYPTED, REDIRECT_URI
+     * @gematik.context.in TOKEN_CODE, CODE_VERIFIER, CLIENT_ID, TOKEN_CODE_ENCRYPTED, REDIRECT_URI, USER_AGENT
      * @gematik.context.out RESPONSE, ACCESS_TOKEN, ID_TOKEN, TOKEN_CODE, CODE_VERIFIER, CLIENT_ID,
      * TOKEN_CODE_ENCRYPTED, REDIRECT_URI
      * @see CucumberValuesConverter
      */
-    @And("I request an access token with")
+    @And("IDP I request an access token with")
     public void iRequestAnAccessTokenWith(final DataTable params) {
         access.getToken(HttpStatus.NOCHECK, params);
     }
@@ -310,10 +334,10 @@ public class StepsGlue {
     /**
      * request an access and id token from the token endpoint with parameters filled from test context.
      *
-     * @gematik.context.in TOKEN_CODE, CODE_VERIFIER, CLIENT_ID, TOKEN_CODE_ENCRYPTED, REDIRECT_URI
+     * @gematik.context.in TOKEN_CODE, CODE_VERIFIER, CLIENT_ID, TOKEN_CODE_ENCRYPTED, REDIRECT_URI, USER_AGENT
      * @gematik.context.out RESPONSE, ACCESS_TOKEN, ID_TOKEN
      */
-    @And("I request an access token")
+    @And("IDP I request an access token")
     public void iRequestAnAccessToken() {
         access.getToken(HttpStatus.NOCHECK, null);
     }
@@ -332,7 +356,7 @@ public class StepsGlue {
      * @gematik.context.in RESPONSE
      * @gematik.context.out CLAIMS or HEADER_CLAIMS
      */
-    @When("I extract the {ClaimLocation} claims")
+    @When("IDP I extract the {ClaimLocation} claims")
     @SneakyThrows
     public void iExtractTheClaims(final ClaimLocation claimLocation) {
         claimStepHelper.iExtractTheClaims(claimLocation);
@@ -347,7 +371,7 @@ public class StepsGlue {
      * @gematik.context.out CLAIMS or HEADER_CLAIMS
      * @see CucumberValuesConverter
      */
-    @When("I extract the {ClaimLocation} claims from response field {word}")
+    @When("IDP I extract the {ClaimLocation} claims from response field {word}")
     @SneakyThrows
     public void iExtractTheClaims(final ClaimLocation claimLocation, final String jsonName) {
         claimStepHelper.iExtractTheClaimsFromResponseJsonField(
@@ -360,11 +384,11 @@ public class StepsGlue {
      * @param claimName name of the body claim to use as URI
      * @param method    HTTP request method
      * @param result    expected HTTP status
-     * @gematik.context.in CLAIMS
+     * @gematik.context.in CLAIMS, USER_AGENT
      * @gematik.context.out RESPONSE
      * @see CucumberValuesConverter
      */
-    @Given("I request the uri from claim {string} with method {HttpMethods} and status {HttpStatus}")
+    @Given("IDP I request the uri from claim {string} with method {HttpMethods} and status {HttpStatus}")
     @SneakyThrows
     public void iRequestTheUriFromClaimWithMethod(final String claimName, final HttpMethods method,
         final HttpStatus result) {
@@ -389,7 +413,7 @@ public class StepsGlue {
      * @gematik.context.in RESPONSE
      * @see CucumberValuesConverter
      */
-    @Then("the response content type matches {string}")
+    @Then("IDP the response content type matches {string}")
     public void theResponseContentTypeMatches(final String contentType) {
         disc.assertResponseContentTypeMatches(cucumberValuesConverter.parseDocString(contentType));
     }
@@ -402,7 +426,7 @@ public class StepsGlue {
      * @gematik.context.in RESPONSE
      * @see CucumberValuesConverter
      */
-    @Then("the response http headers match")
+    @Then("IDP the response http headers match")
     public void theResponseHTTPHeadersMatch(final String kvps) {
         disc.assertThatHttpResponseHeadersMatch(cucumberValuesConverter.parseDocString(kvps));
     }
@@ -415,7 +439,7 @@ public class StepsGlue {
      * @gematik.context.in RESPONSE
      * @see CucumberValuesConverter
      */
-    @Then("the response URI exists with param {string} and value {string}")
+    @Then("IDP the response URI exists with param {string} and value {string}")
     public void theResponseLocationContainsParamAndValue(final String param, final String value) {
         disc.assertThatHttpResponseUriParameterContains(cucumberValuesConverter.parseDocString(param),
             cucumberValuesConverter.parseDocString(value));
@@ -428,22 +452,11 @@ public class StepsGlue {
      * @param certKey test context key of the cert
      * @gematik.context.in RESPONSE, PUK_DISC
      */
-    @And("the response must be signed with cert {ContextKey}")
+    @And("IDP the response must be signed with cert {ContextKey}")
     @SneakyThrows
-    public void theResponseMustBeSignedWithCert(final ContextKey certKey) {
+    public void theResponseMustBeSignedWithCert(final String certKey) {
         disc.assertResponseIsSignedWithCert(certKey);
     }
-
-    /**
-     * assert the current response body is empty.
-     *
-     * @gematik.context.in RESPONSE
-     */
-    @Then("the response is empty")
-    public void theResponseIsEmpty() {
-        assertThat(Context.getCurrentResponse().getBody().asString()).isEmpty();
-    }
-
 
     /**
      * assert the test context object with given key is signed by certificate with given test context key. As of now
@@ -453,9 +466,9 @@ public class StepsGlue {
      * @param certKey  context key of the certificate to check
      * @gematik.context.in ANY TOKEN, PUK_DISC
      */
-    @And("the context {ContextKey} must be signed with cert {ContextKey}")
+    @And("IDP the context {ContextKey} must be signed with cert {ContextKey}")
     @SneakyThrows
-    public void theContextMustBeSignedWithCert(final ContextKey tokenKey, final ContextKey certKey) {
+    public void theContextMustBeSignedWithCert(final String tokenKey, final String certKey) {
         keyAndCertificateStepsHelper.assertContextIsSignedWithCertificate(tokenKey, certKey);
     }
 
@@ -466,11 +479,11 @@ public class StepsGlue {
      * @param claimName name of the body claim
      * @param method    HTTP method to use
      * @param status    expected HTTP status code
-     * @gematik.context.in CLAIMS
+     * @gematik.context.in CLAIMS, USER_AGENT
      * @gematik.context.out RESPONSE
      * @see CucumberValuesConverter
      */
-    @Then("URI in claim {string} exists with method {HttpMethods} and status {HttpStatus}")
+    @Then("IDP URI in claim {string} exists with method {HttpMethods} and status {HttpStatus}")
     @SneakyThrows
     public void uriInClaimExistsWithMethodAndStatus(final String claimName, final HttpMethods method,
         final HttpStatus status) {
@@ -486,7 +499,7 @@ public class StepsGlue {
      * @gematik.context.in RESPONSE
      * @see CucumberValuesConverter
      */
-    @And("the response should match")
+    @And("IDP the response should match")
     public void theResponseShouldMatch(final String toMatch) {
         final String bodyStr = Context.getCurrentResponse().getBody().asString();
         if (!bodyStr.equals(cucumberValuesConverter.parseDocString(toMatch))) {
@@ -504,7 +517,7 @@ public class StepsGlue {
      * @see CucumberValuesConverter
      * @see JsonChecker
      */
-    @Then("the JSON response should match")
+    @Then("IDP the JSON response should match")
     @SneakyThrows
     public void theJSONResponseShouldMatch(final String toMatchJSON) {
         jsoncheck.assertJsonShouldMatchInAnyOrder(
@@ -520,7 +533,7 @@ public class StepsGlue {
      * @see CucumberValuesConverter
      * @see JsonChecker
      */
-    @Then("the JSON Array response should match")
+    @Then("IDP the JSON Array response should match")
     public void theJSONArrayResponseShouldMatch(final String toMatchJSON) {
         jsoncheck.assertJsonArrayShouldMatchInAnyOrder(
             Context.getCurrentResponse().getBody().asString(), cucumberValuesConverter.parseDocString(toMatchJSON));
@@ -534,7 +547,7 @@ public class StepsGlue {
      * @gematik.context.in RESPONSE
      * @see CucumberValuesConverter
      */
-    @Then("JSON response has node {string}")
+    @Then("IDP JSON response has node {string}")
     @SneakyThrows
     public void jSONResponseHasNode(final String path) {
         jsoncheck.assertJsonResponseHasNode(cucumberValuesConverter.parseDocString(path));
@@ -550,7 +563,7 @@ public class StepsGlue {
      * @gematik.context.in RESPONSE
      * @see CucumberValuesConverter
      */
-    @Then("JSON response has exactly one node {string} at {string}")
+    @Then("IDP JSON response has exactly one node {string} at {string}")
     @SneakyThrows
     public void jSONResponseHasExactlyOneNodeAt(final String node, final String path) {
         jsoncheck.assertJsonResponseHasExactlyOneNodeAt(cucumberValuesConverter.parseDocString(node),
@@ -565,13 +578,14 @@ public class StepsGlue {
      * @gematik.context.in CLAIMS, HEADER_CLAIMS
      * @see CucumberValuesConverter
      */
-    @Then("the {ClaimLocation} claims should match in any order")
+    @Then("IDP the {ClaimLocation} claims should match in any order")
     @SneakyThrows
     public void theClaimsShouldMatchInAnyOrder(final ClaimLocation claimLocation, final String toMatchJSON) {
         final JSONObject json = (JSONObject) (
-            (claimLocation == ClaimLocation.body) ? Context.getCurrentClaims() :
-                Context.getThreadContext().get(ContextKey.HEADER_CLAIMS)
-        );
+            Context.get().get(
+                (claimLocation == ClaimLocation.body) ?
+                    ContextKey.CLAIMS :
+                    ContextKey.HEADER_CLAIMS));
         jsoncheck.assertJsonShouldMatchInAnyOrder(
             json.toString(), cucumberValuesConverter.parseDocString(toMatchJSON));
     }
@@ -585,13 +599,14 @@ public class StepsGlue {
      * @gematik.context.in CLAIMS, HEADER_CLAIMS
      * @see CucumberValuesConverter
      */
-    @Then("the {ClaimLocation} claim {string} should match {string}")
+    @Then("IDP the {ClaimLocation} claim {string} should match {string}")
     @SneakyThrows
     public void theClaimShouldMatch(final ClaimLocation claimLocation, final String claimName, final String regex) {
         final JSONObject json = (JSONObject) (
-            (claimLocation == ClaimLocation.body) ? Context.getCurrentClaims() :
-                Context.getThreadContext().get(ContextKey.HEADER_CLAIMS)
-        );
+            Context.get().get(
+                (claimLocation == ClaimLocation.body) ?
+                    ContextKey.CLAIMS :
+                    ContextKey.HEADER_CLAIMS));
         jsoncheck.assertJsonShouldMatch(new SerenityJSONObject(json), cucumberValuesConverter.parseDocString(claimName),
             cucumberValuesConverter.parseDocString(regex));
     }
@@ -606,13 +621,14 @@ public class StepsGlue {
      * @gematik.context.in CLAIMS, HEADER_CLAIMS
      * @see CucumberValuesConverter
      */
-    @Then("the {ClaimLocation} claim {string} should not match {string}")
+    @Then("IDP the {ClaimLocation} claim {string} should not match {string}")
     @SneakyThrows
     public void theClaimShouldNotMatch(final ClaimLocation claimLocation, final String claimName, final String regex) {
         final JSONObject json = (JSONObject) (
-            (claimLocation == ClaimLocation.body) ? Context.getCurrentClaims() :
-                Context.getThreadContext().get(ContextKey.HEADER_CLAIMS)
-        );
+            Context.get().get(
+                (claimLocation == ClaimLocation.body) ?
+                    ContextKey.CLAIMS :
+                    ContextKey.HEADER_CLAIMS));
         jsoncheck
             .assertJsonShouldNotMatch(new SerenityJSONObject(json), cucumberValuesConverter.parseDocString(claimName),
                 cucumberValuesConverter.parseDocString(regex));
@@ -624,9 +640,9 @@ public class StepsGlue {
      * @param keys table of keys to keep
      * @gematik.context.out POTENTIALLY ALL KEYS REMOVED
      */
-    @When("I start new interaction keeping only")
-    public void iStartNewInteractionKeepingOnly(final List<ContextKey> keys) {
-        context.iStartNewInteractionKeepingOnly(keys);
+    @When("IDP I start new interaction keeping only")
+    public void iStartNewInteractionKeepingOnly(final List<String> keys) {
+        Context.get().purgeButKeep(keys);
     }
 
     /**
@@ -634,12 +650,12 @@ public class StepsGlue {
      *
      * @param key   key of the test context entry to modify
      * @param value new value
-     * @gematik.context.out USER_CONSENT, RESPONSE, DISC_DOC, HEADER_CLAIMS, CLAIMS
+     * @gematik.context.out all but USER_CONSENT, RESPONSE, DISC_DOC, HEADER_CLAIMS, CLAIMS
      * @see CucumberValuesConverter
      */
-    @When("I set the context with key {ContextKey} to {string}")
-    public void iSetTheContextWithKeyto(final ContextKey key, final String value) {
-        context.setValue(key, cucumberValuesConverter.parseDocString(value));
+    @When("IDP I set the context with key {ContextKey} to {string}")
+    public void iSetTheContextWithKeyto(final String key, final String value) {
+        Context.get().putString(key, cucumberValuesConverter.parseDocString(value));
     }
 
     /**
@@ -647,11 +663,12 @@ public class StepsGlue {
      *
      * @param key   test context key
      * @param regex string to equal or match
+     * @gematik.context.in all but USER_CONSENT, RESPONSE, DISC_DOC, HEADER_CLAIMS, CLAIMS
      * @see CucumberValuesConverter
      */
-    @Then("I expect the Context with key {ContextKey} to match {string}")
-    public void iExpectTheContextWithKeyToMatch(final ContextKey key, final String regex) {
-        context.assertRegexMatches(key, cucumberValuesConverter.parseDocString(regex));
+    @Then("IDP I expect the Context with key {ContextKey} to match {string}")
+    public void iExpectTheContextWithKeyToMatch(final String key, final String regex) {
+        Context.get().assertRegexMatches(key, cucumberValuesConverter.parseDocString(regex));
     }
 
     /**
@@ -661,9 +678,9 @@ public class StepsGlue {
      * @param key    test context key
      * @gematik.context.out ANY KEY
      */
-    @And("I flip bit {int} on context with key {ContextKey}")
-    public void iFlipBitOnContextWithKey(final int bitidx, final ContextKey key) {
-        context.flipBit(bitidx, key);
+    @And("IDP I flip bit {int} on context with key {ContextKey}")
+    public void iFlipBitOnContextWithKey(final int bitidx, final String key) {
+        Context.get().flipBit(bitidx, key);
     }
 
     /**
@@ -674,10 +691,11 @@ public class StepsGlue {
      * @param claim         name of the claim
      * @param compareMode   mode of comparison
      * @param duration      duration string in Java {@link Duration} notation.
+     * @gematik.context.in one of HEADER_CLAIMS, CLAIMS
      * @see CucumberValuesConverter
      * @see Duration
      */
-    @And("the {ClaimLocation} claim {string} contains a date {DateCompareMode} {Duration}")
+    @And("IDP the {ClaimLocation} claim {string} contains a date {DateCompareMode} {Duration}")
     @SneakyThrows
     public void theBodyClaimContainsADate(final ClaimLocation claimLocation, final String claim,
         final DateCompareMode compareMode, final Duration duration) {
@@ -695,9 +713,9 @@ public class StepsGlue {
      * ID_TOKEN
      * @gematik.context.out CLAIMS or HEADER_CLAIMS
      */
-    @When("I extract the {ClaimLocation} claims from token {ContextKey}")
+    @When("IDP I extract the {ClaimLocation} claims from token {ContextKey}")
     @SneakyThrows
-    public void iExtractTheClaimsFromToken(final ClaimLocation cType, final ContextKey token) {
+    public void iExtractTheClaimsFromToken(final ClaimLocation cType, final String token) {
         claimStepHelper.extractClaimsFromToken(cType, token);
     }
 
@@ -706,7 +724,7 @@ public class StepsGlue {
      *
      * @gematik.context.in RESPONSE
      */
-    @And("the JSON response should be a valid certificate")
+    @And("IDP the JSON response should be a valid certificate")
     @SneakyThrows
     public void theJSONResponseShouldBeAValidCertificate() {
         keyAndCertificateStepsHelper
@@ -718,7 +736,7 @@ public class StepsGlue {
      *
      * @gematik.context.in RESPONSE
      */
-    @And("the JSON response should be a valid public key")
+    @And("IDP the JSON response should be a valid public key")
     public void theJSONResponseShouldBeAValidPublicKey() {
         keyAndCertificateStepsHelper
             .jsonObjectShouldBeValidPublicKey(new JSONObject(Context.getCurrentResponse().getBody().asString()));
@@ -734,7 +752,7 @@ public class StepsGlue {
      * @gematik.context.in RESPONSE
      * @see CucumberValuesConverter
      */
-    @And("the JSON array {string} of response should contain valid certificates for {string}")
+    @And("IDP the JSON array {string} of response should contain valid certificates for {string}")
     @SneakyThrows
     public void theJSONArrayOfResponseShouldContainValidCertificatesWithKeyId(final String jarray, final String keyid) {
         keyAndCertificateStepsHelper.jsonArrayPathShouldContainValidCertificatesWithKeyId(
@@ -743,9 +761,9 @@ public class StepsGlue {
     }
 
     /**
-     * assert the response is an error message with given status (302 or 4XX). The error message must contain the given
-     * gematik error id and the given oauth error code. For 302 error messages the values are expected to be returned as
-     * parameters in the Location header. For 4XX messages the response body should contain a JSON object.
+     * assert IDP the response is an error message with given status (302 or 4XX). The error message must contain the
+     * given gematik error id and the given oauth error code. For 302 error messages the values are expected to be
+     * returned as parameters in the Location header. For 4XX messages the response body should contain a JSON object.
      *
      * @param httpStatus expected HTTP status
      * @param errcode    expected Gematik error id
@@ -753,7 +771,7 @@ public class StepsGlue {
      * @gematik.context.in RESPONSE
      * @see CucumberValuesConverter
      */
-    @Then("the response is an {int} error with gematik code {int} and error {string}")
+    @Then("IDP the response is an {int} error with gematik code {int} and error {string}")
     public void theResponseIsAnErrorWithMessageMatching(final int httpStatus, final int errcode, final String errstr) {
         author.responseIsErrorWithMessageMatching(httpStatus, errcode, cucumberValuesConverter.parseDocString(errstr));
     }
@@ -764,7 +782,7 @@ public class StepsGlue {
      * @param timeout duration string as used in {@link Duration}
      * @see Duration
      */
-    @When("I wait {Duration}")
+    @When("IDP I wait {Duration}")
     @SneakyThrows
     public void iWait(final Duration timeout) {
         auth.wait(timeout);
@@ -779,9 +797,9 @@ public class StepsGlue {
      * @param key key of the test context entry to save
      * @gematik.context.in ANY KEY
      */
-    @Then("I store {ContextKey} as text")
+    @Then("IDP I store {ContextKey} as text")
     @SneakyThrows
-    public void iStoreContextKey(final ContextKey key) {
+    public void iStoreContextKey(final String key) {
         final File f = new File("testartefacts" + File.separatorChar +
             DateTimeFormatter.ofPattern("yyyyMMdd_HH_mm").format(ZonedDateTime.now()));
 
@@ -792,7 +810,7 @@ public class StepsGlue {
         }
         try (final FileOutputStream fos = new FileOutputStream(
             f.getAbsolutePath() + File.separatorChar + key + ".txt")) {
-            fos.write(Context.getThreadContext().get(key).toString().getBytes(StandardCharsets.UTF_8));
+            fos.write(Context.get().get(key).toString().getBytes(StandardCharsets.UTF_8));
         }
     }
 
@@ -802,20 +820,20 @@ public class StepsGlue {
      * @param key    test context key to load from file
      * @param folder folder to laod from
      * @gematik.context.out SSO_TOKEN, SSO_TOKEN_ENCRYPTED, ACCESS_TOKEN, ID_TOKEN
-     * @see #iStoreContextKey(ContextKey)
+     * @see #iStoreContextKey(String)
      */
-    @When("I load {ContextKey} from folder {string}")
+    @When("IDP I load {ContextKey} from folder {string}")
     @SneakyThrows
-    public void iLoadContextKeyFromFolder(final ContextKey key, final String folder) {
+    public void iLoadContextKeyFromFolder(final String key, final String folder) {
         final File f = new File("testartefacts" + File.separatorChar +
             cucumberValuesConverter.parseDocString(folder) + File.separatorChar + key + ".txt");
         final String str = IOUtils.toString(new FileInputStream(f), StandardCharsets.UTF_8);
         switch (key) {
-            case SSO_TOKEN:
-            case SSO_TOKEN_ENCRYPTED:
-            case ACCESS_TOKEN:
-            case ID_TOKEN:
-                Context.getThreadContext().put(key, str);
+            case ContextKey.SSO_TOKEN:
+            case ContextKey.SSO_TOKEN_ENCRYPTED:
+            case ContextKey.ACCESS_TOKEN:
+            case ContextKey.ID_TOKEN:
+                Context.get().put(key, str);
                 break;
             //TODO add support for all other keys
             default:
@@ -832,16 +850,29 @@ public class StepsGlue {
      * @gematik.context.in ANY KEY
      * @see CucumberValuesConverter
      */
-    @And("I store {ClaimLocation} claim {string} to variable {string}")
+    @And("IDP I store {ClaimLocation} claim {string} to variable {string}")
     public void iStoreClaimSubToVariable(final ClaimLocation claimLocation, final String claimName,
         final String varname) {
         final JSONObject json = (JSONObject) (
-            (claimLocation == ClaimLocation.body) ? Context.getCurrentClaims() :
-                Context.getThreadContext().get(ContextKey.HEADER_CLAIMS)
-        );
-        Context.storeVariable(
+            Context.get().get(
+                (claimLocation == ClaimLocation.body) ?
+                    ContextKey.CLAIMS :
+                    ContextKey.HEADER_CLAIMS));
+        Variables.get().putString(
             cucumberValuesConverter.parseDocString(varname),
             json.getString(cucumberValuesConverter.parseDocString(claimName)));
+    }
+
+    /**
+     * set the user agent string to be used for all subsequent HTTP requests.
+     *
+     * @param userAgent user agent string
+     * @gematik.context.out USER_AGENT
+     * @see CucumberValuesConverter
+     */
+    @And("IDP I set user agent to {string}")
+    public void iSetUserAgent(final String userAgent) {
+        Context.get().put(ContextKey.USER_AGENT, cucumberValuesConverter.parseDocString(userAgent));
     }
 
 
@@ -852,8 +883,8 @@ public class StepsGlue {
     // =================================================================================================================
     @DataTableType
     @SneakyThrows
-    public ContextKey getContextKey(final List<String> row) {
-        return ContextKey.valueOf(row.get(0));
+    public String getContextKey(final List<String> row) {
+        return row.get(0);
     }
 
     @ParameterType(HttpStatus.CUCUMBER_REGEX)
@@ -877,8 +908,8 @@ public class StepsGlue {
     }
 
     @ParameterType(ContextKey.CUCUMBER_REGEX)
-    public ContextKey ContextKey(final String contextKeyStr) {
-        return ContextKey.valueOf(contextKeyStr);
+    public String ContextKey(final String contextKeyStr) {
+        return contextKeyStr;
     }
 
     @ParameterType(CodeAuthType.CUCUMBER_REGEX)

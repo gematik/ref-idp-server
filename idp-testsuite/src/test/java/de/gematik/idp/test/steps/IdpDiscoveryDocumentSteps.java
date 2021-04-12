@@ -17,10 +17,13 @@
 package de.gematik.idp.test.steps;
 
 import de.gematik.idp.test.steps.helpers.ClaimsStepHelper;
-import de.gematik.idp.test.steps.helpers.TestEnvironmentConfigurator;
-import de.gematik.idp.test.steps.model.*;
+import de.gematik.idp.test.steps.helpers.IdpTestEnvironmentConfigurator;
+import de.gematik.idp.test.steps.model.DiscoveryDocument;
+import de.gematik.idp.test.steps.model.HttpMethods;
+import de.gematik.idp.test.steps.model.HttpStatus;
+import de.gematik.test.bdd.Context;
+import de.gematik.test.bdd.ContextKey;
 import io.restassured.response.Response;
-import java.io.File;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.thucydides.core.annotations.Step;
@@ -31,41 +34,23 @@ public class IdpDiscoveryDocumentSteps extends IdpStepsBase {
     private final ClaimsStepHelper claimsStepHelper = new ClaimsStepHelper();
 
     @SneakyThrows
-    protected void initializeFromDiscoveryDocument() {
-        final String idpLocalDiscdoc = System.getenv("IDP_LOCAL_DISCDOC");
-        if (idpLocalDiscdoc == null || idpLocalDiscdoc.isBlank()) {
-            final Response r = IdpStepsBase.simpleGet(TestEnvironmentConfigurator.getDiscoveryDocumentURL());
-            Context.getThreadContext()
-                .put(ContextKey.DISC_DOC, new DiscoveryDocument(
-                    claimsStepHelper.getClaims(r.getBody().asString()),
-                    claimsStepHelper.extractHeaderClaimsFromJWSString(r.getBody().asString())));
-        } else {
-            Context.getThreadContext()
-                .put(ContextKey.DISC_DOC, new DiscoveryDocument(new File(idpLocalDiscdoc + "_body.json"),
-                    new File(idpLocalDiscdoc + "_header.json")));
-        }
+    public void initializeFromDiscoveryDocument() {
+        log.info("DiscoveryURL is " + IdpTestEnvironmentConfigurator.getDiscoveryDocumentURL());
+        final Response r = IdpStepsBase.simpleGet(IdpTestEnvironmentConfigurator.getDiscoveryDocumentURL());
+        Context.get()
+            .put(ContextKey.DISC_DOC, new DiscoveryDocument(
+                claimsStepHelper.getClaims(r.getBody().asString()),
+                claimsStepHelper.extractHeaderClaimsFromJWSString(r.getBody().asString())));
     }
 
 
     @Step
     @SneakyThrows
     public void iRequestTheInternalDiscoveryDocument(final HttpStatus desiredStatus) {
-        log.info("DiscoveryURL is " + TestEnvironmentConfigurator.getDiscoveryDocumentURL());
-
-        final String idpLocalDiscdoc = System.getenv("IDP_LOCAL_DISCDOC");
-        if (idpLocalDiscdoc != null) {
-            final DiscoveryDocumentResponse r = new DiscoveryDocumentResponse(new File(idpLocalDiscdoc + "_body.json"),
-                new File(idpLocalDiscdoc + "_header.json"), new File(idpLocalDiscdoc + "_pkey.p12"));
-            Context.getThreadContext().put(ContextKey.RESPONSE, r);
-        } else {
-            Context.getThreadContext().put(ContextKey.RESPONSE,
-                requestResponseAndAssertStatus(TestEnvironmentConfigurator.getDiscoveryDocumentURL(), null,
-                    HttpMethods.GET,
-                    null,
-                    null, desiredStatus));
-            if (log.isDebugEnabled()) {
-                log.debug("Response:" + Context.getCurrentResponse().getBody().prettyPrint());
-            }
-        }
+        Context.get().put(ContextKey.RESPONSE,
+            requestResponseAndAssertStatus(IdpTestEnvironmentConfigurator.getDiscoveryDocumentURL(), null,
+                HttpMethods.GET,
+                null,
+                null, desiredStatus));
     }
 }

@@ -16,10 +16,10 @@
 
 package de.gematik.idp.test.steps;
 
-import de.gematik.idp.test.steps.model.Context;
-import de.gematik.idp.test.steps.model.ContextKey;
 import de.gematik.idp.test.steps.model.HttpMethods;
 import de.gematik.idp.test.steps.model.HttpStatus;
+import de.gematik.test.bdd.Context;
+import de.gematik.test.bdd.ContextKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
@@ -31,7 +31,7 @@ import org.json.JSONObject;
 public class IdpAuthenticationSteps extends IdpStepsBase {
 
     public void setCodeVerifier(final String codeverifier) {
-        Context.getThreadContext().put(ContextKey.CODE_VERIFIER, codeverifier);
+        Context.get().put(ContextKey.CODE_VERIFIER, codeverifier);
     }
 
     @SneakyThrows
@@ -41,7 +41,7 @@ public class IdpAuthenticationSteps extends IdpStepsBase {
     }
 
     public void getChallenge(final Map<String, String> mapParsedParams, final HttpStatus status) throws JSONException {
-        final Map<ContextKey, Object> ctxt = Context.getThreadContext();
+        final Map<String, Object> ctxt = de.gematik.test.bdd.Context.get().getMapForCurrentThread();
         if (mapParsedParams.containsKey("client_id")) {
             final String cid = mapParsedParams.get("client_id");
             ctxt.put(ContextKey.CLIENT_ID, cid);

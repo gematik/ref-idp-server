@@ -1,10 +1,10 @@
 package de.gematik.idp.test.steps.helpers;
 
 import de.gematik.idp.test.steps.model.ClaimLocation;
-import de.gematik.idp.test.steps.model.Context;
-import de.gematik.idp.test.steps.model.ContextKey;
 import de.gematik.idp.test.steps.model.DateCompareMode;
 import de.gematik.idp.test.steps.utils.SerenityReportUtils;
+import de.gematik.test.bdd.Context;
+import de.gematik.test.bdd.ContextKey;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -54,15 +54,14 @@ public class ClaimsStepHelper {
     }
 
     @Step
-    public void extractClaimsFromToken(final ClaimLocation cType, final ContextKey token)
+    public void extractClaimsFromToken(final ClaimLocation cType, final String token)
         throws JoseException, InvalidJwtException, JSONException {
-        if (Set
-            .of(ContextKey.TOKEN_CODE_ENCRYPTED, ContextKey.SSO_TOKEN_ENCRYPTED).contains(token)) {
-            extractClaimsFromString(cType, Context.getThreadContext().get(token).toString(), true);
+        if (Set.of(ContextKey.TOKEN_CODE_ENCRYPTED, ContextKey.SSO_TOKEN_ENCRYPTED).contains(token)) {
+            extractClaimsFromString(cType, Context.get().get(token).toString(), true);
         } else {
             Assertions.assertThat(token)
                 .isIn(ContextKey.TOKEN_CODE, ContextKey.SIGNED_CHALLENGE, ContextKey.ACCESS_TOKEN, ContextKey.ID_TOKEN);
-            extractClaimsFromString(cType, Context.getThreadContext().get(token).toString(), false);
+            extractClaimsFromString(cType, Context.get().get(token).toString(), false);
         }
     }
 
@@ -70,7 +69,7 @@ public class ClaimsStepHelper {
         final DateCompareMode compareMode,
         final Duration duration) throws JSONException {
         final JSONObject claims;
-        final Map<ContextKey, Object> ctxt = Context.getThreadContext();
+        final Map<String, Object> ctxt = Context.get().getMapForCurrentThread();
         if (claimLocation == ClaimLocation.body) {
             Assertions.assertThat(ctxt).containsKey(ContextKey.CLAIMS).doesNotContainEntry(ContextKey.CLAIMS, null);
             claims = (JSONObject) ctxt.get(ContextKey.CLAIMS);
@@ -114,8 +113,9 @@ public class ClaimsStepHelper {
         final boolean jwe)
         throws InvalidJwtException, JSONException, JoseException {
         if (cType == ClaimLocation.body) {
-            Context.getThreadContext().put(ContextKey.CLAIMS, getClaims(tokenAsCompactSerialization));
-            SerenityReportUtils.addCustomData("Body Claims", Context.getCurrentClaims().toString(2));
+            Context.get().put(ContextKey.CLAIMS, getClaims(tokenAsCompactSerialization));
+            SerenityReportUtils
+                .addCustomData("Body Claims", ((JSONObject) Context.get().get(ContextKey.CLAIMS)).toString(2));
         } else {
             final JSONObject json;
             if (jwe) {
@@ -123,7 +123,7 @@ public class ClaimsStepHelper {
             } else {
                 json = extractHeaderClaimsFromJWSString(tokenAsCompactSerialization);
             }
-            Context.getThreadContext().put(ContextKey.HEADER_CLAIMS, json);
+            Context.get().put(ContextKey.HEADER_CLAIMS, json);
             SerenityReportUtils.addCustomData("Header Claims", json.toString(2));
         }
     }

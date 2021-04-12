@@ -14,16 +14,17 @@
 # limitations under the License.
 #
 
-@testsuite
+@Product:IDP-D
 @SsoTokenFlow
 Feature: Fordere Access Token mittels SSO Token an
   Frontends von TI Diensten müssen vom IDP Server über ein HTTP POST an den Token Endpoint ein Access/SSO/ID Token abfragen können.
 
   Background: Initialisiere Testkontext durch Abfrage des Discovery Dokuments
-    Given I initialize scenario from discovery document endpoint
-    And I retrieve public keys from URIs
+    Given IDP I initialize scenario from discovery document endpoint
+    And IDP I retrieve public keys from URIs
 
-  @Afo:A_20950
+  @TCID:IDP_REF_TOK_051 @PRIO:1
+    @Afo:A_20950
     @Approval
   Scenario Outline: GetTokenSSO - Gutfall - Validiere Antwortstruktur
   ```
@@ -35,29 +36,28 @@ Feature: Fordere Access Token mittels SSO Token an
   - Token Typ Bearer
 
 
-    Given I choose code verifier '${TESTENV.code_verifier01}'
+    Given IDP I choose code verifier '${TESTENV.code_verifier01}'
         # code_challenge for given verifier can be obtained from https://tonyxu-io.github.io/pkce-generator/
-    And I request a challenge with
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state         | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1a | 997755 | code          |
-    And I sign the challenge with '<cert>'
-    And I request a code token with signed challenge
-    And I request an access token
-    And I start new interaction keeping only
-      | SSO_TOKEN           |
+    And IDP I request a challenge with'<cert>'
+    And IDP I request a code token with signed challenge successfully
+    And IDP I request an access token
+    And IDP I start new interaction keeping only
       | SSO_TOKEN_ENCRYPTED |
-    And I initialize scenario from discovery document endpoint
-    And I retrieve public keys from URIs
-    And I choose code verifier '${TESTENV.code_verifier01}'
-    And I request a challenge with
+    And IDP I initialize scenario from discovery document endpoint
+    And IDP I retrieve public keys from URIs
+    And IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state         | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx2a | 997744 | code          |
-    And I request a code token with sso token
-    And I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
+    And IDP I request a code token with sso token successfully
+    And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
 
-    When I request an access token
+    When IDP I request an access token
     Then the response status is 200
-    And the JSON response should match
+    And IDP the JSON response should match
         """
           { access_token: "ey.*",
             expires_in:   300,
@@ -70,47 +70,47 @@ Feature: Fordere Access Token mittels SSO Token an
       | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12  |
       | /certs/valid/80276883110000018680-C_CH_AUT_R2048.p12 |
 
-  @Afo:A_20731 @Afo:A_20464 @Afo:A_20952 @Afo:A_20313
+  @TCID:IDP_REF_TOK_052 @PRIO:1
+    @Afo:A_20731 @Afo:A_20464 @Afo:A_20952 @Afo:A_20313
     @Approval
   Scenario Outline: GetTokenSSO - Gutfall - Validiere Access Token Claims
   ```
   Wir fordern einen Access Token via SSO an und überprüfen dass der Access Token korrekte Header und Body Claims enthält.
 
-    Given I choose code verifier '${TESTENV.code_verifier01}'
+    Given IDP I choose code verifier '${TESTENV.code_verifier01}'
         # code_challenge for given verifier can be obtained from https://tonyxu-io.github.io/pkce-generator/
-    And I request a challenge with
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state         | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1a | 997755 | code          |
-    And I sign the challenge with '<cert>'
-    And I request a code token with signed challenge
-    And I request an access token
-    And I start new interaction keeping only
-      | SSO_TOKEN           |
+    And IDP I request a challenge with'<cert>'
+    And IDP I request a code token with signed challenge successfully
+    And IDP I request an access token
+    And IDP I start new interaction keeping only
       | SSO_TOKEN_ENCRYPTED |
-    And I initialize scenario from discovery document endpoint
-    And I retrieve public keys from URIs
-    And I choose code verifier '${TESTENV.code_verifier01}'
-    And I request a challenge with
+    And IDP I initialize scenario from discovery document endpoint
+    And IDP I retrieve public keys from URIs
+    And IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state         | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx2a | 997744 | code          |
-    And I request a code token with sso token
-    And I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
-    And I request an access token
+    And IDP I request a code token with sso token successfully
+    And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
+    And IDP I request an access token
 
-    When I extract the header claims from token ACCESS_TOKEN
-    Then the header claims should match in any order
+    When IDP I extract the header claims from token ACCESS_TOKEN
+    Then IDP the header claims should match in any order
         """
           { alg: "BP256R1",
             kid: "${json-unit.ignore}",
             typ: "at+JWT"
           }
         """
-    When I extract the body claims from token ACCESS_TOKEN
-    Then the body claims should match in any order
+    When IDP I extract the body claims from token ACCESS_TOKEN
+    Then IDP the body claims should match in any order
         """
           { acr:              "gematik-ehealth-loa-high",
             amr:              ["mfa", "sc", "pin"],
-            aud:              "https://erp.telematik.de/login",
+            aud:              "${TESTENV.aud}",
             auth_time:        "[\\d]*",
             azp:              "${TESTENV.client_id}",
             client_id:        "${TESTENV.client_id}",
@@ -132,43 +132,43 @@ Feature: Fordere Access Token mittels SSO Token an
       | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12  |
       | /certs/valid/80276883110000018680-C_CH_AUT_R2048.p12 |
 
-  @Afo:A_20313
+  @TCID:IDP_REF_TOK_053 @PRIO:1
+    @Afo:A_20313
     @Approval @Ready
   Scenario Outline: GetTokenSSO - Gutfall - Validiere ID Token Claims
   ```
   Wir fordern einen Access Token via SSO an und überprüfen dass der ID Token korrekte Header und Body Claims enthält.
 
-    Given I choose code verifier '${TESTENV.code_verifier01}'
+    Given IDP I choose code verifier '${TESTENV.code_verifier01}'
         # code_challenge for given verifier can be obtained from https://tonyxu-io.github.io/pkce-generator/
-    And I request a challenge with
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state         | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1a | 886655 | code          |
-    And I sign the challenge with '<cert>'
-    And I request a code token with signed challenge
-    And I request an access token
-    And I start new interaction keeping only
-      | SSO_TOKEN           |
+    And IDP I request a challenge with'<cert>'
+    And IDP I request a code token with signed challenge successfully
+    And IDP I request an access token
+    And IDP I start new interaction keeping only
       | SSO_TOKEN_ENCRYPTED |
-    And I initialize scenario from discovery document endpoint
-    And I retrieve public keys from URIs
-    And I choose code verifier '${TESTENV.code_verifier01}'
-    And I request a challenge with
+    And IDP I initialize scenario from discovery document endpoint
+    And IDP I retrieve public keys from URIs
+    And IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state         | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx2a | 886644 | code          |
-    And I request a code token with sso token
-    And I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
-    And I request an access token
+    And IDP I request a code token with sso token successfully
+    And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
+    And IDP I request an access token
 
-    When I extract the header claims from token ID_TOKEN
-    Then the header claims should match in any order
+    When IDP I extract the header claims from token ID_TOKEN
+    Then IDP the header claims should match in any order
         """
           { alg: "BP256R1",
             kid: "${json-unit.ignore}",
             typ: "JWT"
           }
         """
-    When I extract the body claims from token ID_TOKEN
-    Then the body claims should match in any order
+    When IDP I extract the body claims from token ID_TOKEN
+    Then IDP the body claims should match in any order
         """
           { acr:              "gematik-ehealth-loa-high",
             amr:              ["mfa", "sc", "pin"],
@@ -194,68 +194,68 @@ Feature: Fordere Access Token mittels SSO Token an
       | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12  |
       | /certs/valid/80276883110000018680-C_CH_AUT_R2048.p12 |
 
-  @Afo:A_20327
+  @TCID:IDP_REF_TOK_054 @PRIO:1
+    @Afo:A_20327
     @Approval @Ready
     @Signature
   Scenario Outline: GetTokenSSO - Gutfall - Validiere Signatur Access Token
   ```
   Wir fordern einen Access Token via SSO an und überprüfen, dass der Access Token mit der puk_idp_sign signiert wurde.
 
-    Given I choose code verifier '${TESTENV.code_verifier01}'
-    And I request a challenge with
+    Given IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state         | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1a | 887722 | code          |
-    And I sign the challenge with '<cert>'
-    And I request a code token with signed challenge
-    And I request an access token
-    And I start new interaction keeping only
-      | SSO_TOKEN           |
+    And IDP I request a challenge with'<cert>'
+    And IDP I request a code token with signed challenge successfully
+    And IDP I request an access token
+    And IDP I start new interaction keeping only
       | SSO_TOKEN_ENCRYPTED |
-    And I initialize scenario from discovery document endpoint
-    And I retrieve public keys from URIs
-    And I choose code verifier '${TESTENV.code_verifier01}'
-    And I request a challenge with
+    And IDP I initialize scenario from discovery document endpoint
+    And IDP I retrieve public keys from URIs
+    And IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state         | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx2a | 887711 | code          |
-    And I request a code token with sso token
-    And I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
+    And IDP I request a code token with sso token successfully
+    And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
 
-    When I request an access token
-    Then the context ACCESS_TOKEN must be signed with cert PUK_SIGN
+    When IDP I request an access token
+    Then IDP the context ACCESS_TOKEN must be signed with cert PUK_SIGN
 
     Examples: GetToken - Zertifikate zur Signatur der Challenge
       | cert                                                 |
       | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12  |
       | /certs/valid/80276883110000018680-C_CH_AUT_R2048.p12 |
 
-  @Afo:A_20327
+  @TCID:IDP_REF_TOK_055 @PRIO:1
+    @Afo:A_20327
     @Approval @Ready
     @Signature
   Scenario Outline: GetTokenSSO - Gutfall - Validiere Signatur ID Token
   ```
   Wir fordern einen Access Token via SSO an und überprüfen, dass der ID Token mit der puk_idp_sign signiert wurde.
 
-    Given I choose code verifier '${TESTENV.code_verifier01}'
-    And I request a challenge with
+    Given IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state         | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1a | 887722 | code          |
-    And I sign the challenge with '<cert>'
-    And I request a code token with signed challenge
-    And I request an access token
-    And I start new interaction keeping only
-      | SSO_TOKEN           |
+    And IDP I request a challenge with'<cert>'
+    And IDP I request a code token with signed challenge successfully
+    And IDP I request an access token
+    And IDP I start new interaction keeping only
       | SSO_TOKEN_ENCRYPTED |
-    And I initialize scenario from discovery document endpoint
-    And I retrieve public keys from URIs
-    And I choose code verifier '${TESTENV.code_verifier01}'
-    And I request a challenge with
+    And IDP I initialize scenario from discovery document endpoint
+    And IDP I retrieve public keys from URIs
+    And IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state         | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx2a | 887711 | code          |
-    And I request a code token with sso token
-    And I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
+    And IDP I request a code token with sso token successfully
+    And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
 
-    When I request an access token
-    Then the context ID_TOKEN must be signed with cert PUK_SIGN
+    When IDP I request an access token
+    Then IDP the context ID_TOKEN must be signed with cert PUK_SIGN
 
     Examples: GetToken - Zertifikate zur Signatur der Challenge
       | cert                                                 |
@@ -263,7 +263,8 @@ Feature: Fordere Access Token mittels SSO Token an
       | /certs/valid/80276883110000018680-C_CH_AUT_R2048.p12 |
 
 
-  @Approval @Ready
+  @TCID:IDP_REF_TOK_056 @PRIO:4
+  @Approval @Ready @RefImplOnly
   @Timeout
   Scenario: GetTokenSSO - Speichere SSO Token für manuelle Tests
   ```
@@ -272,36 +273,37 @@ Feature: Fordere Access Token mittels SSO Token an
   SSO Tokens ändern sollte).
 
 
-    Given I choose code verifier '${TESTENV.code_verifier01}'
-    And I request a challenge with
+    Given IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state         | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1a | 887722 | code          |
-    And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
-    When I request a code token with signed challenge
-    Then I store SSO_TOKEN as text
-    And I store SSO_TOKEN_ENCRYPTED as text
+    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    When IDP I request a code token with signed challenge successfully
+    And IDP I store SSO_TOKEN_ENCRYPTED as text
+    And IDP I store SSO_TOKEN as text
 
 
-  # TODO RISE: da der SSO Token im Verzeichnis von der Referenzimplementierung stammt wird dieser Testfall fehlschlagen
+  @TCID:IDP_REF_TOK_057 @PRIO:4
   @Afo:A_20315 @Afo:A_20692
-  @Approval
-  @OpenBug
+  @Approval @RefImplOnly
   @Timeout
+  @WiP
   Scenario: GetTokenSSO - Veralteter SSO Token wird abgelehnt
   ```
   Wir laden einen veralteten SSO Token vom Dateisystem und überprüfen, dass der Server eine Anfrage für einen Access Token ablehnt.
 
 
-    Given I choose code verifier '${TESTENV.code_verifier01}'
-    And I request a challenge with
+    Given IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state         | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx2a | 887711 | code          |
 
-    When I load SSO_TOKEN from folder 'old_sso_token'
-    And I load SSO_TOKEN_ENCRYPTED from folder 'old_sso_token'
-    And I request a code token with sso token
-    Then the response is an 400 error with gematik code 2040 and error 'access_denied'
+    And IDP I load SSO_TOKEN_ENCRYPTED from folder 'old_sso_token'
+    And IDP I load SSO_TOKEN from folder 'old_sso_token'
+    And IDP I request a code token with sso token
+    Then IDP the response is an 400 error with gematik code 2040 and error 'access_denied'
 
+  @TCID:IDP_REF_TOK_058 @PRIO:3
   @Afo:A_20315 @Afo:A_20692
   @Approval
   @Manual

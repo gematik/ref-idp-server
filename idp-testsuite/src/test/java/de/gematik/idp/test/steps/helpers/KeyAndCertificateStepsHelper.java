@@ -3,10 +3,8 @@ package de.gematik.idp.test.steps.helpers;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
-
-import de.gematik.idp.test.steps.model.Context;
-import de.gematik.idp.test.steps.model.ContextKey;
 import de.gematik.idp.test.steps.model.DiscoveryDocument;
+import de.gematik.test.bdd.Context;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -89,6 +87,7 @@ public class KeyAndCertificateStepsHelper {
         } else {
             jwe.setAlgorithmHeaderValue(KeyManagementAlgorithmIdentifiers.DIRECT);
         }
+        jwe.setContentTypeHeaderValue("NJWT");
         jwe.setEncryptionMethodHeaderParameter(ContentEncryptionAlgorithmIdentifiers.AES_256_GCM);
         jwe.setKey(puk);
         for (final Entry<String, Object> entry : additionalHeaderValues) {
@@ -96,7 +95,6 @@ public class KeyAndCertificateStepsHelper {
                 jwe.setHeader(entry.getKey(), entry.getValue());
             }
         }
-
         return jwe.getCompactSerialization();
     }
 
@@ -135,11 +133,11 @@ public class KeyAndCertificateStepsHelper {
         }
     }
 
-    public void assertContextIsSignedWithCertificate(final ContextKey key, final ContextKey certName)
+    public void assertContextIsSignedWithCertificate(final String key, final String certName)
         throws CertificateException, JSONException {
         final Certificate cert = DiscoveryDocument.getCertificateFromJWK(
-            (JSONObject) Context.getThreadContext().get(certName));
-        assertJWTIsSignedWithCertificate(Context.getThreadContext().get(key).toString(), cert);
+            (JSONObject) Context.get().get(certName));
+        assertJWTIsSignedWithCertificate(Context.get().get(key).toString(), cert);
     }
 
     @SneakyThrows

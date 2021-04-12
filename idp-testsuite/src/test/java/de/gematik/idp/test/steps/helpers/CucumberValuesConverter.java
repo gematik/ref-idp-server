@@ -1,7 +1,7 @@
 package de.gematik.idp.test.steps.helpers;
 
-import de.gematik.idp.test.steps.model.Context;
-import de.gematik.idp.test.steps.model.ContextKey;
+import de.gematik.test.bdd.Context;
+import de.gematik.test.bdd.Variables;
 import io.cucumber.datatable.DataTable;
 import java.util.HashMap;
 import java.util.List;
@@ -32,8 +32,7 @@ public class CucumberValuesConverter {
                 if ("$NULL".equals(entry.getValue())) {
                     mapParsedParams.put(entry.getKey(), null);
                 } else if ("$CONTEXT".equals(entry.getValue())) {
-                    final ContextKey key = ContextKey.valueOf(entry.getKey().toUpperCase());
-                    mapParsedParams.put(entry.getKey(), (String) Context.getThreadContext().get(key));
+                    mapParsedParams.put(entry.getKey(), (String) Context.get().get(entry.getKey().toUpperCase()));
                 } else {
                     mapParsedParams.put(entry.getKey(), parseDocString(entry.getValue()));
                 }
@@ -48,17 +47,11 @@ public class CucumberValuesConverter {
             final int endTestEnv = docString.indexOf("}", testEnvIdx);
             final String varName = docString.substring(testEnvIdx + "${TESTENV.".length(), endTestEnv);
             docString = docString.substring(0, testEnvIdx) +
-                TestEnvironmentConfigurator.getTestEnvVar(varName) +
+                IdpTestEnvironmentConfigurator.getTestEnvVar(varName) +
                 docString.substring(endTestEnv + 1);
             testEnvIdx = docString.indexOf("${TESTENV.");
         }
-        int varIdx = docString.indexOf("${VAR.");
-        while (varIdx != -1) {
-            final int endVar = docString.indexOf("}", varIdx);
-            final String varName = docString.substring(varIdx + "${VAR.".length(), endVar);
-            docString = docString.substring(0, varIdx) + Context.getVariable(varName) + docString.substring(endVar + 1);
-            varIdx = docString.indexOf("${VAR.");
-        }
+        docString = Variables.substituteVariables(docString);
         return docString;
     }
 }

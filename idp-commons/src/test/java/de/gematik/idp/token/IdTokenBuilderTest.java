@@ -23,6 +23,7 @@ import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.crypto.model.PkiIdentity;
+import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.tests.Rfc;
@@ -45,9 +46,11 @@ public class IdTokenBuilderTest {
     private static final String NONCE_VALUE = "wertDerNonce-superRandom";
     private IdTokenBuilder idTokenBuilder;
     private JsonWebToken authenticationToken;
+    private PkiIdentity pkiIdentity;
 
     @BeforeEach
     public void init(@PkiKeyResolver.Filename("authz_rsa") final PkiIdentity clientIdentity) {
+        pkiIdentity = clientIdentity;
         final Map<String, Object> bodyClaims = new HashMap<>();
         bodyClaims.put(PROFESSION_OID.getJoseName(), "profession");
         bodyClaims.put(ORGANIZATION_NAME.getJoseName(), "organization");
@@ -57,12 +60,17 @@ public class IdTokenBuilderTest {
         bodyClaims.put(JWKS_URI.getJoseName(), "jwks_uri");
         bodyClaims.put(NONCE.getJoseName(), NONCE_VALUE);
         bodyClaims.put(CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP);
+        bodyClaims.put(SCOPE.getJoseName(), IdpScope.EREZEPT.getJwtValue() + " " + IdpScope.OPENID.getJwtValue());
+        createIdTokenBuilder(bodyClaims);
+    }
+
+    private void createIdTokenBuilder(final Map<String, Object> bodyClaims) {
         authenticationToken = new JwtBuilder()
             .replaceAllHeaderClaims(Map.of("headerNotCopy", "headerNotCopy"))
             .replaceAllBodyClaims(bodyClaims)
-            .setSignerKey(clientIdentity.getPrivateKey())
+            .setSignerKey(pkiIdentity.getPrivateKey())
             .buildJwt();
-        idTokenBuilder = new IdTokenBuilder(new IdpJwtProcessor(clientIdentity), uriIdpServer, "saltValue");
+        idTokenBuilder = new IdTokenBuilder(new IdpJwtProcessor(pkiIdentity), uriIdpServer, "saltValue");
     }
 
     @Rfc("OpenID Connect Core 1.0 incorporating errata set 1 - 2 ID Token")
@@ -77,7 +85,6 @@ public class IdTokenBuilderTest {
         assertThat(idToken.getBodyClaims())
             .containsEntry(ISSUER.getJoseName(), uriIdpServer)
             .containsKey(SUBJECT.getJoseName())
-            .containsEntry(AUDIENCE.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP)
             .containsKey(EXPIRES_AT.getJoseName())
             .containsKey(ISSUED_AT.getJoseName())
             .containsEntry(PROFESSION_OID.getJoseName(), "profession")
@@ -85,6 +92,7 @@ public class IdTokenBuilderTest {
             .containsEntry(ID_NUMBER.getJoseName(), "id_number")
             .containsEntry(GIVEN_NAME.getJoseName(), "given_name")
             .containsEntry(FAMILY_NAME.getJoseName(), "family_name")
+            .containsEntry(AUDIENCE.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP)
             .containsEntry(NONCE.getJoseName(), NONCE_VALUE)
             .doesNotContainKey(JWKS_URI.getJoseName());
         assertThat(idToken.getHeaderClaims())
@@ -132,6 +140,7 @@ public class IdTokenBuilderTest {
         bodyClaims.put(JWKS_URI.getJoseName(), "jwks_uri");
         bodyClaims.put(NONCE.getJoseName(), NONCE_VALUE);
         bodyClaims.put(CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP);
+        bodyClaims.put(SCOPE.getJoseName(), IdpScope.EREZEPT.getJwtValue());
         authenticationToken = new JwtBuilder()
             .replaceAllHeaderClaims(Map.of("headerNotCopy", "headerNotCopy"))
             .replaceAllBodyClaims(bodyClaims)
@@ -157,4 +166,31 @@ public class IdTokenBuilderTest {
             .doesNotContainKey(PROFESSION_OID.getJoseName());
     }
 
+    @Test
+    public void verifyAudienceByScopeERezept() {
+        final Map<String, Object> bodyClaims = new HashMap<>();
+        bodyClaims.put(ID_NUMBER.getJoseName(), "id_number");
+        bodyClaims.put(CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP);
+        bodyClaims.put(SCOPE.getJoseName(), IdpScope.EREZEPT.getJwtValue());
+        createIdTokenBuilder(bodyClaims);
+        final JsonWebToken idToken = idTokenBuilder
+            .buildIdToken(TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, "fdsjkfldsöaf".getBytes(
+                StandardCharsets.UTF_8));
+        assertThat(idToken.getBodyClaim(AUDIENCE))
+            .get().isEqualTo(TestConstants.CLIENT_ID_E_REZEPT_APP);
+    }
+
+    @Test
+    public void verifyAudienceByScopePairing() {
+        final Map<String, Object> bodyClaims = new HashMap<>();
+        bodyClaims.put(ID_NUMBER.getJoseName(), "id_number");
+        bodyClaims.put(CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP);
+        bodyClaims.put(SCOPE.getJoseName(), IdpScope.PAIRING.getJwtValue());
+        createIdTokenBuilder(bodyClaims);
+        final JsonWebToken idToken = idTokenBuilder
+            .buildIdToken(TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, "fdsjkfldsöaf".getBytes(
+                StandardCharsets.UTF_8));
+        assertThat(idToken.getBodyClaim(AUDIENCE))
+            .get().isEqualTo(TestConstants.CLIENT_ID_E_REZEPT_APP);
+    }
 }

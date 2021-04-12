@@ -78,7 +78,12 @@
             <dependency>
                 <artifactId>aforeporter</artifactId>
                 <groupId>de.gematik.idp.aforeporter</groupId>
-                <version>1.0.12</version>
+                <version>1.2.1</version>
+            </dependency>
+            <dependency>
+                <groupId>de.gematik</groupId>
+                <artifactId>rbellogger</artifactId>
+                <version>0.7.2</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -142,5 +147,5 @@
         <version.test.regex>none</version.test.regex>
     </properties>
 
-    <version>12.0.0</version>
+    <version>13.0.0</version>
 </project>

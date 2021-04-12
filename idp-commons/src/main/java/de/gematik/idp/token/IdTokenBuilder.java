@@ -42,7 +42,7 @@ public class IdTokenBuilder {
         .map(ClaimName::getJoseName)
         .collect(Collectors.toSet());
     private static final List<ClaimName> CLAIMS_TO_TAKE_FROM_AUTHENTICATION_TOKEN = List
-        .of(GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER, AUTH_TIME, NONCE);
+        .of(GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER, AUTH_TIME, NONCE, SCOPE);
 
     private final IdpJwtProcessor jwtProcessor;
     private final String issuerUrl;
@@ -64,7 +64,6 @@ public class IdTokenBuilder {
             .map(claimName -> Pair.of(claimName, authenticationToken.getBodyClaim(claimName)))
             .filter(pair -> pair.getValue().isPresent())
             .forEach(pair -> claimsMap.put(pair.getKey().getJoseName(), pair.getValue().get()));
-
         claimsMap.put(AUTHORIZED_PARTY.getJoseName(),
             authenticationToken.getBodyClaim(CLIENT_ID)
                 .orElseThrow(() -> new IdpJoseException("Missing '" + AUTHORIZED_PARTY.getJoseName() + "' claim!")));
@@ -73,7 +72,7 @@ public class IdTokenBuilder {
         claimsMap.put(ACCESS_TOKEN_HASH.getJoseName(), atHashValue);
         claimsMap.put(SUBJECT.getJoseName(),
             buildSubjectClaim(
-                IdpConstants.AUDIENCE,
+                clientId,
                 authenticationToken.getStringBodyClaim(ID_NUMBER)
                     .orElseThrow(() -> new IdpJoseException("Missing '" + ID_NUMBER.getJoseName() + "' claim!")),
                 serverSubjectSalt));
