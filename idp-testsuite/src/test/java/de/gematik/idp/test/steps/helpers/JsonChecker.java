@@ -20,7 +20,7 @@ import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.json;
 import static net.javacrumbs.jsonunit.jsonpath.JsonPathAdapter.inPath;
 import static org.assertj.core.api.Assertions.assertThat;
-import de.gematik.idp.test.steps.model.Context;
+import de.gematik.test.bdd.Context;
 import java.util.Iterator;
 import lombok.SneakyThrows;
 import net.thucydides.core.annotations.Step;

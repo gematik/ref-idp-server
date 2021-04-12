@@ -16,57 +16,46 @@
 
 package de.gematik.idp.server;
 
-import static de.gematik.idp.authentication.UriUtils.extractParameterMap;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.TestConstants;
-import de.gematik.idp.authentication.AuthenticationChallenge;
+import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
 import de.gematik.idp.client.IdpClient;
 import de.gematik.idp.crypto.model.PkiIdentity;
-import de.gematik.idp.field.ClaimName;
-import de.gematik.idp.server.configuration.IdpConfiguration;
-import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.tests.PkiKeyResolver;
-import de.gematik.idp.token.IdpJoseObject;
 import de.gematik.idp.token.IdpJwe;
-import de.gematik.idp.token.JsonWebToken;
-import de.gematik.idp.token.TokenClaimExtraction;
+import de.gematik.rbellogger.RbelLogger;
+import de.gematik.rbellogger.captures.WiremockCapture;
+import de.gematik.rbellogger.converter.RbelConfiguration;
+import de.gematik.rbellogger.converter.initializers.RbelKeyFolderInitializer;
+import de.gematik.rbellogger.data.RbelJweElement;
+import de.gematik.rbellogger.data.RbelStringElement;
+import de.gematik.rbellogger.key.RbelKey;
+import de.gematik.rbellogger.key.RbelKeyManager;
+import de.gematik.rbellogger.renderer.RbelHtmlRenderer;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.security.Key;
-import java.time.Duration;
-import java.time.ZonedDateTime;
-import java.util.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.crypto.spec.SecretKeySpec;
-import kong.unirest.*;
-import kong.unirest.json.JSONArray;
-import kong.unirest.json.JSONObject;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(SpringExtension.class)
 @ExtendWith(PkiKeyResolver.class)
@@ -74,462 +63,309 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @Slf4j
 public class TokenLoggerTest {
 
-    private final static Map<String, Function<Object, Object>> MASKING_FUNCTIONS = new HashMap<>();
-    private static final int MAX_STRING_LENGHT = 50;
-    private static final int CUT_STRING_LENGTH = 20;
-    private static final String CODE_SEPERATOR = "\n```\n";
-    @Autowired
-    private IdpConfiguration idpConfiguration;
-    @Autowired
-    private IdpKey idpEnc;
-    @Autowired
-    private Key symmetricEncryptionKey;
+    private final static Map<String, String> MASKING_FUNCTIONS = new HashMap<>();
+    private final static Map<String, String> JEXL_NOTE_FUNCTIONS = new HashMap<>();
+    private final AtomicReference<Integer> wiremockPort = new AtomicReference<>();
     private IdpClient idpClient;
     private PkiIdentity egkUserIdentity;
+    private PkiIdentity smcbIdentity;
     @LocalServerPort
     private int localServerPort;
-    private File tokenLogFile;
-    private Gson gson;
+    @MockBean
+    private ServerUrlService serverUrlService;
+    @Autowired
+    private AuthenticationChallengeBuilder authenticationChallengeBuilder;
+    private RbelLogger rbelLogger;
+    private WiremockCapture wiremockCapture;
+    private final String targetFolder = "target/classes/static/";
 
     {
-        MASKING_FUNCTIONS.put("exp", value -> "<Gültigkeit des Tokens von " + formatToHumanReadable(
-            Duration.between(ZonedDateTime.now(), TokenClaimExtraction.claimToZonedDateTime(value)))
-            + ". Beispiel: '" + value.toString() + "'>");
+        MASKING_FUNCTIONS.put("exp", "[Gültigkeit des Tokens. Beispiel: %s]");
         MASKING_FUNCTIONS
-            .put("iat", value -> "<Zeitpunkt der Ausstellung des Tokens. Beispiel: '" + value.toString() + "'>");
-
-        MASKING_FUNCTIONS.put("code_challenge",
-            v -> "<code_challenge value, Base64URL(SHA256(code_verifier)). Beispiel: " + v.toString() + ">");
-
-        MASKING_FUNCTIONS.put("nonce", v ->
-            "<String value used to associate a Client session with an ID Token, and to mitigate replay attacks. Beispiel: '"
-                + v.toString() + "'>");
-
-        MASKING_FUNCTIONS.put("state",
-            v -> "<OAuth 2.0 state value. Constant over complete flow. Value is a case-sensitive string. Beispiel: '"
-                + v.toString() + "'>");
-
-        MASKING_FUNCTIONS.put("jti", v ->
-            "<A unique identifier for the token, which can be used to prevent reuse of the token. Value is a case-sensitive string. Beispiel: '"
-                + v.toString() + "'>");
-
-        MASKING_FUNCTIONS.put("given_name",
-            v -> "<'givenName' aus dem subject-DN des authentication-Zertifikats. Beispiel: '" + v.toString() + "'>");
-        MASKING_FUNCTIONS.put("family_name",
-            v -> "<'surname' aus dem subject-DN des authentication-Zertifikats. Beispiel: '" + v.toString() + "'>");
-        MASKING_FUNCTIONS.put("idNummer",
-            v -> "<KVNR oder Telematik-ID aus dem authentication-Zertifikats. Beispiel: '" + v.toString() + "'>");
-        MASKING_FUNCTIONS.put("professionOID",
-            v -> "<professionOID des HBA aus dem authentication-Zertifikats. Null if not present. Beispiel: '" +
-                v.toString() + "'>");
-        MASKING_FUNCTIONS.put("organizationName",
-            v -> "<professionOID des HBA  aus dem authentication-Zertifikats. Null if not present. Beispiel: '" +
-                v.toString() + "'>");
+            .put("iat", "[Zeitpunkt der Ausstellung des Tokens. Beispiel: %s]");
+        MASKING_FUNCTIONS
+            .put("nbf",
+                "[Der Token ist erst ab diesem Zeitpunkt gültig. Beispiel: %s]");
+        MASKING_FUNCTIONS.put("jti",
+            "[A unique identifier for the token, which can be used to prevent reuse of the token. Value is a case-sensitive string. Beispiel: %s]");
         MASKING_FUNCTIONS.put("auth_time",
-            v ->
-                "<timestamp of authentication. Technically this is the time of authentication-token signing. Beispiel: '"
-                    + v.toString() + "'>");
+            "[Timestamp der Authentisierung. Beispiel: %s]");
         MASKING_FUNCTIONS.put("snc",
-            v -> "<server-nonce. Used to introduce noise. Beispiel: '" + v.toString() + "'>");
-        MASKING_FUNCTIONS.put("cnf",
-            v -> "<confirmation. Authenticated certificate of the client. For details see rfc7800. Beispiel: '" +
-                prettyPrintJsonString(v.toString(), " ".repeat(60)) + "'>");
+            "[server-nonce. Wird verwendet um noise hinzuzufügen. Beispiel: %s]");
         MASKING_FUNCTIONS.put("sub",
-            v -> "<subject. Base64(sha256(audClaim + idNummerClaim + serverSubjectSalt)). Beispiel: '" +
-                v.toString() + "'>");
+            "[subject. Base64(sha256(audClaim + idNummerClaim + serverSubjectSalt)). Beispiel: %s]");
         MASKING_FUNCTIONS.put("at_hash",
-            v ->
-                "<Erste 16 Bytes des Hash des Authentication Tokens Base64(subarray(Sha256(authentication_token), 0, 16)). Beispiel: '"
-                    + v.toString() + "'>");
-        MASKING_FUNCTIONS.put("x5c",
-            v -> "<Enthält das verwendete Signer-Zertifikat. Beispiel: '" + prettyPrintJsonString(v.toString(),
-                " ".repeat(60)) + "'>");
+            "[Erste 16 Bytes des Hash des Authentication Tokens Base64(subarray(Sha256(authentication_token), 0, 16)). Beispiel: %s]");
+        MASKING_FUNCTIONS.put("x5c.0",
+            "[Enthält das verwendete Signer-Zertifikat als Base64 ASN.1 DER-Encoding. Hier kommt ausnahmsweise NICHT URL-safes Base64-Encoding zum Einsatz!]");
 
-        MASKING_FUNCTIONS.put("authorization_endpoint", v -> "<URL des Authorization Endpunkts.>");
-        MASKING_FUNCTIONS.put("sso_endpoint", v -> "<URL des Authorization Endpunkts.>");
-        MASKING_FUNCTIONS.put("token_endpoint", v -> "<URL des Authorization Endpunkts.>");
-        MASKING_FUNCTIONS.put("uri_disc", v -> "<URL des Discovery-Dokuments>");
-        MASKING_FUNCTIONS.put("puk_uri_auth", v -> "<URL einer JWK-Struktur des Authorization Public-Keys>");
-        MASKING_FUNCTIONS.put("puk_uri_token", v -> "<URL einer JWK-Struktur des Token Public-Keys>");
-        MASKING_FUNCTIONS.put("jwks_uri", v -> "<URL einer JWKS-Struktur mit allen vom Server verwendeten Schlüsseln>");
-        MASKING_FUNCTIONS.put("njwt", v -> "<enthält das Ursprüngliche Challenge Token des Authorization Endpunkt>");
-        MASKING_FUNCTIONS.put("Location", v -> formatUrl(v.toString()));
-        MASKING_FUNCTIONS.put("Date", v -> "<Zeitpunkt der Antwort. Beispiel '" + v + "'>");
+        MASKING_FUNCTIONS.put("authorization_endpoint", "[URL des Authorization Endpunkts.]");
+        MASKING_FUNCTIONS.put("sso_endpoint", "[URL des SSO-Authorization Endpunkts.]");
+        MASKING_FUNCTIONS.put("auth_pair_endpoint", "[URL des Biometrie-Authorization Endpunkts.]");
+        MASKING_FUNCTIONS.put("token_endpoint", "[URL des Authorization Endpunkts.]");
+        MASKING_FUNCTIONS.put("uri_pair", "[URL des Pairing-Endpunkts]");
+        MASKING_FUNCTIONS.put("uri_disc", "[URL des Discovery-Dokuments]");
+        MASKING_FUNCTIONS.put("puk_uri_auth", "[URL einer JWK-Struktur des Authorization Public-Keys]");
+        MASKING_FUNCTIONS.put("puk_uri_token", "[URL einer JWK-Struktur des Token Public-Keys]");
+        MASKING_FUNCTIONS.put("jwks_uri", "[URL einer JWKS-Struktur mit allen vom Server verwendeten Schlüsseln]");
+        MASKING_FUNCTIONS.put("njwt", "[Ein verschachtelt enthaltenes JWT]");
+        MASKING_FUNCTIONS.put("Date", "[Zeitpunkt der Antwort. Beispiel %s]");
+
+        JEXL_NOTE_FUNCTIONS.put("key == 'User-Agent'",
+            "Der User-Agent des Clients. Muss vorhanden sein. Wird gegen eine Blocklist geprüft");
+        JEXL_NOTE_FUNCTIONS.put("key == 'Connection'", "Nicht verpflichtend");
+        JEXL_NOTE_FUNCTIONS.put("key == 'Accept-Encoding'", "Nicht verpflichtend");
+        JEXL_NOTE_FUNCTIONS.put("key == 'Host'", "Nicht verpflichtend");
+        JEXL_NOTE_FUNCTIONS.put("element.originalUrl == '/discoveryDocument' &&"
+            + "element.getClass().getSimpleName() == 'RbelPathElement'", "Die konkrete URL kann und wird abweichen!");
+        JEXL_NOTE_FUNCTIONS.put("key == 'Version' &&"
+                + "element.parent.parent.class.simpleName == 'RbelHttpResponse'",
+            "Parameter der Referenz-Implementierung welcher die aktuelle Version zeigt.");
+
+        addRequestResponseNotes("GET", "/discoveryDocument", "Abfrage des Discovery Documents",
+            "Das Discovery-Document des IDP");
+        JEXL_NOTE_FUNCTIONS.put("message.url=^'/discoveryDocument' && message.method=='GET' "
+                + "&& element.class.simpleName=='RbelJwtSignature'",
+            "Die Signatur des Discovery Documents kann mit dem im Header enthaltenen Zertifikat ('x5c') überprüft werden. Dieses Zertifikat muss natürlich seinerseits per TUC-PKI 018 auf vertrauenswürdigkeit geprüft werden.");
+        addRequestResponseNotes("GET", "/idpSig/jwk.json", "Abfrage des puk_idp_sig", "Der puk_idp_sig");
+        addRequestResponseNotes("GET", "/idpEnc/jwk.json", "Abfrage des puk_idp_enc", "Der puk_idp_enc. "
+            + "Dieser kommt ohne x5c-claim daher. Es handelt sich um einen einfachen Schlüssel und nicht um ein Zertifikat. Der öffentliche Punkt wird mit dem übergebenen x und y Koordinaten beschrieben");
+        addRequestResponseNotes("GET", "/sign_response?", "Abfrage der Client Challenge. "
+            + "Dies ist die erste Nachricht des eigentlichen Protokoll", "Die zu signierende Challenge "
+            + "des Servers.");
+        addRequestResponseNotes("POST", "/sign_response",
+            "Das Authenticator-Modul überträgt ein \"CHALLENGE_TOKEN\" als Response auf die Challenge an den IdP-Dienst. Das \"CHALLENGE_TOKEN\" wird base64 codiert versendet und beinhaltet die signierte Challenge und das Authentifizierungszertifikat der Smartcard.",
+            "Der Authorization-Endpunkt liefert den \"AUTHORIZATION_CODE\" innerhalb einer HTTP-Redirection (HTTP-Status Code 302) an das Primärsystem zurück. Die konkrete URL des \"location\" Attributs der HTTP 302 Response ist nicht relevant.");
+
+        addParameterNotesRequest("GET", "/sign_response?",
+            Map.of("scope",
+                "Der Scope entspricht dem zwischen E-Rezept-Fachdienst und IDP festgelegten Wert. Mit diesem antwortet der E-Rezept-Fachdienst bei fehlendem ACCESS_TOKEN und http-Statuscode 401.",
+                "state",
+                "Dieser Parameter wird vom Client zufällig generiert, um CSRF zu verhindern. Indem der Server mit diesem Wert antwortet, werden Redirects legitmiert.",
+                "client_id",
+                "Die Client-ID des Primärsystems wird beim Registrieren des Primärsystems beim IDP festgelegt.",
+                "nonce",
+                "String zu Verhinderung von CSRF-Attacken. Dieser Wert ist optional. Wenn er mitgegeben wird muss der gleiche Wert im abschließend ausgegebenen ID-Token wieder auftauchen.",
+                "redirect_uri",
+                "Die URL wird vom Primärsystem beim Registrierungsprozess im IDP hinterlegt und leitet die Antwort des Servers an diese Adresse um.",
+                "response_type",
+                "Referenziert den erwarteten Response-Type des Flows. Muss immer 'code' lauten. Damit wird angezeigt das es sich hierbei um einen Authorization Code Flow handelt. Für eine nähere Erläuterung siehe OpenID-Spezifikation.",
+                "code_challenge_method",
+                "Das Primärsystem generiert einen Code-Verifier und erzeugt darüber einen Hash im Verfahren SHA-256, hier abgekürzt als S256. Teil von PKCE.",
+                "code_challenge",
+                "Der Hashwert des Code-Verifiers wird zum IDP als Code-Challenge gesendet. Teil von PKCE."));
+        addParameterNotesResponse("GET", "/sign_response?",
+            Map.of("challenge",
+                "Die vom Client mittels der eGK bzw. SMC-B zu signierende Challenge besteht aus einem Base64-codierten Challenge-Token."));
+        JEXL_NOTE_FUNCTIONS.put("request.url =^ '/sign_response' && request.method=='GET' && message.isResponse "
+                + "&& path == 'body'",
+            "Dieses JSON beschreibt die zu unterschreibende Challenge. 'requested_scopes' enthält die zu authorisierenden Anwendungen. 'openid' ist immer notwendig, 'e-rezept' zeigt an das ein Zugang zum E-Rezept-FD gewünscht wird. "
+                + "'requested_claims' listet die freizugebenden Daten auf. Für das E-Rezept sind das Attribute aus dem Zertifikat. Alle in 'user_consent' aufgeführten Daten sollen dem Benutzer selbst "
+                + "angezeigt werden (Formatierung und Formulierung stehen hierbei dem Authentisierungsmodul frei) um diesem die Möglichkeit zu geben eine informierte Entscheidung zu treffen ob der Client "
+                + "tatsächlich den beschriebenen Zugang erhalten soll.");
+
+        JEXL_NOTE_FUNCTIONS.put("message.url=^'/sign_response' && message.method=='POST' "
+                + "&& path=='body.signed_challenge.body.njwt'",
+            "Diese JWT muss vom Client erstellt werden. Es wird mit der Karte signiert welche authentifiziert werden soll. Das zugehörige Zertifikat (C.CH.AUT) wird im x5c-Header des Tokens übertragen");
+        JEXL_NOTE_FUNCTIONS.put("message.url=^'/sign_response' && message.method=='POST' "
+                + "&& path=='body.signed_challenge.body.njwt.body.njwt'",
+            "Dieses Token ist die vom Server in der vorigen Nachricht übergebene Challenge. Sie muss exakt wie empfangen auch wieder übertragen werden.");
+        JEXL_NOTE_FUNCTIONS.put("message.url=^'/sign_response' && message.method=='POST' "
+                + "&& path=='body.signed_challenge.header'",
+            "Das 'exp' in diesem Header muss dem 'exp' aus der server-Challenge (also njwt->njwt->exp) entsprechen. 'epk' muss übergeben werden und beschreibt den benutzen Schlüssel zum chiffrieren.");
+        addParameterNotesRequest("POST", "/sign_response",
+            Map.of("signed_challenge",
+                "Hierbei handelt es sich um das signierte und verschlüsselte \"CHALLENGE_TOKEN\"."));
+        addParameterNotesResponse("POST", "/sign_response",
+            Map.of("code",
+                "Der Authorization-Code. Er berechtigt zur Abholung eines Access-Tokens. Er ist vom IDP für den IDP verschlüsselt und dementsprechend vom Client nicht weiter zu verarbeiten.",
+                "ssotoken",
+                "Der SSO-Token. Mit diesem kann der Client sich wiederholt einloggen ohne erneut den Besitz der Karte durch unterschreiben einer Challenge beweisen zu müssen. Er ist vom IDP für den IDP verschlüsselt und dementsprechend vom Client nicht weiter zu verarbeiten.",
+                "state",
+                "Der state der Session. Sollte dem zufällig generierten state-Wert aus der initialen Anfrage entsprechen."));
+
+        addRequestResponseNotes("POST", "/token",
+            "Die Abfrage des Access-Tokens durch den Client selbst",
+            "Rückgabe des Access- und ID-Tokens");
+        addParameterNotesRequest("POST", "/token",
+            Map.of("key_verifier",
+                "JWE, welches den code_verifier sowie den token_key enthält. Dies ist ein AES-Schlüssel welcher vom Server zur Verschlüsselung der Token-Rückgaben verwendet wird.",
+                "code",
+                "Der Authorization-Code, so wie er vom Server in der vorigen Antwort auf POST /sign_response zurück gegeben wurde",
+                "grant_type",
+                "Muss exakt diesen Wert enthalten, da es sich um eine Implementierung des OIDC Authorization Code Flows handelt.",
+                "redirect_uri",
+                "Die für den Client beim Server hinterlegte redirect_uri. Muss dem bei der Registrierung hinterlegten Wert entsprechen.",
+                "client_id",
+                "Die client_id des Clients. Wird bei der Registrierung vergeben."));
+        JEXL_NOTE_FUNCTIONS.put("path=='body.key_verifier.header'",
+            "Dieser Token wird für den Server mit dem puk_idp_enc verschlüsselt.");
+        JEXL_NOTE_FUNCTIONS.put("path=='body.key_verifier.body'",
+            "Enthalten ist der code_verifier (der zu dem code_challenge-Wert aus der initialen Anfrage passen muss) sowie der token_key. Dies ist ein vom Client zufällig gewürfelter AES256-Schlüssel in Base64-URL-Encoding. "
+                + "Der Server benutzt diesen Schlüssel zur Chiffrierung der beiden Token-Rückgaben in der Response (ID- und Access-Token).");
+
+        JEXL_NOTE_FUNCTIONS.put("path=='body.access_token'",
+            "Das verschlüsselte Access-Token. Der Server chiffriert das Token selbst zur Sicherung des Transport-Weges. Zur Verschlüsselung verwendet wird hier der token_key aus der Anfrage des Clients.");
+        JEXL_NOTE_FUNCTIONS.put("path=='body.access_token.body.njwt'",
+            "Das eigentliche Access-Token, so wie es zur Vorlage beim Fachdienst verwendet werden soll.");
+        JEXL_NOTE_FUNCTIONS.put("path=='body.id_token'",
+            "Das verschlüsselte ID-Token. Der Server chiffriert das Token selbst zur Sicherung des Transport-Weges. Zur Verschlüsselung verwendet wird hier der token_key aus der Anfrage des Clients.");
+        JEXL_NOTE_FUNCTIONS.put("path=='body.id_token.body.njwt'",
+            "Das eigentliche ID-Token. Enthält Informationen zum Identifizieren des Versicherten");
+
+        JEXL_NOTE_FUNCTIONS.put("element.class.simpleName=='RbelJwtSignature'",
+            "Signatur, die nach https://tools.ietf.org/html/rfc7515 gebildet wird. Die Signatur erfolgt über ASCII(BASE64URL(UTF8(JWS Protected Header)) || '.' || BASE64URL(JWS Payload)). "
+                + "Es gilt zu beachten das alle Tokens im IDP-Flow in CompactSerialization übertragen werden und dementsprechend alle Header-Claims protected sind.");
+        JEXL_NOTE_FUNCTIONS
+            .put(
+                "element.class.simpleName=='RbelJweEncryptionInfo' && element.decryptedUsingKeyWithId == 'IDP symmetricEncryptionKey'",
+                "Der Algorithmus und der Schlüssel sind nicht nicht fest, genügen aber dem erforderlichen Sicherheitsniveau der gematik. "
+                    + "Der Client hat keine Möglichkeit den Inhalt dieses Tokens zu lesen. Ausnahme ist der Header, und damit der 'exp'-Claim welcher die Gültigkeit des JWE anzeigt.");
+        JEXL_NOTE_FUNCTIONS
+            .put(
+                "element.class.simpleName=='RbelJweEncryptionInfo' && element.decryptedUsingKeyWithId == 'prk_idp_enc'",
+                "Muss mit dem puk_idp_enc verschlüsselt werden. Näheres ist https://tools.ietf.org/html/rfc7516 zu entnehmen.");
+        JEXL_NOTE_FUNCTIONS
+            .put("element.class.simpleName=='RbelJweEncryptionInfo' && element.decryptedUsingKeyWithId == 'token_key'",
+                "Wird vom Server mit dem token_key verschlüsselt der in der korrespondierenden Anfrage übertragen wurde.");
     }
+
+    private void addParameterNotesRequest(final String httpVerb, final String url,
+        final Map<String, String> parameterNotes) {
+        for (final Entry<String, String> entry : parameterNotes.entrySet()) {
+            JEXL_NOTE_FUNCTIONS.put("message.url =^ '" + url + "' "
+                + "&& message.method=='" + httpVerb + "' "
+                + "&& key == '" + entry.getKey() + "'", entry.getValue());
+        }
+    }
+
+    private void addParameterNotesResponse(final String httpVerb, final String url,
+        final Map<String, String> parameterNotes) {
+        for (final Entry<String, String> entry : parameterNotes.entrySet()) {
+            JEXL_NOTE_FUNCTIONS.put("request.url =^ '" + url + "' "
+                + "&& request.method=='" + httpVerb + "' && message.isResponse "
+                + "&& key == '" + entry.getKey() + "'", entry.getValue());
+        }
+    }
+
+    private void addRequestResponseNotes(final String verb, final String url, final String requestNote,
+        final String responseNote) {
+        JEXL_NOTE_FUNCTIONS.put("message.url =^ '" + url + "' "
+            + "&& message.method=='" + verb + "' "
+            + "&& element.getClass().getSimpleName() == 'RbelHttpRequest'", requestNote);
+        JEXL_NOTE_FUNCTIONS.put("request.url =^ '" + url + "' "
+            + "&& request.method=='" + verb + "' "
+            + "&& element.getClass().getSimpleName() == 'RbelHttpResponse'", responseNote);
+    }
+
 
     @BeforeEach
     public void startup(
-        @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity clientIdentity)
-        throws IOException {
-        idpClient = IdpClient.builder()
-            .clientId(TestConstants.CLIENT_ID_E_REZEPT_APP)
-            .discoveryDocumentUrl("http://localhost:" + localServerPort + IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT)
-            .redirectUrl(TestConstants.REDIRECT_URI_E_REZEPT_APP)
-            .build();
+        @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity clientIdentity,
+        @PkiKeyResolver.Filename("80276883110000129084-C_HP_AUT_E256.p12") final PkiIdentity smcbIdentity)
+        throws MalformedURLException {
+        rbelLogger = RbelLogger.build(
+            new RbelConfiguration()
+                .addKey("IDP symmetricEncryptionKey",
+                    new SecretKeySpec(DigestUtils.sha256("geheimerSchluesselDerNochGehashtWird"), "AES"),
+                    RbelKey.PRECEDENCE_KEY_FOLDER)
+                .addInitializer(new RbelKeyFolderInitializer("src/main/resources"))
+                .addPostConversionListener(RbelJweElement.class, RbelKeyManager.RBEL_IDP_TOKEN_KEY_LISTENER)
+                .addPreConversionMapper(RbelStringElement.class, (path, context) -> {
+                    if (path.getContent().contains("localhost:" + wiremockPort.get())) {
+                        return new RbelStringElement(
+                            path.getContent().replace("localhost:" + wiremockPort.get(), "url.des.idp"));
+                    } else {
+                        return path;
+                    }
+                })
+        );
 
-        idpClient.initialize();
+        JEXL_NOTE_FUNCTIONS.forEach((k, v) -> rbelLogger.getValueShader().addJexlNoteCriterion(k, v));
+        MASKING_FUNCTIONS.forEach((k, v) -> rbelLogger.getValueShader().addSimpleShadingCriterion(k, v));
+        rbelLogger.getValueShader().addJexlShadingCriterion("path =^ 'header.Location' && key == 'code'",
+            "<Authorization Code in Base64-URL-Safe Encoding. Wird unten detaillierter aufgeführt>");
+        rbelLogger.getValueShader().addJexlShadingCriterion("path =^ 'header.Location' && key == 'ssotoken'",
+            "<SSO-Token in Base64-URL-Safe Encoding. Wird unten detaillierter aufgeführt>");
 
-        egkUserIdentity = PkiIdentity.builder()
-            .certificate(clientIdentity.getCertificate())
-            .privateKey(clientIdentity.getPrivateKey())
-            .build();
-
-        createTokenLogFile();
-
-        gson = new GsonBuilder()
-            .setPrettyPrinting()
-            .create();
+        egkUserIdentity = clientIdentity;
+        this.smcbIdentity = smcbIdentity;
     }
 
-    @SneakyThrows
-    @AfterEach
-    public void copyTokenFlowToTarget() {
-        final String filename = idpConfiguration.getTokenFlowMdResource().replace("classpath:", "");
-        final java.nio.file.Path copied = Paths.get("target/classes/" + filename);
-        final java.nio.file.Path originalPath = tokenLogFile.toPath();
-        Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
+    private void initializeWiremockCapture() throws MalformedURLException {
+        rbelLogger.getMessageHistory().clear();
+
+        wiremockCapture = WiremockCapture.builder()
+            .rbelConverter(rbelLogger.getRbelConverter())
+            .proxyFor("http://localhost:" + localServerPort)
+            .build()
+            .initialize();
+        wiremockPort.set(new URL(wiremockCapture.getProxyAdress()).getPort());
+
+        doReturn(wiremockCapture.getProxyAdress())
+            .when(serverUrlService).determineServerUrl(any());
+        doReturn(wiremockCapture.getProxyAdress())
+            .when(serverUrlService).determineServerUrl();
+        ReflectionTestUtils.setField(authenticationChallengeBuilder, "uriIdpServer", wiremockCapture.getProxyAdress());
+
+        log.info("wiremock url: " + wiremockCapture.getProxyAdress());
+        log.info("proxy for: " + wiremockCapture.getProxyFor());
+        log.info("spring url: http://localhost:" + localServerPort);
+
+        idpClient = IdpClient.builder()
+            .clientId(TestConstants.CLIENT_ID_E_REZEPT_APP)
+            .discoveryDocumentUrl(wiremockCapture.getProxyAdress() + IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT)
+            .redirectUrl(TestConstants.REDIRECT_URI_E_REZEPT_APP)
+            .build();
     }
 
     @Test
-    public void writeAllTokensToFile() {
-        Assertions.assertDoesNotThrow(() -> {
-            // Authorization Request
-            idpClient
-                .setBeforeAuthorizationCallback(getRequest -> appendRequestToFile("Authorization Request", getRequest));
+    public void writeAllTokensToFile() throws IOException {
+        performAndWriteFlow(() -> {
+            idpClient.initialize();
+            idpClient.login(egkUserIdentity);
+        }, targetFolder + "tokenFlowEgk.html", "EGK-Login beim IdP");
 
-            // Challenge Token
-            idpClient.setAfterAuthorizationCallback(response -> {
-                appendResponseToFile("Authorization Response", response);
-
-                appendTokenToFile("Challenge Token", response.getBody().getChallenge());
-            });
-
-            // Authentication Request
-            idpClient
-                .setBeforeAuthenticationCallback(getRequest -> {
-                        appendRequestToFile("Authentication Request", getRequest);
-
-                        appendMultipartAndDecrypt(getRequest.getBody().get().multiParts(), "signed_challenge",
-                            "Challenge Response", idpEnc.getIdentity().getPrivateKey());
-                        appendMultipartAndDecrypt(getRequest.getBody().get().multiParts(), "ssotoken",
-                            "SSO Token", symmetricEncryptionKey);
-                        appendMultipartAndDecrypt(getRequest.getBody().get().multiParts(), "unsigned_challenge",
-                            "Unsigned Challenge", null);
-                    }
-                );
-
-            // Authorization Code
-            idpClient.setAfterAuthenticationCallback(response -> {
-                    appendResponseToFile("Authentication Response", response);
-                    final Map<String, String> parameterMap = extractParameterMap(
-                        response.getHeaders().getFirst("Location"));
-
-                    if (parameterMap.containsKey("code")) {
-                        appendJwe(new IdpJwe(parameterMap.get("code")), "Authorization Code",
-                            symmetricEncryptionKey);
-                    }
-
-                    if (parameterMap.containsKey("ssotoken")) {
-                        appendJwe(new IdpJwe(parameterMap.get("ssotoken")), "SSO Token", symmetricEncryptionKey);
-                    }
-                }
-            );
-
-            final AtomicReference<Key> clientTokenKey = new AtomicReference<>();
-
-            // Token Request
-            idpClient.setBeforeTokenCallback(getRequest -> {
-                    appendRequestToFile("Token Request", getRequest);
-                    final IdpJwe keyVerifier = getRequest.getBody().get().multiParts().stream()
-                        .filter(p -> p.getName().equals("key_verifier"))
-                        .map(p -> new IdpJwe(p.getValue().toString()))
-                        .findAny().get();
-
-                    appendTokenToFile("Key verifier (Encryption Header)", keyVerifier);
-                    keyVerifier.setDecryptionKey(idpEnc.getIdentity().getPrivateKey());
-
-                    appendToFile(
-                        "Key verifier (Body)\n\n" + CODE_SEPERATOR + prettyPrintJsonString(
-                            gson.toJson(keyVerifier.getBodyClaims()), "") + CODE_SEPERATOR + "\n");
-                    clientTokenKey.set(new SecretKeySpec(
-                        Base64.getUrlDecoder().decode(keyVerifier.getStringBodyClaim(ClaimName.TOKEN_KEY).get()),
-                        "AES"));
-                }
-            );
-
-            idpClient.setAfterTokenCallback(response -> {
-                appendResponseToFile("Token Response", response);
-
-                final JSONObject responseObject = response.getBody().getObject();
-                final IdpJwe accessToken = new IdpJwe(responseObject.getString("access_token"));
-                appendTokenToFile("Access Token (Encryption Header)", accessToken);
-                appendTokenToFile("Access Token (Decrypted)", accessToken.decryptNestedJwt(clientTokenKey.get()));
-
-                final IdpJwe idToken = new IdpJwe(responseObject.getString("id_token"));
-                appendTokenToFile("ID Token (Encryption Header)", idToken);
-                appendTokenToFile("ID Token (Decrypted)", idToken.decryptNestedJwt(clientTokenKey.get()));
-            });
-            addSeperator("# Basic FLOW", "=");
-            appendToFile("Log-In attempt using egk with DN '"
-                + egkUserIdentity.getCertificate().getSubjectX500Principal().toString() + "'\n\n\n");
+        performAndWriteFlow(() -> {
+            idpClient.initialize();
 
             final IdpJwe ssoToken = idpClient.login(egkUserIdentity).getSsoToken();
 
-            addSeperator("# SSO Flow", "=");
-
             idpClient.loginWithSsoToken(ssoToken);
+        }, targetFolder + "tokenFlowSso.html", "EGK-Login beim IdP mit anschließendem SSO-Token-Login");
 
-            // Discovery Document
-            final HttpResponse<String> ddResponse = Unirest.get(idpClient.getDiscoveryDocumentUrl()).asString();
-
-            addSeperator("# Discovery Document", "=");
-            final JsonWebToken dd = new JsonWebToken(ddResponse.getBody());
-            appendResponseToFile(idpClient.getDiscoveryDocumentUrl(), ddResponse);
-
-            // JWKS
-            final String jwksUri = dd.getBodyClaims().get("jwks_uri").toString();
-            final HttpResponse<JsonNode> jwksResponse = Unirest.get(jwksUri).asJson();
-
-            addSeperator("# JWKS", "=");
-            appendResponseToFile(jwksUri, jwksResponse);
-        });
+        performAndWriteFlow(() -> {
+            final IdpClient psIdpClient = IdpClient.builder()
+                .clientId(TestConstants.CLIENT_ID_GEAMTIK_TEST_PS)
+                .discoveryDocumentUrl(wiremockCapture.getProxyAdress() + IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT)
+                .redirectUrl(TestConstants.REDIRECT_URI_GEAMTIK_TEST_PS)
+                .build();
+            psIdpClient.initialize();
+            psIdpClient.login(smcbIdentity);
+        }, targetFolder + "tokenFlowPs.html", "Primärsystem-Login beim IdP ohne SSO-Token");
     }
 
-    private void appendMultipartAndDecrypt(
-        final Collection<BodyPart> bodyParts, final String parameter_name, final String tokenName,
-        final Key decryptionKey) {
-        bodyParts
-            .stream()
-            .filter(bodyPart -> bodyPart.getName().equals(parameter_name))
-            .map(BodyPart::getValue)
-            .findAny()
-            .map(Object::toString)
-            .ifPresent(tokenString -> {
-                if (decryptionKey != null) {
-                    appendJwe(new IdpJwe(tokenString), tokenName, decryptionKey);
-                } else {
-                    appendTokenToFile(tokenName, new JsonWebToken(tokenString));
-                }
-            });
-    }
-
-    private void appendJwe(final IdpJwe token, final String tokenName, final Key decryptionKey) {
-        appendTokenToFile(tokenName + " (Encryption Header)", token);
-        appendTokenToFile(tokenName + " (Decrypted)", token.decryptNestedJwt(decryptionKey));
-    }
-
-    private void createTokenLogFile() throws IOException {
-        tokenLogFile = new File("src/main/resources/" +
-            idpConfiguration.getTokenFlowMdResource().replace("classpath:", ""));
-        if (tokenLogFile.isFile()) {
-            tokenLogFile.delete();
-        }
-        tokenLogFile.createNewFile();
-    }
-
-    private void appendRequestToFile(final String name, final HttpRequest<?> request) {
-        addSeperator("## " + name, ">");
-        final String multipartBody = request.getBody().map(
-            body -> body.multiParts().stream()
-                .map(part -> part.getName() + "=" + part.getValue())
-                .collect(Collectors.joining("\n", "Multiparts:\n", "\n")))
-            .orElse("");
-        appendToFile(CODE_SEPERATOR + formatUrl(request.getUrl()) + "\n" + multipartBody + CODE_SEPERATOR + "\n");
-    }
-
-    @SneakyThrows
-    private String formatUrl(final String url) {
-        final URI uri = new URI(url);
-        final Map<String, String> pathMapping = Map.of(
-            IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT, "<URI_DISC>",
-            IdpConstants.BASIC_AUTHORIZATION_ENDPOINT, "<AUTHORIZATION_ENDPOINT>",
-            IdpConstants.SSO_ENDPOINT, "<SSO_ENDPOINT>",
-            IdpConstants.TOKEN_ENDPOINT, "<TOKEN_ENDPOINT>"
-        );
-
-        final String query = formatQueryString(uri);
-        return "https://<FQDN Server>/"
-            + pathMapping.getOrDefault(uri.getPath(), uri.getPath())
-            + query;
-    }
-
-    private String formatQueryString(final URI uri) {
-        if (StringUtils.isEmpty(uri.getQuery())) {
-            return "";
-        }
-
-        return Stream.of(uri.getQuery().split("&"))
-            .map(q -> {
-                final String[] split = q.split("=");
-                if (MASKING_FUNCTIONS.containsKey(split[0])) {
-                    return split[0] + "=" + MASKING_FUNCTIONS.get(split[0])
-                        .apply(split[1]);
-                } else {
-                    return q;
-                }
-            })
-            .collect(Collectors.joining("\n    &", "\n    ?", ""));
-    }
-
-    private void addSeperator(final String title, final String seperatorString) {
-        appendToFile(title + " \n");
-    }
-
-    private void appendResponseToFile(final String name, final HttpResponse<?> response) {
-        addSeperator("## " + name, "<");
-        appendToFile(CODE_SEPERATOR + response.getStatus() + "\n" + response.getHeaders()
-            .all().stream()
-            .map(header -> {
-                if (header.getName().equals("Location")) {
-                    return Pair.of("Location", formatUrl(header.getValue()));
-                } else if (MASKING_FUNCTIONS.containsKey(header.getName())) {
-                    return Pair.of(header.getName(), MASKING_FUNCTIONS.get(header.getName()).apply(header.getValue()));
-                } else {
-                    return Pair.of(header.getName(), header.getValue());
-                }
-            })
-            .map(header -> header.getKey() + "=" + header.getValue())
-            .collect(Collectors.joining(",\n")) + CODE_SEPERATOR + extractBodyFromResponse(response) + "\n\n");
-    }
-
-    private String extractBodyFromResponse(final HttpResponse<?> response) {
-        if (response.getBody().toString().isEmpty()) {
-            return "";
-        }
-        return "\n\nResponse-Body:\n" + CODE_SEPERATOR + mapBodyToString(response.getBody()) + CODE_SEPERATOR;
-    }
-
-    private String mapBodyToString(final Object body) {
-        if (body instanceof AuthenticationChallenge) {
-            return gson.toJson(body);
-        } else if (body instanceof JsonNode) {
-            return ((JsonNode) body).toPrettyString();
-        } else if (body instanceof String) {
-            return prettyPrintJoseParts(body.toString());
-        } else {
-            return "Ugly-printing " + body.getClass().getSimpleName() + ": \n\n'" + body.toString() + "'";
-        }
-    }
-
-    private void appendTokenToFile(final String tokenName, final IdpJoseObject token) {
-        final String prettyPrintendTokenParts = prettyPrintJoseParts(token.getRawString());
-        final String intro = tokenName.isBlank() ? "" : "### " + tokenName + ":\n";
-        appendToFile(intro + CODE_SEPERATOR + prettyPrintendTokenParts + CODE_SEPERATOR + "\n\n");
-    }
-
-    private String prettyPrintJoseParts(final String tokenString) {
-        return Stream.of(tokenString.split("\\."))
-            .map(Base64.getUrlDecoder()::decode)
-            .map(String::new)
-            .filter(StringUtils::isNotBlank)
-            .map(str -> {
-                try {
-                    return Optional.of(new JsonNode(str));
-                } catch (final Exception e) {
-                    return Optional.empty();
-                }
-            })
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .map(JsonNode.class::cast)
-            .map(this::maskVariableParts)
-            .map(JsonNode::toPrettyString)
-            .map(StringEscapeUtils::unescapeJava)
-            .collect(Collectors.joining("\n"));
-    }
-
-    private String prettyPrintJsonString(final String value, final String newLineFiller) {
-        final JsonNode jsonNode = new JsonNode(value);
-        cutStrings(jsonNode);
-        final String cleanString = StringEscapeUtils.unescapeJava(jsonNode.toPrettyString());
-        return cleanString.replace("\n", "\n" + newLineFiller);
-    }
-
-    private void cutStrings(final JsonNode jsonNode) {
-        if (jsonNode == null) {
-            return;
-        }
-        cutStrings(jsonNode.getObject());
-        cutStrings(jsonNode.getArray());
-    }
-
-    private void cutStrings(final JSONArray array) {
-        if (array == null) {
-            return;
-        }
-        for (int i = 0; i < array.length(); i++) {
-            final Object value = cutStrings(array.get(i));
-            if (value != null) {
-                array.put(i, value);
-            }
-        }
-    }
-
-    private void cutStrings(final JSONObject object) {
-        if (object == null) {
-            return;
-        }
-        for (final String key : object.keySet()) {
-            final Object value = cutStrings(object.get(key));
-            if (value != null) {
-                object.put(key, value);
-            }
-        }
-    }
-
-    private Object cutStrings(final Object o) {
-        if (o == null) {
-            return null;
-        }
-        if (o instanceof JsonNode) {
-            cutStrings((JsonNode) o);
-        } else if (o instanceof JSONArray) {
-            cutStrings((JSONArray) o);
-        } else if (o instanceof JSONObject) {
-            cutStrings((JSONObject) o);
-        } else if (o instanceof String) {
-            if (((String) o).length() > MAX_STRING_LENGHT) {
-                return ((String) o).substring(0, CUT_STRING_LENGTH) + "...";
-            }
-        } else {
-            System.out.println("unknown: " + o.getClass().getSimpleName() + " => " + o);
-        }
-        return null;
-    }
-
-    private JsonNode maskVariableParts(final JsonNode jsonNode) {
-        final JSONObject object = jsonNode.getObject();
-
-        final List<String> keys = object.keySet().stream().collect(Collectors.toList());
-        keys.stream().forEach(key -> {
-            if (MASKING_FUNCTIONS.containsKey(key)) {
-                object.put(key, MASKING_FUNCTIONS
-                    .get(key)
-                    .apply(object.get(key)));
-            }
-        });
-        return jsonNode;
-    }
-
-    private String formatToHumanReadable(final Duration input) {
-        final Duration duration = input
-            .withNanos(0)
-            .plusMinutes(input.toSecondsPart() > 30 ? 1 : 0)
-            .minusSeconds(input.toSecondsPart());
-        if (duration.minusMinutes(59).isNegative()) {
-            return duration.toMinutes() + " Minuten";
-        }
-        if (duration.minusHours(23).isNegative()) {
-            return duration.toHours() + " Stunden";
-        }
-        return duration.toString();
-    }
-
-    private void appendToFile(final String content) {
+    private void performAndWriteFlow(final Runnable performer, final String filename, final String title)
+        throws IOException {
         try {
-            FileUtils.writeStringToFile(tokenLogFile, content, StandardCharsets.UTF_8, true);
-        } catch (final IOException e) {
-            throw new RuntimeException(e);
+            initializeWiremockCapture();
+
+            performer.run();
+        } finally {
+            try {
+                wiremockCapture.close();
+            } catch (final Exception e) {
+                e.printStackTrace();
+            }
+
+            log.info("Starting Flow Rendering...");
+            final RbelHtmlRenderer rbelHtmlRenderer = new RbelHtmlRenderer(rbelLogger.getValueShader());
+            rbelHtmlRenderer.setTitle(title);
+            rbelHtmlRenderer.setSubTitle("Gerendert mit https://github.com/gematik/app-RbelLogger");
+            FileUtils.writeStringToFile(new File(filename),
+                rbelHtmlRenderer.doRender(rbelLogger.getMessageHistory()),
+                Charset.defaultCharset());
+            log.info("Completed Flow Rendering!");
         }
     }
 }

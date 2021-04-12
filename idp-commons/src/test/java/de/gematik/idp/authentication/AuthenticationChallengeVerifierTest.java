@@ -17,7 +17,6 @@
 package de.gematik.idp.authentication;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.data.UserConsentConfiguration;
 import de.gematik.idp.data.UserConsentDescriptionTexts;
@@ -151,7 +150,7 @@ public class AuthenticationChallengeVerifierTest {
     @Test
     public void checkSignatureNjwt_challengeOutdated() {
         authenticationChallenge = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
+            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", IdpScope.EREZEPT.getJwtValue(), "nonceValue");
         final JsonWebToken jsonWebToken = authenticationChallenge.getChallenge();
         final IdpJwtProcessor reSignerProcessor = new IdpJwtProcessor(serverIdentity);
         final JwtBuilder jwtDescription = jsonWebToken.toJwtDescription();

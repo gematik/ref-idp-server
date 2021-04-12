@@ -1,16 +1,16 @@
 idp:
   version: @project.version@
   idpSig:
-    fileName: classpath:authenticatorModule_idpServer.p12
+    fileName: classpath:idp_sig.p12
     keyId: puk_idp_sig
     use: sig
   idpEnc:
-    fileName: classpath:idp-fd-sig-refimpl-2.p12
+    fileName: classpath:idp_enc.p12
     keyId: puk_idp_enc
     use: enc
   discSig:
-    fileName: classpath:idp-fd-sig-refimpl-3.p12
-    keyId: discSig
+    fileName: classpath:disc_sig.p12
+    keyId: puk_disc_sig
   symmetricEncryptionKey: "geheimerSchluesselDerNochGehashtWird"
   defaultLocale: US
   debug:
@@ -34,7 +34,6 @@ idp:
       EREZEPT: [ GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER ]
       PAIRING: [ ID_NUMBER ]
   productTypeDisplayString: "IDP"
-  tokenFlowMdResource: "classpath:tokenFlow.md"
   registeredClient:
     eRezeptApp:
       redirectUri: http://redirect.gematik.de/erezept

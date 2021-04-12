@@ -19,7 +19,9 @@ package de.gematik.idp.test.steps.model;
 import static org.assertj.core.api.Assertions.assertThat;
 import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
 import de.gematik.idp.test.steps.IdpStepsBase;
-import de.gematik.idp.test.steps.helpers.TestEnvironmentConfigurator;
+import de.gematik.idp.test.steps.helpers.IdpTestEnvironmentConfigurator;
+import de.gematik.test.bdd.Context;
+import de.gematik.test.bdd.ContextKey;
 import java.io.*;
 import java.math.BigInteger;
 import java.net.URI;
@@ -72,11 +74,12 @@ public class DiscoveryDocument {
         jsonHeader = jsoHeader;
         authorizationEndpoint = jsoBody.getString("authorization_endpoint");
         ssoEndpoint = jsoBody.getString("sso_endpoint");
-        altAuthEndpoint = jsoBody.getString("auth_pair_endpoint");
         tokenEndpoint = jsoBody.getString("token_endpoint");
-        pairingEndpoint = jsoBody.getString("uri_pair");
+        // TODO RISE reactivate mandatory altauth attributes
+        altAuthEndpoint = jsoBody.has("auth_pair_endpoint") ? jsoBody.getString("auth_pair_endpoint") : "UNDEFINED";
+        pairingEndpoint = jsoBody.has("uri_pair") ? jsoBody.getString("uri_pair") : "UNDEFINED";
         jwksUri = jsoBody.getString("jwks_uri");
-        TestEnvironmentConfigurator.initializeTestEnvironment();
+        IdpTestEnvironmentConfigurator.initializeIDPTestEnvironment();
     }
 
     public DiscoveryDocument(final File templateBody, final File templateHeader)
@@ -88,13 +91,13 @@ public class DiscoveryDocument {
     @SneakyThrows
     public void readPublicKeysFromURIs() {
         pukUriEnc = getPuKFromJSONAttribute(jsonBody.getString("uri_puk_idp_enc"));
-        Context.getThreadContext().put(ContextKey.PUK_ENC, pukUriEnc);
+        de.gematik.test.bdd.Context.get().put(ContextKey.PUK_ENC, pukUriEnc);
         pukUriSign = getPuKFromJSONAttribute(jsonBody.getString("uri_puk_idp_sig"));
-        Context.getThreadContext().put(ContextKey.PUK_SIGN, pukUriSign);
+        Context.get().put(ContextKey.PUK_SIGN, pukUriSign);
 
         pukUriDisc = new JSONObject();
         pukUriDisc.put("x5c", jsonHeader.getJSONArray("x5c"));
-        Context.getThreadContext().put(ContextKey.PUK_DISC, pukUriDisc);
+        Context.get().put(ContextKey.PUK_DISC, pukUriDisc);
     }
 
     private JSONObject getPuKFromJSONAttribute(String uri)
@@ -160,8 +163,8 @@ public class DiscoveryDocument {
     }
 
     @SneakyThrows
-    public static PublicKey getPublicKeyFromContextKey(final ContextKey key) {
-        final JSONObject jwk = new JSONObject(String.valueOf(Context.getThreadContext().get(key)));
+    public static PublicKey getPublicKeyFromContextKey(final String key) {
+        final JSONObject jwk = new JSONObject(Context.get().get(key).toString());
         return getPublicKeyFromJWK(jwk);
     }
 

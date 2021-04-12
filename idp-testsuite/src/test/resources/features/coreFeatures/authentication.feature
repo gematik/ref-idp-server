@@ -14,15 +14,15 @@
 # limitations under the License.
 #
 
-@Authentication
 @Product:IDP-D
+@Authentication
 Feature: Authentifiziere Anwendung am IDP Server
 
   Frontends von TI Diensten müssen vom IDP Server über ein **HTTP GET** an den Authorization Endpoint ein Code Challenge Token abfragen können.
 
   Background: Initialisiere Testkontext durch Abfrage des Discovery Dokuments
-    Given I initialize scenario from discovery document endpoint
-    And I retrieve public keys from URIs
+    Given IDP I initialize scenario from discovery document endpoint
+    And IDP I retrieve public keys from URIs
 
   @TCID:IDP_REF_AUTH_001 @PRIO:1
   @Afo:A_20698  @Afo:A_20523
@@ -39,18 +39,18 @@ Feature: Authentifiziere Anwendung am IDP Server
   - das korrekte JSON im Body haben.
 
 
-    Given I choose code verifier 'zdrfcvz3iw47fgderuzbq834werb3q84wgrb3zercb8q3wbd834wefb348ch3rq9e8fd9sac'
+    Given IDP I choose code verifier 'zdrfcvz3iw47fgderuzbq834werb3q84wgrb3zercb8q3wbd834wefb348ch3rq9e8fd9sac'
         # REM code_challenge for given verifier can be obtained from https://tonyxu-io.github.io/pkce-generator/
 
-    When I request a challenge with
+    When IDP I request a challenge with
       | client_id            | scope                      | code_challenge                              | code_challenge_method | redirect_uri            | state       | nonce     | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | code          |
     Then the response status is 200
-    And the response http headers match
+    And IDP the response http headers match
         """
           Content-Type=application/json.*
         """
-    And the JSON response should match
+    And IDP the JSON response should match
         """
           {
             "challenge":     "ey[A-Za-z0-9\\-_\\.]*",
@@ -84,14 +84,14 @@ Feature: Authentifiziere Anwendung am IDP Server
 
 
 
-    Given I choose code verifier 'zdrfcvz3iw47fgderuzbq834werb3q84wgrb3zercb8q3wbd834wefb348ch3rq9e8fd9sac'
+    Given IDP I choose code verifier 'zdrfcvz3iw47fgderuzbq834werb3q84wgrb3zercb8q3wbd834wefb348ch3rq9e8fd9sac'
         # REM code_challenge for given verifier can be obtained from https://tonyxu-io.github.io/pkce-generator/
-    And I request a challenge with
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge                              | code_challenge_method | redirect_uri            | state       | nonce     | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | code          |
 
-    When I extract the header claims from response field challenge
-    Then the header claims should match in any order
+    When IDP I extract the header claims from response field challenge
+    Then IDP the header claims should match in any order
         """
           { alg: "BP256R1",
             typ: "JWT",
@@ -99,8 +99,8 @@ Feature: Authentifiziere Anwendung am IDP Server
           }
         """
 
-    When I extract the body claims from response field challenge
-    Then the body claims should match in any order
+    When IDP I extract the body claims from response field challenge
+    Then IDP the body claims should match in any order
         """
           { client_id:             "${TESTENV.client_id}",
             code_challenge:        "P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk",
@@ -129,15 +129,15 @@ Feature: Authentifiziere Anwendung am IDP Server
   Die HTTP Response darf in den claims keinen client nonce enthalten:
 
 
-    Given I choose code verifier 'zdrfcvz3iw47fgderuzbq834werb3q84wgrb3zercb8q3wbd834wefb348ch3rq9e8fd9sac'
+    Given IDP I choose code verifier 'zdrfcvz3iw47fgderuzbq834werb3q84wgrb3zercb8q3wbd834wefb348ch3rq9e8fd9sac'
         # REM code_challenge for given verifier can be obtained from https://tonyxu-io.github.io/pkce-generator/
-    And I request a challenge with
+    And IDP I request a challenge with
       | client_id            | scope                      | code_challenge                              | code_challenge_method | redirect_uri            | state       | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | code          |
 
-    When I extract the body claims from response field challenge
+    When IDP I extract the body claims from response field challenge
     # checking no nonce claim appears in response
-    Then the body claims should match in any order
+    Then IDP the body claims should match in any order
         """
           { client_id:             "${TESTENV.client_id}",
             code_challenge:        "P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk",
@@ -167,17 +167,17 @@ Feature: Authentifiziere Anwendung am IDP Server
   Die Challenge muss mit dem PUK_SIGN signiert sein.
 
 
-    Given I choose code verifier 'zdrfcvz3iw47fgderuzbq834werb3q84wgrb3zercb8q3wbd834wefb348ch3rq9e8fd9sac'
+    Given IDP I choose code verifier 'zdrfcvz3iw47fgderuzbq834werb3q84wgrb3zercb8q3wbd834wefb348ch3rq9e8fd9sac'
         # REM code_challenge for given verifier can be obtained from https://tonyxu-io.github.io/pkce-generator/
-    When I request a challenge with
+    When IDP I request a challenge with
       | client_id            | scope                      | code_challenge                              | code_challenge_method | redirect_uri            | state       | nonce     | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | code          |
-    Then the context CHALLENGE must be signed with cert PUK_SIGN
+    Then IDP the context CHALLENGE must be signed with cert PUK_SIGN
 
-  @TCID:IDP_REF_AUTH_005 @PRIO:2
+  @TCID:IDP_REF_AUTH_005 @PRIO:2 @Negative
     @Afo:A_20698 @Afo:A_20440
     @Approval @Todo:IDP-553
-  Scenario Outline: Auth - Fehlende Parameter alle anderen
+  Scenario Outline: Auth - Fehlende Parameter
 
   ```
   Wir fordern einen Challenge Token mit einem ungültigen Request an,
@@ -186,11 +186,11 @@ Feature: Authentifiziere Anwendung am IDP Server
   Als Antwort erwarten wir einen entsprechenden HTTP code, error id und error code
 
 
-    When I request a challenge with
+    When IDP I request a challenge with
       | client_id   | scope   | code_challenge   | code_challenge_method   | redirect_uri   | state   | nonce   | response_type   |
       | <client_id> | <scope> | <code_challenge> | <code_challenge_method> | <redirect_uri> | <state> | <nonce> | <response_type> |
     Then the response status is failed state
-    And the response is an <http_code> error with gematik code <err_id> and error '<err>'
+    And IDP the response is an <http_code> error with gematik code <err_id> and error '<err>'
 
     Examples: Auth - Fehlende Parameter Beispiele
       | http_code | err_id | err             | client_id            | scope                      | code_challenge                              | code_challenge_method | redirect_uri            | state       | nonce     | response_type |
@@ -203,9 +203,10 @@ Feature: Authentifiziere Anwendung am IDP Server
       | 302       | 2004   | invalid_request | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | $REMOVE       |
       # nonce is not mandatory so no example here
 
-  @TCID:IDP_REF_AUTH_006 @PRIO:2
+  @TCID:IDP_REF_AUTH_006 @PRIO:2 @Negative
     @Afo:A_20440
-    @Approval @Todo:IDP-553
+    @Approval
+    @OpenBug @issue:IDP-553
   Scenario Outline: Auth - Null Parameter
 
   ```
@@ -215,11 +216,11 @@ Feature: Authentifiziere Anwendung am IDP Server
   Als Antwort erwarten wir einen entsprechenden HTTP code, error id und error code
 
 
-    When I request a challenge with
+    When IDP I request a challenge with
       | client_id   | scope   | code_challenge   | code_challenge_method   | redirect_uri   | state   | nonce   | response_type   |
       | <client_id> | <scope> | <code_challenge> | <code_challenge_method> | <redirect_uri> | <state> | <nonce> | <response_type> |
     Then the response status is failed state
-    And the response is an <return_code> error with gematik code <err_id> and error '<err>'
+    And IDP the response is an <return_code> error with gematik code <err_id> and error '<err>'
 
     Examples: Auth - Null Parameter Beispiele
       | return_code | err_id | err             | client_id            | scope                      | code_challenge                              | code_challenge_method | redirect_uri            | state       | nonce     | response_type |
@@ -229,10 +230,10 @@ Feature: Authentifiziere Anwendung am IDP Server
       | 302         | 2008   | invalid_request | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | $NULL                 | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | code          |
       | 400         | 1004   | invalid_request | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | $NULL                   | xxxstatexxx | 123456789 | code          |
       | 302         | 2002   | invalid_request | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | $NULL       | 123456789 | code          |
-#      | 400         | 2007   | invalid_request | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | $NULL     | code          |
       | 302         | 2004   | invalid_request | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | $NULL         |
+      # TODO REF 3rd variant should be 302
 
-  @TCID:IDP_REF_AUTH_007 @PRIO:1
+  @TCID:IDP_REF_AUTH_007 @PRIO:1 @Negative
     @Afo:A_20440
     @Approval @Todo:IDP-553
   Scenario Outline: Auth - Ungültige Parameter
@@ -243,11 +244,11 @@ Feature: Authentifiziere Anwendung am IDP Server
 
   Als Antwort erwarten wir einen entsprechenden HTTP code, error id und error code
 
-    When I request a challenge with
+    When IDP I request a challenge with
       | client_id   | scope   | code_challenge   | code_challenge_method   | redirect_uri   | state   | nonce   | response_type   |
       | <client_id> | <scope> | <code_challenge> | <code_challenge_method> | <redirect_uri> | <state> | <nonce> | <response_type> |
     Then the response status is failed state
-    And the response is an <return_code> error with gematik code <err_id> and error '<err>'
+    And IDP the response is an <return_code> error with gematik code <err_id> and error '<err>'
 
     Examples: Auth - Ungültige Parameter Beispiele
       | return_code | err_id | err                       | client_id            | scope                      | code_challenge                                               | code_challenge_method | redirect_uri                     | state       | nonce | response_type |

@@ -15,16 +15,16 @@
 #
 
 @testsuite
-@Todo:CheckAfos
-@biometrics
+@Biometrics
 Feature: Fordere Access Token für Pairing an
   Frontends müssen mit einer eGK einen pairing Access/SSO/ID Token für den Zugriff auf die Pairing-Schnittstelle des IDP bekommen.
 
   Background: Initialisiere Testkontext durch Abfrage des Discovery Dokuments
-    Given I initialize scenario from discovery document endpoint
-    And I retrieve public keys from URIs
+    Given IDP I initialize scenario from discovery document endpoint
+    And IDP I retrieve public keys from URIs
 
   @Approval
+  @Afo:A_20698
   Scenario: Biometrie Auth - Gutfall - Fordere Challenge für Pairing an
 
   ```
@@ -38,19 +38,19 @@ Feature: Fordere Access Token für Pairing an
   - das korrekte JSON im Body und
   - die richtigen Claims im Token haben.
 
-    Given I choose code verifier 'zdrfcvz3iw47fgderuzbq834werb3q84wgrb3zercb8q3wbd834wefb348ch3rq9e8fd9sac'
+    Given IDP I choose code verifier 'zdrfcvz3iw47fgderuzbq834werb3q84wgrb3zercb8q3wbd834wefb348ch3rq9e8fd9sac'
         # REM code_challenge for given verifier can be obtained from https://tonyxu-io.github.io/pkce-generator/
-    When I request a challenge with
+    When IDP I request a challenge with
       | client_id            | scope          | code_challenge                              | code_challenge_method | redirect_uri            | state       | nonce     | response_type |
       | ${TESTENV.client_id} | pairing openid | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | code          |
     Then the response status is 200
-    And the response http headers match
+    And IDP the response http headers match
             """
             Content-Type=application/json.*
             Cache-Control=no-store
             Pragma=no-cache
             """
-    And the JSON response should match
+    And IDP the JSON response should match
             """
               { challenge: "ey[A-Za-z0-9\\-_\\.]*",
                 user_consent:  {
@@ -64,16 +64,16 @@ Feature: Fordere Access Token für Pairing an
                 }
               }
             """
-    When I extract the header claims from response field challenge
-    Then the header claims should match in any order
+    When IDP I extract the header claims from response field challenge
+    Then IDP the header claims should match in any order
             """
               { typ: "JWT",
                 alg: "BP256R1",
                 kid: "${json-unit.ignore}"
               }
             """
-    When I extract the body claims from response field challenge
-    Then the body claims should match in any order
+    When IDP I extract the body claims from response field challenge
+    Then IDP the body claims should match in any order
             """
               { scope:                 "pairing openid",
                 iss:                   "${TESTENV.issuer}",
@@ -92,7 +92,7 @@ Feature: Fordere Access Token für Pairing an
               }
             """
 
-  @Afo:A_20699 @Afo:A_20951 @Afo:A_20699
+  @Afo:A_20699 @Afo:A_20951
   @Approval
   Scenario: Biometrie Author mit signierter Challenge - Gutfall - Validiere Antwortstruktur
 
@@ -102,15 +102,15 @@ Feature: Fordere Access Token für Pairing an
 
   Die TOKEN_CODE Antwort muss den Code 302 und die richtigen HTTP Header haben.
 
-    Given I choose code verifier '${TESTENV.code_verifier01}'
-    And I request a challenge with
+    Given IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
       | client_id            | scope          | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
       | ${TESTENV.client_id} | pairing openid | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 12345 | code          |
-    And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
 
-    When I request a code token with signed challenge
+    When IDP I request a code token with signed challenge
     Then the response status is 302
-    And the response http headers match
+    And IDP the response http headers match
         """
         Cache-Control=no-store
         Pragma=no-cache
@@ -118,38 +118,38 @@ Feature: Fordere Access Token für Pairing an
 
         Location=${TESTENV.redirect_uri_regex}[?|&]code=.*
         """
-    And I expect the Context with key STATE to match 'xxxstatexxx'
-    And I expect the Context with key SSO_TOKEN to match '.*'
+    And IDP I expect the Context with key STATE to match 'xxxstatexxx'
+    And IDP I expect the Context with key SSO_TOKEN to match '.*'
 
-  @Afo:A_20731 @Afo:A_20464 @Afo:A_20952
+  @Afo:A_20731 @Afo:A_20464 @Afo:A_20952 @Afo:A_21410
   @Todo:CompareSubjectInfosInAccessTokenAndInCert
   @Todo:audFestlegen
   @Approval
     # TODO: wollen wir noch den Wert der auth_time gegen den Zeitpunkt der Authentifizierung pruefen
   Scenario: Biometrie GetToken mit signierter Challenge - Gutfall - Validiere Access Token Claims
-    Given I choose code verifier '${TESTENV.code_verifier01}'
-    And I request a challenge with
+    Given IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
       | client_id            | scope          | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | pairing openid | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
-    And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
-    And I request a code token with signed challenge
-    And I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
-    And I request an access token
+    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I request a code token with signed challenge successfully
+    And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
+    And IDP I request an access token
 
-    When I extract the header claims from token ACCESS_TOKEN
-    Then the header claims should match in any order
+    When IDP I extract the header claims from token ACCESS_TOKEN
+    Then IDP the header claims should match in any order
         """
           { alg: "BP256R1",
             kid: ".*",
             typ: "at+JWT"
           }
         """
-    When I extract the body claims from token ACCESS_TOKEN
-    Then the body claims should match in any order
+    When IDP I extract the body claims from token ACCESS_TOKEN
+    Then IDP the body claims should match in any order
         """
           { acr:              "gematik-ehealth-loa-high",
             amr:              ["mfa", "sc", "pin"],
-            aud:              "https://.*",
+            aud:              "https://idp-pairing-test.zentral.idp.splitdns.ti-dienste.de",
             auth_time:        "[\\d]*",
             azp:              "${TESTENV.client_id}",
             client_id:        "${TESTENV.client_id}",
@@ -167,7 +167,7 @@ Feature: Fordere Access Token für Pairing an
           }
         """
 
-  @Afo:A_20699 @Afo:A_20951 @Afo:A_20699
+  @Afo:A_20699 @Afo:A_20951
   @Approval
   Scenario: Biometrie Author mit SSO Token - Gutfall - Validiere Antwortstruktur
 
@@ -178,35 +178,33 @@ Feature: Fordere Access Token für Pairing an
 
   Die TOKEN_CODE Antwort muss den Code 302 und die richtigen HTTP Header haben.
 
-    Given I choose code verifier '${TESTENV.code_verifier02}'
-    And I request a challenge with
+    Given IDP I choose code verifier '${TESTENV.code_verifier02}'
+    And IDP I request a challenge with
       | client_id            | scope          | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce  | response_type |
       | ${TESTENV.client_id} | pairing openid | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1 | 123456 | code          |
-    And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
-    And I request a code token with signed challenge
-    And the response status is 302
-    And I start new interaction keeping only
-      | SSO_TOKEN           |
+    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I request a code token with signed challenge successfully
+    And IDP I start new interaction keeping only
       | SSO_TOKEN_ENCRYPTED |
-    And I initialize scenario from discovery document endpoint
-    And I retrieve public keys from URIs
-    And I choose code verifier '${TESTENV.code_verifier01}'
-    And I request a challenge with
+    And IDP I initialize scenario from discovery document endpoint
+    And IDP I retrieve public keys from URIs
+    And IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
       | client_id            | scope          | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
       | ${TESTENV.client_id} | pairing openid | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 12345 | code          |
-    And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
 
-    When I request a code token with sso token
+    When IDP I request a code token with sso token
     Then the response status is 302
-    And the response http headers match
+    And IDP the response http headers match
         """
         Cache-Control=no-store
         Pragma=no-cache
         Content-Length=0
         Location=${TESTENV.redirect_uri_regex}[?|&]code=.*
         """
-    And I expect the Context with key STATE to match 'xxxstatexxx'
-    And I expect the Context with key SSO_TOKEN to match '$NULL'
+    And IDP I expect the Context with key STATE to match 'xxxstatexxx'
+    And IDP I expect the Context with key SSO_TOKEN to match '$NULL'
 
   @Afo:A_20731 @Afo:A_20464 @Afo:A_20952
   @Todo:CompareSubjectInfosInAccessTokenAndInCert
@@ -216,41 +214,39 @@ Feature: Fordere Access Token für Pairing an
   Scenario: Biometrie GetToken mit SSO Token - Gutfall - Validiere Access Token Claims
 
 
-    Given I choose code verifier '${TESTENV.code_verifier02}'
-    And I request a challenge with
+    Given IDP I choose code verifier '${TESTENV.code_verifier02}'
+    And IDP I request a challenge with
       | client_id            | scope          | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce  | response_type |
       | ${TESTENV.client_id} | pairing openid | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1 | 123456 | code          |
-    And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
-    And I request a code token with signed challenge
-    And the response status is 302
-    And I start new interaction keeping only
-      | SSO_TOKEN           |
+    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I request a code token with signed challenge successfully
+    And IDP I start new interaction keeping only
       | SSO_TOKEN_ENCRYPTED |
-    And I initialize scenario from discovery document endpoint
-    And I retrieve public keys from URIs
-    And I choose code verifier '${TESTENV.code_verifier01}'
-    And I request a challenge with
+    And IDP I initialize scenario from discovery document endpoint
+    And IDP I retrieve public keys from URIs
+    And IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
       | client_id            | scope          | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | pairing openid | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
-    And I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
-    And I request a code token with sso token
-    And I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
-    And I request an access token
+    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I request a code token with sso token successfully
+    And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
+    And IDP I request an access token
 
-    When I extract the header claims from token ACCESS_TOKEN
-    Then the header claims should match in any order
+    When IDP I extract the header claims from token ACCESS_TOKEN
+    Then IDP the header claims should match in any order
         """
           { alg: "BP256R1",
             kid: ".*",
             typ: "at+JWT"
           }
         """
-    When I extract the body claims from token ACCESS_TOKEN
-    Then the body claims should match in any order
+    When IDP I extract the body claims from token ACCESS_TOKEN
+    Then IDP the body claims should match in any order
         """
           { acr:              "gematik-ehealth-loa-high",
             amr:              ["mfa", "sc", "pin"],
-            aud:              "https://.*",
+            aud:              "https://idp-pairing-test.zentral.idp.splitdns.ti-dienste.de",
             auth_time:        "[\\d]*",
             azp:              "${TESTENV.client_id}",
             client_id:        "${TESTENV.client_id}",

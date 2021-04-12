@@ -1,5 +1,6 @@
 package de.gematik.idp.test.steps.utils;
 
+import de.gematik.rbellogger.RbelLogger;
 import de.gematik.rbellogger.converter.RbelConverter;
 import de.gematik.rbellogger.data.*;
 import io.restassured.http.Header;
@@ -9,6 +10,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -23,8 +25,8 @@ public class RestAssuredCapture {
 
     private RbelConverter rbel;
 
-    public void initialize(final RbelConverter rbel) {
-        this.rbel = rbel;
+    public void initialize(final RbelLogger rbelLogger) {
+        rbel = rbelLogger.getRbelConverter();
     }
 
     public void logRequest(final String method, String url, final Map<String, String> headers, String body,
@@ -86,9 +88,13 @@ public class RestAssuredCapture {
             .map(mime -> mime.startsWith("application/x-www-form-urlencoded"))
             .orElse(false)) {
             try {
-                return new RbelMapElement(Stream.of(bodyAsString.split("&"))
-                    .map(str -> str.split("="))
-                    .collect(Collectors.toMap(array -> array[0], array -> rbel.convertMessage(array[1]))));
+                if (bodyAsString.isEmpty()) {
+                    return new RbelMapElement(new HashMap<>());
+                } else {
+                    return new RbelMapElement(Stream.of(bodyAsString.split("&"))
+                        .map(str -> str.split("="))
+                        .collect(Collectors.toMap(array -> array[0], array -> rbel.convertMessage(array[1]))));
+                }
             } catch (final Exception e) {
                 log.warn("Unable to parse form-data '" + bodyAsString + "'. Using fallback", e);
                 return rbel.convertMessage(bodyAsString);
@@ -98,9 +104,14 @@ public class RestAssuredCapture {
         }
     }
 
-    private RbelElement mapHeader(final Headers headers) {
-        final Map<String, RbelElement> headersMap = headers.asList().stream()
-            .collect(Collectors.toMap(Header::getName, httpHeader -> rbel.convertMessage(httpHeader.getValue())));
-        return new RbelMapElement(headersMap);
+    private RbelMapElement mapHeader(final Headers headers) {
+        final Map<String, String> headersMap = headers.asList().stream()
+            .collect(Collectors.toMap(Header::getName, Header::getValue));
+        // TODO REF once rbel logger deals with GET,POST,.... in header values appropriately remove again
+        //headersMap.computeIfPresent("allow", (key, val) -> val.toLowerCase());
+        return new RbelMapElement(
+            headersMap.entrySet().stream()
+                .collect(Collectors.toMap(Entry::getKey, entry -> rbel.convertMessage(entry.getValue())))
+        );
     }
 }

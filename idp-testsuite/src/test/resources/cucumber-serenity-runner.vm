@@ -12,8 +12,6 @@ import org.junit.BeforeClass;
 import io.cucumber.junit.CucumberOptions;
 import net.serenitybdd.cucumber.CucumberWithSerenity;
 
-import de.gematik.idp.test.steps.helpers.TestEnvironmentConfigurator;
-
 @RunWith(CucumberWithSerenity.class)
 @CucumberOptions(
 features = {"$featureFile"},
@@ -24,9 +22,4 @@ tags = #stringArray($mytags),
 #end
 glue = #stringArray($glue))
 public class $className {
-
-@BeforeClass
-public static void setupClass() throws IOException  {
-TestEnvironmentConfigurator.initializeTestEnvironment();
-}
 }

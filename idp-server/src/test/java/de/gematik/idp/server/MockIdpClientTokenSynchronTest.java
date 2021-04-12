@@ -17,7 +17,6 @@
 package de.gematik.idp.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.TestConstants;
 import de.gematik.idp.client.IdpClient;
@@ -50,6 +49,7 @@ public class MockIdpClientTokenSynchronTest {
         ClaimName.AUTH_TIME.getJoseName(),
         ClaimName.SUBJECT.getJoseName(),
         ClaimName.SCOPE.getJoseName(),
+        ClaimName.AUDIENCE.getJoseName(),
         ClaimName.JWT_ID.getJoseName());
     private IdpClient idpClient;
     private PkiIdentity egkUserIdentity;

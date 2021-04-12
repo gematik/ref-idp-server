@@ -17,11 +17,11 @@
 package de.gematik.idp.client;
 
 import static de.gematik.idp.authentication.UriUtils.extractParameterValue;
+import static de.gematik.idp.authentication.UriUtils.extractParameterValueOptional;
 import static de.gematik.idp.crypto.CryptoLoader.getCertificateFromPem;
 import static de.gematik.idp.field.ClaimName.*;
 
 import de.gematik.idp.authentication.AuthenticationChallenge;
-import de.gematik.idp.authentication.UriUtils;
 import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
 import de.gematik.idp.client.data.*;
 import de.gematik.idp.field.IdpScope;
@@ -122,7 +122,7 @@ public class AuthenticatorClient {
         return AuthenticationResponse.builder()
             .code(extractParameterValue(location, "code"))
             .location(location)
-            .ssoToken(extractParameterValue(location, "ssotoken"))
+            .ssoToken(extractParameterValueOptional(location, "ssotoken").orElse(null))
             .build();
     }
 
@@ -137,13 +137,13 @@ public class AuthenticatorClient {
     }
 
     private void checkForForwardingExceptionAndThrowIfPresent(final String location) {
-        UriUtils.extractParameterValueOptional(location, "error")
+        extractParameterValueOptional(location, "error")
             .ifPresent(errorCode -> {
                 throw new IdpClientRuntimeException("Server-Error with message: " +
-                    UriUtils.extractParameterValueOptional(location, "gematik_code")
+                    extractParameterValueOptional(location, "gematik_code")
                         .map(code -> code + ": ")
                         .orElse("") +
-                    UriUtils.extractParameterValueOptional(location, "error_description")
+                    extractParameterValueOptional(location, "error_description")
                         .orElse(errorCode));
             });
     }
@@ -208,7 +208,7 @@ public class AuthenticatorClient {
             .expiresIn(expiresIn)
             .accessToken(decryptToken(tokenKey, jsonObject.get("access_token")))
             .idToken(decryptToken(tokenKey, jsonObject.get("id_token")))
-            .ssoToken(new IdpJwe(tokenRequest.getSsoToken()))
+            .ssoToken(tokenRequest.getSsoToken() == null ? null : new IdpJwe(tokenRequest.getSsoToken()))
             .build();
     }
 
@@ -232,18 +232,11 @@ public class AuthenticatorClient {
     }
 
     public DiscoveryDocumentResponse retrieveDiscoveryDocument(final String discoveryDocumentUrl) {
-        //TODO aufräumen, checks hinzufügen...
         final HttpResponse<String> discoveryDocumentResponse = Unirest.get(discoveryDocumentUrl)
             .header(HttpHeaders.USER_AGENT, USER_AGENT)
             .asString();
         final Map<String, Object> discoveryClaims = TokenClaimExtraction
             .extractClaimsFromJwtBody(discoveryDocumentResponse.getBody());
-
-        final HttpResponse<JsonNode> pukAuthResponse = Unirest
-            .get(discoveryClaims.get("uri_puk_idp_sig").toString())
-            .header(HttpHeaders.USER_AGENT, USER_AGENT)
-            .asJson();
-        final JSONObject keyObject = pukAuthResponse.getBody().getObject();
 
         return DiscoveryDocumentResponse.builder()
             .authorizationEndpoint(discoveryClaims.get("authorization_endpoint").toString())

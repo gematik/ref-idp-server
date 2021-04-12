@@ -14,12 +14,13 @@
 # limitations under the License.
 #
 
-@testsuite
+@Product:IDP-D
 @DiscoveryDocument
 Feature: Fordere Discovery Dokument an
   Frontends von TI Diensten müssen vom IDP Server über ein HTTP GET an den Discovery Endpoint ein Discovery Dokument
   abfragen können. Welches alle notwendigen Informationen enthält um die IDP Server Endpunkte bedienen zu können.
 
+  @TCID:IDP_REF_DISC_001 @PRIO:1
   @Afo:A_20457  @Afo:A_20688
   @Approval @Ready
   Scenario: Disc - Dokument muss verfügbar sein
@@ -33,10 +34,11 @@ Feature: Fordere Discovery Dokument an
   - den Content Typ application/json haben (optional gefolgt von einem charset)
 
 
-    When I request the discovery document
+    When IDP I request the discovery document
     Then the response status is 200
-    And the response content type matches 'application/json.*'
+    And IDP the response content type matches 'application/json.*'
 
+  @TCID:IDP_REF_DISC_002 @PRIO:1
   @Afo:A_20591
   @Approval @Ready
   Scenario: Disc - Dokument muss signiert sein
@@ -47,12 +49,13 @@ Feature: Fordere Discovery Dokument an
   Die Antwort des Servers muss mit dem richtigen Zertifikat signiert sein
 
 
-    Given I initialize scenario from discovery document endpoint
-    And I retrieve public keys from URIs
+    Given IDP I initialize scenario from discovery document endpoint
+    And IDP I retrieve public keys from URIs
 
-    When I request the discovery document
-    Then the response must be signed with cert PUK_DISC
+    When IDP I request the discovery document
+    Then IDP the response must be signed with cert PUK_DISC
 
+  @TCID:IDP_REF_DISC_003 @PRIO:1
   @Afo:A_20591
   @Approval @Ready
   Scenario: Disc - Dokument header claims sind korrekt
@@ -65,10 +68,10 @@ Feature: Fordere Discovery Dokument an
   - die korrekten Header Claims gesetzt haben
 
 
-    Given I request the discovery document
+    Given IDP I request the discovery document
 
-    When I extract the header claims
-    Then the header claims should match in any order
+    When IDP I extract the header claims
+    Then IDP the header claims should match in any order
         """
         {
           alg: "BP256R1",
@@ -77,7 +80,8 @@ Feature: Fordere Discovery Dokument an
         }
         """
 
-  @Afo:A_20698 @Afo:A_20591 @Afo:A_20439 @Afo:A_20458
+  @TCID:IDP_REF_DISC_004 @PRIO:1
+  @Afo:A_20698 @Afo:A_20591 @Afo:A_20439 @Afo:A_20458 @Afo:A_21429
   @Approval @Ready
   Scenario: Disc - Dokument body claims sind korrekt
 
@@ -90,16 +94,16 @@ Feature: Fordere Discovery Dokument an
   - der Claim code_challenge_methods_supported ist optional
 
 
-    Given I request the discovery document
+    Given IDP I request the discovery document
 
-    When I extract the body claims
-    Then the body claims should match in any order
+    When IDP I extract the body claims
+    Then IDP the body claims should match in any order
         """
           { acr_values_supported:                   '["gematik-ehealth-loa-high"]',
             authorization_endpoint:                 "http.*",
-            auth_pair_endpoint:                     "http.*",
             sso_endpoint:                           "http.*",
-            uri_pair:                               "http.*",
+            ____auth_pair_endpoint:                     "http.*",
+            ____uri_pair:                               "http.*",
             exp:                                    "[\\d]*",
             grant_types_supported:                  '["authorization_code"]',
             iat:                                    "[\\d]*",
@@ -118,7 +122,9 @@ Feature: Fordere Discovery Dokument an
             ____code_challenge_methods_supported:   '["S256"]'
           }
         """
+    # TODO RISE make pairing endpoint attributes mandatory
 
+  @TCID:IDP_REF_DISC_005 @PRIO:2
   @Afo:A_20698
   @Approval @Ready
   Scenario: Disc - Zeitliche Body Claims sind korrekt
@@ -129,15 +135,15 @@ Feature: Fordere Discovery Dokument an
   Die Antwort des Servers muss gültige zeitliche Claim Attribute für iat und exp haben.
 
 
-    Given I request the discovery document
+    Given IDP I request the discovery document
 
-    When I extract the body claims
+    When IDP I extract the body claims
     # iat must be within 24h and before now
-    Then the body claim 'iat' contains a date not before P-1DT-1S
-    And the body claim 'iat' contains a date not after PT1S
+    Then IDP the body claim 'iat' contains a date not before P-1DT-1S
+    And IDP the body claim 'iat' contains a date not after PT1S
     # exp must be after now but within 24h
-    And the body claim 'exp' contains a date not before PT1S
-    And the body claim 'exp' contains a date not after P1DT1S
+    And IDP the body claim 'exp' contains a date not before PT1S
+    And IDP the body claim 'exp' contains a date not after P1DT1S
 
   @Afo:A_20691
   @manual
@@ -150,6 +156,7 @@ Feature: Fordere Discovery Dokument an
   ```
 
 
+  @TCID:IDP_REF_DISC_006 @PRIO:1
   @Afo:A_20687 @Afo:A_20439
   @Approval @Ready
   Scenario: Disc - Die URLs im Dokument sind erreichbar
@@ -167,23 +174,24 @@ Feature: Fordere Discovery Dokument an
   kann aber einen Fehler (4XX) retournieren.
 
 
-    Given I request the discovery document
+    Given IDP I request the discovery document
 
-    When I extract the body claims
-    Then URI in claim "uri_disc" exists with method GET and status 200
-    And URI in claim "uri_disc" exists with method POST and status 405
-    And URI in claim "authorization_endpoint" exists with method GET and status 400
-    And URI in claim "authorization_endpoint" exists with method POST and status 400
-    And URI in claim "sso_endpoint" exists with method GET and status 405
-    And URI in claim "sso_endpoint" exists with method POST and status 400
-    And URI in claim "token_endpoint" exists with method GET and status 405
-    And URI in claim "token_endpoint" exists with method POST and status 400
-    And URI in claim "auth_pair_endpoint" exists with method GET and status 405
-    And URI in claim "auth_pair_endpoint" exists with method POST and status 400
-    And URI in claim "uri_pair" exists with method GET and status 403
-    And URI in claim "uri_pair" exists with method POST and status 403
+    When IDP I extract the body claims
+    Then IDP URI in claim "uri_disc" exists with method GET and status 200
+    And IDP URI in claim "uri_disc" exists with method POST and status 405
+    And IDP URI in claim "authorization_endpoint" exists with method GET and status 400
+    And IDP URI in claim "authorization_endpoint" exists with method POST and status 400
+    And IDP URI in claim "sso_endpoint" exists with method GET and status 405
+    And IDP URI in claim "sso_endpoint" exists with method POST and status 400
+    And IDP URI in claim "token_endpoint" exists with method GET and status 405
+    And IDP URI in claim "token_endpoint" exists with method POST and status 400
+    And IDP URI in claim "auth_pair_endpoint" exists with method GET and status 405
+    And IDP URI in claim "auth_pair_endpoint" exists with method POST and status 400
+    And IDP URI in claim "uri_pair" exists with method GET and status 403
+    And IDP URI in claim "uri_pair" exists with method POST and status 403
     # content type not supported
 
+  @TCID:IDP_REF_DISC_007 @PRIO:1
   @Afo:A_20732 @Afo:A_20591
   @Approval @Ready @OutOfScope:KeyChecksOCSP
   Scenario: Disc - Die idpSig URI ist erreichbar und enthält ein public X509 Zertifikat
@@ -193,11 +201,11 @@ Feature: Fordere Discovery Dokument an
 
   Die Antwort des Servers auf Anfragen auf diese URIs muss ein valides ECC BP256 Zertifikat liefern.
 
-    Given I request the discovery document
-    And I extract the body claims
+    Given IDP I request the discovery document
+    And IDP I extract the body claims
 
-    When I request the uri from claim "uri_puk_idp_sig" with method GET and status 200
-    Then the JSON response should match
+    When IDP I request the uri from claim "uri_puk_idp_sig" with method GET and status 200
+    Then IDP the JSON response should match
         """
           { crv: "BP-256",
             kid: "puk_idp_sig",
@@ -208,9 +216,10 @@ Feature: Fordere Discovery Dokument an
             y:   "${json-unit.ignore}"
           }
         """
-    And the JSON response should be a valid certificate
+    And IDP the JSON response should be a valid certificate
     # The correct usage is then checked in the workflow scenarios
 
+  @TCID:IDP_REF_DISC_008 @PRIO:1
   @Afo:A_20732
   @Approval @Ready @OutOfScope:KeyChecksOCSP
   Scenario: Disc - Die idpEnc URI ist erreichbar und enthält einen public X509 Schlüssel
@@ -220,11 +229,11 @@ Feature: Fordere Discovery Dokument an
 
   Die Antwort des Servers auf Anfragen auf diese URIs muss einen validen ECC BP256 Schlüssel liefern.
 
-    Given I request the discovery document
-    And I extract the body claims
+    Given IDP I request the discovery document
+    And IDP I extract the body claims
 
-    When I request the uri from claim "uri_puk_idp_enc" with method GET and status 200
-    Then the JSON response should match
+    When IDP I request the uri from claim "uri_puk_idp_enc" with method GET and status 200
+    Then IDP the JSON response should match
         """
           { crv: "BP-256",
             kid: "puk_idp_enc",
@@ -234,10 +243,11 @@ Feature: Fordere Discovery Dokument an
             y:   "${json-unit.ignore}"
           }
         """
-    And the JSON response should be a valid public key
+    And IDP the JSON response should be a valid public key
     # The correct usage is then checked in the workflow scenarios
 
-  @Approval @Ready @OutOfScope:KeyChecksOCSP
+  @TCID:IDP_REF_DISC_009 @PRIO:1
+    @Approval @Ready @OutOfScope:KeyChecksOCSP
   Scenario Outline: Disc - Check JWKS URI
 
   ```
@@ -245,11 +255,11 @@ Feature: Fordere Discovery Dokument an
   Die Antwort des Servers auf die Anfrage auf diese URIs muss einen validen ECC BP256 Schlüsselset liefern.
 
 
-    Given I request the discovery document
-    And I extract the body claims
+    Given IDP I request the discovery document
+    And IDP I extract the body claims
 
-    When I request the uri from claim "<claim>" with method GET and status 200
-    Then the JSON response should match
+    When IDP I request the uri from claim "<claim>" with method GET and status 200
+    Then IDP the JSON response should match
         """
           {
             keys: [
@@ -274,7 +284,7 @@ Feature: Fordere Discovery Dokument an
           }
         """
 
-    And the JSON array 'keys' of response should contain valid certificates for 'idpSig'
+    And IDP the JSON array 'keys' of response should contain valid certificates for 'idpSig'
     # The correct usage is then checked in the workflow scenarios
 
     Examples:

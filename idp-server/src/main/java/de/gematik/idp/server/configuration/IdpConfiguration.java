@@ -36,7 +36,6 @@ import org.springframework.stereotype.Component;
 @Builder
 public class IdpConfiguration {
 
-    private String tokenFlowMdResource;
     private IdpKeyConfiguration idpSig;
     private IdpKeyConfiguration idpEnc;
     private IdpKeyConfiguration discSig;

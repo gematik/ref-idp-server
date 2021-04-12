@@ -1,3 +1,10 @@
+# Release 13.0.0
+* aud in Access-Tokens wird nun korrekt gesetzt
+* Verbessertes Flow-Rendering (HTML-Seiten durch RBeL-Logger)
+* Testsuite speichert nun den Flow für jeden Testfall
+* Erweiterte Konfigurierbarkeit der Testsuite
+* Adaptierung SignedChallenge/Token encryption
+
 # Release 12.0.0
 * Korrekte Umsetzung des signed challenge flows
 * Anpassung alternative Authentisierung CR/Datenformate Version 1.1.7
