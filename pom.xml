@@ -147,5 +147,5 @@
         <version.test.regex>none</version.test.regex>
     </properties>
 
-    <version>13.0.0</version>
+    <version>13.0.1</version>
 </project>

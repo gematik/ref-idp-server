@@ -87,9 +87,9 @@
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>13.0.0</version>
+        <version>13.0.1</version>
     </parent>
 
-    <version>13.0.0</version>
+    <version>13.0.1</version>
 
 </project>
