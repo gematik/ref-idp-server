@@ -20,6 +20,7 @@ import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
 import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
 import de.gematik.idp.authentication.IdpJwtProcessor;
+import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.exceptions.IdpServerStartupException;
@@ -33,7 +34,9 @@ import de.gematik.pki.tsl.TslInformationProvider;
 import de.gematik.pki.tsl.TslReader;
 import de.gematik.pki.tsl.TspService;
 import java.security.Key;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -60,7 +63,12 @@ public class FlowBeanCreation {
 
     @Bean
     public AccessTokenBuilder accessTokenBuilder() {
-        return new AccessTokenBuilder(idpSigProcessor, serverUrlService.determineServerUrl(), getSubjectSaltValue());
+        final Map<IdpScope, String> scopeToAudienceUrls = new HashMap<>();
+        idpConfiguration.getScopeAudienceUrls()
+            .forEach((scopeName, audienceUrl) -> scopeToAudienceUrls
+                .put(IdpScope.fromJwtValue(scopeName).orElseThrow(), audienceUrl));
+        return new AccessTokenBuilder(idpSigProcessor, serverUrlService.determineServerUrl(), getSubjectSaltValue(),
+            scopeToAudienceUrls);
     }
 
     @Bean

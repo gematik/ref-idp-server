@@ -49,6 +49,7 @@ public class IdpConfiguration {
     private String productTypeDisplayString;
     private Locale defaultLocale;
     private Map<String, IdpClientConfiguration> registeredClient;
+    private Map<String, String> scopeAudienceUrls;
     private UserConsentConfiguration userConsent;
     private IdpErrorConfiguration errors;
 }

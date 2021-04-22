@@ -122,9 +122,14 @@ public class PairingService {
             final Set<ConstraintViolation<RegistrationData>> validationViolations = validator
                 .validate(registrationData);
             if (!validationViolations.isEmpty()) {
-                throw new IdpServerException("Validation error found in registration_data",
+                final IdpServerException exception = new IdpServerException(
+                    "Validation error found in registration_data",
                     IdpErrorType.INVALID_REQUEST,
                     HttpStatus.BAD_REQUEST);
+                final ConstraintViolation<RegistrationData> violation = validationViolations.iterator().next();
+                exception
+                    .addSuppressed(new RuntimeException(violation.getPropertyPath() + " " + violation.getMessage()));
+                throw exception;
             }
             dataVersionService.checkDataVersion(registrationData);
 

@@ -18,11 +18,14 @@ package de.gematik.idp.server;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
+import de.gematik.idp.client.BiometrieClient;
 import de.gematik.idp.client.IdpClient;
 import de.gematik.idp.crypto.model.PkiIdentity;
+import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.rbellogger.RbelLogger;
@@ -39,9 +42,11 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.security.KeyPair;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.extern.slf4j.Slf4j;
@@ -66,6 +71,7 @@ public class TokenLoggerTest {
     private final static Map<String, String> MASKING_FUNCTIONS = new HashMap<>();
     private final static Map<String, String> JEXL_NOTE_FUNCTIONS = new HashMap<>();
     private final AtomicReference<Integer> wiremockPort = new AtomicReference<>();
+    private final String targetFolder = "target/classes/static/";
     private IdpClient idpClient;
     private PkiIdentity egkUserIdentity;
     private PkiIdentity smcbIdentity;
@@ -77,39 +83,48 @@ public class TokenLoggerTest {
     private AuthenticationChallengeBuilder authenticationChallengeBuilder;
     private RbelLogger rbelLogger;
     private WiremockCapture wiremockCapture;
-    private final String targetFolder = "target/classes/static/";
 
     {
-        MASKING_FUNCTIONS.put("exp", "[Gültigkeit des Tokens. Beispiel: %s]");
-        MASKING_FUNCTIONS
-            .put("iat", "[Zeitpunkt der Ausstellung des Tokens. Beispiel: %s]");
-        MASKING_FUNCTIONS
-            .put("nbf",
-                "[Der Token ist erst ab diesem Zeitpunkt gültig. Beispiel: %s]");
-        MASKING_FUNCTIONS.put("jti",
-            "[A unique identifier for the token, which can be used to prevent reuse of the token. Value is a case-sensitive string. Beispiel: %s]");
-        MASKING_FUNCTIONS.put("auth_time",
-            "[Timestamp der Authentisierung. Beispiel: %s]");
-        MASKING_FUNCTIONS.put("snc",
-            "[server-nonce. Wird verwendet um noise hinzuzufügen. Beispiel: %s]");
-        MASKING_FUNCTIONS.put("sub",
-            "[subject. Base64(sha256(audClaim + idNummerClaim + serverSubjectSalt)). Beispiel: %s]");
-        MASKING_FUNCTIONS.put("at_hash",
-            "[Erste 16 Bytes des Hash des Authentication Tokens Base64(subarray(Sha256(authentication_token), 0, 16)). Beispiel: %s]");
-        MASKING_FUNCTIONS.put("x5c.0",
-            "[Enthält das verwendete Signer-Zertifikat als Base64 ASN.1 DER-Encoding. Hier kommt ausnahmsweise NICHT URL-safes Base64-Encoding zum Einsatz!]");
+        JEXL_NOTE_FUNCTIONS.put("type=='RbelJwtSignature'",
+            "Signatur, die nach https://tools.ietf.org/html/rfc7515 gebildet wird. Die Signatur erfolgt über ASCII(BASE64URL(UTF8(JWS Protected Header)) || '.' || BASE64URL(JWS Payload)). "
+                + "Es gilt zu beachten das alle Tokens im IDP-Flow in CompactSerialization übertragen werden und dementsprechend alle Header-Claims protected sind.");
 
-        MASKING_FUNCTIONS.put("authorization_endpoint", "[URL des Authorization Endpunkts.]");
-        MASKING_FUNCTIONS.put("sso_endpoint", "[URL des SSO-Authorization Endpunkts.]");
-        MASKING_FUNCTIONS.put("auth_pair_endpoint", "[URL des Biometrie-Authorization Endpunkts.]");
-        MASKING_FUNCTIONS.put("token_endpoint", "[URL des Authorization Endpunkts.]");
-        MASKING_FUNCTIONS.put("uri_pair", "[URL des Pairing-Endpunkts]");
-        MASKING_FUNCTIONS.put("uri_disc", "[URL des Discovery-Dokuments]");
-        MASKING_FUNCTIONS.put("puk_uri_auth", "[URL einer JWK-Struktur des Authorization Public-Keys]");
-        MASKING_FUNCTIONS.put("puk_uri_token", "[URL einer JWK-Struktur des Token Public-Keys]");
-        MASKING_FUNCTIONS.put("jwks_uri", "[URL einer JWKS-Struktur mit allen vom Server verwendeten Schlüsseln]");
-        MASKING_FUNCTIONS.put("njwt", "[Ein verschachtelt enthaltenes JWT]");
-        MASKING_FUNCTIONS.put("Date", "[Zeitpunkt der Antwort. Beispiel %s]");
+        JEXL_NOTE_FUNCTIONS.put("key == 'exp'", "Gültigkeit des Tokens");
+        JEXL_NOTE_FUNCTIONS.put("key == 'iat'", "Zeitpunkt der Ausstellung des Tokens");
+        JEXL_NOTE_FUNCTIONS.put("key == 'nbf'", "Der Token ist erst ab diesem Zeitpunkt gültig");
+        JEXL_NOTE_FUNCTIONS.put("key == 'jti'",
+            "A unique identifier for the token, which can be used to prevent reuse of the token. Value is a case-sensitive string.");
+        JEXL_NOTE_FUNCTIONS.put("key == 'auth_time'", "Timestamp der Authentisierung");
+        JEXL_NOTE_FUNCTIONS.put("key == 'snc'", "server-nonce. Wird verwendet um noise hinzuzufügen.");
+        JEXL_NOTE_FUNCTIONS.put("key == 'sub'",
+            "subject. Base64(sha256(audClaim + idNummerClaim + serverSubjectSalt))");
+        JEXL_NOTE_FUNCTIONS.put("key == 'at_hash'",
+            "Erste 16 Bytes des Hash des Authentication Tokens Base64(subarray(Sha256(authentication_token), 0, 16))");
+        JEXL_NOTE_FUNCTIONS.put("path =$ 'x5c.0'",
+            "Enthält das verwendete Signer-Zertifikat als Base64 ASN.1 DER-Encoding. Hier kommt ausnahmsweise NICHT URL-safes Base64-Encoding zum Einsatz!");
+        JEXL_NOTE_FUNCTIONS.put("key == 'alg' && content == 'BP256R1'",
+            "Wert analog zu https://tools.ietf.org/html/rfc7518#section-3.1. Zeigt an das die Signatur mit ECDSA mit BrainPool256R1 und SHA-256 gebildet wurde.");
+        JEXL_NOTE_FUNCTIONS.put("path =$ 'header.kid' || path =$ 'body.kid'",
+            "Identifiziert den hier beschriebenen Schlüssel. Beschreibung siehe https://tools.ietf.org/html/rfc7517#section-4.5");
+        JEXL_NOTE_FUNCTIONS.put("key == 'crv' && content == 'BP-256'",
+            "Identifiziert die Kurve. Hier wird brainpoolP256r1 verwendet. Beschreibung siehe https://tools.ietf.org/html/rfc5639#section-3.4");
+        JEXL_NOTE_FUNCTIONS.put("key == 'x'", "X-Koordinate des öffentlichen Punkts des Schlüssels");
+        JEXL_NOTE_FUNCTIONS.put("key == 'y'", "Y-Koordinate des öffentlichen Punkts des Schlüssels");
+        JEXL_NOTE_FUNCTIONS.put("key == 'use'",
+            "Erlaubte Verwendungen des Schlüssels. Siehe https://tools.ietf.org/html/rfc7517#section-4.2");
+
+        JEXL_NOTE_FUNCTIONS.put("key == 'authorization_endpoint'", "URL des Authorization Endpunkts.");
+        JEXL_NOTE_FUNCTIONS.put("key == 'sso_endpoint'", "URL des SSO-Authorization Endpunkts.");
+        JEXL_NOTE_FUNCTIONS.put("key == 'auth_pair_endpoint'", "URL des Biometrie-Authorization Endpunkts.");
+        JEXL_NOTE_FUNCTIONS.put("key == 'token_endpoint'", "URL des Authorization Endpunkts.");
+        JEXL_NOTE_FUNCTIONS.put("key == 'uri_pair'", "URL des Pairing-Endpunkts");
+        JEXL_NOTE_FUNCTIONS.put("key == 'uri_disc'", "URL des Discovery-Dokuments");
+        JEXL_NOTE_FUNCTIONS.put("key == 'puk_uri_auth'", "URL einer JWK-Struktur des Authorization Public-Keys");
+        JEXL_NOTE_FUNCTIONS.put("key == 'puk_uri_token'", "URL einer JWK-Struktur des Token Public-Keys");
+        JEXL_NOTE_FUNCTIONS
+            .put("key == 'jwks_uri'", "URL einer JWKS-Struktur mit allen vom Server verwendeten Schlüsseln");
+        JEXL_NOTE_FUNCTIONS.put("key == 'njwt'", "Ein verschachtelt enthaltenes JWT");
+        JEXL_NOTE_FUNCTIONS.put("key == 'Date'", "Zeitpunkt der Antwort.");
 
         JEXL_NOTE_FUNCTIONS.put("key == 'User-Agent'",
             "Der User-Agent des Clients. Muss vorhanden sein. Wird gegen eine Blocklist geprüft");
@@ -118,15 +133,15 @@ public class TokenLoggerTest {
         JEXL_NOTE_FUNCTIONS.put("key == 'Host'", "Nicht verpflichtend");
         JEXL_NOTE_FUNCTIONS.put("element.originalUrl == '/discoveryDocument' &&"
             + "element.getClass().getSimpleName() == 'RbelPathElement'", "Die konkrete URL kann und wird abweichen!");
-        JEXL_NOTE_FUNCTIONS.put("key == 'Version' &&"
-                + "element.parent.parent.class.simpleName == 'RbelHttpResponse'",
+        JEXL_NOTE_FUNCTIONS.put("key == 'Version' && message.isResponse",
             "Parameter der Referenz-Implementierung welcher die aktuelle Version zeigt.");
 
         addRequestResponseNotes("GET", "/discoveryDocument", "Abfrage des Discovery Documents",
             "Das Discovery-Document des IDP");
-        JEXL_NOTE_FUNCTIONS.put("message.url=^'/discoveryDocument' && message.method=='GET' "
-                + "&& element.class.simpleName=='RbelJwtSignature'",
-            "Die Signatur des Discovery Documents kann mit dem im Header enthaltenen Zertifikat ('x5c') überprüft werden. Dieses Zertifikat muss natürlich seinerseits per TUC-PKI 018 auf vertrauenswürdigkeit geprüft werden.");
+        JEXL_NOTE_FUNCTIONS
+            .put(
+                "message.url=^'/.well-known/openid-configuration' && message.method=='GET' && type=='RbelJwtSignature'",
+                "Die Signatur des Discovery Documents kann mit dem im Header enthaltenen Zertifikat ('x5c') überprüft werden. Dieses Zertifikat muss natürlich seinerseits per TUC-PKI 018 auf vertrauenswürdigkeit geprüft werden.");
         addRequestResponseNotes("GET", "/idpSig/jwk.json", "Abfrage des puk_idp_sig", "Der puk_idp_sig");
         addRequestResponseNotes("GET", "/idpEnc/jwk.json", "Abfrage des puk_idp_enc", "Der puk_idp_enc. "
             + "Dieser kommt ohne x5c-claim daher. Es handelt sich um einen einfachen Schlüssel und nicht um ein Zertifikat. Der öffentliche Punkt wird mit dem übergebenen x und y Koordinaten beschrieben");
@@ -157,12 +172,31 @@ public class TokenLoggerTest {
         addParameterNotesResponse("GET", "/sign_response?",
             Map.of("challenge",
                 "Die vom Client mittels der eGK bzw. SMC-B zu signierende Challenge besteht aus einem Base64-codierten Challenge-Token."));
-        JEXL_NOTE_FUNCTIONS.put("request.url =^ '/sign_response' && request.method=='GET' && message.isResponse "
-                + "&& path == 'body'",
-            "Dieses JSON beschreibt die zu unterschreibende Challenge. 'requested_scopes' enthält die zu authorisierenden Anwendungen. 'openid' ist immer notwendig, 'e-rezept' zeigt an das ein Zugang zum E-Rezept-FD gewünscht wird. "
-                + "'requested_claims' listet die freizugebenden Daten auf. Für das E-Rezept sind das Attribute aus dem Zertifikat. Alle in 'user_consent' aufgeführten Daten sollen dem Benutzer selbst "
-                + "angezeigt werden (Formatierung und Formulierung stehen hierbei dem Authentisierungsmodul frei) um diesem die Möglichkeit zu geben eine informierte Entscheidung zu treffen ob der Client "
-                + "tatsächlich den beschriebenen Zugang erhalten soll.");
+        JEXL_NOTE_FUNCTIONS
+            .put(
+                "request.url =~ '.*/sign_response.*' && request.method=='GET' && message.isResponse && path == 'body' && type == 'RbelJsonElement'",
+                "Dieses JSON beschreibt die zu unterschreibende Challenge.");
+        JEXL_NOTE_FUNCTIONS
+            .put(
+                "request.url =~ '.*/sign_response.*' && message.isResponse && path == 'body.user_consent.requested_scopes'",
+                "Enthält die zu authorisierenden Anwendungen.");
+        JEXL_NOTE_FUNCTIONS.put(
+            "request.url =~ '.*/sign_response.*' && message.isResponse && path == 'body.user_consent.requested_scopes.e-rezept'",
+            "Zeigt an das ein Zugang zum E-Rezept-FD gewünscht wird.");
+        JEXL_NOTE_FUNCTIONS.put(
+            "request.url =~ '.*/sign_response.*' && message.isResponse && path == 'body.user_consent.requested_scopes.openid'",
+            "Ist immer notwendig.");
+        JEXL_NOTE_FUNCTIONS.put(
+            "request.url =~ '.*/sign_response.*' && message.isResponse && path == 'body.user_consent.requested_claims'",
+            "Listet die freizugebenden Daten auf. Für das E-Rezept sind das Attribute aus dem Zertifikat.");
+        JEXL_NOTE_FUNCTIONS.put(
+            "request.url =~ '.*/sign_response.*' && message.isResponse && path == 'body.user_consent'",
+            "Alle aufgeführten Daten sollen dem Benutzer selbst angezeigt werden (Formatierung und Formulierung stehen "
+                + "hierbei dem Authentisierungsmodul frei) um diesem die Möglichkeit zu geben eine informierte "
+                + "Entscheidung zu treffen ob der Client tatsächlich den beschriebenen Zugang erhalten soll.");
+        JEXL_NOTE_FUNCTIONS.put(
+            "request.url =~ '.*/sign_response.*' && message.isResponse && path == 'body.challenge'",
+            "Dies ist die Challenge des Servers die es zu signieren gilt.");
 
         JEXL_NOTE_FUNCTIONS.put("message.url=^'/sign_response' && message.method=='POST' "
                 + "&& path=='body.signed_challenge.body.njwt'",
@@ -213,9 +247,6 @@ public class TokenLoggerTest {
         JEXL_NOTE_FUNCTIONS.put("path=='body.id_token.body.njwt'",
             "Das eigentliche ID-Token. Enthält Informationen zum Identifizieren des Versicherten");
 
-        JEXL_NOTE_FUNCTIONS.put("element.class.simpleName=='RbelJwtSignature'",
-            "Signatur, die nach https://tools.ietf.org/html/rfc7515 gebildet wird. Die Signatur erfolgt über ASCII(BASE64URL(UTF8(JWS Protected Header)) || '.' || BASE64URL(JWS Payload)). "
-                + "Es gilt zu beachten das alle Tokens im IDP-Flow in CompactSerialization übertragen werden und dementsprechend alle Header-Claims protected sind.");
         JEXL_NOTE_FUNCTIONS
             .put(
                 "element.class.simpleName=='RbelJweEncryptionInfo' && element.decryptedUsingKeyWithId == 'IDP symmetricEncryptionKey'",
@@ -233,37 +264,34 @@ public class TokenLoggerTest {
     private void addParameterNotesRequest(final String httpVerb, final String url,
         final Map<String, String> parameterNotes) {
         for (final Entry<String, String> entry : parameterNotes.entrySet()) {
-            JEXL_NOTE_FUNCTIONS.put("message.url =^ '" + url + "' "
-                + "&& message.method=='" + httpVerb + "' "
-                + "&& key == '" + entry.getKey() + "'", entry.getValue());
+            JEXL_NOTE_FUNCTIONS.put(//"message.url =^ '" + url + "' "
+                //+ "&& message.method=='" + httpVerb + "' "
+                "key == '" + entry.getKey() + "'", entry.getValue());
         }
     }
 
     private void addParameterNotesResponse(final String httpVerb, final String url,
         final Map<String, String> parameterNotes) {
         for (final Entry<String, String> entry : parameterNotes.entrySet()) {
-            JEXL_NOTE_FUNCTIONS.put("request.url =^ '" + url + "' "
-                + "&& request.method=='" + httpVerb + "' && message.isResponse "
-                + "&& key == '" + entry.getKey() + "'", entry.getValue());
+            JEXL_NOTE_FUNCTIONS.put(//"request.url =^ '" + url + "' "
+                //+ "&& request.method=='" + httpVerb + "' && message.isResponse "
+                "key == '" + entry.getKey() + "'", entry.getValue());
         }
     }
 
     private void addRequestResponseNotes(final String verb, final String url, final String requestNote,
         final String responseNote) {
         JEXL_NOTE_FUNCTIONS.put("message.url =^ '" + url + "' "
-            + "&& message.method=='" + verb + "' "
-            + "&& element.getClass().getSimpleName() == 'RbelHttpRequest'", requestNote);
-        JEXL_NOTE_FUNCTIONS.put("request.url =^ '" + url + "' "
-            + "&& request.method=='" + verb + "' "
-            + "&& element.getClass().getSimpleName() == 'RbelHttpResponse'", responseNote);
+            + "&& message.method=='" + verb + "' && type == 'RbelHttpRequest'", requestNote);
+        JEXL_NOTE_FUNCTIONS.put("request.url =^ '" + url + "' && request.method=='" + verb + "' "
+            + "&& type == 'RbelHttpResponse'", responseNote);
     }
 
 
     @BeforeEach
     public void startup(
-        @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity clientIdentity,
-        @PkiKeyResolver.Filename("80276883110000129084-C_HP_AUT_E256.p12") final PkiIdentity smcbIdentity)
-        throws MalformedURLException {
+        @PkiKeyResolver.Filename("80276883110000018680-C_CH_AUT_E256.p12") final PkiIdentity clientIdentity,
+        @PkiKeyResolver.Filename("80276883110000129084-C_HP_AUT_E256.p12") final PkiIdentity smcbIdentity) {
         rbelLogger = RbelLogger.build(
             new RbelConfiguration()
                 .addKey("IDP symmetricEncryptionKey",
@@ -275,6 +303,9 @@ public class TokenLoggerTest {
                     if (path.getContent().contains("localhost:" + wiremockPort.get())) {
                         return new RbelStringElement(
                             path.getContent().replace("localhost:" + wiremockPort.get(), "url.des.idp"));
+                    } else if (path.getContent().contains("localhost:" + localServerPort)) {
+                        return new RbelStringElement(
+                            path.getContent().replace("localhost:" + localServerPort, "url.des.idp"));
                     } else {
                         return path;
                     }
@@ -323,6 +354,7 @@ public class TokenLoggerTest {
     public void writeAllTokensToFile() throws IOException {
         performAndWriteFlow(() -> {
             idpClient.initialize();
+
             idpClient.login(egkUserIdentity);
         }, targetFolder + "tokenFlowEgk.html", "EGK-Login beim IdP");
 
@@ -343,6 +375,20 @@ public class TokenLoggerTest {
             psIdpClient.initialize();
             psIdpClient.login(smcbIdentity);
         }, targetFolder + "tokenFlowPs.html", "Primärsystem-Login beim IdP ohne SSO-Token");
+
+        performAndWriteFlow(() -> {
+            idpClient.initialize();
+            idpClient.setScopes(Set.of(IdpScope.PAIRING, IdpScope.OPENID));
+
+            final BiometrieClient biometrieClient = BiometrieClient.builder()
+                .discoveryDocumentResponse(idpClient.getDiscoveryDocumentResponse())
+                .accessToken(idpClient.login(egkUserIdentity).getAccessToken())
+                .build();
+
+            biometrieClient.insertPairing(egkUserIdentity, new KeyPair(
+                smcbIdentity.getCertificate().getPublicKey(),
+                smcbIdentity.getPrivateKey()));
+        }, targetFolder + "biometrie.html", "Registrierung eines neuen Geräts beim Server");
     }
 
     private void performAndWriteFlow(final Runnable performer, final String filename, final String title)

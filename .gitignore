@@ -3,12 +3,6 @@
 **/target
 idp-testsuite/test-output/
 test-output/
-/doc/api-docs.json
-/doc/swagger.*
 /doc/*.svg
-/idp-global/doc/swagger.svg
-/idp-test/src/main/java/de/gematik/idp/tests/aforeport/doc-files/*.svg
-/idp-test/src/main/java/de/gematik/idp/tests/aforeport/doc-files/aforeporter.*
-/idp-test/src/main/java/de/gematik/idp/tests/aforeport/doc-files/workflow.plantuml
 /idp-testsuite/logs/
 /idp-testsuite/testartefacts/20*

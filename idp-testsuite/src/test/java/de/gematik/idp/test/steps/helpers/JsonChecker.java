@@ -122,6 +122,9 @@ public class JsonChecker {
                     continue;
                 }
                 final String oracleValue = oracle.get(oracleKey).toString();
+                if ("$NULL".equals(oracleValue) && json.get(jsonKey) == JSONObject.NULL) {
+                    continue;
+                }
                 if (!"${json-unit.ignore}".equals(oracleValue)) {
                     if (json.get(jsonKey) instanceof JSONObject) {
                         assertJsonShouldMatchInAnyOrder(json.get(jsonKey).toString(),

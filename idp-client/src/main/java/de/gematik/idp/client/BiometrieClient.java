@@ -16,8 +16,18 @@
 
 package de.gematik.idp.client;
 
-import de.gematik.idp.client.data.BiometrieData;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import de.gematik.idp.authentication.JwtBuilder;
+import de.gematik.idp.client.data.DeviceInformation;
+import de.gematik.idp.client.data.DeviceType;
+import de.gematik.idp.client.data.DiscoveryDocumentResponse;
+import de.gematik.idp.client.data.RegistrationData;
+import de.gematik.idp.crypto.model.PkiIdentity;
+import de.gematik.idp.field.ClaimName;
+import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
+import java.security.KeyPair;
+import java.util.Base64;
 import java.util.List;
 import javax.ws.rs.core.HttpHeaders;
 import kong.unirest.GenericType;
@@ -25,6 +35,7 @@ import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import lombok.Builder;
 import lombok.Data;
+import lombok.SneakyThrows;
 import org.apache.http.HttpStatus;
 import org.springframework.http.MediaType;
 
@@ -34,22 +45,73 @@ public class BiometrieClient {
 
     private static final String USER_AGENT = "IdP-Client";
     private static final String BEARER = "Bearer ";
-    private final String serverUrl;
+    private final DiscoveryDocumentResponse discoveryDocumentResponse;
     private JsonWebToken accessToken;
 
-    public boolean insertPairing(final BiometrieData biometrieData) {
-        final HttpResponse<String> response = Unirest.put(serverUrl)
-            .field("encrypted_registration_data", biometrieData)
-            .header(HttpHeaders.AUTHORIZATION, BEARER + accessToken.getRawString())
-            .header(HttpHeaders.USER_AGENT, USER_AGENT)
-            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-            .asString();
-        return response.getStatus() == HttpStatus.SC_OK;
+    @SneakyThrows
+    public boolean insertPairing(final PkiIdentity identity, final KeyPair keyPairToRegister) {
+        final JsonWebToken signedPairingData = new JwtBuilder()
+            .setSignerKey(identity.getPrivateKey())
+            .addBodyClaim(ClaimName.AUTH_CERT_SUBJECT_PUBLIC_KEY_INFO,
+                Base64.getUrlEncoder().withoutPadding()
+                    .encodeToString(identity.getCertificate().getPublicKey().getEncoded()))
+            .addBodyClaim(ClaimName.DEVICE_PRODUCT, "meinPhone")
+            .addBodyClaim(ClaimName.CERTIFICATE_SERIALNUMBER, identity.getCertificate().getSerialNumber().toString())
+            .addBodyClaim(ClaimName.KEY_IDENTIFIER, identity.getCertificate().getSerialNumber().toString())
+            .addBodyClaim(ClaimName.SE_SUBJECT_PUBLIC_KEY_INFO,
+                Base64.getUrlEncoder().withoutPadding()
+                    .encodeToString(keyPairToRegister.getPublic().getEncoded()))
+            .addBodyClaim(ClaimName.CERTIFICATE_ISSUER,
+                Base64.getUrlEncoder().withoutPadding()
+                    .encodeToString(identity.getCertificate().getSubjectX500Principal().getEncoded()))
+            .addBodyClaim(ClaimName.PAIRING_DATA_VERSION, "1.0")
+            .addBodyClaim(ClaimName.CERTIFICATE_NOT_AFTER, identity.getCertificate().getNotAfter()
+                .toInstant().getEpochSecond())
+            .buildJwt();
+        return insertPairing(RegistrationData.builder()
+            .registrationDataVersion("1.0")
+            .authCert(Base64.getUrlEncoder().withoutPadding().encodeToString(identity.getCertificate().getEncoded()))
+            .signedPairingData(signedPairingData.getRawString())
+            .deviceInformation(DeviceInformation.builder()
+                .deviceInformationDataVersion("1.0")
+                .name("idpClient")
+                .deviceType(DeviceType.builder()
+                    .deviceTypeDataVersion("1.0")
+                    .product("meinPhone")
+                    .model("latest")
+                    .os("Android")
+                    .osVersion("1.2.3")
+                    .manufacturer("Werke")
+                    .build())
+                .build())
+            .build());
     }
 
-    public List<BiometrieData> getAllPairingsForKvnr(final String kvnr) {
-        final HttpResponse<List<BiometrieData>> response = Unirest
-            .get(serverUrl + "/" + kvnr)
+    public boolean insertPairing(final RegistrationData biometrieData) {
+        try {
+            final String payload = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(biometrieData);
+            final HttpResponse<String> response = Unirest.post(getPairingEndpoint())
+                .field("encrypted_registration_data", IdpJwe
+                    .createWithPayloadAndEncryptWithKey(payload, discoveryDocumentResponse.getIdpEnc(), "JSON")
+                    .getRawString())
+                .header(HttpHeaders.AUTHORIZATION, BEARER +
+                    accessToken.encrypt(discoveryDocumentResponse.getIdpEnc()).getRawString())
+                .header(HttpHeaders.USER_AGENT, USER_AGENT)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .asString();
+            return response.getStatus() == HttpStatus.SC_OK;
+        } catch (final JsonProcessingException e) {
+            throw new IdpClientRuntimeException(e);
+        }
+    }
+
+    private String getPairingEndpoint() {
+        return discoveryDocumentResponse.getPairingEndpoint();
+    }
+
+    public List<RegistrationData> getAllPairingsForKvnr(final String kvnr) {
+        final HttpResponse<List<RegistrationData>> response = Unirest
+            .get(getPairingEndpoint() + "/" + kvnr)
             .header(HttpHeaders.AUTHORIZATION, BEARER + accessToken.getRawString())
             .header(HttpHeaders.USER_AGENT, USER_AGENT)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -65,7 +127,7 @@ public class BiometrieClient {
     }
 
     public boolean deleteAllPairingsForKvnr(final String kvnr) {
-        final HttpResponse<String> response = Unirest.delete(serverUrl + "/" + kvnr)
+        final HttpResponse<String> response = Unirest.delete(getPairingEndpoint() + "/" + kvnr)
             .header(HttpHeaders.AUTHORIZATION, BEARER + accessToken.getRawString())
             .header(HttpHeaders.USER_AGENT, USER_AGENT)
             .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)

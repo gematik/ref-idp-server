@@ -28,10 +28,8 @@ import de.gematik.idp.exceptions.RequiredClaimException;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.field.IdpScope;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.tuple.Pair;
@@ -46,6 +44,10 @@ public class AccessTokenBuilder {
     private final IdpJwtProcessor jwtProcessor;
     private final String issuerUrl;
     private final String serverSubjectSalt;
+    private final Map<IdpScope, String> scopeToAudienceUrl;
+
+    private final ClaimName[] nonPairingClaims = new ClaimName[]{
+        PROFESSION_OID, GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME};
 
     public JsonWebToken buildAccessToken(final JsonWebToken authenticationToken) {
         final ZonedDateTime now = ZonedDateTime.now();
@@ -58,6 +60,10 @@ public class AccessTokenBuilder {
             .map(claimName -> Pair.of(claimName, authenticationToken.getBodyClaim(claimName)))
             .filter(pair -> pair.getValue().isPresent())
             .forEach(pair -> claimsMap.put(pair.getKey().getJoseName(), pair.getValue().get()));
+        // for pairing scope remove user consent claims (except for id nummer)
+        if (authenticationToken.getScopesBodyClaim().contains(IdpScope.PAIRING)) {
+            Arrays.stream(nonPairingClaims).forEach(claim -> claimsMap.remove(claim.getJoseName()));
+        }
         claimsMap.put(ISSUED_AT.getJoseName(), now.toEpochSecond());
         claimsMap.put(ISSUER.getJoseName(), issuerUrl);
         claimsMap.put(AUTHENTICATION_CLASS_REFERENCE.getJoseName(), IdpConstants.EIDAS_LOA_HIGH);
@@ -83,11 +89,14 @@ public class AccessTokenBuilder {
             .replaceAllHeaderClaims(headerClaimsMap));
     }
 
-    private static String determineAudienceBasedOnScope(final Set<IdpScope> scopesBodyClaim) {
-        if (scopesBodyClaim.contains(IdpScope.PAIRING)) {
-            return IdpConstants.AUDIENCE_PAIRING;
-        } else if (scopesBodyClaim.contains(IdpScope.EREZEPT)) {
-            return IdpConstants.AUDIENCE_EREZEPT;
+    private String determineAudienceBasedOnScope(final Set<IdpScope> scopesBodyClaim) {
+        final List<String> audienceUrls = scopesBodyClaim.stream()
+            .filter(scope -> scope != IdpScope.OPENID)
+            .filter(scope -> scopeToAudienceUrl.containsKey(scope))
+            .map(scope -> scopeToAudienceUrl.get(scope))
+            .collect(Collectors.toList());
+        if (audienceUrls.size() == 1) {
+            return audienceUrls.get(0);
         } else {
             throw new IdpRuntimeException("Could not determine Audience for scopes '" + scopesBodyClaim + "'");
         }

@@ -25,12 +25,6 @@ import de.gematik.idp.server.services.PairingService;
 import de.gematik.idp.server.validation.accessToken.ValidateAccessToken;
 import de.gematik.idp.server.validation.clientSystem.ValidateClientSystem;
 import de.gematik.idp.token.IdpJwe;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +38,6 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Transactional
 @Valid
-@Api(tags = {"Pairing-Dienst"})
 @HttpResponseHeaders({
     @HttpResponseHeader(name = "Cache-Control", value = "no-store"),
     @HttpResponseHeader(name = "Pragma", value = "no-cache")
@@ -55,13 +48,6 @@ public class PairingController {
     private final RequestAccessToken requestAccessToken;
 
     @GetMapping(value = PAIRING_ENDPOINT, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(httpMethod = "GET", value = "Endpunkt für Abrufen der Pairingdaten", notes = "Es werden zur übergebenen KVNR alle Pairingdaten abgerufen.", response = List.class)
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Erfolgreich Pairingdaten erhalten"),
-        @ApiResponse(responseCode = "400", description = "Ungültige Anfrage (Parameter fehlen/ungültig)"),
-        @ApiResponse(responseCode = "403", description = "Nicht erlaubter Zugriff"),
-        @ApiResponse(responseCode = "404", description = "Nicht gefunden - Methodenaufruf nicht korrekt")
-    })
     @ValidateClientSystem
     @ValidateAccessToken
     public PairingList getAllPairingsForKvnr() {
@@ -69,33 +55,16 @@ public class PairingController {
     }
 
     @DeleteMapping(value = PAIRING_ENDPOINT + "/{key_identifier}")
-    @ApiOperation(httpMethod = "DELETE", value = "Endpunkt zum Löschen eines spezifischen Pairingdatensatzes",
-        notes = "Es wird zur übergebenen KVNR und ID der entsprechende Pairingdatensatz gelöscht. ")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Erfolgreich Pairingdaten gelöscht"),
-        @ApiResponse(responseCode = "400", description = "Ungültige Anfrage (Parameter fehlen/ungültig)"),
-        @ApiResponse(responseCode = "403", description = "Nicht erlaubter Zugriff"),
-        @ApiResponse(responseCode = "404", description = "Nicht gefunden - Methodenaufruf nicht korrekt")
-    })
     @ValidateAccessToken
     @ValidateClientSystem
     public void deleteSinglePairing(
-        @PathVariable(value = "key_identifier") @NotNull(message = "4001") @ApiParam(value = "Key Identifier") final String keyIdentifier
-    ) {
+        @PathVariable(value = "key_identifier") @NotNull(message = "4001") final String keyIdentifier) {
         pairingService
             .validateTokenAndDeleteSelectedPairing(requestAccessToken.getAccessToken(), keyIdentifier);
     }
 
     @PostMapping(value = PAIRING_ENDPOINT, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @ApiOperation(httpMethod = "POST", value = "Endpunkt zum Hinzufügen von Pairingdaten",
-        notes = "Die hier engereichten Pairingdaten werden in der Pairing-DB hinterlegt. Ist dies erfolgreich, wird die ID für den DB-Eintrag zurückgegeben.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Erfolgreich Pairingdaten hinzugefügt"),
-        @ApiResponse(responseCode = "400", description = "Ungültige Anfrage (Parameter fehlen/ungültig)"),
-        @ApiResponse(responseCode = "403", description = "Nicht erlaubter Zugriff"),
-        @ApiResponse(responseCode = "404", description = "Nicht gefunden - Methodenaufruf nicht korrekt")
-    })
     @ValidateAccessToken
     @ValidateClientSystem
     public PairingDto insertPairing(

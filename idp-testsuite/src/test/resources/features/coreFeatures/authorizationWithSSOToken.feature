@@ -42,7 +42,7 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1 | 123456 | code          |
-    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And IDP I request a code token with signed challenge successfully
     And IDP I start new interaction keeping only
       | SSO_TOKEN_ENCRYPTED |
@@ -83,7 +83,7 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1 | 123456 | code          |
-    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And IDP I request a code token with signed challenge successfully
     And IDP I start new interaction keeping only
       | SSO_TOKEN_ENCRYPTED |
@@ -114,7 +114,7 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
             jti:                   "${json-unit.ignore}",
             iat:                   ".*",
             idNummer:              "[A-Z][\\d]{9,10}",
-            iss:                   "https:\\/\\/idp.*\\.idp\\.splitdns\\.ti\\-dienste\\.de",
+            iss:                   "${TESTENV.issuer}",
             family_name:           "(.{1,64})",
             given_name:            "(.{1,64})",
             nonce:                 "234567",
@@ -148,7 +148,7 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1 | 4444  | code          |
-    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And IDP I request a code token with signed challenge successfully
     And IDP I start new interaction keeping only
       | SSO_TOKEN_ENCRYPTED |
@@ -181,7 +181,7 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1 | 4444  | code          |
-    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And IDP I request a code token with signed challenge successfully
     And IDP I start new interaction keeping only
       | SSO_TOKEN_ENCRYPTED |
@@ -217,7 +217,7 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1 | 131313 | code          |
-    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And IDP I request a code token with signed challenge successfully
     And IDP I start new interaction keeping only
       | SSO_TOKEN_ENCRYPTED |

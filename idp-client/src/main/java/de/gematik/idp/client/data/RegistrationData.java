@@ -14,23 +14,24 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.authentication;
+package de.gematik.idp.client.data;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import de.gematik.idp.data.UserConsent;
-import de.gematik.idp.token.JsonWebToken;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Builder
 @Data
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuthenticationChallenge {
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+public class RegistrationData {
 
-    private JsonWebToken challenge;
-    @JsonProperty(value = "user_consent")
-    private UserConsent userConsent;
+    private String authCert;
+    private String signedPairingData;
+    private DeviceInformation deviceInformation;
+    private String registrationDataVersion;
 }

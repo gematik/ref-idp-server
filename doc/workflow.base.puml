@@ -1,0 +1,181 @@
+@startuml
+!startsub Actors
+actor "Versicherte:r" as V
+participant "Fachlogik" as FL
+participant Authenticator as authM
+participant Fachdienst as FD
+
+box #skyblue
+participant IDP_Discovery as IDPDisc
+participant IDP_Authorization as IDPAuth
+participant IDP_Token as IDPToken
+endbox
+' participant "OC SP/TSL Dienst" as OCSPD
+!endsub
+
+
+!startsub GetCertsFromFD
+activate FL
+FL -> FD : GET CertList
+FL <-- FD : RETURN certificates
+!endsub
+
+!startsub ChooseCodeVerifier
+== choose code verifier ==
+
+    FL -> FL : generate CODE_VERIFIER
+    FL -> FL : CODE_CHALLENGE = hash(CODE_VERIFIER)
+    hnote right #lightgreen : sha256
+    deactivate FL
+!endsub
+
+!startsub GetDiscoveryDoc
+== get discovery doc  ==
+    authM -> IDPDisc ++ : getDiscoveryDocument()\nGET uri_disc
+    IDPDisc -> IDPDisc : build discovery document
+    IDPDisc -> IDPDisc : sign discovery document
+    hnote right #lightgreen : sign with prk_idp_sig
+    authM <-- IDPDisc -- : RETURN jwt(signed discovery document)
+    activate authM
+    authM -> authM : tuc_pli18 auf puk_idp_sig cert
+    hnote right #lightgreen : cert from x5c header
+!endsub
+
+!startsub GetKeysFromIDP
+== get keys from Idp ==
+    authM -> IDPDisc ++ : GET uri_puk_idp_enc
+    authM <-- IDPDisc : RETURN jwk(puk_idp_enc public key)
+    authM -> IDPDisc : GET uri_puk_idp_sig
+    authM <-- IDPDisc -- : RETURN jwk(puk_idp_sig certificate)
+!endsub
+
+!startsub RequestAuthenticationChallenge
+== request authentication challenge ==
+    authM -> IDPAuth ++ : getAuthenticationChallenge()\nGET authorization_endpoint\nclient_id, state, redirecturl, code_challenge, scope, ...
+    deactivate authM
+    IDPAuth -> IDPAuth : create CHALLENGE
+    note left #lightgreen : sign with prk_idp_sig
+    IDPAuth -> IDPAuth : create USER_CONSENT list
+    IDPAuth --> authM ++ : RETURN jwt(CHALLENGE, USER_CONSENT)
+    authM -> authM : validate CHALLENGE signature
+    note right #lightgreen : validate with puk_idp_sig
+    deactivate IDPAuth
+!endsub
+
+!startsub ConfirmUserConsent
+== confirm user consent ==
+    authM -> V ++ : display USER_CONSENT
+    authM <- V -- : confirm USER_CONSENT
+    deactivate authM
+!endsub
+
+
+!startsub SignChallenge
+== sign challenge ==
+    authM -> authM++ : read AUT certificate from SMC-B (via Konnector) or eGK per NFC
+    authM -> authM : SIGNED_CHALLENGE = jws(njwt: CHALLENGE, aut certificate im x5c header)
+    hnote right #lightgreen : sign with c.ch.aut / c.hci.aut / c.hp.aut
+    note left
+        since Primärsystem has no private key
+        the signature has to be created on the Konnektor
+        via the externalized signature interface
+    end note
+    authM -> authM-- : ENCRYPTED_SIGNED_CHALLENGE = jwe(njwt: SIGNED_CHALLENGE)
+    hnote right #lightgreen : encrypt with puk_idp_enc
+!endsub
+
+!startsub RequestAuthorizationCodeWithSignedChallenge
+== request authorization code ==
+    authM -> IDPAuth ++ : GetTokenCode()\n POST authorization_endpoint\nENCRYPTED_SIGNED_CHALLENGE with certificate in x5c header
+    deactivate authM
+    IDPAuth -> IDPAuth : decrypt and validate ENCRYPTED_SIGNED_CHALLENGE
+    hnote left #lightgreen : validate SIGNED_CHALLENGE signature\nvalidate certificate
+    IDPAuth -> IDPAuth : generate AUTHORIZATION_CODE
+    hnote left #lightgreen : sign with prk_idp_sig
+    IDPAuth -> IDPAuth : generate SSO_TOKEN
+    IDPAuth --> authM : RETURN 302 redirect to Fachlogik with location header\ncontaining AUTHORIZATION_CODE, state and\nSSO_TOKEN as query param
+    note left : sso token can be omitted (returned as null value)\nfor specific client_ids configured on the IDP server
+    deactivate authM
+    deactivate IDPAuth
+    ||45||
+!endsub
+
+!startsub RequestAuthorizationCodeWithSSOToken
+    authM -> IDPAuth ++ : GetTokenCode()\n POST /sso_endpoint CHALLENGE, SSO_TOKEN
+    deactivate authM
+    IDPAuth -> IDPAuth : validate SSO_TOKEN
+    IDPAuth -> IDPAuth: generate AUTHORIZATION_CODE
+    hnote left #lightgreen : sign with prk_idp_sig
+    IDPAuth --> authM : RETURN 302 redirect to Fachlogik with AUTHORIZATION_CODE as query param, no SSO_TOKEN
+    deactivate IDPAuth
+    deactivate authM
+!endsub
+
+!startsub RequestAuthorizationCodeWithAltAuth
+    authM -> authM : create and sign SIGNED_AUTH_DATA
+    hnote right #lightgreen : sign with prk_secure_element \nencrypt with puk_idp_enc
+    authM -> IDPAuth ++ : GetTokenCode()\n POST auth_pair_endpoint\njwe(SIGNED_AUTH_DATA)
+    deactivate authM
+    IDPAuth -> IDPAuth : decrypt and validate SIGNED_AUTH_DATA
+    IDPAuth -> IDPAuth : check block/allow list
+    hnote left #lightgreen : validate signature\nvalidate certificate
+    IDPAuth -> IDPAuth : generate AUTHORIZATION_CODE
+    hnote left #lightgreen : sign with prk_idp_sig
+    IDPAuth -> IDPAuth : generate SSO_TOKEN
+    IDPAuth --> authM : RETURN 302 redirect to Fachlogik with location header\ncontaining AUTHORIZATION_CODE, state and\nSSO_TOKEN as query param
+    deactivate IDPAuth
+    deactivate authM
+!endsub
+
+!startsub CreateKeyVerifier
+== create key verifier ==
+    authM -> FL ++ : follow 302 redirect
+    deactivate authM
+    FL -> FL : create random TOKEN_KEY
+    hnote right #lightgreen : AES256
+    FL -> FL : create KEY_VERIFIER (TOKEN_KEY, CODE_VERIFIER)
+    FL -> FL : encrypted KEY_VERIFIER = jwe(KEY_VERIFIER)
+    hnote right #lightgreen : encrypt with idp_puk_enc
+    FL -> FL : store TOKEN_KEY (for derycpting access and id token later on)
+    FL -> authM ++
+    deactivate FL
+!endsub
+
+!startsub GetTokens
+== get tokens ==
+
+    authM -> IDPToken ++ : getTokens()\nPOST token_endpoint AUTHORIZATION_CODE, jwe(KEY_VERIFIER)
+    deactivate authM
+    IDPToken -> IDPToken : decrypt KEY_VERIFIER jwe -> TOKEN_KEY
+    hnote left #lightgreen : with prk_idp_enc
+    IDPToken -> IDPToken : validate client, code and KEY_VERIFIER
+    hnote left #lightgreen : verify signature
+    IDPToken -> IDPToken : encrypt ACCESS_TOKEN and ID_TOKEN
+    hnote left #lightgreen : with TOKEN_KEY
+    authM <-- IDPToken -- : RETURN jwe(ACCESS_TOKEN, TOKEN_KEY),\njwe(ID_TOKEN, TOKEN_KEY)
+    activate authM
+    authM --> FL : FORWARD jwe(ACCESS_TOKEN, TOKEN_KEY),\njwe(ID_TOKEN, TOKEN_KEY)
+    deactivate authM
+!endsub
+
+!startsub UseAccessTokenAtFD
+== use access token at Fachdienst ==
+
+    activate FL
+    FL -> FL : decrypt ACCESS_TOKEN
+    hnote left #lightgreen : with TOKEN_KEY
+    FL -> FL : decrypt ID_TOKEN
+    hnote left #lightgreen : with TOKEN_KEY
+    FL -> FL : encrypt ACCESS_TOKEN
+    hnote left #lightgreen : with shared secret between FL and FD
+    FL -> FD ++ : sendAccessTokenAndRequestedFachdaten()
+    deactivate FL
+    FD -> FD : validate ACCESS_TOKEN
+    FD -> FD : getClaims()
+    FL <-- FD -- : RETURN Fachdaten
+    activate FL
+    FL -> V : displayFachDaten()
+    deactivate FL
+!endsub
+
+@enduml

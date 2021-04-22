@@ -34,7 +34,6 @@ import de.gematik.idp.client.data.AuthorizationResponse;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.field.IdpScope;
-import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
@@ -44,6 +43,7 @@ import de.gematik.idp.tests.Rfc;
 import de.gematik.idp.token.IdpJoseObject;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
+import de.gematik.pki.certificate.TucPki018Verifier;
 import java.security.Key;
 import java.time.ZonedDateTime;
 import java.util.Map;
@@ -70,11 +70,13 @@ public class TokenRetrievalTest {
     private static final String SHA256_AS_BASE64_REGEX = "^[_\\-a-zA-Z0-9]{42,44}[=]{0,2}$";
 
     @Autowired
-    private IdpConfiguration idpConfiguration;
-    @Autowired
     private IdpKey idpSig;
     @Autowired
+    private IdpKey idpEnc;
+    @Autowired
     private Key symmetricEncryptionKey;
+    @Autowired
+    private TucPki018Verifier tucPki018Verifier;
     private IdpClient idpClient;
     private PkiIdentity egkUserIdentity;
     @LocalServerPort
@@ -465,7 +467,7 @@ public class TokenRetrievalTest {
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
             .isInstanceOf(IdpClientRuntimeException.class)
-            .hasMessageContaining("3010", "Authorization Code Signatur ungültig");
+            .hasMessageContaining("3013", "Authorization Code Signatur ungültig");
     }
 
     @Test
@@ -523,15 +525,6 @@ public class TokenRetrievalTest {
 
         assertThat(loginResult.getAccessToken().getScopesBodyClaim())
             .containsExactlyInAnyOrder(IdpScope.OPENID, IdpScope.PAIRING);
-    }
-
-    @Test
-    public void scopeOpenIdErezeptAndPairing_shouldGiveAccessToken() throws UnirestException {
-        idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING, IdpScope.EREZEPT));
-        final IdpTokenResult loginResult = idpClient.login(egkUserIdentity);
-
-        assertThat(loginResult.getAccessToken().getScopesBodyClaim())
-            .containsExactlyInAnyOrder(IdpScope.OPENID, IdpScope.PAIRING, IdpScope.EREZEPT);
     }
 
     @Test

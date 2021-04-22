@@ -17,7 +17,11 @@
 package de.gematik.idp.crypto;
 
 import static de.gematik.idp.crypto.CertificateAnalysis.determineCertificateType;
+import static de.gematik.idp.crypto.TiCertificateType.EGK;
+import static de.gematik.idp.crypto.TiCertificateType.HBA;
+import static de.gematik.idp.crypto.TiCertificateType.SMCB;
 import static de.gematik.idp.crypto.model.CertificateExtractedFieldEnum.*;
+
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
@@ -59,43 +63,52 @@ public class X509ClaimExtraction {
         final HashMap<String, Object> claimMap = new HashMap<>();
         final TiCertificateType certificateType = determineCertificateType(certificate);
         claimMap.put(GIVEN_NAME.getFieldname(),
-            getValueFromDn(certificate.getSubjectX500Principal(), RFC4519Style.givenName)
-                .orElse(null));
-        claimMap.put(FAMILY_NAME.getFieldname(), getValueFromDn(certificate.getSubjectX500Principal(), RFC4519Style.sn)
-            .orElse(null));
+            getNameValueFromDn(certificate, certificateType, RFC4519Style.givenName));
+        claimMap.put(FAMILY_NAME.getFieldname(),
+            getNameValueFromDn(certificate, certificateType, RFC4519Style.sn));
 
-        if (certificateType == TiCertificateType.HBA) {
+        if (certificateType == HBA) {
             claimMap.put(ORGANIZATION_NAME.getFieldname(), null);
-        } else if (certificateType == TiCertificateType.SMCB) {
-            claimMap.put(ORGANIZATION_NAME.getFieldname(),
-                getValueFromDn(certificate.getSubjectX500Principal(), RFC4519Style.o)
-                    .orElse(null));
-        } else if (certificateType == TiCertificateType.EGK) {
-            claimMap.put(ORGANIZATION_NAME.getFieldname(),
-                getValueFromDn(certificate.getSubjectX500Principal(), RFC4519Style.o)
-                    .orElse(null));
+        } else if (certificateType == SMCB || certificateType == EGK) {
+            final Optional<String> valueFromDn = getValueFromDn(certificate.getSubjectX500Principal(), RFC4519Style.o);
+            if (valueFromDn.isPresent() && valueFromDn.get().length() > 64) {
+                throw new IdpCryptoException("Value in certificate too long!");
+            }
+            claimMap.put(ORGANIZATION_NAME.getFieldname(), valueFromDn.orElse(null));
         }
 
         claimMap.put(PROFESSION_OID.getFieldname(), getProfessionOid(certificate)
             .map(ASN1ObjectIdentifier::toString)
             .orElse(null));
 
-        if (certificateType == TiCertificateType.HBA) {
+        if (certificateType == HBA) {
             claimMap.put(ID_NUMMER.getFieldname(), getRegistrationNumber(certificate)
                 .orElse(null));
-        } else if (certificateType == TiCertificateType.SMCB) {
+        } else if (certificateType == SMCB) {
             claimMap.put(ID_NUMMER.getFieldname(), getRegistrationNumber(certificate)
                 .orElse(null));
-        } else if (certificateType == TiCertificateType.EGK) {
+        } else if (certificateType == EGK) {
             claimMap.put(ID_NUMMER.getFieldname(),
                 getAllValuesFromDn(certificate.getSubjectX500Principal(), RFC4519Style.ou)
                     .stream()
-                    .filter(ou -> ou.length() == KVNR_LENGTH)
+                    .filter(ou -> ou.matches("[a-zA-Z]\\d{9}"))
                     .findFirst()
                     .orElseThrow(() -> new IdpCryptoException(
                         "Could not find OU in EGK Subject-DN: '" + certificate.getSubjectDN().toString())));
         }
         return claimMap;
+    }
+
+    private static String getNameValueFromDn(final X509Certificate certificate,
+        final TiCertificateType certificateType, final ASN1ObjectIdentifier identifier) {
+        final Optional<String> valueFromDn = getValueFromDn(certificate.getSubjectX500Principal(), identifier);
+        if (valueFromDn.isEmpty() && ((certificateType == EGK) || (certificateType == HBA))) {
+            throw new IdpCryptoException("No value found in certificate!");
+        }
+        if (valueFromDn.isPresent() && valueFromDn.get().length() > 64) {
+            throw new IdpCryptoException("Value in certificate too long!");
+        }
+        return valueFromDn.orElse(null);
     }
 
     private static Optional<String> getValueFromDn(final X500Principal principal, final ASN1ObjectIdentifier field) {
@@ -117,7 +130,7 @@ public class X509ClaimExtraction {
     private static Optional<ASN1ObjectIdentifier> getProfessionOid(final X509Certificate certificate) {
         final Optional<DLSequence> admissionEntry = getAdmissionEntry(certificate);
         if (admissionEntry.isEmpty()) {
-            return Optional.empty();
+            throw new IdpCryptoException("No profession OID found!");
         }
         for (final ASN1Encodable encodable : admissionEntry.get()) {
             if (encodable instanceof DLSequence) {
@@ -127,7 +140,7 @@ public class X509ClaimExtraction {
                 }
             }
         }
-        return Optional.empty();
+        throw new IdpCryptoException("No profession OID found!");
     }
 
     private static Optional<String> getRegistrationNumber(final X509Certificate certificate) {

@@ -18,15 +18,11 @@ package de.gematik.idp.server.controllers;
 
 import de.gematik.idp.data.IdpKeyDescriptor;
 import de.gematik.idp.server.validation.clientSystem.ValidateClientSystem;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@Api(tags = {
-    "Schlüssel-Informations-Dienst"}, description = "REST Endpunkte für das einholen von Schlüssel-Informationen zur Authentifizierung, zur Tokenabfrage und für die öffentlichen Verzeichnisdienste")
 @RequiredArgsConstructor
 public class KeyInformationController {
 
@@ -36,14 +32,12 @@ public class KeyInformationController {
     private final IdpKey idpSig;
 
     @GetMapping(PUK_URI_SIG)
-    @ApiOperation(httpMethod = "GET", value = "Endpunkt für Schlüsselinformationen für den Authentifizierungsprozess", notes = "Verbaut Schlüsselinformationen in ein JwksDocument und liefert dieses zurück.")
     @ValidateClientSystem
     public IdpKeyDescriptor getAuthJwk() {
         return idpSig.buildJwk(true);
     }
 
     @GetMapping(PUK_URI_ENC)
-    @ApiOperation(httpMethod = "GET", value = "Endpunkt für Schlüsselinformationen für die Tokenabfrage", notes = "Verbaut Schlüsselinformationen in ein JwksDocument und liefert dieses zurück.")
     @ValidateClientSystem
     public IdpKeyDescriptor getTokenJwk() {
         return idpEnc.buildJwk(false);

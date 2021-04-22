@@ -24,6 +24,23 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     And IDP I retrieve public keys from URIs
 
 
+  Scenario Outline: Author mit alternativer Authentisierung - Gutfall - Löschen alle Pairings vor Start der Tests
+
+  ```
+  Wir löschen vor den Tests alle Pairings die danach angelegt werden sollen.
+
+    Given IDP I request an pairing access token with eGK cert '<auth_cert>'
+    And IDP I deregister the device with '<key_id>'
+
+    Examples: Zu deregistrierende Daten
+      | auth_cert                                     | key_id       |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth001 |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth002 |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth003 |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth004 |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth007 |
+
+
   @Afo:A_21439 @Afo:A_21449 @Afo:A_21440
   @Approval
   Scenario: Author mit alternativer Authentisierung - Gutfall - Validiere Antwortstruktur
@@ -65,7 +82,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
         Location=${TESTENV.redirect_uri_regex}[?|&]code=.*
         """
     And IDP I expect the Context with key STATE to match 'xxxstatexxx'
-    And IDP I expect the Context with key SSO_TOKEN to match '.*'
+    And IDP I expect the Context with key SSO_TOKEN_ENCRYPTED to match '.*'
 
   @Afo:A_20731 @Afo:A_20377 @Afo:A_20697 @Afo:A_21317
   @Todo:ClarifyTokenCodeContentRelevant
@@ -102,6 +119,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication successfully
 
+    #TODO ANALYZE why are w enot able to decrypt the token code? Whats the secret here?
     When IDP I extract the header claims from token TOKEN_CODE
     Then IDP the header claims should match in any order
         """
@@ -170,10 +188,11 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication successfully
 
+    #TODO ANALYZE why are w enot able to decrypt the token code? Whats the secret here?
     Then IDP the context TOKEN_CODE must be signed with cert PUK_SIGN
 
   @Afo:A_20695
-  @Signature @Approval
+  @Signature @Approval @RefImplOnly
   Scenario: Author mit alternativer Authentisierung - Validiere Signatur des SSO Token
 
   ```
@@ -277,10 +296,11 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | $NULL                                         | keyidauth007 | ["mfa", "hwk", "face"] | -1         | invalid_request |
       | /certs/valid/egk-idp-idnumber-b-valid-ecc.p12 | $NULL        | ["mfa", "hwk", "face"] | -1         | invalid_request |
       | /certs/valid/egk-idp-idnumber-b-valid-ecc.p12 | keyidauth007 | $NULL                  | -1         | server_error    |
+      # TODO REF error_code: 2000 for all requests, error entry to be discussed https://gematik-ext.atlassian.net/browse/STIDPD-142
 
   @Approval
   @Afo:A_20699
-  Scenario: Author mit alternativer Authentisierung - fehlerhafte Challenge  in encrypted_signed_authentication_data
+  Scenario: Author mit alternativer Authentisierung - fehlerhafte Challenge in encrypted_signed_authentication_data
 
   ```
   Wir wählen einen gültigen Code verifier, fordern einen Challenge Token an,  modifizieren den Inhalt, der definitiv falsch ist,  bauen die signed authentication data passend zu dem im Background registrierten Pairing, signieren diese und
@@ -302,6 +322,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication
     Then IDP the response is an 400 error with gematik code -1 and error 'server_error'
+    # TODO REF error_code: 2000 for all requests, error entry to be discussed https://gematik-ext.atlassian.net/browse/STIDPD-142
 
   @Approval
   @Afo:21438
@@ -328,6 +349,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-2-pkcs8.der'
     When IDP I request a code token with alternative authentication
     Then IDP the response is an 400 error with gematik code -1 and error 'invalid_request'
+    # TODO REF error_code: 2000 for all requests, error entry to be discussed https://gematik-ext.atlassian.net/browse/STIDPD-142
 
   @Approval
     @Afo:A_21434
@@ -358,4 +380,5 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | auth_cert                                     | key_id           | error_code | error           |
       | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 | keyidauth007     | -1         | invalid_request |
       | /certs/valid/egk-idp-idnumber-b-valid-ecc.p12 | keyidauthInvalid | -1         | invalid_request |
+      # TODO REF error_code: 2000 for all requests, error entry to be discussed https://gematik-ext.atlassian.net/browse/STIDPD-142
 

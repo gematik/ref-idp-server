@@ -41,7 +41,7 @@ Feature: Fordere Access Token mittels SSO Token an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state         | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1a | 997755 | code          |
-    And IDP I request a challenge with'<cert>'
+    And IDP I sign the challenge with '<cert>'
     And IDP I request a code token with signed challenge successfully
     And IDP I request an access token
     And IDP I start new interaction keeping only
@@ -82,7 +82,7 @@ Feature: Fordere Access Token mittels SSO Token an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state         | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1a | 997755 | code          |
-    And IDP I request a challenge with'<cert>'
+    And IDP I sign the challenge with '<cert>'
     And IDP I request a code token with signed challenge successfully
     And IDP I request an access token
     And IDP I start new interaction keeping only
@@ -144,7 +144,7 @@ Feature: Fordere Access Token mittels SSO Token an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state         | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1a | 886655 | code          |
-    And IDP I request a challenge with'<cert>'
+    And IDP I sign the challenge with '<cert>'
     And IDP I request a code token with signed challenge successfully
     And IDP I request an access token
     And IDP I start new interaction keeping only
@@ -206,7 +206,7 @@ Feature: Fordere Access Token mittels SSO Token an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state         | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1a | 887722 | code          |
-    And IDP I request a challenge with'<cert>'
+    And IDP I sign the challenge with '<cert>'
     And IDP I request a code token with signed challenge successfully
     And IDP I request an access token
     And IDP I start new interaction keeping only
@@ -240,7 +240,7 @@ Feature: Fordere Access Token mittels SSO Token an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state         | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1a | 887722 | code          |
-    And IDP I request a challenge with'<cert>'
+    And IDP I sign the challenge with '<cert>'
     And IDP I request a code token with signed challenge successfully
     And IDP I request an access token
     And IDP I start new interaction keeping only
@@ -277,7 +277,7 @@ Feature: Fordere Access Token mittels SSO Token an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state         | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1a | 887722 | code          |
-    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     When IDP I request a code token with signed challenge successfully
     And IDP I store SSO_TOKEN_ENCRYPTED as text
     And IDP I store SSO_TOKEN as text

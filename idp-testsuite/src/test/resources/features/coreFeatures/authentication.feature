@@ -46,12 +46,14 @@ Feature: Authentifiziere Anwendung am IDP Server
       | client_id            | scope                      | code_challenge                              | code_challenge_method | redirect_uri            | state       | nonce     | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | code          |
     Then the response status is 200
+    When IDP ich hole die öffentlichen Schlüssel von ihren URIs
+
     And IDP the response http headers match
         """
           Content-Type=application/json.*
         """
     And IDP the JSON response should match
-        """
+  """
           {
             "challenge":     "ey[A-Za-z0-9\\-_\\.]*",
             "user_consent":  {
@@ -92,7 +94,7 @@ Feature: Authentifiziere Anwendung am IDP Server
 
     When IDP I extract the header claims from response field challenge
     Then IDP the header claims should match in any order
-        """
+  """
           { alg: "BP256R1",
             typ: "JWT",
             kid: "${json-unit.ignore}"
@@ -101,7 +103,7 @@ Feature: Authentifiziere Anwendung am IDP Server
 
     When IDP I extract the body claims from response field challenge
     Then IDP the body claims should match in any order
-        """
+  """
           { client_id:             "${TESTENV.client_id}",
             code_challenge:        "P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk",
             code_challenge_method: "S256",
@@ -138,7 +140,7 @@ Feature: Authentifiziere Anwendung am IDP Server
     When IDP I extract the body claims from response field challenge
     # checking no nonce claim appears in response
     Then IDP the body claims should match in any order
-        """
+  """
           { client_id:             "${TESTENV.client_id}",
             code_challenge:        "P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk",
             code_challenge_method: "S256",
@@ -176,7 +178,7 @@ Feature: Authentifiziere Anwendung am IDP Server
 
   @TCID:IDP_REF_AUTH_005 @PRIO:2 @Negative
     @Afo:A_20698 @Afo:A_20440
-    @Approval @Todo:IDP-553
+    @Approval @Ready
   Scenario Outline: Auth - Fehlende Parameter
 
   ```
@@ -205,8 +207,7 @@ Feature: Authentifiziere Anwendung am IDP Server
 
   @TCID:IDP_REF_AUTH_006 @PRIO:2 @Negative
     @Afo:A_20440
-    @Approval
-    @OpenBug @issue:IDP-553
+    @Approval @Ready
   Scenario Outline: Auth - Null Parameter
 
   ```
@@ -226,16 +227,15 @@ Feature: Authentifiziere Anwendung am IDP Server
       | return_code | err_id | err             | client_id            | scope                      | code_challenge                              | code_challenge_method | redirect_uri            | state       | nonce     | response_type |
       | 400         | 1002   | invalid_request | $NULL                | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | code          |
       | 302         | 1005   | invalid_request | ${TESTENV.client_id} | $NULL                      | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | code          |
-      | 400         | 2009   | invalid_request | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | $NULL                                       | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | code          |
+      | 302         | 2009   | invalid_request | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | $NULL                                       | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | code          |
       | 302         | 2008   | invalid_request | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | $NULL                 | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | code          |
       | 400         | 1004   | invalid_request | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | $NULL                   | xxxstatexxx | 123456789 | code          |
       | 302         | 2002   | invalid_request | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | $NULL       | 123456789 | code          |
       | 302         | 2004   | invalid_request | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | $NULL         |
-      # TODO REF 3rd variant should be 302
 
   @TCID:IDP_REF_AUTH_007 @PRIO:1 @Negative
     @Afo:A_20440
-    @Approval @Todo:IDP-553
+    @Approval @Ready
   Scenario Outline: Auth - Ungültige Parameter
 
   ```

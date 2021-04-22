@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
-import de.gematik.idp.IdpConstants;
 import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
@@ -49,6 +48,8 @@ public class AccessTokenBuilderTest {
 
     private final static String URI_IDP_SERVER = "https://idp.zentral.idp.splitdns.ti-dienste.de";
     private static final String KEY_ID = "my_key_id";
+    private static final String EREZEPT_AUDIENCE = "erezeptAudience";
+    private static final String PAIRING_AUDIENCE = "pairingAudience";
 
     private AccessTokenBuilder accessTokenBuilder;
     private IdpJwtProcessor serverTokenProcessor;
@@ -63,7 +64,9 @@ public class AccessTokenBuilderTest {
         @PkiKeyResolver.Filename("ecc") final PkiIdentity serverIdentity) {
         serverIdentity.setKeyId(Optional.of(KEY_ID));
         serverTokenProcessor = new IdpJwtProcessor(serverIdentity);
-        accessTokenBuilder = new AccessTokenBuilder(serverTokenProcessor, URI_IDP_SERVER, "saltValue");
+        accessTokenBuilder = new AccessTokenBuilder(serverTokenProcessor, URI_IDP_SERVER, "saltValue",
+            Map.of(IdpScope.EREZEPT, EREZEPT_AUDIENCE,
+                IdpScope.PAIRING, PAIRING_AUDIENCE));
         encryptionKey = new SecretKeySpec(DigestUtils.sha256("fdsa"), "AES");
         pkiIdentity = clientIdentity;
         authenticationTokenBuilder = AuthenticationTokenBuilder.builder()
@@ -109,7 +112,7 @@ public class AccessTokenBuilderTest {
             .containsEntry(PROFESSION_OID.getJoseName(), "1.2.276.0.76.4.49")
             .containsEntry(ID_NUMBER.getJoseName(), "X114428530")
             .containsEntry(ISSUER.getJoseName(), URI_IDP_SERVER)
-            .containsEntry(AUDIENCE.getJoseName(), IdpConstants.AUDIENCE_EREZEPT)
+            .containsEntry(AUDIENCE.getJoseName(), EREZEPT_AUDIENCE)
             .containsKey(ISSUED_AT.getJoseName())
             .containsKey(AUTH_TIME.getJoseName());
     }
@@ -153,7 +156,7 @@ public class AccessTokenBuilderTest {
             SCOPE.getJoseName(), IdpScope.OPENID.getJwtValue() + " " + IdpScope.EREZEPT.getJwtValue()));
         final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);
         assertThat(accessToken.getBodyClaim(AUDIENCE))
-            .get().isEqualTo(IdpConstants.AUDIENCE_EREZEPT);
+            .get().isEqualTo(EREZEPT_AUDIENCE);
     }
 
     @Test
@@ -162,6 +165,6 @@ public class AccessTokenBuilderTest {
             SCOPE.getJoseName(), IdpScope.OPENID.getJwtValue() + " " + IdpScope.PAIRING.getJwtValue()));
         final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);
         assertThat(accessToken.getBodyClaim(AUDIENCE))
-            .get().isEqualTo(IdpConstants.AUDIENCE_PAIRING);
+            .get().isEqualTo(PAIRING_AUDIENCE);
     }
 }

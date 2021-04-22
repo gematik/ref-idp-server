@@ -1,0 +1,55 @@
+@startuml
+
+title
+<img:images/IDPLogo-64.png> <u>IDP workflow</u>
+end title
+
+skinparam sequenceArrowThickness 1
+skinparam roundcorner 20
+skinparam sequenceParticipant underline
+skinparam maxMessageSize 400
+skinparam ParticipantPadding 10
+
+autonumber "<font color='blue'>##) "
+
+!includesub workflow.base.puml!Actors
+
+note across #ffffa0
+  In the following sequence diagramm
+    <b>jwt(XXXX)</b> denotes a JSON web token,  <b>jwe(XXXX)</b> denotes an encrypted JSON web token, <b>jwk(XXX)</b> denotes a JSON web key
+
+  lightgreen hexagons contain PKI infos
+end note
+
+||40||
+
+!includesub workflow.base.puml!GetCertsFromFD
+!includesub workflow.base.puml!ChooseCodeVerifier
+!includesub workflow.base.puml!GetDiscoveryDoc
+!includesub workflow.base.puml!GetKeysFromIDP
+!includesub workflow.base.puml!RequestAuthenticationChallenge
+!includesub workflow.base.puml!ConfirmUserConsent
+
+||40||
+
+alt #ffffe0 : <font color="#ff6000">request token code with SIGNED_CHALLENGE flow
+    !includesub workflow.base.puml!SignChallenge
+    !includesub workflow.base.puml!RequestAuthorizationCodeWithSignedChallenge
+    ||40||
+else #eeeeee : <font color="#333333">request token code with SSO Token flow
+    !includesub workflow.base.puml!RequestAuthorizationCodeWithSSOToken
+    ||40||
+else #ffeeee : <font color="red">request token code with ALT AUTH flow
+    !includesub workflow.base.puml!RequestAuthorizationCodeWithAltAuth
+    ||40||
+end
+
+    authM -> authM : optionally store SSO_TOKEN
+
+!includesub workflow.base.puml!CreateKeyVerifier
+
+!includesub workflow.base.puml!GetTokens
+
+!includesub workflow.base.puml!UseAccessTokenAtFD
+
+@enduml

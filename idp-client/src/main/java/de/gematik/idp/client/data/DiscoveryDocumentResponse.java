@@ -30,7 +30,9 @@ import lombok.NoArgsConstructor;
 public class DiscoveryDocumentResponse {
 
     private String authorizationEndpoint;
+    private String ssoEndpoint;
     private String tokenEndpoint;
+    private String pairingEndpoint;
     private X509Certificate idpSig;
     private PublicKey idpEnc;
     private X509Certificate discSig;

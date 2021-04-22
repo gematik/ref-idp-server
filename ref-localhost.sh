@@ -1,6 +1,6 @@
 #!/bin/bash
 
-unset IDP_SERVER=https://localhost:8080/.well-known/openid-configuration
+unset IDP_SERVER=http://localhost:8080/.well-known/openid-configuration
 export GEMATIK_TESTCONFIG=default
 
 mvn clean verify -Dskip.unittests=true \

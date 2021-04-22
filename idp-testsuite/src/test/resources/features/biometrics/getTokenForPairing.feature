@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-@testsuite
 @Biometrics
 Feature: Fordere Access Token für Pairing an
   Frontends müssen mit einer eGK einen pairing Access/SSO/ID Token für den Zugriff auf die Pairing-Schnittstelle des IDP bekommen.
@@ -58,7 +57,7 @@ Feature: Fordere Access Token für Pairing an
                     idNummer: ".*Id.*Krankenversichertennummer.*Telematik\\-Id.*"
                   },
                   requested_scopes: {
-                    pairing: ".*biometrische.*Authentisierung.*",
+                    pairing: "(.*biometrische.*Authentisierung.*)|(.*Pairing-Fachdienst.*)",
                     openid:  ".*ID\\-Token.*"
                   }
                 }
@@ -106,7 +105,7 @@ Feature: Fordere Access Token für Pairing an
     And IDP I request a challenge with
       | client_id            | scope          | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
       | ${TESTENV.client_id} | pairing openid | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 12345 | code          |
-    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
 
     When IDP I request a code token with signed challenge
     Then the response status is 302
@@ -119,7 +118,7 @@ Feature: Fordere Access Token für Pairing an
         Location=${TESTENV.redirect_uri_regex}[?|&]code=.*
         """
     And IDP I expect the Context with key STATE to match 'xxxstatexxx'
-    And IDP I expect the Context with key SSO_TOKEN to match '.*'
+    And IDP I expect the Context with key SSO_TOKEN_ENCRYPTED to match '.*'
 
   @Afo:A_20731 @Afo:A_20464 @Afo:A_20952 @Afo:A_21410
   @Todo:CompareSubjectInfosInAccessTokenAndInCert
@@ -131,7 +130,7 @@ Feature: Fordere Access Token für Pairing an
     And IDP I request a challenge with
       | client_id            | scope          | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | pairing openid | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
-    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And IDP I request a code token with signed challenge successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     And IDP I request an access token
@@ -157,10 +156,6 @@ Feature: Fordere Access Token für Pairing an
             jti:              "${json-unit.ignore}",
             iat:              "[\\d]*",
             idNummer:         "[A-Z][\\d]{9,10}",
-            professionOID:    ".*",
-            organizationName: ".*",
-            given_name:       ".*",
-            family_name:      ".*",
             iss:              "${TESTENV.issuer}",
             scope:            "(openid pairing|pairing openid)",
             sub:              ".*"
@@ -182,7 +177,7 @@ Feature: Fordere Access Token für Pairing an
     And IDP I request a challenge with
       | client_id            | scope          | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce  | response_type |
       | ${TESTENV.client_id} | pairing openid | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1 | 123456 | code          |
-    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And IDP I request a code token with signed challenge successfully
     And IDP I start new interaction keeping only
       | SSO_TOKEN_ENCRYPTED |
@@ -192,7 +187,7 @@ Feature: Fordere Access Token für Pairing an
     And IDP I request a challenge with
       | client_id            | scope          | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
       | ${TESTENV.client_id} | pairing openid | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 12345 | code          |
-    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
 
     When IDP I request a code token with sso token
     Then the response status is 302
@@ -218,7 +213,7 @@ Feature: Fordere Access Token für Pairing an
     And IDP I request a challenge with
       | client_id            | scope          | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce  | response_type |
       | ${TESTENV.client_id} | pairing openid | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1 | 123456 | code          |
-    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And IDP I request a code token with signed challenge successfully
     And IDP I start new interaction keeping only
       | SSO_TOKEN_ENCRYPTED |
@@ -228,7 +223,7 @@ Feature: Fordere Access Token für Pairing an
     And IDP I request a challenge with
       | client_id            | scope          | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | pairing openid | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
-    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And IDP I request a code token with sso token successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     And IDP I request an access token
@@ -254,10 +249,6 @@ Feature: Fordere Access Token für Pairing an
             jti:              "${json-unit.ignore}",
             iat:              "[\\d]*",
             idNummer:         "[A-Z][\\d]{9,10}",
-            professionOID:    ".*",
-            organizationName: ".*",
-            given_name:       ".*",
-            family_name:      ".*",
             iss:              "${TESTENV.issuer}",
             scope:            "(openid pairing|pairing openid)",
             sub:              ".*"

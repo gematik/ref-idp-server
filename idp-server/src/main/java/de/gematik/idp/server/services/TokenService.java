@@ -58,7 +58,7 @@ public class TokenService {
                 "Claims unvollständig im Authorization Code"));
         pkceChecker.checkCodeVerifier(keyVerifier.getStringBodyClaim(ClaimName.CODE_VERIFIER)
                 .orElseThrow(
-                    () -> new IdpServerException(3015, INVALID_REQUEST, "Claims unvollständig im key_verifier")),
+                    () -> new IdpServerException(3004, INVALID_REQUEST, "key_verifier wurde nicht übermittelt")),
             codeChallenge);
         try {
             authenticationToken.verify(idpSig.getIdentity().getCertificate().getPublicKey());
@@ -95,7 +95,7 @@ public class TokenService {
         try {
             authenticationToken.getBodyClaims();
         } catch (final Exception e) {
-            throw new IdpServerException(3013, INVALID_REQUEST, "Authorization Code ist nicht lesbar", e);
+            throw new IdpServerException(3013, INVALID_GRANT, "Authorization Code ist nicht lesbar", e);
         }
     }
 
@@ -103,7 +103,7 @@ public class TokenService {
         try {
             return encryptedAuthenticationToken.decryptNestedJwt(symmetricEncryptionKey);
         } catch (final Exception e) {
-            throw new IdpServerException(3010, INVALID_GRANT, "Authorization Code Signatur ungültig", e);
+            throw new IdpServerException(3013, INVALID_GRANT, "Authorization Code ist nicht lesbar", e);
         }
     }
 

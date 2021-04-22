@@ -48,6 +48,7 @@ public class MockIdpClient implements IIdpClient {
     @Builder.Default
     private final String uriIdpServer = IdpConstants.DEFAULT_SERVER_URL;
     private final String serverSubSalt = "someArbitrarySubSaltValue";
+    private final Map<IdpScope, String> scopeToAudienceUrls = new HashMap<>();
     private AccessTokenBuilder accessTokenBuilder;
     private AuthenticationResponseBuilder authenticationResponseBuilder;
     private AuthenticationTokenBuilder authenticationTokenBuilder;
@@ -112,10 +113,14 @@ public class MockIdpClient implements IIdpClient {
 
     @Override
     public MockIdpClient initialize() {
+        scopeToAudienceUrls.put(IdpScope.EREZEPT, "https://erp-test.zentral.erp.splitdns.ti-dienste.de/");
+        scopeToAudienceUrls.put(IdpScope.PAIRING, "https://idp-pairing-test.zentral.idp.splitdns.ti-dienste.de");
+
         serverIdentity.setKeyId(Optional.of("puk_idp_sig"));
         serverIdentity.setUse(Optional.of("sig"));
         jwtProcessor = new IdpJwtProcessor(serverIdentity);
-        accessTokenBuilder = new AccessTokenBuilder(jwtProcessor, uriIdpServer, serverSubSalt);
+        accessTokenBuilder = new AccessTokenBuilder(jwtProcessor, uriIdpServer, serverSubSalt,
+            scopeToAudienceUrls);
         authenticationChallengeBuilder = AuthenticationChallengeBuilder.builder()
             .serverSigner(new IdpJwtProcessor(serverIdentity))
             .uriIdpServer(uriIdpServer)

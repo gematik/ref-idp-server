@@ -4,7 +4,7 @@ export IDP_SERVER=https://idp-ref.zentral.idp.splitdns.ti-dienste.de/.well-known
 export GEMATIK_TESTCONFIG=rise-rru
 
 mvn clean verify -Dskip.unittests=true -Dhttps.proxyHost=192.168.230.85 -Dhttps.proxyPort=3128 \
-  -Dcucumber.filter.tags="@Approval and not @OpenBug and not @WiP and not @LongRunning and not @Biometrics and not @RefImplOnly"
+  -Dcucumber.filter.tags="@Approval and not @OpenBug and not @WiP and not @LongRunning and not @RefImplOnly"
 
 echo ""
 echo ""

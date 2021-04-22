@@ -83,7 +83,7 @@
             <dependency>
                 <groupId>de.gematik</groupId>
                 <artifactId>rbellogger</artifactId>
-                <version>0.7.2</version>
+                <version>0.7.4</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -143,9 +143,8 @@
         <version.maven-source-plugin>3.0.1</version.maven-source-plugin>
         <version.maven-surefire-plugin>2.22.2</version.maven-surefire-plugin>
         <version.spring-boot>2.3.4.RELEASE</version.spring-boot>
-        <version.springfox>3.0.0</version.springfox>
         <version.test.regex>none</version.test.regex>
     </properties>
 
-    <version>13.0.1</version>
+    <version>14.0.0</version>
 </project>

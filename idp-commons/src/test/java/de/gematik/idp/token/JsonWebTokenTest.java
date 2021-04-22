@@ -133,13 +133,13 @@ public class JsonWebTokenTest {
     }
 
     @Test
-    public void encryptJwtWithAes_ctyShouldBeJWT() {
+    public void encryptJwtWithAes_ctyShouldBeNJWT() {
         final JsonWebToken jsonWebToken = idpJwtProcessor
             .buildJwt(new JwtBuilder().addAllBodyClaims(Map.of(CONFIRMATION.getJoseName(), ZonedDateTime.now())));
 
         assertThat(jsonWebToken.encrypt(aesKey).getHeaderClaim(CONTENT_TYPE))
             .get()
-            .isEqualTo("JWT");
+            .isEqualTo("NJWT");
     }
 
     @Test

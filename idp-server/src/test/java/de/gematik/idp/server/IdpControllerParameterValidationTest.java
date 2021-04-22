@@ -185,7 +185,7 @@ public class IdpControllerParameterValidationTest {
     @Test
     public void getAccessToken_emptyGrantType_shouldGiveError() {
         assertErrorResponseMatches(buildGetAccessTokenRequest(getInvalidationFunction("grant_type", "")),
-            3014, UNSUPPORTED_GRANT_TYPE, "grant_type wird nicht unterstützt");
+            3006, INVALID_REQUEST, "grant_type wurde nicht übermittelt");
     }
 
     @Test
@@ -264,7 +264,7 @@ public class IdpControllerParameterValidationTest {
             .getRawString();
         assertErrorResponseMatches(
             buildGetAccessTokenRequest(getInvalidationFunction("key_verifier", keyVerifierPayload)),
-            3015, INVALID_REQUEST, "Claims unvollständig im key_verifier");
+            3004, INVALID_REQUEST, "key_verifier wurde nicht übermittelt");
     }
 
     @SneakyThrows

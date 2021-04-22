@@ -18,7 +18,6 @@ package de.gematik.idp.authentication;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.gematik.idp.token.JsonWebToken;
-import io.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,7 +27,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ApiModel("Antwort des Aufrufers auf die Authentication-Challenge")
 public class AuthenticationResponse {
 
     @JsonProperty(value = "Signierte Antwort auf die Authentication Challenge. JWT, welches im x5c-Attribut das "

@@ -17,6 +17,7 @@
 package de.gematik.idp.server.controllers;
 
 import static de.gematik.idp.IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.authentication.IdpJwtProcessor;
@@ -29,8 +30,6 @@ import de.gematik.idp.server.ServerUrlService;
 import de.gematik.idp.server.exceptions.IdpServerException;
 import de.gematik.idp.server.services.DiscoveryDocumentBuilder;
 import de.gematik.idp.server.validation.clientSystem.ValidateClientSystem;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,8 +43,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@Api(tags = {
-    "DiscoveryDocument-Dienst"}, description = "REST Endpunkte für das Abfragen der öffentlichen Informationen des IDP Rest Services")
 @RequiredArgsConstructor
 public class DiscoveryDocumentController {
 
@@ -63,7 +60,6 @@ public class DiscoveryDocumentController {
     }
 
     @GetMapping("/jwks")
-    @ApiOperation(value = "Endpunkt für Schlüsselinformationen für die Tokenabfrage", notes = "Verbaut Schlüsselinformationen in ein JWK und liefert dieses zurück.")
     public IdpJwksDocument getJwks() {
         final List<PkiIdentity> identities = new ArrayList<>();
         identities.add(idpSig.getIdentity());
@@ -84,9 +80,9 @@ public class DiscoveryDocumentController {
             .build();
     }
 
-    @GetMapping(value = {DISCOVERY_DOCUMENT_ENDPOINT,
-        "/auth/realms/idp/.well-known/openid-configuration"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Endpunkt für Abfrage aller öffentlich verfügbaren Informationen zum IDP Server", notes = "Diese Daten sind mit dem privaten Schlüssel des IDP Servers verschlüsselt.")
+    @GetMapping(value = {DISCOVERY_DOCUMENT_ENDPOINT, "/discoveryDocument",
+        "auth/realms/idp/.well-known/openid-configuration"},
+        produces = MediaType.APPLICATION_JSON_VALUE)
     @ValidateClientSystem
     @HttpResponseHeader(name = "Cache-Control", value = "#{environment.getProperty('caching.discoveryDocument.cacheControl')}", valueExpression = true)
     public String getDiscoveryDocument(final HttpServletRequest request) {

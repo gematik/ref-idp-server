@@ -1,9 +1,11 @@
 package de.gematik.idp.test.steps;
 
 import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
+import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.test.steps.model.DiscoveryDocument;
 import de.gematik.idp.test.steps.model.HttpMethods;
 import de.gematik.idp.test.steps.model.HttpStatus;
+import de.gematik.idp.token.JsonWebToken;
 import de.gematik.test.bdd.Context;
 import de.gematik.test.bdd.ContextKey;
 import io.restassured.http.ContentType;
@@ -12,8 +14,10 @@ import java.security.Key;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.time.chrono.ChronoZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -54,14 +58,14 @@ public class IdpBiometricsSteps extends IdpStepsBase {
                 pairingData.get("se_subject_public_key_info").toString());
             pairingData.put("se_subject_public_key_info", Base64.encodeBase64URLSafeString(pubKeyKeyData.getEncoded()));
         }
-        if ("$FILL_FROM_CERT".equals(pairingData.get("serialnumber"))) {
+        if ("$FILL_FROM_CERT" .equals(pairingData.get("serialnumber"))) {
             pairingData.put("serialnumber", extractSerialNumberFromCertificate(authCertificate.get()));
         }
-        if ("$FILL_FROM_CERT".equals(pairingData.get("issuer"))) {
+        if ("$FILL_FROM_CERT" .equals(pairingData.get("issuer"))) {
             pairingData.put("issuer",
                 Base64.encodeBase64URLSafeString(authCertificate.get().getIssuerX500Principal().getEncoded()));
         }
-        if ("$FILL_FROM_CERT".equals(pairingData.get("not_after"))) {
+        if ("$FILL_FROM_CERT" .equals(pairingData.get("not_after"))) {
             pairingData
                 .put("not_after", authCertificate.get().getNotAfter().toInstant().getEpochSecond());
         } else if (pairingData.get("not_after") != null) {
@@ -150,9 +154,9 @@ public class IdpBiometricsSteps extends IdpStepsBase {
     @SneakyThrows
     public void deregisterDeviceWithKey(String keyVerifier) {
         final Map<String, String> headers = initializeAuthHeaders();
-        if ("$NULL".equals(keyVerifier)) {
+        if ("$NULL" .equals(keyVerifier)) {
             keyVerifier = null;
-        } else if ("$REMOVE".equals(keyVerifier)) {
+        } else if ("$REMOVE" .equals(keyVerifier)) {
             keyVerifier = "";
         } else {
             keyVerifier = normalizeKeyIdentifier(keyVerifier);
@@ -192,7 +196,24 @@ public class IdpBiometricsSteps extends IdpStepsBase {
     @NotNull
     private Map<String, String> initializeAuthHeaders() {
         final Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", "Bearer " + Context.get().get(ContextKey.ACCESS_TOKEN));
+        // TODO where to get exp from
+        final Optional<Pair<String, Object>> expHeader = extractExpHeader(
+            Context.get().get(ContextKey.ACCESS_TOKEN).toString());
+        final String encryptedAccessToken =
+            keyAndCertificateStepsHelper
+                .encrypt("{\"njwt\":\"" + Context.get().get(ContextKey.ACCESS_TOKEN) + "\"}",
+                    DiscoveryDocument.getPublicKeyFromContextKey(ContextKey.PUK_ENC), expHeader.get());
+        headers.put("Authorization", "Bearer " + encryptedAccessToken);
         return headers;
+    }
+
+    private Optional<Pair<String, Object>> extractExpHeader(final String signedChallenge) {
+        try {
+            return new JsonWebToken(signedChallenge).findExpClaimInNestedJwts()
+                .map(ChronoZonedDateTime::toEpochSecond)
+                .map(epoch -> Pair.of(ClaimName.EXPIRES_AT.getJoseName(), epoch));
+        } catch (final Exception e) {
+            return Optional.empty();
+        }
     }
 }

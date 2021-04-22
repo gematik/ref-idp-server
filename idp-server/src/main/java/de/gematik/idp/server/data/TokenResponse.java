@@ -18,8 +18,6 @@ package de.gematik.idp.server.data;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,16 +27,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ApiModel(description = "Antwort des Gematik IDP Servers auf Tokenanfragen via getTokens().")
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class TokenResponse {
 
-    @ApiModelProperty(notes = "Ablaufzeit der Gültigkeit der Tokens in Sekunden(?) TODO")
     private int expiresIn;
     // TODO what do we need this for?
     private String tokenType;
-    @ApiModelProperty(notes = "ID Token TODO Abzuklären ob wir in unserer Umgebung ID Tokens verwenden.")
     private String idToken;
-    @ApiModelProperty(notes = "Zugangstoken")
     private String accessToken;
 }

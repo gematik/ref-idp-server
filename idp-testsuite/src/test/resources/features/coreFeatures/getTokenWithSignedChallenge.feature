@@ -40,7 +40,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
-    And IDP I request a challenge with'<cert>'
+    And IDP I sign the challenge with '<cert>'
     And IDP I request a code token with signed challenge successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
 
@@ -60,6 +60,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
       | /certs/valid/80276883110000018680-C_CH_AUT_R2048.p12 |
 
 
+  #noinspection NonAsciiCharacters
   @TCID:IDP_REF_TOK_002 @PRIO:1
     @Afo:A_20731 @Afo:A_20464 @Afo:A_20952 @Afo:A_21320 @Afo:A_21321 @Afo:A_20313
     @Approval @Ready
@@ -73,7 +74,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
-    And IDP I request a challenge with'<cert>'
+    And IDP I sign the challenge with '<cert>'
     And IDP I request a code token with signed challenge successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     And IDP I request an access token
@@ -97,21 +98,30 @@ Feature: Fordere Access Token mit einer signierten Challenge an
             client_id:        "${TESTENV.client_id}",
             exp:              "[\\d]*",
             jti:              "${json-unit.ignore}",
-            family_name:      "(.{1,64})",
-            given_name:       "(.{1,64})",
+            family_name:      "<family_name>",
+            given_name:       "<given_name>",
             iat:              "[\\d]*",
-            idNummer:         "[A-Z][\\d]{9,10}",
+            idNummer:         "<idNumber>",
             iss:              "${TESTENV.issuer}",
-            organizationName: "(.{1,64})",
-            professionOID:    "1\\.2\\.276\\.0\\.76\\.4\\.(3\\d|4\\d|178|23[2-90]|240|241)",
+            organizationName: "<organisationName>",
+            professionOID:    "<professionOID>",
             scope:            "${TESTENV.scopes_basisflow_regex}",
             sub:              ".*"
           }
         """
     Examples: GetToken - Zertifikate zur Signatur der Challenge
-      | cert                                                 |
-      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12  |
-      | /certs/valid/80276883110000018680-C_CH_AUT_R2048.p12 |
+      | cert                                                        | professionOID     | idNumber                          | organisationName                  | family_name | given_name                |
+      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12         | 1.2.276.0.76.4.49 | X110411675                        | Test GKV-SVNOT-VALID              | Bödefeld    | Darius Michael Brian Ubbo |
+      | /certs/valid/80276883110000018680-C_CH_AUT_R2048.p12        | 1.2.276.0.76.4.49 | X110411675                        | Test GKV-SVNOT-VALID              | Bödefeld    | Darius Michael Brian Ubbo |
+      | /certs/valid/80276883110000129068-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.54 | 3-SMC-B-Testkarte-883110000129068 | 3-SMC-B-Testkarte-883110000129068 | Blankenberg | Dominik-Peter             |
+      # TODO REF IDP-608 Reactivate testcases below
+      #| /certs/valid/80276883110000129071-C_SMCB_HCI_AUT_E256.p12 | 1.2.276.0.76.4.53 | 5-SMC-B-Testkarte-883110000129071 | $NULL            | $NULL       | $NULL      |
+      #| /certs/valid/80276883110000129074-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.52 | 1-SMC-B-Testkarte-883110000129074 | Psychotherapeutische Praxis Norbert Graf AngermännNOT-VALID | Angermänn   | Norbert                   |
+      #| /certs/valid/80276883110000129077-C_SMCB_HCI_AUT_E256.p12   | 1.2.276.0.76.4.50 | 1-SMC-B-Testkarte-883110000129077 | Praxis Rainer Graf d' AgóstinoNOT-VALID                     | Agóstino    | Rainer                    |
+      #| /certs/valid/80276883110000129080-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.51 | 2-SMC-B-Testkarte-883110000129080 | 2-SMC-B-Testkarte-883110000129080                           | $NULL         | $NULL                       |
+      #| /certs/valid/80276883110000129083-C_HP_AUT_E256.p12         | 1.2.276.0.76.4.30 | 1-HBA-Testkarte-883110000129083  | $NULL                                                         | MaiÞer      | Roland                    |
+      #| /certs/valid/80276883110000129086-C_HP_AUT_R2048.p12        | 1.2.276.0.76.4.31 | 2-HBA-Testkarte-883110000129086   | $NULL                                                         | Szczyrbel   | Gustav Freiherr           |
+
 
   @TCID:IDP_REF_TOK_003 @PRIO:1
     @Afo:A_21321 @Afo:A_20313
@@ -127,7 +137,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 98765 | code          |
-    And IDP I request a challenge with'<cert>'
+    And IDP I sign the challenge with '<cert>'
     And IDP I request a code token with signed challenge successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     And IDP I request an access token
@@ -179,7 +189,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
-    And IDP I request a challenge with'/certs/valid/80276883110000129089-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000129089-C_CH_AUT_E256.p12'
     And IDP I request a code token with signed challenge successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     And IDP I request an access token
@@ -205,7 +215,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
-    And IDP I request a challenge with'/certs/valid/80276883110000129089-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000129089-C_CH_AUT_E256.p12'
     And IDP I request a code token with signed challenge successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     And IDP I request an access token
@@ -216,7 +226,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
 
-    When IDP I request a challenge with'/certs/valid/egk-idp-idnumber-a-valid.p12'
+    When IDP I sign the challenge with '/certs/valid/egk-idp-idnumber-a-valid.p12'
     And IDP I request a code token with signed challenge successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     And IDP I request an access token
@@ -237,7 +247,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
-    And IDP I request a challenge with'/certs/valid/egk-idp-idnumber-a-valid.p12'
+    And IDP I sign the challenge with '/certs/valid/egk-idp-idnumber-a-valid.p12'
     And IDP I request a code token with signed challenge successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     And IDP I request an access token
@@ -248,7 +258,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
 
-    When IDP I request a challenge with'/certs/valid/egk-idp-idnumber-a-folgekarte-ecc.p12'
+    When IDP I sign the challenge with '/certs/valid/egk-idp-idnumber-a-folgekarte-ecc.p12'
     And IDP I request a code token with signed challenge successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     And IDP I request an access token
@@ -268,7 +278,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 888877 | code          |
-    And IDP I request a challenge with'<cert>'
+    And IDP I sign the challenge with '<cert>'
     And IDP I request a code token with signed challenge successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
 
@@ -292,7 +302,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 888877 | code          |
-    And IDP I request a challenge with'<cert>'
+    And IDP I sign the challenge with '<cert>'
     And IDP I request a code token with signed challenge successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
 
@@ -317,7 +327,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 98765 | code          |
-    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And IDP I request a code token with signed challenge successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
 
@@ -327,7 +337,6 @@ Feature: Fordere Access Token mit einer signierten Challenge an
 
   @TCID:IDP_REF_TOK_010 @PRIO:2 @Negative
     @Approval @Ready
-    @OpenBug @issue:IDP-553
   Scenario Outline: GetTokenSigned - Null Parameter
   ```
   Wir fordern einen Access Token mit einer Anfrage an, in welcher je ein Parameter null gesetzt ist.
@@ -338,7 +347,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 777766 | code          |
-    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And IDP I request a code token with signed challenge successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     When IDP I request an access token with
@@ -347,19 +356,15 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     Then IDP the response is an 400 error with gematik code <err_id> and error '<err_code>'
 
     Examples: GetToken - Null Parameter Beispiele
-      | err_id | err_code               | grant_type         | redirect_uri            | token_code_encrypted | code_verifier              | client_id            |
-      | 3014   | unsupported_grant_type | $NULL              | ${TESTENV.redirect_uri} | $CONTEXT             | ${TESTENV.code_verifier01} | ${TESTENV.client_id} |
-      | 1004   | invalid_request        | authorization_code | $NULL                   | $CONTEXT             | ${TESTENV.code_verifier01} | ${TESTENV.client_id} |
-      | 3005   | invalid_request        | authorization_code | ${TESTENV.redirect_uri} | $NULL                | ${TESTENV.code_verifier01} | ${TESTENV.client_id} |
-      | 3015   | invalid_request        | authorization_code | ${TESTENV.redirect_uri} | $CONTEXT             | $NULL                      | ${TESTENV.client_id} |
-      | 1002   | invalid_request        | authorization_code | ${TESTENV.redirect_uri} | $CONTEXT             | ${TESTENV.code_verifier01} | $NULL                |
-      # TODO REF 1st variant should return 3006
-      # TODO REF 4th variant should return 3004
-
+      | err_id | err_code        | grant_type         | redirect_uri            | token_code_encrypted | code_verifier              | client_id            |
+      | 3006   | invalid_request | $NULL              | ${TESTENV.redirect_uri} | $CONTEXT             | ${TESTENV.code_verifier01} | ${TESTENV.client_id} |
+      | 1004   | invalid_request | authorization_code | $NULL                   | $CONTEXT             | ${TESTENV.code_verifier01} | ${TESTENV.client_id} |
+      | 3005   | invalid_request | authorization_code | ${TESTENV.redirect_uri} | $NULL                | ${TESTENV.code_verifier01} | ${TESTENV.client_id} |
+      | 3004   | invalid_request | authorization_code | ${TESTENV.redirect_uri} | $CONTEXT             | $NULL                      | ${TESTENV.client_id} |
+      | 1002   | invalid_request | authorization_code | ${TESTENV.redirect_uri} | $CONTEXT             | ${TESTENV.code_verifier01} | $NULL                |
 
   @TCID:IDP_REF_TOK_011 @PRIO:2 @Negative
     @Approval @Ready
-    @OpenBug @issue:IDP-553
   Scenario Outline: GetTokenSigned - Fehlende Parameter
   ```
   Wir fordern einen Access Token mit einer Anfrage an, in welcher je ein Parameter fehlt.
@@ -370,7 +375,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 776655 | code          |
-    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And IDP I request a code token with signed challenge successfully
     When IDP I request an access token with
       | grant_type   | redirect_uri   | token_code_encrypted   | code_verifier   | client_id   |
@@ -382,15 +387,12 @@ Feature: Fordere Access Token mit einer signierten Challenge an
       | 3006   | invalid_request | $REMOVE            | ${TESTENV.redirect_uri} | $CONTEXT             | ${TESTENV.code_verifier01} | ${TESTENV.client_id} |
       | 1004   | invalid_request | authorization_code | $REMOVE                 | $CONTEXT             | ${TESTENV.code_verifier01} | ${TESTENV.client_id} |
       | 3005   | invalid_request | authorization_code | ${TESTENV.redirect_uri} | $REMOVE              | ${TESTENV.code_verifier01} | ${TESTENV.client_id} |
-      | 3015   | invalid_request | authorization_code | ${TESTENV.redirect_uri} | $CONTEXT             | $REMOVE                    | ${TESTENV.client_id} |
+      | 3004   | invalid_request | authorization_code | ${TESTENV.redirect_uri} | $CONTEXT             | $REMOVE                    | ${TESTENV.client_id} |
       | 1002   | invalid_request | authorization_code | ${TESTENV.redirect_uri} | $CONTEXT             | ${TESTENV.code_verifier01} | $REMOVE              |
-      # TODO REF 4th variant should return 3004
-
 
   #noinspection NonAsciiCharacters
   @TCID:IDP_REF_TOK_012 @PRIO:1 @Negative
     @Approval @Ready
-    @OpenBug @issue:IDP-553
   Scenario Outline: GetTokenSigned - Ungültige Parameter
   ```
   Wir fordern einen Access Token mit einer Anfrage an, in welcher ein Parameter ungültig ist.
@@ -401,7 +403,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 776655 | code          |
-    And IDP I request a challenge with'/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And IDP I request a code token with signed challenge successfully
     When IDP I request an access token with
       | grant_type   | redirect_uri   | token_code_encrypted   | code_verifier   | client_id   |
@@ -412,15 +414,14 @@ Feature: Fordere Access Token mit einer signierten Challenge an
       | err_id | err_code               | grant_type         | redirect_uri                   | token_code_encrypted                                                                                                                                      | code_verifier                                                                                                                  | client_id            |
       | 3014   | unsupported_grant_type | deepstate_grant    | ${TESTENV.redirect_uri}        | $CONTEXT                                                                                                                                                  | ${TESTENV.code_verifier01}                                                                                                     | ${TESTENV.client_id} |
       | 1020   | invalid_request        | authorization_code | http://www.somethingstore.com/ | $CONTEXT                                                                                                                                                  | ${TESTENV.code_verifier01}                                                                                                     | ${TESTENV.client_id} |
-      | 3013   | invalid_request        | authorization_code | ${TESTENV.redirect_uri}        | Ob Regen, Sturm oder Sonnenschein: Dankbare Ergebenheit ist kein Latein. Bleibe nicht länger abhängig vom Wetter, sondern schaue auf den einzigen Retter! | ${TESTENV.code_verifier01}                                                                                                     | ${TESTENV.client_id} |
+      | 3013   | invalid_grant          | authorization_code | ${TESTENV.redirect_uri}        | Ob Regen, Sturm oder Sonnenschein: Dankbare Ergebenheit ist kein Latein. Bleibe nicht länger abhängig vom Wetter, sondern schaue auf den einzigen Retter! | ${TESTENV.code_verifier01}                                                                                                     | ${TESTENV.client_id} |
       | 3016   | invalid_request        | authorization_code | ${TESTENV.redirect_uri}        | $CONTEXT                                                                                                                                                  | Was war das für ein Zaubertraum, der sich in meine Seele glückt? An Tannen gehn die Lichter an und immer weiter wird der Raum. | ${TESTENV.client_id} |
       | 3007   | invalid_client         | authorization_code | ${TESTENV.redirect_uri}        | $CONTEXT                                                                                                                                                  | ${TESTENV.code_verifier01}                                                                                                     | shadows              |
-      # TODO REF 3rd variant should return invalid_grant
 
   # TODO REF wird bei rise bereits beim get Token call abgelehnt mit 2020 - Das AUT Zertifikat ist ungültig
   @TCID:IDP_REF_TOK_013 @PRIO:2 @Negative
     @Approval @Ready
-    @OpenBug @issue:IDP-553 @issue:IDP-605
+    @OpenBug @issue:IDP-605
   Scenario Outline: GetTokenSigned - Access Token Ungültige User Consent Inhalte im Zertifikat
   ```
   Wir signieren eine Challenge mit einem Zertifikate, welches ungültige Einträge beim User Consent hat.
@@ -433,63 +434,27 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
-    And IDP I request a challenge with'<cert>'
-    And IDP I request a code token with signed challenge successfully
-    And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
-    And IDP I request an access token
-
-    When IDP I extract the body claims from token ACCESS_TOKEN
-    Then IDP the body claim 'family_name' should match '<surname>'
-    And IDP the body claim 'given_name' should match '<givenName>'
-    And IDP the body claim 'idNummer' should match '<idnumber>'
-    And IDP the body claim 'professionOID' should match '<professionOID>'
-    And IDP the body claim 'organizationName' should match '<organizationName>'
-
-    Examples: GetToken - Zertifikate und Claims
-      | cert                                               | surname                                                           | givenName                                                         | idnumber   | professionOID     | organizationName                                                  |
-      | /certs/invalid/egk-idp-famname-toolong-ecc.p12     | Dalllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll | Luca                                                              | X764228433 | 1.2.276.0.76.4.49 | gematik Musterkasse1GKVNOT-VALID                                  |
-      | /certs/invalid/egk-idp-firstname-toolong-ecc.p12   | Dal                                                               | Lucaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa | X764228437 | 1.2.276.0.76.4.49 | gematik Musterkasse1GKVNOT-VALID                                  |
-      | /certs/invalid/egk-idp-idnum-invalididnum2-ecc.p12 | Dal                                                               | Luca                                                              | 1234567890 | 1.2.276.0.76.4.49 | gematik Musterkasse1GKVNOT-VALID                                  |
-      | /certs/invalid/egk-idp-profid-invoid1-ecc.p12      | Dal                                                               | Luca                                                              | X764228437 | 1.2.276.0.76.1    | gematik Musterkasse1GKVNOT-VALID                                  |
-      | /certs/invalid/egk-idp-profid-invoid2-ecc.p12      | Dal                                                               | Luca                                                              | X764228437 | 1.2.276.0.76.255  | gematik Musterkasse1GKVNOT-VALID                                  |
-      | /certs/invalid/egk-idp-orgname-toolong-ecc.p12     | Dal                                                               | Luca                                                              | X764228437 | 1.2.276.0.76.4.49 | gematik Musterkasse1GKVNOT-VALIDgematik Musterkasse11GKVNOT-VALID |
-
-  # TODO REF wird bei rise bereits beim get Token call abgelehnt mit 2020 - Das AUT Zertifikat ist ungültig
-  @TCID:IDP_REF_TOK_014 @PRIO:2 @Negative
-    @Approval @Ready
-    @OpenBug  @issue:IDP-605
-  Scenario Outline: GetTokenSigned - ID Token Ungültige User Consent Inhalte im Zertifikat
-  ```
-  Wir signieren eine Challenge mit einem Zertifikate, welches ungültige Einträge beim User Consent hat.
-  Mit diesem fordern wir einen Access Token an.
-
-  Der ID Token muss die ungültigen Inhalte (zu lange, falsche Format,...) korrekt enthalten.
-
-
-    Given IDP I choose code verifier '${TESTENV.code_verifier01}'
-    And IDP I request a challenge with
-      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
-      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
-    And IDP I request a challenge with'<cert>'
-    And IDP I request a code token with signed challenge successfully
-    And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
-    And IDP I request an access token
-
-    When IDP I extract the body claims from token ID_TOKEN
-    Then IDP the body claim 'family_name' should match '<surname>'
-    And IDP the body claim 'given_name' should match '<givenName>'
-    And IDP the body claim 'idNummer' should match '<idnumber>'
-    And IDP the body claim 'professionOID' should match '<professionOID>'
-    And IDP the body claim 'organizationName' should match '<organizationName>'
+    And IDP I sign the challenge with '<cert>'
+    And IDP I request a code token with signed challenge
+    Then the response status is 400
+    And IDP the JSON response should match
+        """
+          { error:              "invalid_request",
+	        gematik_error_text: "Das AUT Zertifikat ist ungültig",
+	        gematik_timestamp:  "[\\d]*",
+	        gematik_uuid:       ".*",
+	        gematik_code:       "2020"
+          }
+        """
 
     Examples: GetToken - Zertifikate und Claims
-      | cert                                               | surname                                                           | givenName                                                         | idnumber   | professionOID     | organizationName                                                  |
-      | /certs/invalid/egk-idp-famname-toolong-ecc.p12     | Dalllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll | Luca                                                              | X764228433 | 1.2.276.0.76.4.49 | gematik Musterkasse1GKVNOT-VALID                                  |
-      | /certs/invalid/egk-idp-firstname-toolong-ecc.p12   | Dal                                                               | Lucaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa | X764228437 | 1.2.276.0.76.4.49 | gematik Musterkasse1GKVNOT-VALID                                  |
-      | /certs/invalid/egk-idp-idnum-invalididnum2-ecc.p12 | Dal                                                               | Luca                                                              | 1234567890 | 1.2.276.0.76.4.49 | gematik Musterkasse1GKVNOT-VALID                                  |
-      | /certs/invalid/egk-idp-profid-invoid1-ecc.p12      | Dal                                                               | Luca                                                              | X764228437 | 1.2.276.0.76.1    | gematik Musterkasse1GKVNOT-VALID                                  |
-      | /certs/invalid/egk-idp-profid-invoid2-ecc.p12      | Dal                                                               | Luca                                                              | X764228437 | 1.2.276.0.76.255  | gematik Musterkasse1GKVNOT-VALID                                  |
-      | /certs/invalid/egk-idp-orgname-toolong-ecc.p12     | Dal                                                               | Luca                                                              | X764228437 | 1.2.276.0.76.4.49 | gematik Musterkasse1GKVNOT-VALIDgematik Musterkasse11GKVNOT-VALID |
+      | cert                                               |
+      | /certs/invalid/egk-idp-famname-toolong-ecc.p12     |
+      | /certs/invalid/egk-idp-firstname-toolong-ecc.p12   |
+      | /certs/invalid/egk-idp-idnum-invalididnum2-ecc.p12 |
+#      | /certs/invalid/egk-idp-profid-invoid1-ecc.p12      | # TODO wird bei RISE nicht als Fehler erkannt.
+#      | /certs/invalid/egk-idp-profid-invoid2-ecc.p12      | #
+      | /certs/invalid/egk-idp-orgname-toolong-ecc.p12     |
 
   @TCID:IDP_REF_TOK_015 @PRIO:2 @Negative
     @Approval @Ready
@@ -505,20 +470,16 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
-    And IDP I request a challenge with<cert>
-    And IDP I request a code token with signed challenge successfully
-    And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
-    And IDP I request an access token
-
-    When IDP I extract the body claims from token ACCESS_TOKEN
-    Then IDP the body claim '<claim>' should match '$REMOVE'
+    And IDP I sign the challenge with '<cert>'
+    And IDP I request a code token with signed challenge
+    Then IDP the response is an 400 error with gematik code 2020 and error 'invalid_request'
 
     Examples: GetToken - Zertifikate und Claims
-      | cert                                            | claim            |
-      | '/certs/invalid/egk-idp-famname-null-ecc.p12'   | family_name      |
-      | '/certs/invalid/egk-idp-firstname-null-ecc.p12' | given_name       |
-      | '/certs/invalid/egk-idp-orgname-null-ecc.p12'   | organizationName |
-      | '/certs/invalid/egk-idp-profid-null-ecc.p12'    | professionOID    |
+      | cert                                          |
+      | /certs/invalid/egk-idp-famname-null-ecc.p12   |
+      | /certs/invalid/egk-idp-firstname-null-ecc.p12 |
+#      | /certs/invalid/egk-idp-orgname-null-ecc.p12   |
+      | /certs/invalid/egk-idp-profid-null-ecc.p12    |
 
 
   @TCID:IDP_REF_TOK_016 @PRIO:2 @Negative
@@ -536,7 +497,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
-    And IDP I request a challenge with<cert>
+    And IDP I sign the challenge with '<cert>'
     And IDP I request a code token with signed challenge successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     And IDP I request an access token
@@ -545,9 +506,9 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     Then IDP the body claim '<claim>' should match '$REMOVE'
 
     Examples: GetToken - Zertifikate und Claims
-      | cert                                            | claim            |
-      | '/certs/invalid/egk-idp-famname-null-ecc.p12'   | family_name      |
-      | '/certs/invalid/egk-idp-firstname-null-ecc.p12' | given_name       |
-      | '/certs/invalid/egk-idp-orgname-null-ecc.p12'   | organizationName |
-      | '/certs/invalid/egk-idp-profid-null-ecc.p12'    | professionOID    |
+      | cert                                          |
+      | /certs/invalid/egk-idp-famname-null-ecc.p12   |
+      | /certs/invalid/egk-idp-firstname-null-ecc.p12 |
+#      | '/certs/invalid/egk-idp-orgname-null-ecc.p12'   |
+      | /certs/invalid/egk-idp-profid-null-ecc.p12    |
 

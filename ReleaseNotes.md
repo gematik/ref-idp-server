@@ -1,3 +1,11 @@
+# Release 14.0.0
+* Korrigierte Fehlermeldungen
+* MockClient kann AUD dynamisch befüllen
+* DD hat Pairing als supported Scope
+* Null-Json-Value-Handling in der Testsuite verbessert
+* Option für Hex-Encoded symmetric-Keys in Test-Config
+* RBeL-Flow Kommentare angepasst
+
 # Release 13.0.1
 * github pages link korrigiert
 

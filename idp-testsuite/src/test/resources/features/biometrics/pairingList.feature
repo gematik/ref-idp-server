@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-@testsuite
 @Biometrics
 Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
 

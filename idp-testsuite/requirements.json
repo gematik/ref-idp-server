@@ -1046,10 +1046,10 @@
     "status": null,
     "results": null,
     "afoStatus": "NOTSET",
-    "refName": null,
+    "refName": "kann nicht an Aussenschnittstelle getestet werden",
     "refURL": null,
     "description": "Der Pairing-Dienst MUSS die folgenden Daten und den Zeitpunkt der Speicherung in seiner Pairing-Datenbank speichern:<br/>\n  <br/>\n <span style=\"font-family: Symbol, &#39;Symbol Regular&#39;;\">·<span style=\"font-weight: normal;font-style: normal;font-size: 8pt;font-family: &#39;Times New Roman&#39;, Times;line-height: 1.5;\">       </span></span>den Namen des Geräts (aus den in den Registrierungsdaten übertragenen DeviceInformationen)<br/>\n <span style=\"font-family: Symbol, &#39;Symbol Regular&#39;;\">·<span style=\"font-weight: normal;font-style: normal;font-size: 8pt;font-family: &#39;Times New Roman&#39;, Times;line-height: 1.5;\">       </span></span>die signierten Pairing-Daten <br/>\n <span style=\"font-family: Symbol, &#39;Symbol Regular&#39;;\">·<span style=\"font-weight: normal;font-style: normal;font-size: 8pt;font-family: &#39;Times New Roman&#39;, Times;line-height: 1.5;\">       </span></span>den aktuellen Zeitpunkt <br/>\n  <br/>\n Die logische Kombination dieser Daten MUSS über die idNummer referenzierbar sein und sie MUSS über die Kombination aus (idNummer, keyIdentifier) eindeutig referenzierbar sein. Unter „keyIdentifier“ wird hierbei das Feld „keyIdentifier“ aus den Pairing-Daten verstanden. Eventuelle Kollisionen mit bestehenden Pairing-Daten MÜSSEN mit der Fehlermeldung REG.4 begegnet werden.  Der Pairing-Endpunkt DARF die übermittelten Daten in diesem Fall NICHT speichern.<br/>",
-    "petStatus": "notBinding",
+    "petStatus": "deleted",
     "idAndVersion": "A_21424"
   },
   {

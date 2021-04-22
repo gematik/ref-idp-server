@@ -213,7 +213,7 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
                     encSsoToken
                         .map(s -> keyAndCertificateStepsHelper
                             .decryptAndExtractNjwt(s,
-                                IdpTestEnvironmentConfigurator.getSymmetricEncryptionKey(authType)))
+                                IdpTestEnvironmentConfigurator.getSymmetricEncryptionKey(CodeAuthType.SSO_TOKEN)))
                         .orElse(null)
                 );
             } catch (final Exception e) {
@@ -258,8 +258,10 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
             final MultiValueMap<String, String> parameters = UriComponentsBuilder.fromUriString(location).build()
                 .getQueryParams();
 
+            // TODO RISE deliver error attribute  //TODO REF eventually make error attribute optional
             assertThat(parameters)
-                .containsKeys("error", "gematik_error_text", "gematik_timestamp", "gematik_uuid", "gematik_code");
+                .containsKeys("error", "gematik_error_text", "gematik_timestamp", "gematik_uuid",
+                    "gematik_code");
             final String returnedErrCode = parameters.getFirst("error");
             if (!errcode.equals(returnedErrCode)) {
                 assertThat(returnedErrCode).matches(errcode);
@@ -269,7 +271,7 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
             // TODO Clarify if state should be also sent with errors
         } else {
             jsoncheck.assertJsonShouldMatchInAnyOrder(Context.getCurrentResponse().getBody().asString(),
-                " { error:              \"" + errcode + "\",\n"
+                " { ____error:              \"" + errcode + "\",\n"
                     + "\t        gematik_error_text: \".*\",\n"
                     + "\t        gematik_timestamp:  \"[\\\\d]*\",\n"
                     + "\t        gematik_uuid:       \".*\",\n"

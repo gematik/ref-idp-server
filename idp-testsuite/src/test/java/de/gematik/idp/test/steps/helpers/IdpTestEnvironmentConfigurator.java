@@ -27,6 +27,7 @@ import javax.crypto.spec.SecretKeySpec;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tomcat.util.buf.HexUtils;
 import org.assertj.core.api.Assertions;
 
 @Slf4j
@@ -53,12 +54,18 @@ public class IdpTestEnvironmentConfigurator extends TestEnvironmentConfigurator 
     public static synchronized Key getSymmetricEncryptionKey(final CodeAuthType flowType) {
         assertThat(flowType)
             .isIn(CodeAuthType.SSO_TOKEN, CodeAuthType.SIGNED_CHALLENGE, CodeAuthType.ALTERNATIVE_AUTHENTICATION);
-        return new SecretKeySpec(DigestUtils.sha256(
-            getTestEnvProperty(
-                "encryption." +
-                    flowType.toString().toLowerCase().replace(" ", "") +
-                    ".symmetric.key", "")),
-            "AES");
+
+        final String propName = "encryption." +
+            flowType.toString().toLowerCase().replace(" ", "") +
+            ".symmetric.key";
+        if (getTestEnvProperty(propName, null) != null) {
+            return new SecretKeySpec(DigestUtils.sha256(getTestEnvProperty(propName, "")),
+                "AES");
+        } else {
+            return new SecretKeySpec(HexUtils.fromHexString(getTestEnvProperty(propName + ".hex", "")),
+                "AES");
+
+        }
     }
 
     public static void initializeIDPTestEnvironment() {

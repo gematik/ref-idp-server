@@ -115,7 +115,7 @@ Feature: Fordere Discovery Dokument an
             uri_disc:                               ".*",
             response_modes_supported:               '["query"]',
             response_types_supported:               '["code"]',
-            scopes_supported:                       '["openid","e-rezept"]',
+            scopes_supported:                       '["openid","e-rezept","pairing"]',
             subject_types_supported:                '["pairwise"]',
             token_endpoint:                         "http.*",
             token_endpoint_auth_methods_supported:  '["none"]',

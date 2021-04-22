@@ -19,25 +19,26 @@ package de.gematik.idp.client;
 import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
 import static de.gematik.idp.crypto.KeyAnalysis.isEcKey;
 import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
+import static org.jose4j.jws.EcdsaUsingShaAlgorithm.convertDerToConcatenated;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.AuthenticationChallenge;
-import de.gematik.idp.authentication.AuthenticationResponseBuilder;
 import de.gematik.idp.authentication.UriUtils;
 import de.gematik.idp.client.data.*;
+import de.gematik.idp.crypto.EcSignerUtility;
+import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.field.CodeChallengeMethod;
 import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.*;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPrivateKey;
 import java.util.Base64;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -45,16 +46,12 @@ import kong.unirest.GetRequest;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.MultipartBody;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.ToString;
+import lombok.*;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
-import org.jose4j.lang.JoseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,56 +93,68 @@ public class IdpClient implements IIdpClient {
     private Function<AuthenticationResponse, AuthenticationResponse> authenticationResponseMapper = Function.identity();
     private DiscoveryDocumentResponse discoveryDocumentResponse;
 
+    @SneakyThrows
     private String signServerChallenge(final String challengeToSign, final X509Certificate certificate,
-        final Function<Pair<String, String>, String> contentSigner) {
+        final Function<byte[], byte[]> contentSigner) {
         final JwtClaims claims = new JwtClaims();
         claims.setClaim(ClaimName.NESTED_JWT.getJoseName(), challengeToSign);
         final JsonWebSignature jsonWebSignature = new JsonWebSignature();
         jsonWebSignature.setPayload(claims.toJson());
         jsonWebSignature.setHeader("typ", "JWT");
         jsonWebSignature.setHeader("cty", "NJWT");
+        jsonWebSignature.setCertificateChainHeaderValue(certificate);
         if (isEcKey(certificate.getPublicKey())) {
             jsonWebSignature.setAlgorithmHeaderValue(BRAINPOOL256_USING_SHA256);
         } else {
             jsonWebSignature.setAlgorithmHeaderValue(RSA_PSS_USING_SHA256);
         }
-        return new JsonWebToken(
-            contentSigner.apply(Pair.of(
-                jsonWebSignature.getHeaders().getEncodedHeader(),
-                jsonWebSignature.getEncodedPayload())))
+        final String signedJwt = jsonWebSignature.getHeaders().getEncodedHeader() + "."
+            + jsonWebSignature.getEncodedPayload() + "."
+            + Base64.getUrlEncoder().withoutPadding().encodeToString(
+            getSignatureBytes(contentSigner, jsonWebSignature));
+        return new JsonWebToken(signedJwt)
             .encrypt(discoveryDocumentResponse.getIdpEnc())
             .getRawString();
+    }
+
+    private byte[] getSignatureBytes(final Function<byte[], byte[]> contentSigner,
+        final JsonWebSignature jsonWebSignature) {
+        final byte[] signatureBytes = contentSigner.apply((jsonWebSignature.getHeaders().getEncodedHeader() + "."
+            + jsonWebSignature.getEncodedPayload()).getBytes(StandardCharsets.UTF_8));
+        try {
+            final byte[] strippedSignatureBytes = convertDerToConcatenated(signatureBytes, 64);
+            return strippedSignatureBytes;
+        } catch (final IOException e) {
+            return signatureBytes;
+        }
     }
 
     @Override
     public IdpTokenResult login(final PkiIdentity idpIdentity) {
         assertThatIdpIdentityIsValid(idpIdentity);
         return login(idpIdentity.getCertificate(),
-            jwtPair -> {
-                final JsonWebSignature jws = new JsonWebSignature();
-                jws.setPayload(new String(Base64.getUrlDecoder().decode(jwtPair.getRight())));
-                Optional.ofNullable(jwtPair.getLeft())
-                    .map(b64Header -> new String(Base64.getUrlDecoder().decode(b64Header)))
-                    .map(JsonParser::parseString)
-                    .map(JsonElement::getAsJsonObject)
-                    .map(JsonObject::entrySet)
-                    .stream()
-                    .flatMap(Set::stream)
-                    .forEach(entry -> jws.setHeader(entry.getKey(),
-                        entry.getValue().getAsString()));
-
-                jws.setCertificateChainHeaderValue(idpIdentity.getCertificate());
-                jws.setKey(idpIdentity.getPrivateKey());
-                try {
-                    return jws.getCompactSerialization();
-                } catch (final JoseException e) {
-                    throw new IdpClientRuntimeException("Error during encryption", e);
+            tbsData -> {
+                if (idpIdentity.getPrivateKey() instanceof RSAPrivateKey) {
+                    return createRsaSignature(tbsData, idpIdentity.getPrivateKey());
+                } else {
+                    return EcSignerUtility.createEcSignature(tbsData, idpIdentity.getPrivateKey());
                 }
             });
     }
 
+    private byte[] createRsaSignature(final byte[] toBeSignedData, final PrivateKey privateKey) {
+        try {
+            final Signature signer = Signature.getInstance("SHA256withRSAAndMGF1", new BouncyCastleProvider());
+            signer.initSign(privateKey);
+            signer.update(toBeSignedData);
+            return signer.sign();
+        } catch (final NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+            throw new IdpCryptoException(e);
+        }
+    }
+
     public IdpTokenResult login(final X509Certificate certificate,
-        final Function<Pair<String, String>, String> contentSigner) {
+        final Function<byte[], byte[]> contentSigner) {
         assertThatClientIsInitialized();
 
         final String codeVerifier = ClientUtilities.generateCodeVerifier();
@@ -234,8 +243,7 @@ public class IdpClient implements IIdpClient {
                     afterAuthorizationCallback));
 
         // Authentication
-        final String ssoChallengeEndpoint = discoveryDocumentResponse.getAuthorizationEndpoint().replace(
-            IdpConstants.BASIC_AUTHORIZATION_ENDPOINT, IdpConstants.SSO_ENDPOINT);
+        final String ssoChallengeEndpoint = discoveryDocumentResponse.getSsoEndpoint();
         LOGGER.debug("Performing Sso-Authentication with remote-URL '{}'", ssoChallengeEndpoint);
         final AuthenticationResponse authenticationResponse = authenticationResponseMapper.apply(
             authenticatorClient
@@ -273,15 +281,6 @@ public class IdpClient implements IIdpClient {
         Objects.requireNonNull(idpIdentity);
         Objects.requireNonNull(idpIdentity.getCertificate());
         Objects.requireNonNull(idpIdentity.getPrivateKey());
-    }
-
-    private IdpJwe signChallenge(
-        final AuthenticationChallenge authenticationChallenge,
-        final PkiIdentity idpIdentity) {
-        return AuthenticationResponseBuilder.builder().build()
-            .buildResponseForChallenge(authenticationChallenge, idpIdentity)
-            .getSignedChallenge()
-            .encrypt(discoveryDocumentResponse.getIdpEnc());
     }
 
     private void assertThatClientIsInitialized() {

@@ -27,7 +27,6 @@ import de.gematik.idp.client.data.*;
 import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
-import de.gematik.idp.token.TokenClaimExtraction;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -80,7 +79,8 @@ public class AuthenticatorClient {
             .map(IdpScope::getJwtValue)
             .collect(Collectors.joining(" "));
 
-        final GetRequest request = Unirest.get(authorizationRequest.getLink())
+        final GetRequest request = Unirest.get(
+            authorizationRequest.getLink())
             .queryString(CLIENT_ID.getJoseName(), authorizationRequest.getClientId())
             .queryString(RESPONSE_TYPE.getJoseName(), "code")
             .queryString(REDIRECT_URI.getJoseName(), authorizationRequest.getRedirectUri())
@@ -109,7 +109,8 @@ public class AuthenticatorClient {
         final Consumer<HttpResponse<String>> afterAuthenticationCallback) {
 
         final MultipartBody request = Unirest
-            .post(authenticationRequest.getAuthenticationEndpointUrl())
+            .post(authenticationRequest.getAuthenticationEndpointUrl()
+            )
             .field("signed_challenge", authenticationRequest.getSignedChallenge().getRawString())
             .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .header(HttpHeaders.USER_AGENT, USER_AGENT);
@@ -152,7 +153,8 @@ public class AuthenticatorClient {
         final AuthenticationRequest authenticationRequest,
         final Function<MultipartBody, MultipartBody> beforeAuthenticationCallback,
         final Consumer<HttpResponse<String>> afterAuthenticationCallback) {
-        final MultipartBody request = Unirest.post(authenticationRequest.getAuthenticationEndpointUrl())
+        final MultipartBody request = Unirest.post(authenticationRequest.getAuthenticationEndpointUrl()
+        )
             .field("ssotoken", authenticationRequest.getSsoToken())
             .field("unsigned_challenge", authenticationRequest.getChallengeToken().getRawString())
             .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
@@ -184,7 +186,8 @@ public class AuthenticatorClient {
         final IdpJwe keyVerifierToken = buildKeyVerifierToken(tokenKeyBytes, tokenRequest.getCodeVerifier(),
             tokenRequest.getIdpEnc());
 
-        final MultipartBody request = Unirest.post(tokenRequest.getTokenUrl())
+        final MultipartBody request = Unirest
+            .post(tokenRequest.getTokenUrl())
             .field("grant_type", "authorization_code")
             .field("client_id", tokenRequest.getClientId())
             .field("code", tokenRequest.getCode())
@@ -235,12 +238,15 @@ public class AuthenticatorClient {
         final HttpResponse<String> discoveryDocumentResponse = Unirest.get(discoveryDocumentUrl)
             .header(HttpHeaders.USER_AGENT, USER_AGENT)
             .asString();
-        final Map<String, Object> discoveryClaims = TokenClaimExtraction
-            .extractClaimsFromJwtBody(discoveryDocumentResponse.getBody());
+        final JsonWebToken discoveryDocument = new JsonWebToken(discoveryDocumentResponse.getBody());
+        final Map<String, Object> discoveryClaims = discoveryDocument.extractBodyClaims();
 
         return DiscoveryDocumentResponse.builder()
             .authorizationEndpoint(discoveryClaims.get("authorization_endpoint").toString())
             .tokenEndpoint(discoveryClaims.get("token_endpoint").toString())
+            .ssoEndpoint(discoveryClaims.get("sso_endpoint").toString())
+            .discSig(discoveryDocument.getClientCertificateFromHeader().get())
+            .pairingEndpoint(discoveryClaims.get("uri_pair").toString())
 
             .idpSig(retrieveServerCertFromLocation(discoveryClaims.get("uri_puk_idp_sig").toString()))
             .idpEnc(retrieveServerPuKFromLocation(discoveryClaims.get("uri_puk_idp_enc").toString()))

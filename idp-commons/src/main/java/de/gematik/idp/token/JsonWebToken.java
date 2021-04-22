@@ -80,7 +80,7 @@ public class JsonWebToken extends IdpJoseObject {
 
     public IdpJwe encrypt(final Key key) {
         return IdpJwe.createWithPayloadAndExpiryAndEncryptWithKey("{\"njwt\":\"" + getRawString() + "\"}",
-            findExpClaimInNestedJwts(), key, "JWT");
+            findExpClaimInNestedJwts(), key, "NJWT");
     }
 
     public Optional<ZonedDateTime> findExpClaimInNestedJwts() {

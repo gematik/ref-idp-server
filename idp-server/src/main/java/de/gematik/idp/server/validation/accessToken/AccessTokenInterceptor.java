@@ -19,7 +19,9 @@ package de.gematik.idp.server.validation.accessToken;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.server.RequestAccessToken;
+import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.exceptions.oauth2spec.IdpServerAccessDeniedException;
+import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
@@ -41,6 +43,7 @@ public class AccessTokenInterceptor implements HandlerInterceptor, WebMvcConfigu
 
     private final IdpJwtProcessor jwtProcessor;
     private final RequestAccessToken requestAccessToken;
+    private final IdpKey idpEnc;
 
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
@@ -54,12 +57,18 @@ public class AccessTokenInterceptor implements HandlerInterceptor, WebMvcConfigu
             return true;
         }
 
-        final JsonWebToken accessToken = Optional.ofNullable(request.getHeader(HttpHeaders.AUTHORIZATION))
+        final IdpJwe encryptedAccessToken = Optional.ofNullable(request.getHeader(HttpHeaders.AUTHORIZATION))
             .filter(StringUtils::isNotEmpty)
             .filter(authorizationHeader -> authorizationHeader.startsWith("Bearer "))
             .map(authorizationHeader -> authorizationHeader.split("Bearer ")[1])
-            .map(JsonWebToken::new)
+            .map(IdpJwe::new)
             .orElseThrow(() -> new IdpServerAccessDeniedException("No authorization-Header with Bearer-Token given"));
+        final JsonWebToken accessToken;
+        try {
+            accessToken = encryptedAccessToken.decryptNestedJwt(idpEnc.getIdentity().getPrivateKey());
+        } catch (final RuntimeException e) {
+            throw new IdpServerAccessDeniedException("Error while decrypting Access-Token");
+        }
 
         try {
             jwtProcessor.verifyAndThrowExceptionIfFail(accessToken);

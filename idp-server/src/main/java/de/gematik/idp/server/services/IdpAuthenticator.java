@@ -146,7 +146,7 @@ public class IdpAuthenticator {
             final URIBuilder redirectUriBuilder = new URIBuilder(redirectUrl);
             buildLocationUri(redirectUriBuilder, nestedX509ClientCertificate, serverChallengeClaims, state);
             return redirectUriBuilder;
-        } catch (final Exception ex) {
+        } catch (final URISyntaxException ex) {
             throw new IdpServerLocationBuildException(ex);
         }
     }
@@ -223,7 +223,7 @@ public class IdpAuthenticator {
         try {
             tucPki018Verifier.performTucPki18Checks(nestedX509ClientCertificate);
         } catch (final GemPkiException | RuntimeException e) {
-            throw new IdpServerException(2020, INVALID_REQUEST, "Das AUT Zertifikat ist ungültig");
+            throw new IdpServerException(2020, INVALID_REQUEST, "Das AUT Zertifikat ist ungültig", e);
         }
     }
 

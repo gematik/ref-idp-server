@@ -58,11 +58,12 @@ public class ThreadedContextProvider {
 
     public void assertRegexMatches(final String key, final String regex) {
         final Map<String, Object> ctxt = getMapForCurrentThread();
-        if ("$NULL".equals(regex)) {
+        if (regex == null || "$NULL" .equals(regex)) {
             assertThat(ctxt).containsEntry(key, null);
-        } else if ("$DOESNOTEXIST".equals(regex)) {
+        } else if ("$DOESNOTEXIST" .equals(regex)) {
             assertThat(ctxt).doesNotContainKey(key);
         } else {
+            assertThat(ctxt).containsKey(key);
             assertThat(ctxt).doesNotContainEntry(key, null);
             assertThat(ctxt.get(key).toString()).matches(regex);
         }

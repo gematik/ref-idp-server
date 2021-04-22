@@ -34,6 +34,9 @@ idp:
       EREZEPT: [ GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER ]
       PAIRING: [ ID_NUMBER ]
   productTypeDisplayString: "IDP"
+  scopeAudienceUrls:
+    e-rezept: "https://erp-test.zentral.erp.splitdns.ti-dienste.de/"
+    pairing: "https://idp-pairing-test.zentral.idp.splitdns.ti-dienste.de"
   registeredClient:
     eRezeptApp:
       redirectUri: http://redirect.gematik.de/erezept
@@ -134,6 +137,7 @@ idp:
         detailMessage: "code_challenge wurde nicht übermittelt"
         error: INVALID_REQUEST
         code: 2009
+        httpStatusCode: 302
       2010:
         detailMessage: "code_challenge ist ungültig"
         error: INVALID_REQUEST
@@ -147,6 +151,10 @@ idp:
         detailMessage: "Der Request besitzt keine gültige Signatur"
         error: INVALID_REQUEST
         code: 2013
+      2020:
+        detailMessage: "Das AUT Zertifikat ist ungültig"
+        error: INVALID_REQUEST
+        code: 2020
       2030:
         detailMessage: "Challenge ist ungültig"
         error: INVALID_REQUEST

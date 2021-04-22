@@ -17,6 +17,7 @@
 package de.gematik.idp.authentication;
 
 import static de.gematik.idp.field.ClaimName.*;
+
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.crypto.Nonce;
@@ -50,7 +51,7 @@ public class AuthenticationTokenBuilder {
         final X509Certificate clientCertificate,
         final Map<String, Object> serverChallengeClaims,
         final ZonedDateTime issueingTime) {
-        final Map<String, Object> claimsMap = X509ClaimExtraction.extractClaimsFromCertificate(clientCertificate);
+        final Map<String, Object> claimsMap = extractClaimsFromCertificate(clientCertificate);
 
         claimsMap.put(CLIENT_ID.getJoseName(), serverChallengeClaims.get(CLIENT_ID.getJoseName()));
         claimsMap.put(REDIRECT_URI.getJoseName(), serverChallengeClaims.get(REDIRECT_URI.getJoseName()));
@@ -78,13 +79,21 @@ public class AuthenticationTokenBuilder {
             .encrypt(encryptionKey);
     }
 
+    private Map<String, Object> extractClaimsFromCertificate(final X509Certificate clientCertificate) {
+        try {
+            return X509ClaimExtraction.extractClaimsFromCertificate(clientCertificate);
+        } catch (final RuntimeException e) {
+            throw new IdpJoseException("2020", e);
+        }
+    }
+
     public IdpJwe buildAuthenticationTokenFromSsoToken(final JsonWebToken ssoToken,
         final JsonWebToken challengeToken, final ZonedDateTime issueingTime) {
         final X509Certificate confirmationCertificate = extractConfirmationCertificate(ssoToken);
 
         final Map<String, Object> claimsMap = new HashMap<>();
 
-        claimsMap.putAll(X509ClaimExtraction.extractClaimsFromCertificate(confirmationCertificate));
+        claimsMap.putAll(extractClaimsFromCertificate(confirmationCertificate));
 
         claimsMap.put(CODE_CHALLENGE.getJoseName(), extractClaimFromChallengeToken(challengeToken, CODE_CHALLENGE));
         claimsMap.put(CODE_CHALLENGE_METHOD.getJoseName(),

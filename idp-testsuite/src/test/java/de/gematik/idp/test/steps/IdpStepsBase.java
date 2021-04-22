@@ -18,6 +18,7 @@ package de.gematik.idp.test.steps;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+
 import de.gematik.idp.test.steps.helpers.IdpTestEnvironmentConfigurator;
 import de.gematik.idp.test.steps.helpers.KeyAndCertificateStepsHelper;
 import de.gematik.idp.test.steps.model.CodeAuthType;
@@ -351,7 +352,7 @@ public class IdpStepsBase {
             Optional.ofNullable(element.getHeader())
                 .filter(RbelMapElement.class::isInstance)
                 .map(RbelMapElement.class::cast)
-                .map(rbelmap -> rbelmap.getChildElements())
+                .map(RbelMapElement::getElementMap)
                 .filter(
                     map -> map.containsKey("kid") && map.get("kid").getContent().equals("puk_idp_sig")
                         && map.containsKey("kty") && map.containsKey("x5c"))

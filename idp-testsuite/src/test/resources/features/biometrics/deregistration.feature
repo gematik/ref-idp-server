@@ -14,8 +14,7 @@
 # limitations under the License.
 #
 
-@testsuite
-@biometrics
+@Biometrics
 Feature: Deregistrierung für Alternative Authentisierung am IDP Server
 
   Frontends müssen mit eGK und auch mit alternativer Authentisierung Geräte deregistrieren können.
@@ -23,6 +22,23 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
   Background: Initialisiere Testkontext durch Abfrage des Discovery Dokuments
     Given IDP I initialize scenario from discovery document endpoint
     And IDP I retrieve public keys from URIs
+
+  Scenario Outline: GetToken signed authentication data - Gutfall - Löschen alle Pairings vor Start der Tests
+
+  ```
+  Wir löschen vor den Tests alle Pairings die danach angelegt werden sollen.
+
+    Given IDP I request an pairing access token with eGK cert '<auth_cert>'
+    And IDP I deregister the device with '<key_id>'
+
+    Examples: Zu deregistrierende Daten
+      | auth_cert                                     | key_id        |
+      | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 | keyiddereg001 |
+      | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 | keyiddereg101 |
+      | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 | keyiddereg200 |
+      | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 | keyiddereg300 |
+      | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 | keyiddereg400 |
+
 
   @Approval @Ready
   @Afo:A_21447
@@ -39,6 +55,7 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
 
     When IDP I deregister the device with 'keyiddereg001'
     Then the response status is 200
+    # TODO REF 204
 
   @Approval @Ready
   @Afo:A_21447
@@ -89,6 +106,7 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     When IDP I deregister the device with 'keyidderegNEDDA'
     Then the response status is 200
+    # TODO REF 204
     And IDP the response should match
       """
       """
@@ -113,6 +131,7 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I deregister the device with 'keyiddereg200'
     Then the response status is 200
+    # TODO REF 204
     And IDP the response should match
       """
       """
@@ -198,6 +217,7 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
     Given IDP I request an pairing access token via SSO token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     When IDP I deregister the device with '$NULL'
     Then the response status is 200
+    # TODO REF 204
     And IDP the response should match
         """
         """

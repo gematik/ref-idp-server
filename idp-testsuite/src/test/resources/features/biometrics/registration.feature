@@ -14,12 +14,12 @@
 # limitations under the License.
 #
 
-@testsuite
 @Biometrics
-@Todo:IDP-553
+@Todo:ImplementErrorMessages
 @Afo:A_21415
 @Afo:A_21425
 @Afo:A_21427
+@Afo:A_21420
 Feature: Registrierung für Alternative Authentisierung am IDP Server
 
   Frontends müssen mit einer eGK und einem pairing Access oder SSO Token Geräte registrieren können.
@@ -29,6 +29,24 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
   Background: Initialisiere Testkontext durch Abfrage des Discovery Dokuments
     Given IDP I initialize scenario from discovery document endpoint
     And IDP I retrieve public keys from URIs
+
+
+  Scenario Outline: Biometrie AltAutReg - Gutfall - Löschen alle Pairings vor Start der Tests
+
+  ```
+  Wir löschen vor den Tests alle Pairings die danach angelegt werden sollen.
+
+    Given IDP I request an pairing access token with eGK cert '<auth_cert>'
+    And IDP I deregister the device with '<key_id>'
+
+    Examples: Zu deregistrierende Daten
+      | auth_cert                                     | key_id      |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyident001 |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyident002 |
+      | /certs/valid/egk-idp-idnumber-b-valid-ecc.p12 | keyident002 |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyident003 |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyident004 |
+      | /certs/valid/egk-idp-idnumber-b-valid-ecc.p12 | keyident004 |
 
   @Approval @Ready
   Scenario: AltAutReg - Gutfall - Registriere ein Pairing
@@ -210,6 +228,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
   @OpenBug @issue:IDP-453
     @Approval
     @Afo:A_21422
+    @Afo:A_21421
   Scenario Outline: AltAutReg - Unterschiedliche Zertifikate mit identer IDNummer in Verwendung
     # Real world scenario: alte Karte verloren, neue Karte, neues Zert, alte Karte wieder verwendet, bevor diese abgelaufen ist/gesperrt wurde
     Given IDP I request an pairing access token with eGK cert '/certs/valid/<cert_access>'
@@ -222,7 +241,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | /keys/valid/<cert_keydata> | <key_identifier> | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/<cert_public_key>    |
     And IDP I sign pairing data with '/certs/valid/<cert_sign>'
     And IDP I register the device with '/certs/valid/<cert_register>'
-    And IDP the response is an <status> error with gematik code <status> and error '<errcode>'
+    And IDP the response is an <status> error with gematik code <errid> and error '<errcode>'
 
     #TODO Clarify with Spec: first and second scenario is OK?
     Examples: Liste mit Einträgen wo immer ein Zertifikat unterschiedlich aber gültig ist
@@ -280,6 +299,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | keyidentnull04 | eRezeptApp | Fair Phone   | FairPhone 3 | $NULL | Android | 1.0.2 f |
       | keyidentnull05 | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | $NULL   | 1.0.2 f |
       | keyidentnull06 | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | $NULL   |
+      # TODO REF status 403 and error code 4001, error value to be discussed https://gematik-ext.atlassian.net/browse/STIDPD-142
 
   @Approval
     @Afo:A_21423
@@ -304,6 +324,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | keyidentremove04 | eRezeptApp | Fair Phone   | FairPhone 3 | $REMOVE | Android | 1.0.2 f |
       | keyidentremove05 | eRezeptApp | Fair Phone   | FairPhone 3 | F3      | $REMOVE | 1.0.2 f |
       | keyidentremove06 | eRezeptApp | Fair Phone   | FairPhone 3 | F3      | Android | $REMOVE |
+      # TODO REF status 403 and error code 4001, error value to be discussed https://gematik-ext.atlassian.net/browse/STIDPD-142
 
   @Approval
     @Afo:A_21470
@@ -329,6 +350,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | keyidentnull15 | /keys/valid/Pub_Se_Aut-1.pem | FairPhone 3 | 419094927676993 | $NULL   | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
       | keyidentnull16 | /keys/valid/Pub_Se_Aut-1.pem | FairPhone 3 | 419094927676993 | Android | $NULL      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
       | keyidentnull17 | /keys/valid/Pub_Se_Aut-1.pem | FairPhone 3 | 419094927676993 | Android | 1893456000 | $NULL                                         |
+      # TODO REF status 403 and error code 4001, error value to be discussed https://gematik-ext.atlassian.net/browse/STIDPD-142
 
   @Approval
     @Afo:A_21470
@@ -353,9 +375,10 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | keyidentremove15 | /keys/valid/Pub_Se_Aut-1.pem | FairPhone 3 | 419094927676993 | $REMOVE | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
       | keyidentremove16 | /keys/valid/Pub_Se_Aut-1.pem | FairPhone 3 | 419094927676993 | Android | $REMOVE    | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
       | keyidentremove17 | /keys/valid/Pub_Se_Aut-1.pem | FairPhone 3 | 419094927676993 | Android | 1893456000 | $REMOVE                                       |
+      # TODO REF status 403 and error code 4001, error value to be discussed https://gematik-ext.atlassian.net/browse/STIDPD-142
 
   @Approval @issue:IDP-470 @OpenBug
-    @Afo:A_21420
+    @Afo:A_21421
   Scenario Outline: AltAutReg - Ungültige Zertifikate (selfsigned, outdated, revoced)
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -425,7 +448,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     When IDP I wait PT5M
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     Then IDP the response is an 403 error with gematik code -1 and error 'access_denied'
-
+ # TODO REF status 403 and error code 4001, error value to be discussed https://gematik-ext.atlassian.net/browse/STIDPD-142
   # TODO Hannes klärt Scenario: AltAutReg - Gültigkeitsdauer der signierten Pairing data?
 
   @Approval
@@ -442,7 +465,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     Then IDP the response is an 403 error with gematik code -1 and error 'access_denied'
-
+ # TODO REF status 403 and error code 4001, error value to be discussed https://gematik-ext.atlassian.net/browse/STIDPD-142
   @Approval
   @Afo:A_21413
   Scenario: AltAutReg - Zugriff mit ACCESS_TOKEN via SSO Token mit falschem Scope (erezept)
@@ -457,6 +480,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     Then IDP the response is an 403 error with gematik code -1 and error 'access_denied'
+ # TODO REF status 403 and error code 4001, error value to be discussed https://gematik-ext.atlassian.net/browse/STIDPD-142
 
   @Approval @Ready
   Scenario Outline: AltAutReg - Registriere ein Pairing mit falschen Versionen
@@ -471,6 +495,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12' and version '<versionReg>'
     Then IDP the response is an 400 error with gematik code -1 and error 'invalid_request'
+    # TODO REF status 403 and error code 4001, error value to be discussed https://gematik-ext.atlassian.net/browse/STIDPD-142
 
     Examples: invalid versions
       | versionDevInfo | versionDevTyp | versionReg | versionPairingData | keyid           |

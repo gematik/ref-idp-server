@@ -11,6 +11,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Set;
+import lombok.SneakyThrows;
 import net.thucydides.core.annotations.Step;
 import org.apache.commons.collections.IteratorUtils;
 import org.assertj.core.api.Assertions;
@@ -102,11 +103,18 @@ public class ClaimsStepHelper {
         }
     }
 
+    @SneakyThrows
     public JSONObject getClaims(final String jwt) throws InvalidJwtException {
         final JwtConsumerBuilder jwtConsBuilder = new JwtConsumerBuilder()
             .setSkipDefaultAudienceValidation()
             .setSkipSignatureVerification();
-        return new JSONObject(jwtConsBuilder.build().process(jwt).getJwtClaims().getClaimsMap());
+        return new JSONObject(mapNullsToJSON(jwtConsBuilder.build().process(jwt).getJwtClaims().getClaimsMap()));
+    }
+
+    public static Map<String, Object> mapNullsToJSON(final Map<String, Object> map) {
+        map.entrySet().stream().filter(entry -> entry.getValue() == null)
+            .forEach(entry -> entry.setValue(JSONObject.NULL));
+        return map;
     }
 
     protected void extractClaimsFromString(final ClaimLocation cType, final String tokenAsCompactSerialization,

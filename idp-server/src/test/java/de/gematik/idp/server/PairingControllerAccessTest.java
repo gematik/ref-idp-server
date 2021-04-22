@@ -149,7 +149,7 @@ public class PairingControllerAccessTest {
 
         assertThat(
             Unirest.get("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
+                .header(HttpHeaders.AUTHORIZATION, buildAccessTokenString())
                 .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .asString().getStatus())
             .isEqualTo(HttpStatus.OK.value());
@@ -161,7 +161,7 @@ public class PairingControllerAccessTest {
         accessToken = idpClient.login(egkUserIdentity).getAccessToken();
         assertThat(Unirest.post("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
             .field("encrypted_registration_data", createIdpJweFromRegistrationData(createValidRegistrationData("123")))
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
+            .header(HttpHeaders.AUTHORIZATION, buildAccessTokenString())
             .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString().getStatus())
@@ -172,6 +172,10 @@ public class PairingControllerAccessTest {
             .isNotEmpty();
     }
 
+    private String buildAccessTokenString() {
+        return "Bearer " + accessToken.encrypt(idpEnc.getIdentity().getCertificate().getPublicKey()).getRawString();
+    }
+
     @Test
     public void insertPairing_AlreadyInDb_expect409Conflict() throws UnirestException, CertificateEncodingException {
         idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
@@ -179,7 +183,7 @@ public class PairingControllerAccessTest {
 
         Unirest.post("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
             .field("encrypted_registration_data", createIdpJweFromRegistrationData(createValidRegistrationData("abc")))
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
+            .header(HttpHeaders.AUTHORIZATION, buildAccessTokenString())
             .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString().getStatus();
@@ -187,7 +191,7 @@ public class PairingControllerAccessTest {
         final HttpResponse<JsonNode> httpResponse = Unirest
             .post("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
             .field("encrypted_registration_data", createIdpJweFromRegistrationData(createValidRegistrationData("abc")))
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
+            .header(HttpHeaders.AUTHORIZATION, buildAccessTokenString())
             .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asJson();
@@ -210,7 +214,7 @@ public class PairingControllerAccessTest {
         final HttpResponse<JsonNode> httpResponse = Unirest
             .post("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
             .field("encrypted_registration_data", createIdpJweFromRegistrationData(registrationData))
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
+            .header(HttpHeaders.AUTHORIZATION, buildAccessTokenString())
             .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asJson();
@@ -228,7 +232,7 @@ public class PairingControllerAccessTest {
         final HttpResponse<String> httpResponse = Unirest
             .post("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
             .field("encrypted_registration_data", createIdpJweFromRegistrationData(createValidRegistrationData("123")))
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
+            .header(HttpHeaders.AUTHORIZATION, buildAccessTokenString())
             .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString();
@@ -243,14 +247,14 @@ public class PairingControllerAccessTest {
 
         Unirest.post("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
             .field("encrypted_registration_data", createIdpJweFromRegistrationData(createValidRegistrationData("456")))
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
+            .header(HttpHeaders.AUTHORIZATION, buildAccessTokenString())
             .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString();
 
         final HttpResponse<String> httpResponse = Unirest
             .delete("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT + "/654321")
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken.getRawString())
+            .header(HttpHeaders.AUTHORIZATION, buildAccessTokenString())
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString();
         assertThat(httpResponse.getStatus())

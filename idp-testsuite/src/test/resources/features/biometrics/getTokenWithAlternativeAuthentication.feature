@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-@testsuite
 @Biometrics
 @AlternativeAuth
 Feature: Alternative Authentisierung, Anwendung am IDP Server
@@ -26,6 +25,21 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     And IDP I retrieve public keys from URIs
 
 
+  Scenario Outline: GetToken signed authentication data - Gutfall - Löschen alle Pairings vor Start der Tests
+
+  ```
+  Wir löschen vor den Tests alle Pairings die danach angelegt werden sollen.
+
+    Given IDP I request an pairing access token with eGK cert '<auth_cert>'
+    And IDP I deregister the device with '<key_id>'
+
+    Examples: Zu deregistrierende Daten
+      | auth_cert                                     | key_id       |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth001 |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth002 |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth003 |
+
+
   @Afo:A_20731 @Afo:A_20464 @Afo:A_20952 @Afo:A_21320
   @Approval
   Scenario: GetToken signed authentication data - Gutfall - Validiere Antwortstruktur
@@ -34,7 +48,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
   Wir wählen einen gültigen Code verifier, fordern einen Challenge Token an, bauen die signed authentication data passend zu dem im Background registrierten Pairing, signieren diese mit dem PrK_SE_Aut.
   fordern einen AUTHORIZATION_CODE und damit dann einen ACCESS_TOKEN.
 
-  Der ACCESS_TOKEN muss die richtigen Claims mit den richtigen Inhalten haben.
+  Die Response muss ein JSON Objekt enthalten mit den richtigen Attributen access_token, expires_in, id_token und token_type
 
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I create a device information token with
@@ -42,7 +56,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create pairing data with
       | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth005   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth001   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -55,7 +69,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create authentication data with
       | authentication_data_version | auth_cert                                     | key_identifier | amr                    |
-      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth002   | ["mfa", "hwk", "face"] |
+      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth001   | ["mfa", "hwk", "face"] |
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
@@ -92,7 +106,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create pairing data with
       | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth005   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth002   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -153,7 +167,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create pairing data with
       | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth006   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth003   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -166,7 +180,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create authentication data with
       | authentication_data_version | auth_cert                                     | key_identifier | amr                    |
-      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth002   | ["mfa", "hwk", "face"] |
+      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth003   | ["mfa", "hwk", "face"] |
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
