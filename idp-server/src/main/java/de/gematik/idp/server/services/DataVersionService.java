@@ -18,7 +18,6 @@ package de.gematik.idp.server.services;
 
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_DATA_VERSION;
 import static de.gematik.idp.field.ClaimName.PAIRING_DATA_VERSION;
-
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.server.data.DataVersion;
 import de.gematik.idp.server.exceptions.IdpServerException;
@@ -49,9 +48,8 @@ public class DataVersionService {
             .filter(ALLOWED_VERSION::equals)
             .isPresent();
         if (!versionOk) {
-            throw new IdpServerException(String.format("%s version is not supported!", type),
-                IdpErrorType.INVALID_REQUEST,
-                HttpStatus.BAD_REQUEST);
+            throw new IdpServerException(IdpServerException.ERROR_ID_ACCESS_DENIED, IdpErrorType.INVALID_REQUEST,
+                String.format("%s version is not supported!", type), HttpStatus.FORBIDDEN);
         }
     }
 

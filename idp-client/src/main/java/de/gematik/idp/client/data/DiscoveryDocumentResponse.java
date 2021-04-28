@@ -33,6 +33,7 @@ public class DiscoveryDocumentResponse {
     private String ssoEndpoint;
     private String tokenEndpoint;
     private String pairingEndpoint;
+    private String authPairEndpoint;
     private X509Certificate idpSig;
     private PublicKey idpEnc;
     private X509Certificate discSig;

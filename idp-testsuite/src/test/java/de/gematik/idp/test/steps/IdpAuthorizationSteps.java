@@ -18,6 +18,7 @@ package de.gematik.idp.test.steps;
 
 import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
 import static org.assertj.core.api.Assertions.assertThat;
+
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.test.steps.helpers.IdpTestEnvironmentConfigurator;
 import de.gematik.idp.test.steps.helpers.JsonChecker;
@@ -33,6 +34,7 @@ import io.restassured.response.Response;
 import java.net.URISyntaxException;
 import java.security.Key;
 import java.security.cert.X509Certificate;
+import java.time.ZonedDateTime;
 import java.time.chrono.ChronoZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,6 +45,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.assertj.core.api.Assertions;
+import org.jetbrains.annotations.NotNull;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
 import org.json.JSONObject;
@@ -159,11 +162,26 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
                             DiscoveryDocument.getPublicKeyFromContextKey(ContextKey.PUK_ENC),
                             Pair.of("cty", "NJWT"),
                             Pair.of("typ", "JWT"),
-                            extractExpHeader(params.get("encrypted_signed_authentication_data")).orElse(null)));
+                            extractExpHeader(params.get("encrypted_signed_authentication_data"))
+                                .or(() -> extractExpForAltAuthChallenge(params))
+                                .orElse(Pair.of("exp", ZonedDateTime.now().plusMinutes(30).toEpochSecond()))));
                 path = Context.getDiscoveryDocument().getAltAuthEndpoint();
                 break;
         }
         return path;
+    }
+
+    @NotNull
+    private Optional<Pair<String, Object>> extractExpForAltAuthChallenge(final Map<String, String> params) {
+        try {
+            return new JsonWebToken(params.get("encrypted_signed_authentication_data"))
+                .getNestedJwtForClaimName(ClaimName.CHALLENGE_TOKEN)
+                .flatMap(JsonWebToken::findExpClaimInNestedJwts)
+                .map(ChronoZonedDateTime::toEpochSecond)
+                .map(expValue -> Pair.of("exp", expValue));
+        } catch (final Exception e) {
+            return Optional.empty();
+        }
     }
 
     private Optional<Pair<String, Object>> extractExpHeader(final String signedChallenge) {
@@ -187,13 +205,17 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
         // if token encryption active decrypt code and store it in context
         final Optional<String> encTokenCode = storeParamOfReloc(reloc, "code", ContextKey.TOKEN_CODE_ENCRYPTED);
         assertThat(encTokenCode).withFailMessage("Encrypted token code not found").isPresent();
+        final CodeAuthType tokenSecret = authType == CodeAuthType.ALTERNATIVE_AUTHENTICATION
+            ? CodeAuthType.ALTERNATIVE_AUTHENTICATION
+            : CodeAuthType.SIGNED_CHALLENGE;
+
         try {
             if (encTokenCode.isPresent()) {
                 Context.get().put(
                     ContextKey.TOKEN_CODE,
                     keyAndCertificateStepsHelper.decryptAndExtractNjwt(
                         encTokenCode.get(),
-                        IdpTestEnvironmentConfigurator.getSymmetricEncryptionKey(authType))
+                        IdpTestEnvironmentConfigurator.getSymmetricEncryptionKey(tokenSecret))
                 );
             } else {
                 Assertions.fail("No encrypted token code in relocation header!");

@@ -104,9 +104,12 @@ public class JsonChecker {
     @Step
     @SneakyThrows
     public void assertJsonShouldMatchInAnyOrder(final String jsonStr, final String oracleStr) {
-        final JSONObject json = new JSONObject(jsonStr);
-        final JSONObject oracle = new JSONObject(oracleStr);
+        JSONObject json = null;
+        JSONObject oracle = null;
+
         try {
+            json = new JSONObject(jsonStr);
+            oracle = new JSONObject(oracleStr);
             assertThat(IteratorUtils.toArray(json.keys()))
                 .contains(
                     IteratorUtils.toList(oracle.keys()).stream()
@@ -154,7 +157,11 @@ public class JsonChecker {
             }
         } catch (final NoSuchMethodError nsme) {
             Assertions.fail(String.format("JSON does not match!\nExpected:\n%s\n\n--------\n\nReceived:\n%s",
-                oracle.toString(2), json.toString(2)), nsme);
+                oracle == null ? null : oracle.toString(2),
+                json == null ? null : json.toString(2)), nsme);
+        } catch (final JSONException jse) {
+            Assertions.fail(String.format(
+                "Unable to parse JSON!\nExpected:\n%s\n\n--------\n\nReceived:\n%s", jsonStr, oracleStr));
         }
     }
 

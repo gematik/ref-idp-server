@@ -49,7 +49,7 @@ public class BiometrieClient {
     private JsonWebToken accessToken;
 
     @SneakyThrows
-    public boolean insertPairing(final PkiIdentity identity, final KeyPair keyPairToRegister) {
+    public RegistrationData insertPairing(final PkiIdentity identity, final KeyPair keyPairToRegister) {
         final JsonWebToken signedPairingData = new JwtBuilder()
             .setSignerKey(identity.getPrivateKey())
             .addBodyClaim(ClaimName.AUTH_CERT_SUBJECT_PUBLIC_KEY_INFO,
@@ -57,62 +57,59 @@ public class BiometrieClient {
                     .encodeToString(identity.getCertificate().getPublicKey().getEncoded()))
             .addBodyClaim(ClaimName.DEVICE_PRODUCT, "meinPhone")
             .addBodyClaim(ClaimName.CERTIFICATE_SERIALNUMBER, identity.getCertificate().getSerialNumber().toString())
-            .addBodyClaim(ClaimName.KEY_IDENTIFIER, identity.getCertificate().getSerialNumber().toString())
+            .addBodyClaim(ClaimName.KEY_IDENTIFIER, "seIdVomPhoneHerGeneriert")
             .addBodyClaim(ClaimName.SE_SUBJECT_PUBLIC_KEY_INFO,
                 Base64.getUrlEncoder().withoutPadding()
                     .encodeToString(keyPairToRegister.getPublic().getEncoded()))
             .addBodyClaim(ClaimName.CERTIFICATE_ISSUER,
                 Base64.getUrlEncoder().withoutPadding()
-                    .encodeToString(identity.getCertificate().getSubjectX500Principal().getEncoded()))
+                    .encodeToString(identity.getCertificate().getIssuerX500Principal().getEncoded()))
             .addBodyClaim(ClaimName.PAIRING_DATA_VERSION, "1.0")
             .addBodyClaim(ClaimName.CERTIFICATE_NOT_AFTER, identity.getCertificate().getNotAfter()
                 .toInstant().getEpochSecond())
             .buildJwt();
         return insertPairing(RegistrationData.builder()
-            .registrationDataVersion("1.0")
             .authCert(Base64.getUrlEncoder().withoutPadding().encodeToString(identity.getCertificate().getEncoded()))
             .signedPairingData(signedPairingData.getRawString())
             .deviceInformation(DeviceInformation.builder()
-                .deviceInformationDataVersion("1.0")
-                .name("idpClient")
                 .deviceType(DeviceType.builder()
-                    .deviceTypeDataVersion("1.0")
-                    .product("meinPhone")
-                    .model("latest")
-                    .os("Android")
-                    .osVersion("1.2.3")
-                    .manufacturer("Werke")
                     .build())
                 .build())
             .build());
     }
 
-    public boolean insertPairing(final RegistrationData biometrieData) {
+    public RegistrationData insertPairing(final RegistrationData biometrieData) {
         try {
             final String payload = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(biometrieData);
             final HttpResponse<String> response = Unirest.post(getPairingEndpoint())
                 .field("encrypted_registration_data", IdpJwe
                     .createWithPayloadAndEncryptWithKey(payload, discoveryDocumentResponse.getIdpEnc(), "JSON")
                     .getRawString())
-                .header(HttpHeaders.AUTHORIZATION, BEARER +
-                    accessToken.encrypt(discoveryDocumentResponse.getIdpEnc()).getRawString())
+                .header(HttpHeaders.AUTHORIZATION, buildAuthorizationHeader())
                 .header(HttpHeaders.USER_AGENT, USER_AGENT)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                 .asString();
-            return response.getStatus() == HttpStatus.SC_OK;
+            if (!response.isSuccess()) {
+                throw new IdpClientRuntimeException("Error during registration: " + response.getBody());
+            }
+            return biometrieData;
         } catch (final JsonProcessingException e) {
             throw new IdpClientRuntimeException(e);
         }
+    }
+
+    private String buildAuthorizationHeader() {
+        return BEARER + accessToken.encrypt(discoveryDocumentResponse.getIdpEnc()).getRawString();
     }
 
     private String getPairingEndpoint() {
         return discoveryDocumentResponse.getPairingEndpoint();
     }
 
-    public List<RegistrationData> getAllPairingsForKvnr(final String kvnr) {
+    public List<RegistrationData> getAllPairings() {
         final HttpResponse<List<RegistrationData>> response = Unirest
-            .get(getPairingEndpoint() + "/" + kvnr)
-            .header(HttpHeaders.AUTHORIZATION, BEARER + accessToken.getRawString())
+            .get(getPairingEndpoint())
+            .header(HttpHeaders.AUTHORIZATION, buildAuthorizationHeader())
             .header(HttpHeaders.USER_AGENT, USER_AGENT)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .asObject(new GenericType<>() {

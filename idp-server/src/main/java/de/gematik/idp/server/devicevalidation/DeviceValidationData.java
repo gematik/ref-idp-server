@@ -38,6 +38,8 @@ public class DeviceValidationData {
     private String manufacturer;
     @Column(name = "product")
     private String product;
+    @Column(name = "model")
+    private String model;
     @Column(name = "os")
     private String os;
     @Column(name = "os_version")

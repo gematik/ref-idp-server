@@ -23,6 +23,8 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
     Given IDP I initialize scenario from discovery document endpoint
     And IDP I retrieve public keys from URIs
 
+
+  @TCID:IDP_REF_DEREG_001
   Scenario Outline: GetToken signed authentication data - Gutfall - Löschen alle Pairings vor Start der Tests
 
   ```
@@ -30,6 +32,7 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
 
     Given IDP I request an pairing access token with eGK cert '<auth_cert>'
     And IDP I deregister the device with '<key_id>'
+    Then the response status is 204
 
     Examples: Zu deregistrierende Daten
       | auth_cert                                     | key_id        |
@@ -42,6 +45,7 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
 
   @Approval @Ready
   @Afo:A_21447
+  @TCID:IDP_REF_DEREG_002
   Scenario: Biometrie Deregister - Gutfall - Erzeuge Pairing und lösche dieses wieder
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I create a device information token with
@@ -54,11 +58,12 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
     When IDP I deregister the device with 'keyiddereg001'
-    Then the response status is 200
+    Then the response status is 204
     # TODO REF 204
 
   @Approval @Ready
   @Afo:A_21447
+  @TCID:IDP_REF_DEREG_003
   Scenario: Biometrie Deregister - Gutfall - Erzeuge mehrere Pairings und lösche nur eines
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     And IDP I create a device information token with
@@ -97,6 +102,7 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
 
   @Approval @Ready
   @Afo:A_21447 @Afo:A_21448
+  @TCID:IDP_REF_DEREG_004
   Scenario: Biometrie Deregister - Lösche Pairing für nicht existenten key identifier
 
   ```
@@ -105,14 +111,14 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
 
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     When IDP I deregister the device with 'keyidderegNEDDA'
-    Then the response status is 200
-    # TODO REF 204
+    Then the response status is 204
     And IDP the response should match
       """
       """
 
   @Approval @Ready
   @Afo:A_21448
+  @TCID:IDP_REF_DEREG_005
   Scenario: Biometrie Deregister - Lösche Pairing für key identifier einer anderen IDNummer
 
   ```
@@ -130,8 +136,7 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I deregister the device with 'keyiddereg200'
-    Then the response status is 200
-    # TODO REF 204
+    Then the response status is 204
     And IDP the response should match
       """
       """
@@ -141,6 +146,7 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
 
   @Approval @Ready
   @Afo:A_21442
+  @TCID:IDP_REF_DEREG_006
   Scenario: Biometrie Deregister - Lösche Pairing mit e-Rezept Access Token
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     And IDP I create a device information token with
@@ -153,19 +159,13 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     Given IDP I request an erezept access token with eGK cert '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     And IDP I deregister the device with 'keyiddereg300'
-    Then the response status is 403
-    And IDP the JSON response should match
-        """
-          { error:              "access_denied",
-	        gematik_error_text: ".*",
-	        gematik_timestamp:  "[\\d]*",
-	        gematik_uuid:       ".*",
-	        gematik_code:       "-1"
-          }
-        """
+    Then IDP the response is an 403 error with gematik code 4001 and error 'access_denied'
+
+    # TODO RISE add error attribute, see https://gematik-ext.atlassian.net/browse/STIDPD-142
 
   @Approval @Ready
   @Afo:A_21442
+  @TCID:IDP_REF_DEREG_007
   Scenario: Biometrie Deregister - Lösche Pairing mit e-Rezept SSO Token
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     And IDP I create a device information token with
@@ -178,35 +178,22 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     Given IDP I request an erezept access token via SSO token with eGK cert '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     And IDP I deregister the device with 'keyiddereg400'
-    Then the response status is 403
-    And IDP the JSON response should match
-        """
-          { error:              "access_denied",
-	        gematik_error_text: ".*",
-	        gematik_timestamp:  "[\\d]*",
-	        gematik_uuid:       ".*",
-	        gematik_code:       "-1"
-          }
-        """
+    Then IDP the response is an 403 error with gematik code 4001 and error 'access_denied'
+
+    # TODO RISE add error attribute, see https://gematik-ext.atlassian.net/browse/STIDPD-142
 
   @Approval @Ready
   @Afo:A_21448
+  @TCID:IDP_REF_DEREG_008
   Scenario: Biometrie Deregister - Lösche Pairing fehlender key identifier in der Anfrage
     Given IDP I request an pairing access token via SSO token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     When IDP I deregister the device with '$REMOVE'
-    Then the response status is 405
-    And IDP the JSON response should match
-        """
-          { error:              "invalid_request",
-	        gematik_error_text: ".*",
-	        gematik_timestamp:  "[\\d]*",
-	        gematik_uuid:       ".*",
-	        gematik_code:       "-1"
-          }
-        """
+    Then IDP the response is an 405 error with gematik code -1 and error 'invalid_request'
+
 
   @Approval
   @Afo:A_21448
+  @TCID:IDP_REF_DEREG_009
   Scenario: Biometrie Deregister - Lösche Pairing Null key identifier in der Anfrage
   ```
   Das Senden eines null Wertes wird am Server als KeyIdentifier "null" interpretiert.
@@ -216,8 +203,7 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
 
     Given IDP I request an pairing access token via SSO token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     When IDP I deregister the device with '$NULL'
-    Then the response status is 200
-    # TODO REF 204
+    Then the response status is 204
     And IDP the response should match
         """
         """

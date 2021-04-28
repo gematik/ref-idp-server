@@ -24,6 +24,7 @@ Feature: Fordere Access Token für Pairing an
 
   @Approval
   @Afo:A_20698
+  @TCID:IDP_REF_BIOTOKEN_001
   Scenario: Biometrie Auth - Gutfall - Fordere Challenge für Pairing an
 
   ```
@@ -93,6 +94,7 @@ Feature: Fordere Access Token für Pairing an
 
   @Afo:A_20699 @Afo:A_20951
   @Approval
+  @TCID:IDP_REF_BIOTOKEN_002
   Scenario: Biometrie Author mit signierter Challenge - Gutfall - Validiere Antwortstruktur
 
   ```
@@ -124,6 +126,7 @@ Feature: Fordere Access Token für Pairing an
   @Todo:CompareSubjectInfosInAccessTokenAndInCert
   @Todo:audFestlegen
   @Approval
+  @TCID:IDP_REF_BIOTOKEN_003
     # TODO: wollen wir noch den Wert der auth_time gegen den Zeitpunkt der Authentifizierung pruefen
   Scenario: Biometrie GetToken mit signierter Challenge - Gutfall - Validiere Access Token Claims
     Given IDP I choose code verifier '${TESTENV.code_verifier01}'
@@ -148,7 +151,7 @@ Feature: Fordere Access Token für Pairing an
         """
           { acr:              "gematik-ehealth-loa-high",
             amr:              ["mfa", "sc", "pin"],
-            aud:              "https://idp-pairing-test.zentral.idp.splitdns.ti-dienste.de",
+            aud:              "${TESTENV.aud.pairing}",
             auth_time:        "[\\d]*",
             azp:              "${TESTENV.client_id}",
             client_id:        "${TESTENV.client_id}",
@@ -164,6 +167,7 @@ Feature: Fordere Access Token für Pairing an
 
   @Afo:A_20699 @Afo:A_20951
   @Approval
+  @TCID:IDP_REF_BIOTOKEN_004
   Scenario: Biometrie Author mit SSO Token - Gutfall - Validiere Antwortstruktur
 
   ```
@@ -205,6 +209,7 @@ Feature: Fordere Access Token für Pairing an
   @Todo:CompareSubjectInfosInAccessTokenAndInCert
   @Todo:audFestlegen
   @Approval
+  @TCID:IDP_REF_BIOTOKEN_005
     # TODO: wollen wir noch den Wert der auth_time gegen den Zeitpunkt der Authentifizierung pruefen
   Scenario: Biometrie GetToken mit SSO Token - Gutfall - Validiere Access Token Claims
 
@@ -241,7 +246,7 @@ Feature: Fordere Access Token für Pairing an
         """
           { acr:              "gematik-ehealth-loa-high",
             amr:              ["mfa", "sc", "pin"],
-            aud:              "https://idp-pairing-test.zentral.idp.splitdns.ti-dienste.de",
+            aud:              "${TESTENV.aud.pairing}",
             auth_time:        "[\\d]*",
             azp:              "${TESTENV.client_id}",
             client_id:        "${TESTENV.client_id}",

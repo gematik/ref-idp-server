@@ -7,4 +7,5 @@
     <include file="idp-changelog-6.0.xml" relativeToChangelogFile="true"/>
     <include file="idp-changelog-7.0.xml" relativeToChangelogFile="true"/>
     <include file="idp-changelog-8.0.xml" relativeToChangelogFile="true"/>
+    <include file="idp-changelog-15.0.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

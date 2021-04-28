@@ -418,10 +418,8 @@ Feature: Fordere Access Token mit einer signierten Challenge an
       | 3016   | invalid_request        | authorization_code | ${TESTENV.redirect_uri}        | $CONTEXT                                                                                                                                                  | Was war das für ein Zaubertraum, der sich in meine Seele glückt? An Tannen gehn die Lichter an und immer weiter wird der Raum. | ${TESTENV.client_id} |
       | 3007   | invalid_client         | authorization_code | ${TESTENV.redirect_uri}        | $CONTEXT                                                                                                                                                  | ${TESTENV.code_verifier01}                                                                                                     | shadows              |
 
-  # TODO REF wird bei rise bereits beim get Token call abgelehnt mit 2020 - Das AUT Zertifikat ist ungültig
   @TCID:IDP_REF_TOK_013 @PRIO:2 @Negative
     @Approval @Ready
-    @OpenBug @issue:IDP-605
   Scenario Outline: GetTokenSigned - Access Token Ungültige User Consent Inhalte im Zertifikat
   ```
   Wir signieren eine Challenge mit einem Zertifikate, welches ungültige Einträge beim User Consent hat.

@@ -17,9 +17,11 @@
 package de.gematik.idp.server.validation.accessToken;
 
 import de.gematik.idp.authentication.IdpJwtProcessor;
+import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.server.RequestAccessToken;
 import de.gematik.idp.server.controllers.IdpKey;
+import de.gematik.idp.server.exceptions.IdpServerException;
 import de.gematik.idp.server.exceptions.oauth2spec.IdpServerAccessDeniedException;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
@@ -30,6 +32,7 @@ import javax.ws.rs.core.HttpHeaders;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -77,7 +80,9 @@ public class AccessTokenInterceptor implements HandlerInterceptor, WebMvcConfigu
         }
 
         if (!accessToken.getScopesBodyClaim().contains(IdpScope.PAIRING)) {
-            throw new IdpServerAccessDeniedException("Scope missing: " + IdpScope.PAIRING.getJwtValue());
+            throw new IdpServerException(IdpServerException.ERROR_ID_ACCESS_DENIED, IdpErrorType.ACCESS_DENIED,
+                "Scope missing: " + IdpScope.PAIRING.getJwtValue(),
+                HttpStatus.FORBIDDEN);
         }
 
         requestAccessToken.setAccessToken(accessToken);

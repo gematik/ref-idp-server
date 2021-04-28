@@ -24,7 +24,25 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
     And IDP I retrieve public keys from URIs
 
   @Approval @Ready
+    @TCID:IDP_REF_LIST_000
+  Scenario Outline: Biometrie Pairingliste - Gutfall - Löschen alle Pairings vor Start der Tests
+
+  ```
+  Wir löschen vor den Tests alle evt. vorhandenen Pairings die danach angelegt werden sollen.
+
+    Given IDP I request an pairing access token with eGK cert '<auth_cert>'
+    And IDP I deregister the device with '<key_id>'
+    Then the response status is 204
+
+    Examples: Zu deregistrierende Daten
+      | auth_cert                                     | key_id       |
+      | /certs/valid/egk-idp-idnumber-d-valid-ecc.p12 | keyidlist100 |
+      | /certs/valid/egk-idp-idnumber-d-valid-ecc.p12 | keyidlist200 |
+      | /certs/valid/egk-idp-idnumber-d-valid-ecc.p12 | keyidlist201 |
+
+  @Approval @Ready
   @Afo:A_21424 @Afo:A_21450 @Afo:A_21452
+  @TCID:IDP_REF_LIST_001
   Scenario: Biometrie Pairingliste - Gutfall - Erzeuge einen Pairingeintrag für IDNummer und fordere Pairingliste an
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
     And IDP I create a device information token with
@@ -57,10 +75,11 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
         }
       """
     When IDP I deregister the device with 'keyidlist100'
-    Then the response status is 200
+    Then the response status is 204
 
   @Approval @Ready
   @Afo:A_21452
+  @TCID:IDP_REF_LIST_002
   Scenario: Biometrie Pairingliste - Gutfall - Erzeuge mehrere Pairingeinträge für IDNummer und fordere Pairingliste an
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
     And IDP I create a device information token with
@@ -103,12 +122,13 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
         }
       """
     When IDP I deregister the device with 'keyidlist200'
-    Then the response status is 200
+    Then the response status is 204
     When IDP I deregister the device with 'keyidlist201'
-    Then the response status is 200
+    Then the response status is 204
 
   @Approval @Ready
   @Afo:A_21452
+  @TCID:IDP_REF_LIST_003
   Scenario: Biometrie Pairingliste - Fordere Pairingliste an für IdNummer, welche kein Pairing hat
     And IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-e-valid-ecc.p12'
     When IDP I request all pairings
@@ -122,35 +142,25 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
 
   @Approval @Ready
   @Afo:A_21442
+  @TCID:IDP_REF_LIST_004
   Scenario: Biometrie Pairingliste - Fordere Pairingliste an mit eRezept Access Token
     And IDP I request an erezept access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     When IDP I request all pairings
-    Then the response status is 403
-    And IDP the JSON response should match
-        """
-          { error:              "access_denied",
-	        gematik_error_text: ".*",
-	        gematik_timestamp:  "[\\d]*",
-	        gematik_uuid:       ".*",
-	        gematik_code:       "-1"
-          }
-        """
+    Then IDP the response is an 403 error with gematik code 4001 and error 'access_denied'
+
+        # TODO RISE add error attribute, see https://gematik-ext.atlassian.net/browse/STIDPD-142
+
 
   @Approval @Ready
   @Afo:A_21442
+  @TCID:IDP_REF_LIST_005
   Scenario: Biometrie Pairingliste - Fordere Pairingliste an mit eRezept SSO Token
     And IDP I request an erezept access token via SSO token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     When IDP I request all pairings
-    Then the response status is 403
-    And IDP the JSON response should match
-        """
-          { error:              "access_denied",
-	        gematik_error_text: ".*",
-	        gematik_timestamp:  "[\\d]*",
-	        gematik_uuid:       ".*",
-	        gematik_code:       "-1"
-          }
-        """
+    Then IDP the response is an 403 error with gematik code 4001 and error 'access_denied'
+
+      # TODO RISE add error attribute, see https://gematik-ext.atlassian.net/browse/STIDPD-142
+
 
   # obsolet da wir keinen access token kriegen
   # Scenario: Biometrie Pairingliste - Fordere Pairingliste an mit Zertifikat ohne IDNummer

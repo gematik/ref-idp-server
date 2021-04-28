@@ -877,10 +877,10 @@
     "status": null,
     "results": null,
     "afoStatus": "NOTSET",
-    "refName": null,
+    "refName": "nicht im Scope, Afo auf Herstellererklärung",
     "refURL": null,
     "description": "Innerhalb eines Service-Requests vom CERT der gematik wird der vollständige, ab Freischaltung zur Einstufung zu verwendende, Datenbestand der Block/Allow-Liste übermittelt. Der IDP-Dienst MUSS genau diese Daten innerhalb eines festgelegten Zeitraums zum Zweck der Einstufung wirksam werden lassen, die alte Datenbasis wird hierbei vollständig ersetzt. <br/>",
-    "petStatus": "notBinding",
+    "petStatus": "deleted",
     "idAndVersion": "A_21406"
   },
   {
@@ -890,10 +890,10 @@
     "status": null,
     "results": null,
     "afoStatus": "NOTSET",
-    "refName": null,
+    "refName": "nicht im Scope, Afo auf Herstellererklärung",
     "refURL": null,
     "description": "Der IDP-Dienst MUSS die Transaktionen der Datenbasis zur Einstufung der Gerätetypen (Block/Allow-Liste) der letzten 6 Monate speichern und in der Lage sein, bei Bedarf auf eine vorherige Version des Bestandes zurückfallen zu können. <br/>",
-    "petStatus": "notBinding",
+    "petStatus": "deleted",
     "idAndVersion": "A_21407"
   },
   {

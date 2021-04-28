@@ -24,7 +24,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     Given IDP I initialize scenario from discovery document endpoint
     And IDP I retrieve public keys from URIs
 
-
+  @TCID:IDP_REF_BIOTOKEN_006
   Scenario Outline: GetToken signed authentication data - Gutfall - Löschen alle Pairings vor Start der Tests
 
   ```
@@ -32,16 +32,18 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
 
     Given IDP I request an pairing access token with eGK cert '<auth_cert>'
     And IDP I deregister the device with '<key_id>'
+    Then the response status is 204
 
     Examples: Zu deregistrierende Daten
       | auth_cert                                     | key_id       |
-      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth001 |
-      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth002 |
-      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth003 |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidget001 |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidget002 |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidget003 |
 
 
   @Afo:A_20731 @Afo:A_20464 @Afo:A_20952 @Afo:A_21320
   @Approval
+  @TCID:IDP_REF_BIOTOKEN_007
   Scenario: GetToken signed authentication data - Gutfall - Validiere Antwortstruktur
 
   ```
@@ -56,7 +58,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create pairing data with
       | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth001   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidget001   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -69,7 +71,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create authentication data with
       | authentication_data_version | auth_cert                                     | key_identifier | amr                    |
-      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth001   | ["mfa", "hwk", "face"] |
+      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidget001   | ["mfa", "hwk", "face"] |
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
@@ -87,10 +89,10 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
 
 
   @Afo:A_20731 @Afo:A_20464 @Afo:A_20952 @Afo:A_21320 @Afo:A_21321 @Afo:A_20524
-  @Todo:amrAnpassen
   @Todo:CompareSubjectInfosInAccessTokenAndInCert
   @Approval
   @OpenBug
+  @TCID:IDP_REF_BIOTOKEN_008
     # TODO: wollen wir noch den Wert der auth_time gegen den Zeitpunkt der Authentifizierung pruefen
   Scenario: GetToken signed pairing data - Gutfall - Check Access Token - Validiere Access Token Claims
 
@@ -106,7 +108,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create pairing data with
       | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth002   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidget002   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -119,7 +121,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create authentication data with
       | authentication_data_version | auth_cert                                     | key_identifier | amr                    |
-      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth002   | ["mfa", "hwk", "face"] |
+      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidget002   | ["mfa", "hwk", "face"] |
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
@@ -137,7 +139,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     Then IDP the body claims should match in any order
         """
           { acr:              "gematik-ehealth-loa-high",
-            aud:              "${TESTENV.aud}",
+            aud:              "${TESTENV.aud.pairing}",
             amr:              ["mfa", "hwk", "face"],
             auth_time:        "[\\d]*",
             azp:              "${TESTENV.client_id}",
@@ -157,9 +159,9 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
         """
 
   @Afo:A_21321
-  @Todo:amrAnpassen
   @Approval
   @OpenBug
+  @TCID:IDP_REF_BIOTOKEN_009
   Scenario: GetToken signed pairing data - Gutfall - Check ID Token - Validiere ID Token Claims
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I create a device information token with
@@ -167,7 +169,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create pairing data with
       | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth003   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidget003   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -180,7 +182,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create authentication data with
       | authentication_data_version | auth_cert                                     | key_identifier | amr                    |
-      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth003   | ["mfa", "hwk", "face"] |
+      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidget003   | ["mfa", "hwk", "face"] |
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'

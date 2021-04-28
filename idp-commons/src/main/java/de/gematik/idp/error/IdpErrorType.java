@@ -19,6 +19,8 @@ package de.gematik.idp.error;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import java.util.Optional;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -49,5 +51,11 @@ public enum IdpErrorType {
     @JsonValue
     public String getSerializationValue() {
         return serializationValue;
+    }
+
+    public static Optional<IdpErrorType> fromSerializationValue(final String serializationValue) {
+        return Stream.of(IdpErrorType.values())
+            .filter(candidate -> candidate.getSerializationValue().equals(serializationValue))
+            .findAny();
     }
 }

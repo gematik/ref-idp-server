@@ -19,11 +19,27 @@ package de.gematik.idp.client;
 import static de.gematik.idp.authentication.UriUtils.extractParameterValue;
 import static de.gematik.idp.authentication.UriUtils.extractParameterValueOptional;
 import static de.gematik.idp.crypto.CryptoLoader.getCertificateFromPem;
-import static de.gematik.idp.field.ClaimName.*;
+import static de.gematik.idp.field.ClaimName.CLIENT_ID;
+import static de.gematik.idp.field.ClaimName.CODE_CHALLENGE;
+import static de.gematik.idp.field.ClaimName.CODE_CHALLENGE_METHOD;
+import static de.gematik.idp.field.ClaimName.CODE_VERIFIER;
+import static de.gematik.idp.field.ClaimName.REDIRECT_URI;
+import static de.gematik.idp.field.ClaimName.RESPONSE_TYPE;
+import static de.gematik.idp.field.ClaimName.SCOPE;
+import static de.gematik.idp.field.ClaimName.STATE;
+import static de.gematik.idp.field.ClaimName.TOKEN_KEY;
+import static de.gematik.idp.field.ClaimName.X509_CERTIFICATE_CHAIN;
 
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
-import de.gematik.idp.client.data.*;
+import de.gematik.idp.client.data.AuthenticationRequest;
+import de.gematik.idp.client.data.AuthenticationResponse;
+import de.gematik.idp.client.data.AuthorizationRequest;
+import de.gematik.idp.client.data.AuthorizationResponse;
+import de.gematik.idp.client.data.DiscoveryDocumentResponse;
+import de.gematik.idp.client.data.TokenRequest;
+import de.gematik.idp.data.IdpErrorResponse;
+import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
@@ -43,7 +59,14 @@ import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.ws.rs.core.HttpHeaders;
-import kong.unirest.*;
+import kong.unirest.BodyPart;
+import kong.unirest.GetRequest;
+import kong.unirest.Header;
+import kong.unirest.HttpRequest;
+import kong.unirest.HttpResponse;
+import kong.unirest.JsonNode;
+import kong.unirest.MultipartBody;
+import kong.unirest.Unirest;
 import kong.unirest.jackson.JacksonObjectMapper;
 import kong.unirest.json.JSONObject;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -132,20 +155,39 @@ public class AuthenticatorClient {
             checkForForwardingExceptionAndThrowIfPresent(loginResponse.getHeaders().getFirst("Location"));
         }
         if (loginResponse.getStatus() / 100 == 4) {
+            IdpErrorResponse response = new IdpErrorResponse();
+            try {
+                response = loginResponse.mapError(IdpErrorResponse.class);
+            } catch (final Exception e) {
+                // swallow
+            }
             throw new IdpClientRuntimeException(
-                "Unexpected Server-Response " + loginResponse.getStatus() + " " + loginResponse.mapError(String.class));
+                "Unexpected Server-Response " + loginResponse.getStatus() + " " + loginResponse.mapError(String.class),
+                Optional.ofNullable(response.getCode()), Optional.ofNullable(response.getError()));
         }
     }
 
     private void checkForForwardingExceptionAndThrowIfPresent(final String location) {
         extractParameterValueOptional(location, "error")
             .ifPresent(errorCode -> {
+                Optional<Integer> gematikCode = Optional.empty();
+                Optional<IdpErrorType> errorDescription = Optional.empty();
+                try {
+                    gematikCode = extractParameterValueOptional(location, "gematik_code")
+                        .map(Integer::parseInt);
+                    errorDescription = extractParameterValueOptional(location,
+                        "error_description")
+                        .flatMap(IdpErrorType::fromSerializationValue);
+                } catch (final Exception e) {
+                    // swallow
+                }
                 throw new IdpClientRuntimeException("Server-Error with message: " +
                     extractParameterValueOptional(location, "gematik_code")
                         .map(code -> code + ": ")
                         .orElse("") +
                     extractParameterValueOptional(location, "error_description")
-                        .orElse(errorCode));
+                        .orElse(errorCode),
+                    gematikCode, errorDescription);
             });
     }
 
@@ -161,6 +203,25 @@ public class AuthenticatorClient {
             .header(HttpHeaders.USER_AGENT, USER_AGENT)
             .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
         final HttpResponse<String> loginResponse = beforeAuthenticationCallback.apply(request).asString();
+        afterAuthenticationCallback.accept(loginResponse);
+        checkResponseForErrorsAndThrowIfAny(loginResponse);
+        final String location = retrieveLocationFromResponse(loginResponse);
+        return AuthenticationResponse.builder()
+            .code(extractParameterValue(location, "code"))
+            .location(location)
+            .build();
+    }
+
+    public AuthenticationResponse performAuthenticationWithAltAuth(final AuthenticationRequest authenticationRequest,
+        final Function<MultipartBody, MultipartBody> beforeAuthenticationMapper,
+        final Consumer<HttpResponse<String>> afterAuthenticationCallback) {
+        final MultipartBody request = Unirest.post(authenticationRequest.getAuthenticationEndpointUrl())
+            .field("encrypted_signed_authentication_data",
+                authenticationRequest.getEncryptedSignedAuthenticationData().getRawString())
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+            .header(HttpHeaders.USER_AGENT, USER_AGENT)
+            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+        final HttpResponse<String> loginResponse = beforeAuthenticationMapper.apply(request).asString();
         afterAuthenticationCallback.accept(loginResponse);
         checkResponseForErrorsAndThrowIfAny(loginResponse);
         final String location = retrieveLocationFromResponse(loginResponse);
@@ -247,6 +308,7 @@ public class AuthenticatorClient {
             .ssoEndpoint(discoveryClaims.get("sso_endpoint").toString())
             .discSig(discoveryDocument.getClientCertificateFromHeader().get())
             .pairingEndpoint(discoveryClaims.get("uri_pair").toString())
+            .authPairEndpoint(discoveryClaims.get("auth_pair_endpoint").toString())
 
             .idpSig(retrieveServerCertFromLocation(discoveryClaims.get("uri_puk_idp_sig").toString()))
             .idpEnc(retrieveServerPuKFromLocation(discoveryClaims.get("uri_puk_idp_enc").toString()))

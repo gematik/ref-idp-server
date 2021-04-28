@@ -24,8 +24,8 @@ import static de.gematik.idp.field.ClaimName.REDIRECT_URI;
 
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
 import de.gematik.idp.error.IdpErrorType;
+import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.field.ClaimName;
-import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.data.IdpClientConfiguration;
 import de.gematik.idp.server.exceptions.IdpServerException;
@@ -60,7 +60,6 @@ public class IdpAuthenticator {
     private final SsoTokenBuilder ssoTokenBuilder;
     private final SsoTokenValidator ssoTokenValidator;
     private final AuthenticationTokenBuilder authenticationTokenBuilder;
-    private final IdpConfiguration idpConfiguration;
     private final IdpKey idpSig;
     private final IdpKey idpEnc;
     private final TucPki018Verifier tucPki018Verifier;
@@ -79,6 +78,7 @@ public class IdpAuthenticator {
 
     public String getAlternateFlowTokenLocation(final IdpJwe signedAuthData) {
         try {
+            verifyExpInChallenge(signedAuthData);
             return buildAlternateFlowTokenLocation(decryptChallenge(signedAuthData)).build().toString();
         } catch (final URISyntaxException e) {
             throw new IdpServerLocationBuildException(e);
@@ -164,8 +164,21 @@ public class IdpAuthenticator {
     }
 
     private URIBuilder buildAlternateFlowTokenLocation(final JsonWebToken signedAuthData) {
-        final Map<String, Object> authDataClaims = addAllClaimsFromAuthDataAndChallenge(signedAuthData);
-        challengeTokenValidationService.validateChallengeToken(signedAuthData);
+        final Map<String, Object> authDataClaims;
+        try {
+            authDataClaims = addAllClaimsFromAuthDataAndChallenge(signedAuthData);
+        } catch (final IdpJoseException ije) {
+            throw new IdpServerException(2000, IdpErrorType.ACCESS_DENIED, "Invalid challenge token",
+                HttpStatus.BAD_REQUEST, ije);
+        }
+        try {
+            challengeTokenValidationService.validateChallengeToken(signedAuthData);
+        } catch (
+            final IdpJoseException ije) {
+            throw new IdpServerException(2000, IdpErrorType.ACCESS_DENIED, "Invalid challenge token",
+                HttpStatus.BAD_REQUEST, ije);
+        }
+
         final X509Certificate nestedX509ClientCertificate = signedAuthData.getAuthenticationCertificate()
             .orElseThrow(() -> new IdpServerException("No Certificate given in authentication data!",
                 IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST));

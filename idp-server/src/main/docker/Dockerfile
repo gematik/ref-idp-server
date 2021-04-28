@@ -11,4 +11,5 @@ RUN cd app && export JAR=`ls *.jar  | grep -v docker | head -1` && ln -s $JAR ./
 RUN ls -al /app
 WORKDIR /app
 EXPOSE 8080
+HEALTHCHECK CMD curl --fail http://localhost:8080/actuator/health | grep UP || exit 1
 CMD ["java", "-jar", "/app/idp-server.jar"]

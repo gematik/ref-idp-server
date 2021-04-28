@@ -53,16 +53,20 @@ public class ChallengeTokenValidationService {
     private final DataVersionService dataVersionService;
 
     public void validateChallengeToken(final JsonWebToken signedChallenge) {
-        final Set<String> amr = (Set<String>) signedChallenge.getBodyClaim(ClaimName.AUTHENTICATION_METHODS_REFERENCE)
+        final Set<String> amr = signedChallenge.getBodyClaim(ClaimName.AUTHENTICATION_METHODS_REFERENCE)
             .filter(List.class::isInstance)
             .map(List.class::cast)
             .stream()
-            .flatMap(List::stream)
+            .flatMap(List<String>::stream)
             .collect(Collectors.toSet());
         final boolean isAltAuth = amr.containsAll(Arrays.asList("mfa", "hwk")) &&
             (amr.contains("fpt") || amr.contains("face") || amr.contains("pin") || amr.contains("pwd"));
         if (isAltAuth) {
-            validateAlternateAuthenticationDataAndThrowExceptionIfFail(signedChallenge);
+            try {
+                validateAlternateAuthenticationDataAndThrowExceptionIfFail(signedChallenge);
+            } catch (final RuntimeException e) {
+                throw new IdpServerException(2000, IdpErrorType.ACCESS_DENIED, e.getMessage(), e);
+            }
         } else {
             authenticationChallengeVerifier.verifyResponseAndThrowExceptionIfFail(signedChallenge);
         }
@@ -89,7 +93,7 @@ public class ChallengeTokenValidationService {
         dataVersionService.checkDataVersion(deviceInformation.getDeviceType());
 
         if (deviceValidationService.assess(deviceInformation.getDeviceType())
-            .equals(DeviceValidationState.NOT_ALLOWED)) {
+            .equals(DeviceValidationState.BLOCK)) {
             throw new IdpServerException("Device validation matched with not allowed devices!",
                 IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
         } else if (

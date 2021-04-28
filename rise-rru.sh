@@ -3,6 +3,10 @@
 export IDP_SERVER=https://idp-ref.zentral.idp.splitdns.ti-dienste.de/.well-known/openid-configuration
 export GEMATIK_TESTCONFIG=rise-rru
 
+# for intellij
+# IDP_SERVER=https://idp-ref.zentral.idp.splitdns.ti-dienste.de/.well-known/openid-configuration;GEMATIK_TESTCONFIG=rise-rru
+# -Dhttps.proxyHost=192.168.230.85 -Dhttps.proxyPort=3128
+
 mvn clean verify -Dskip.unittests=true -Dhttps.proxyHost=192.168.230.85 -Dhttps.proxyPort=3128 \
   -Dcucumber.filter.tags="@Approval and not @OpenBug and not @WiP and not @LongRunning and not @RefImplOnly"
 

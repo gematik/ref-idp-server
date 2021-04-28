@@ -33,5 +33,6 @@ public class RegistrationData {
     private String authCert;
     private String signedPairingData;
     private DeviceInformation deviceInformation;
-    private String registrationDataVersion;
+    @Builder.Default
+    private String registrationDataVersion = "1.0";
 }

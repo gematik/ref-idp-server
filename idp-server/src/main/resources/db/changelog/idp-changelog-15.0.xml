@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet author="idpServer" id="changelog-15.0">
+        <addColumn schemaName="IDP" tableName="device_validation">
+            <column name="model" type="VARCHAR(255)">
+                <constraints nullable="false" primaryKey="false" unique="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet author="idpServer" id="changelog-15.1">
+        <dropIndex tableName="device_validation" schemaName="IDP" indexName="ix_device_validation_all_column"/>
+        <dropIndex tableName="device_validation" schemaName="IDP" indexName="ix_device_validation_search"/>
+        <createIndex indexName="ix_device_validation_search" schemaName="IDP" tableName="device_validation"
+            unique="true">
+            <column name="manufacturer"/>
+            <column name="product"/>
+            <column name="model"/>
+            <column name="os"/>
+            <column name="os_version"/>
+        </createIndex>
+        <createIndex indexName="ix_device_validation_all_column" schemaName="IDP" tableName="device_validation"
+            unique="true">
+            <column name="manufacturer"/>
+            <column name="product"/>
+            <column name="model"/>
+            <column name="os"/>
+            <column name="os_version"/>
+            <column name="state"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="idpServer" id="changelog-15.2">
+        <insert schemaName="IDP" tableName="device_validation">
+            <column name="manufacturer" value="Samsung"/>
+            <column name="product" value="Galaxy-8"/>
+            <column name="model" value="SM-950F"/>
+            <column name="os" value="Android"/>
+            <column name="os_version" value="4.0.3"/>
+            <column name="state" value="ALLOW"/>
+        </insert>
+        <insert schemaName="IDP" tableName="device_validation">
+            <column name="manufacturer" value="Samsung"/>
+            <column name="product" value="Galaxy-S3"/>
+            <column name="model" value="GT-I9300"/>
+            <column name="os" value="Android"/>
+            <column name="os_version" value="2.2"/>
+            <column name="state" value="ALLOW"/>
+        </insert>
+        <insert schemaName="IDP" tableName="device_validation">
+            <column name="manufacturer" value="Apple"/>
+            <column name="product" value="iPhone"/>
+            <column name="model" value="iPhone Xs"/>
+            <column name="os" value="iOS"/>
+            <column name="os_version" value="14.4.2"/>
+            <column name="state" value="ALLOW"/>
+        </insert>
+        <insert schemaName="IDP" tableName="device_validation">
+            <column name="manufacturer" value="Google"/>
+            <column name="product" value="Pixel 2"/>
+            <column name="model" value="Pixel 2"/>
+            <column name="os" value="Android"/>
+            <column name="os_version" value="11.0.0"/>
+            <column name="state" value="BLOCK"/>
+        </insert>
+        <insert schemaName="IDP" tableName="device_validation">
+            <column name="manufacturer" value="Google"/>
+            <column name="product" value="Pixel 2"/>
+            <column name="model" value="Pixel 2 XL"/>
+            <column name="os" value="Android"/>
+            <column name="os_version" value="10.0.0"/>
+            <column name="state" value="BLOCK"/>
+        </insert>
+        <insert schemaName="IDP" tableName="device_validation">
+            <column name="manufacturer" value="Apple"/>
+            <column name="product" value="iPhone"/>
+            <column name="model" value="iPhone 3G"/>
+            <column name="os" value="iOS"/>
+            <column name="os_version" value="6.1.6"/>
+            <column name="state" value="BLOCK"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

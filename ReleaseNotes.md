@@ -1,3 +1,7 @@
+# Release 15.0.0
+* Login mit AltAuth benötigt exp-Header in encrypted_signed_challenge
+* Fehlercodes für altAuth-Endpunkte harmonisiert
+
 # Release 14.0.0
 * Korrigierte Fehlermeldungen
 * MockClient kann AUD dynamisch befüllen

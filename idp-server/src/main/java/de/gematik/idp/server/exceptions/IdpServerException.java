@@ -25,6 +25,9 @@ import org.springframework.web.server.ResponseStatusException;
 @Getter
 public class IdpServerException extends ResponseStatusException {
 
+    public static final int ERROR_ID_ACCESS_DENIED = 4001;
+    private static final long serialVersionUID = -6555732805035877954L;
+
     private final IdpErrorType errorType;
     private int errorCode = -1;
 
@@ -74,6 +77,13 @@ public class IdpServerException extends ResponseStatusException {
     public IdpServerException(final int errorCode, final IdpErrorType errorType, final String message,
         final Exception e) {
         super(HttpStatus.BAD_REQUEST, message, e);
+        this.errorType = errorType;
+        this.errorCode = errorCode;
+    }
+
+    public IdpServerException(final int errorCode, final IdpErrorType errorType, final String message,
+        final HttpStatus returnStatus, final Exception e) {
+        super(returnStatus, message, e);
         this.errorType = errorType;
         this.errorCode = errorCode;
     }

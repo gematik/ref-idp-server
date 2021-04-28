@@ -34,7 +34,6 @@ import de.gematik.idp.server.validation.parameterConstraints.CheckClientId;
 import de.gematik.idp.server.validation.parameterConstraints.CheckScope;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -101,8 +100,7 @@ public class IdpController {
     @ValidateClientSystem
     public void validateSignedAuthenticationDataAndGetTokenCode(
         @RequestParam(value = "encrypted_signed_authentication_data", required = false) @NotNull final IdpJwe signedAuthenticationData,
-        final HttpServletResponse response,
-        final HttpServletRequest request) {
+        final HttpServletResponse response) {
         setNoCacheHeader(response);
         response.setStatus(HttpStatus.FOUND.value());
         final String tokenLocation = idpAuthenticator.getAlternateFlowTokenLocation(signedAuthenticationData);
@@ -114,8 +112,7 @@ public class IdpController {
     public void validateSsoTokenAndGetTokenCode(
         @RequestParam(value = "ssotoken", required = false) @NotNull(message = "2040") final IdpJwe ssoToken,
         @RequestParam(value = "unsigned_challenge", required = false) @NotNull(message = "2030") final JsonWebToken challengeToken,
-        final HttpServletResponse response,
-        final HttpServletRequest request) {
+        final HttpServletResponse response) {
         setNoCacheHeader(response);
         response.setStatus(HttpStatus.FOUND.value());
 

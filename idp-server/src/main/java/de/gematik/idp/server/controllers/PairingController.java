@@ -30,6 +30,7 @@ import javax.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import net.dracoblue.spring.web.mvc.method.annotation.HttpResponseHeader;
 import net.dracoblue.spring.web.mvc.method.annotation.HttpResponseHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -57,6 +58,7 @@ public class PairingController {
     @DeleteMapping(value = PAIRING_ENDPOINT + "/{key_identifier}")
     @ValidateAccessToken
     @ValidateClientSystem
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void deleteSinglePairing(
         @PathVariable(value = "key_identifier") @NotNull(message = "4001") final String keyIdentifier) {
         pairingService
@@ -70,6 +72,6 @@ public class PairingController {
     public PairingDto insertPairing(
         @RequestParam(value = "encrypted_registration_data", required = false) @NotNull final String registrationData) {
         return pairingService
-            .validateAndInsertPairingData(requestAccessToken.getAccessToken(), new IdpJwe(registrationData));
+            .validatePairingData(requestAccessToken.getAccessToken(), new IdpJwe(registrationData));
     }
 }

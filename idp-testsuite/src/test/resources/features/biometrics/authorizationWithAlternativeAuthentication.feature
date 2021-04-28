@@ -24,6 +24,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     And IDP I retrieve public keys from URIs
 
 
+  @TCID:IDP_REF_ALTAUTH_001
   Scenario Outline: Author mit alternativer Authentisierung - Gutfall - Löschen alle Pairings vor Start der Tests
 
   ```
@@ -31,19 +32,22 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
 
     Given IDP I request an pairing access token with eGK cert '<auth_cert>'
     And IDP I deregister the device with '<key_id>'
+    Then the response status is 204
 
     Examples: Zu deregistrierende Daten
-      | auth_cert                                     | key_id       |
-      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth001 |
-      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth002 |
-      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth003 |
-      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth004 |
-      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth007 |
+      | auth_cert                                     | key_id              |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth001allow   |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth001unknown |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth002        |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth003        |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth004        |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth007        |
 
 
   @Afo:A_21439 @Afo:A_21449 @Afo:A_21440
-  @Approval
-  Scenario: Author mit alternativer Authentisierung - Gutfall - Validiere Antwortstruktur
+    @TCID:IDP_REF_ALTAUTH_002
+    @Approval
+  Scenario Outline: Author mit alternativer Authentisierung - Gutfall - Validiere Antwortstruktur
 
   ```
   Wir wählen einen gültigen Code verifier, fordern einen Challenge Token an, bauen die signed authentication data passend zu dem im Background registrierten Pairing, signieren diese mit dem PrK_SE_Aut und
@@ -53,11 +57,11 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
 
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I create a device information token with
-      | name       | manufacturer | product     | model | os      | os_version |
-      | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
+      | name       | manufacturer   | product   | model   | os   | os_version   |
+      | eRezeptApp | <manufacturer> | <product> | <model> | <os> | <os_version> |
     And IDP I create pairing data with
       | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth001   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | /keys/valid/Pub_Se_Aut-1.pem | <keyid>        | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -66,11 +70,11 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 12345 | code          |
     And IDP I create a device information token with
-      | name       | manufacturer | product     | model | os      | os_version |
-      | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
+      | name       | manufacturer   | product   | model   | os   | os_version   |
+      | eRezeptApp | <manufacturer> | <product> | <model> | <os> | <os_version> |
     And IDP I create authentication data with
       | authentication_data_version | auth_cert                                     | key_identifier | amr                    |
-      | 1.0                         | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth001   | ["mfa", "hwk", "face"] |
+      | 1.0                         | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | <keyid>        | ["mfa", "hwk", "face"] |
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication
     Then the response status is 302
@@ -84,9 +88,15 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     And IDP I expect the Context with key STATE to match 'xxxstatexxx'
     And IDP I expect the Context with key SSO_TOKEN_ENCRYPTED to match '.*'
 
+    Examples: Device Information
+      | manufacturer | product     | model   | os      | os_version | keyid               |
+      | Samsung      | Galaxy-8    | SM-950F | Android | 4.0.3      | keyidauth001allow   |
+      | Fair Phone   | FairPhone 3 | F3      | Android | 1.0.2 f    | keyidauth001unknown |
+
+
   @Afo:A_20731 @Afo:A_20377 @Afo:A_20697 @Afo:A_21317
-  @Todo:ClarifyTokenCodeContentRelevant
-  @Approval
+  @Approval @RefImplOnly
+  @TCID:IDP_REF_ALTAUTH_003
   Scenario: Author mit alternativer Authentisierung - Gutfall - Validiere Location Header und Code Token Claims
 
   ```
@@ -119,7 +129,6 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication successfully
 
-    #TODO ANALYZE why are w enot able to decrypt the token code? Whats the secret here?
     When IDP I extract the header claims from token TOKEN_CODE
     Then IDP the header claims should match in any order
         """
@@ -156,7 +165,8 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
         """
 
   @Afo:A_20319
-  @Signature @Approval
+  @Signature @Approval @RefImplOnly
+  @TCID:IDP_REF_ALTAUTH_004
   Scenario: Author mit alternativer Authentisierung - Validiere Signatur des Code Token
 
   ```
@@ -188,11 +198,11 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication successfully
 
-    #TODO ANALYZE why are w enot able to decrypt the token code? Whats the secret here?
     Then IDP the context TOKEN_CODE must be signed with cert PUK_SIGN
 
   @Afo:A_20695
   @Signature @Approval @RefImplOnly
+  @TCID:IDP_REF_ALTAUTH_005
   Scenario: Author mit alternativer Authentisierung - Validiere Signatur des SSO Token
 
   ```
@@ -220,7 +230,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create authentication data with
       | authentication_data_version | auth_cert                                     | key_identifier | amr                    |
-      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth002   | ["mfa", "hwk", "face"] |
+      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth004   | ["mfa", "hwk", "face"] |
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication successfully
 
@@ -232,10 +242,11 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     #
     # negative cases
   @Approval
+  @TCID:IDP_REF_ALTAUTH_006
   Scenario: Author mit alternativer Authentisierung - Pairing anlegen für Negativtests
 
   ```
-  Wir registrierten ein Pairing, das für die Negativtests verwendet wird
+  Wir registrierten ein Pairing, das für alle Negativtests verwendet wird. Damit entfallen diese Schritte in den folgenden Testfällen.
 
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I create a device information token with
@@ -243,19 +254,20 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create pairing data with
       | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth007   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-b-valid-ecc.p12 |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth007   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     Then the response status is 200
 
   @Approval
   @Afo:A_21438
+  @TCID:IDP_REF_ALTAUTH_007
   Scenario: Author mit alternativer Authentisierung - Aufruf ohne Parameter encrypted_signed_authentication_data
 
   ```
-  Wir wählen einen gültigen Code verifier, fordern einen Challenge Token an und fordern dann einen TOKEN_CODE, ohne den Parameter "encrypted_signed_authentication_data" mitzugeben.
+  Mit dem in "Pairing anlegen für Negativtests" angelegten Pairing wird eine Authentisierung angestoßen. Dabei wird der Parameter "encrypted_signed_authentication_data" nicht mitgegeben.
 
-  Der Server muss diese Anfrage mit HTTP Status 400 und einer Fehlermeldung ablehnen.
+  Der Server muss diese Anfrage mit HTTP Status 400 und einer passenden Fehlermeldung ablehnen.
 
 
     Given IDP I choose code verifier '${TESTENV.code_verifier02}'
@@ -269,11 +281,12 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
 
   @Approval
     @Afo:A_21434
+    @TCID:IDP_REF_ALTAUTH_008
   Scenario Outline: Author mit alternativer Authentisierung - fehlende Inhalte in encrypted_signed_authentication_data
 
   ```
-  Wir wählen einen gültigen Code verifier, fordern einen Challenge Token an, bauen die signed authentication data passend zu dem im Background registrierten Pairing, signieren diese mit dem PrK_SE_Aut und
-  fordern einen AUTHORIZATION_CODE mit den signed authentication data an. In den encrypted_signed_authentication_data fehlen notwendige Inhalte.
+  Mit dem in "Pairing anlegen für Negativtests" angelegten Pairing wird eine Authentisierung angestoßen. Alles ist soweit korrekt, nur in den encrypted_signed_authentication_data
+  fehlen notwendige Inhalte (auth_cert, key_id, amr).
 
   Der Server muss diese Anfrage mit HTTP Status 400 und einer Fehlermeldung ablehnen.
 
@@ -292,19 +305,19 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     Then IDP the response is an 400 error with gematik code <error_code> and error '<error>'
 
     Examples: Parameter für authentication data
-      | auth_cert                                     | key_id       | amr                    | error_code | error           |
-      | $NULL                                         | keyidauth007 | ["mfa", "hwk", "face"] | -1         | invalid_request |
-      | /certs/valid/egk-idp-idnumber-b-valid-ecc.p12 | $NULL        | ["mfa", "hwk", "face"] | -1         | invalid_request |
-      | /certs/valid/egk-idp-idnumber-b-valid-ecc.p12 | keyidauth007 | $NULL                  | -1         | server_error    |
-      # TODO REF error_code: 2000 for all requests, error entry to be discussed https://gematik-ext.atlassian.net/browse/STIDPD-142
+      | auth_cert                                     | key_id       | amr                    | error_code | error         |
+      | $NULL                                         | keyidauth007 | ["mfa", "hwk", "face"] | 2000       | access_denied |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | $NULL        | ["mfa", "hwk", "face"] | 2000       | access_denied |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth007 | $NULL                  | 2000       | access_denied |
 
   @Approval
   @Afo:A_20699
+  @TCID:IDP_REF_ALTAUTH_009
   Scenario: Author mit alternativer Authentisierung - fehlerhafte Challenge in encrypted_signed_authentication_data
 
   ```
-  Wir wählen einen gültigen Code verifier, fordern einen Challenge Token an,  modifizieren den Inhalt, der definitiv falsch ist,  bauen die signed authentication data passend zu dem im Background registrierten Pairing, signieren diese und
-  fordern einen AUTHORIZATION_CODE mit den signed authentication data an.
+  Mit dem in "Pairing anlegen für Negativtests" angelegten Pairing wird eine Authentisierung angestoßen. Dabei ist die Challenge in den encryted signed authentication data nicht die
+  ursprüngliche Challenge.
 
   Der Server muss diese Anfrage mit HTTP Status 400 und einer Fehlermeldung ablehnen.
 
@@ -318,21 +331,18 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create authentication data with
       | authentication_data_version | auth_cert                                     | key_identifier | amr                    |
-      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-b-valid-ecc.p12 | keyidauth007   | ["mfa", "hwk", "face"] |
+      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth007   | ["mfa", "hwk", "face"] |
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication
-    Then IDP the response is an 400 error with gematik code -1 and error 'server_error'
-    # TODO REF error_code: 2000 for all requests, error entry to be discussed https://gematik-ext.atlassian.net/browse/STIDPD-142
+    Then IDP the response is an 400 error with gematik code 2000 and error 'access_denied'
 
   @Approval
   @Afo:21438
+  @TCID:IDP_REF_ALTAUTH_010
   Scenario: Author mit alternativer Authentisierung - fehlerhafte Signatur der encrypted_signed_authentication_data
 
   ```
-  Wir wählen einen gültigen Code verifier, fordern einen Challenge Token an,
-  bauen die signed authentication data passend zu dem im Background registrierten Pairing,
-  signieren diese mit dem falschen Schlüssel und
-  fordern einen AUTHORIZATION_CODE mit den signed authentication data an.
+  Mit dem in "Pairing anlegen für Negativtests" angelegten Pairing wird eine Authentisierung angestoßen. Dabei signieren wir die signed authentication data mit dem falschen Schlüssel.
 
   Der Server muss diese Anfrage mit HTTP Status 400 und einer Fehlermeldung ablehnen.
 
@@ -345,19 +355,19 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create authentication data with
       | authentication_data_version | auth_cert                                     | key_identifier | amr                    |
-      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-b-valid-ecc.p12 | keyidauth007   | ["mfa", "hwk", "face"] |
+      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth007   | ["mfa", "hwk", "face"] |
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-2-pkcs8.der'
     When IDP I request a code token with alternative authentication
-    Then IDP the response is an 400 error with gematik code -1 and error 'invalid_request'
+    Then IDP the response is an 400 error with gematik code 2000 and error 'access_denied'
     # TODO REF error_code: 2000 for all requests, error entry to be discussed https://gematik-ext.atlassian.net/browse/STIDPD-142
 
   @Approval
     @Afo:A_21434
+    @TCID:IDP_REF_ALTAUTH_011
   Scenario Outline: Author mit alternativer Authentisierung - Konflikt mit zuvor registrierten Daten - falsche Inhalte in encrypted_signed_authentication_data
 
   ```
-  Wir wählen einen gültigen Code verifier, fordern einen Challenge Token an, bauen die signed authentication data,
-  signieren diese und fordern damit einen AUTHORIZATION_CODE an.
+  Mit dem in "Pairing anlegen für Negativtests" angelegten Pairing wird eine Authentisierung angestoßen.
   In den signed authentication passt ein Datum (key_identifier oder auth_certificate) nicht zu den zuvor registrierten Daten.
 
   Der Server muss diese Anfrage mit HTTP Status 400 und einer Fehlermeldung ablehnen.
@@ -377,8 +387,8 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     Then IDP the response is an 400 error with gematik code <error_code> and error '<error>'
 
     Examples: Parameter für authentication data
-      | auth_cert                                     | key_id           | error_code | error           |
-      | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 | keyidauth007     | -1         | invalid_request |
-      | /certs/valid/egk-idp-idnumber-b-valid-ecc.p12 | keyidauthInvalid | -1         | invalid_request |
+      | auth_cert                                     | key_id           | error_code | error         |
+      | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 | keyidauth007     | 2000       | access_denied |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauthInvalid | 2000       | access_denied |
       # TODO REF error_code: 2000 for all requests, error entry to be discussed https://gematik-ext.atlassian.net/browse/STIDPD-142
 

@@ -17,5 +17,5 @@
 package de.gematik.idp.server.devicevalidation;
 
 public enum DeviceValidationState {
-    ALLOWED, NOT_ALLOWED, GREY, NOT_ASSESSED, UNKNOWN
+    ALLOW, BLOCK, UNKNOWN
 }

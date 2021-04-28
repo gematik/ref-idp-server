@@ -21,7 +21,6 @@ import static de.gematik.idp.crypto.KeyAnalysis.isEcKey;
 import static de.gematik.idp.field.ClaimName.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
-
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.TestConstants;
 import de.gematik.idp.client.IdpClient;
@@ -219,7 +218,7 @@ public class PairingControllerAccessTest {
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asJson();
         assertThat(httpResponse.getStatus())
-            .isEqualTo(HttpStatus.BAD_REQUEST.value());
+            .isEqualTo(HttpStatus.FORBIDDEN.value());
         assertThat(httpResponse.getBody().getObject().keySet().toArray())
             .containsAnyOf("error", "gematik_code", "gematik_timestamp", "gematik_uuid", "gematik_error_text");
     }
@@ -237,7 +236,7 @@ public class PairingControllerAccessTest {
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString();
         assertThat(httpResponse.getStatus())
-            .isEqualTo(HttpStatus.BAD_REQUEST.value());
+            .isEqualTo(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
@@ -258,7 +257,7 @@ public class PairingControllerAccessTest {
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString();
         assertThat(httpResponse.getStatus())
-            .isEqualTo(HttpStatus.OK.value());
+            .isEqualTo(HttpStatus.NO_CONTENT.value());
     }
 
     private String createIdpJweFromRegistrationData(final RegistrationData registrationData) {

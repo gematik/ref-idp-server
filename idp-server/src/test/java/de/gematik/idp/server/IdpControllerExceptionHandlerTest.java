@@ -26,7 +26,6 @@ import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.UriUtils;
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.server.exceptions.IdpServerException;
-import de.gematik.idp.server.exceptions.oauth2spec.IdpServerInvalidRequestException;
 import de.gematik.idp.server.services.IdpAuthenticator;
 import de.gematik.idp.tests.PkiKeyResolver;
 import kong.unirest.HttpResponse;
@@ -64,7 +63,7 @@ public class IdpControllerExceptionHandlerTest {
 
     @Test
     public void testIdpServerInvalidRequestException() {
-        doThrow(new IdpServerInvalidRequestException(EXCEPTION_TEXT))
+        doThrow(new IdpServerException(IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST))
             .when(idpAuthenticator).validateRedirectUri(any(), any());
         final HttpResponse<JsonNode> response = Unirest.get(serverUrl + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
             .queryString("signed_challenge", "signed_challenge")

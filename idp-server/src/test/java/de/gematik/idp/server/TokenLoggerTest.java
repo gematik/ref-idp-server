@@ -24,6 +24,7 @@ import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
 import de.gematik.idp.client.BiometrieClient;
 import de.gematik.idp.client.IdpClient;
+import de.gematik.idp.client.data.RegistrationData;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.tests.PkiKeyResolver;
@@ -385,9 +386,13 @@ public class TokenLoggerTest {
                 .accessToken(idpClient.login(egkUserIdentity).getAccessToken())
                 .build();
 
-            biometrieClient.insertPairing(egkUserIdentity, new KeyPair(
+            final RegistrationData registrationData = biometrieClient.insertPairing(egkUserIdentity, new KeyPair(
                 smcbIdentity.getCertificate().getPublicKey(),
                 smcbIdentity.getPrivateKey()));
+
+            biometrieClient.getAllPairings();
+
+            idpClient.loginWithAltAuth(registrationData, smcbIdentity.getPrivateKey());
         }, targetFolder + "biometrie.html", "Registrierung eines neuen Geräts beim Server");
     }
 

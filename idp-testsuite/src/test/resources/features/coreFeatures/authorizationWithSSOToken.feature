@@ -132,7 +132,7 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
   @TCID:IDP_REF_AUTH_103 @PRIO:1
   @Afo:A_20319
   @Approval @Ready
-  @Signature @RefImplOnly
+  @Signature
   Scenario: AuthorSSO - Validiere Signatur des Code Token
 
   ```

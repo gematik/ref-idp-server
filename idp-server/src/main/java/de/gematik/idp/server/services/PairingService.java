@@ -24,6 +24,7 @@ import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
 import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.crypto.X509ClaimExtraction;
 import de.gematik.idp.error.IdpErrorType;
+import de.gematik.idp.exceptions.ChallengeSignatureInvalidException;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.data.DeviceInformation;
@@ -86,7 +87,7 @@ public class PairingService {
         pairingRepository.deleteByIdNumber(idNumber);
     }
 
-    public PairingDto validateAndInsertPairingData(final JsonWebToken accessToken,
+    public PairingDto validatePairingData(final JsonWebToken accessToken,
         final IdpJwe encryptedRegistrationData) {
         final RegistrationData registrationData = decryptAndValidateRegistrationData(encryptedRegistrationData);
 
@@ -102,12 +103,17 @@ public class PairingService {
             .getCertificateFromPem(Base64.getUrlDecoder().decode(registrationData.getAuthCert()));
         checkIdNumberIntegrity(authCert, idNumber);
         checkSignedPairingDataClaims(signedPairingData);
-        authenticationChallengeVerifier
-            .verifyResponseWithCertAndThrowExceptionIfFail(authCert, signedPairingData);
+        try {
+            authenticationChallengeVerifier
+                .verifyResponseWithCertAndThrowExceptionIfFail(authCert, signedPairingData);
+        } catch (final ChallengeSignatureInvalidException csie) {
+            throw new IdpServerException(IdpServerException.ERROR_ID_ACCESS_DENIED, IdpErrorType.INVALID_REQUEST,
+                "Challenge signature invalid!", HttpStatus.FORBIDDEN, csie);
+        }
         if (deviceValidationService.assess(deviceInformation.getDeviceType())
-            .equals(DeviceValidationState.NOT_ALLOWED)) {
-            throw new IdpServerException("Device validation matched with not allowed devices!",
-                IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+            .equals(DeviceValidationState.BLOCK)) {
+            throw new IdpServerException(IdpServerException.ERROR_ID_ACCESS_DENIED, IdpErrorType.INVALID_REQUEST,
+                "Device validation matched with not allowed devices!", HttpStatus.FORBIDDEN);
         }
         final PairingData data = createPairingDtoFromRegistrationData(signedPairingData, idNumber,
             deviceInformation.getName());
@@ -122,14 +128,9 @@ public class PairingService {
             final Set<ConstraintViolation<RegistrationData>> validationViolations = validator
                 .validate(registrationData);
             if (!validationViolations.isEmpty()) {
-                final IdpServerException exception = new IdpServerException(
-                    "Validation error found in registration_data",
+                throw new IdpServerException(IdpServerException.ERROR_ID_ACCESS_DENIED,
                     IdpErrorType.INVALID_REQUEST,
-                    HttpStatus.BAD_REQUEST);
-                final ConstraintViolation<RegistrationData> violation = validationViolations.iterator().next();
-                exception
-                    .addSuppressed(new RuntimeException(violation.getPropertyPath() + " " + violation.getMessage()));
-                throw exception;
+                    "Validation error found in registration_data", HttpStatus.FORBIDDEN);
             }
             dataVersionService.checkDataVersion(registrationData);
 
@@ -145,9 +146,9 @@ public class PairingService {
             .filter(claimName -> signedPairingData.getBodyClaim(claimName).isEmpty())
             .findAny();
         if (missingClaim.isPresent()) {
-            throw new IdpServerException(
+            throw new IdpServerException(IdpServerException.ERROR_ID_ACCESS_DENIED, IdpErrorType.INVALID_REQUEST,
                 "Unable to find " + missingClaim.get().getJoseName() + " in signed_pairing_data",
-                IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+                HttpStatus.FORBIDDEN);
         }
         dataVersionService.checkSignedPairingDataVersion(signedPairingData);
     }
@@ -155,8 +156,8 @@ public class PairingService {
     public PairingData insertPairing(final PairingData pairingData) {
         if (pairingRepository.findByIdNumberAndKeyIdentifier(pairingData.getIdNumber(), pairingData.getKeyIdentifier())
             .isPresent()) {
-            throw new IdpServerException("Pairing for this ID/Key-ID combination already in DB",
-                IdpErrorType.INVALID_REQUEST, HttpStatus.CONFLICT);
+            throw new IdpServerException(4004, IdpErrorType.INVALID_REQUEST,
+                "Pairing for this ID/Key-ID combination already in DB", HttpStatus.CONFLICT);
         }
         return pairingRepository.save(pairingData);
     }
@@ -169,11 +170,11 @@ public class PairingService {
     }
 
     private void validateAccessTokenClaims(final JsonWebToken accessToken) {
-        if (!accessToken.getBodyClaim(AUTHENTICATION_METHODS_REFERENCE).isPresent()) {
+        if (accessToken.getBodyClaim(AUTHENTICATION_METHODS_REFERENCE).isEmpty()) {
             throw new IdpServerException("Claim amr not found in accessToken",
                 IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
         }
-        if (!accessToken.getBodyClaim(AUTHENTICATION_CLASS_REFERENCE).isPresent()) {
+        if (accessToken.getBodyClaim(AUTHENTICATION_CLASS_REFERENCE).isEmpty()) {
             throw new IdpServerException("Claim acr not found in accessToken",
                 IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
         }
@@ -195,21 +196,29 @@ public class PairingService {
     }
 
     private void checkIdNumberIntegrity(final X509Certificate authCert, final String idNumber) {
-        final Map<String, Object> certClaims = X509ClaimExtraction
-            .extractClaimsFromCertificate(
-                authCert);
-        final String idNumberCert = getIdNumberFromCertClaimsAndThrowExceptionIfNotExists(certClaims);
-        if (!idNumber.equals(idNumberCert)) {
-            throw new IdpServerException("IdNumber does not match to certificate!",
-                IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+        try {
+            final Map<String, Object> certClaims = X509ClaimExtraction
+                .extractClaimsFromCertificate(
+                    authCert);
+            final String idNumberCert = getIdNumberFromCertClaimsAndThrowExceptionIfNotExists(certClaims);
+            if (!idNumber.equals(idNumberCert)) {
+                throw new IdpServerException(IdpServerException.ERROR_ID_ACCESS_DENIED, IdpErrorType.INVALID_REQUEST,
+                    "IdNumber does not match to certificate!", HttpStatus.FORBIDDEN);
+            }
+        } catch (final IdpServerException ise) {
+            throw ise;
+        } catch (final Exception e) {
+            throw new IdpServerException(IdpServerException.ERROR_ID_ACCESS_DENIED, IdpErrorType.INVALID_REQUEST,
+                "Error while extracting claim from certificate!", HttpStatus.FORBIDDEN);
         }
     }
 
     private String getIdNumberFromCertClaimsAndThrowExceptionIfNotExists(final Map<String, Object> certClaims) {
         final Optional<String> idNumber = Optional.ofNullable(certClaims.get(ClaimName.ID_NUMBER.getJoseName()))
             .filter(String.class::isInstance).map(String.class::cast);
-        return idNumber.orElseThrow(() -> new IdpServerException("Information ID_NUMBER not found in certificate",
-            IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST));
+        return idNumber.orElseThrow(() -> new IdpServerException(IdpServerException.ERROR_ID_ACCESS_DENIED,
+            IdpErrorType.INVALID_REQUEST,
+            "Information ID_NUMBER not found in certificate", HttpStatus.FORBIDDEN));
     }
 
     public Optional<PairingDto> getPairingDtoForIdNumberAndKeyIdentifier(final String kvnr,
