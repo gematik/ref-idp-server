@@ -1,3 +1,7 @@
+# Release 16.0.0
+- JWK-Koordinaten sind nun BigEndian kodiert
+- Datentypen in Fehlermeldungen korrigiert
+
 # Release 15.0.0
 * Login mit AltAuth benötigt exp-Header in encrypted_signed_challenge
 * Fehlercodes für altAuth-Endpunkte harmonisiert

@@ -94,7 +94,7 @@ FL <-- FD : RETURN certificates
     hnote left #lightgreen : sign with prk_idp_sig
     IDPAuth -> IDPAuth : generate SSO_TOKEN
     IDPAuth --> authM : RETURN 302 redirect to Fachlogik with location header\ncontaining AUTHORIZATION_CODE, state and\nSSO_TOKEN as query param
-    note left : sso token can be omitted (returned as null value)\nfor specific client_ids configured on the IDP server
+    note left : sso token can be omitted (returned as null value)\nfor specific client_ids configured on the IDP server.\nThis specifically includes Primärsysteme
     deactivate authM
     deactivate IDPAuth
     ||45||

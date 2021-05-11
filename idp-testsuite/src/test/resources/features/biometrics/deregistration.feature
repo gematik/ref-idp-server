@@ -32,7 +32,6 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
 
     Given IDP I request an pairing access token with eGK cert '<auth_cert>'
     And IDP I deregister the device with '<key_id>'
-    Then the response status is 204
 
     Examples: Zu deregistrierende Daten
       | auth_cert                                     | key_id        |

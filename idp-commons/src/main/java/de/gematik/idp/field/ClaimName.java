@@ -85,7 +85,14 @@ public enum ClaimName {
     CERTIFICATE_SERIALNUMBER("serialnumber"),
     CERTIFICATE_ISSUER("issuer"),
     CERTIFICATE_NOT_AFTER("not_after"),
-    SIGNATURE_ALGORITHM_IDENTIFIER("signature_algorithm_identifier");
+    SIGNATURE_ALGORITHM_IDENTIFIER("signature_algorithm_identifier"),
+    AUTHORIZATION_ENDPOINT("authorization_endpoint"),
+    TOKEN_ENDPOINT("token_endpoint"),
+    SSO_ENDPOINT("sso_endpoint"),
+    URI_PAIR("uri_pair"),
+    AUTH_PAIR_ENDPOINT("auth_pair_endpoint"),
+    URI_PUK_IDP_SIG("uri_puk_idp_sig"),
+    URI_PUK_IDP_ENC("uri_puk_idp_enc");
 
     @JsonValue
     private final String joseName;

@@ -2,7 +2,6 @@
 FROM adoptopenjdk/maven-openjdk11:latest AS build-env
 RUN mkdir /app
 COPY idp-server*.jar /app
-COPY cacerts /opt/java/openjdk/lib/security/
 RUN ls -l /app
 # docker plugin creates additional jar file for whatever reasons, wont need it so skip it on image
 RUN rm -f /app/idp-server*-docker-info.jar

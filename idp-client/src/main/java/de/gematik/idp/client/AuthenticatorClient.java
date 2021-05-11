@@ -19,25 +19,11 @@ package de.gematik.idp.client;
 import static de.gematik.idp.authentication.UriUtils.extractParameterValue;
 import static de.gematik.idp.authentication.UriUtils.extractParameterValueOptional;
 import static de.gematik.idp.crypto.CryptoLoader.getCertificateFromPem;
-import static de.gematik.idp.field.ClaimName.CLIENT_ID;
-import static de.gematik.idp.field.ClaimName.CODE_CHALLENGE;
-import static de.gematik.idp.field.ClaimName.CODE_CHALLENGE_METHOD;
-import static de.gematik.idp.field.ClaimName.CODE_VERIFIER;
-import static de.gematik.idp.field.ClaimName.REDIRECT_URI;
-import static de.gematik.idp.field.ClaimName.RESPONSE_TYPE;
-import static de.gematik.idp.field.ClaimName.SCOPE;
-import static de.gematik.idp.field.ClaimName.STATE;
-import static de.gematik.idp.field.ClaimName.TOKEN_KEY;
-import static de.gematik.idp.field.ClaimName.X509_CERTIFICATE_CHAIN;
+import static de.gematik.idp.field.ClaimName.*;
 
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
-import de.gematik.idp.client.data.AuthenticationRequest;
-import de.gematik.idp.client.data.AuthenticationResponse;
-import de.gematik.idp.client.data.AuthorizationRequest;
-import de.gematik.idp.client.data.AuthorizationResponse;
-import de.gematik.idp.client.data.DiscoveryDocumentResponse;
-import de.gematik.idp.client.data.TokenRequest;
+import de.gematik.idp.client.data.*;
 import de.gematik.idp.data.IdpErrorResponse;
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.field.IdpScope;
@@ -55,18 +41,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.ws.rs.core.HttpHeaders;
-import kong.unirest.BodyPart;
-import kong.unirest.GetRequest;
-import kong.unirest.Header;
-import kong.unirest.HttpRequest;
-import kong.unirest.HttpResponse;
-import kong.unirest.JsonNode;
-import kong.unirest.MultipartBody;
-import kong.unirest.Unirest;
+import kong.unirest.*;
 import kong.unirest.jackson.JacksonObjectMapper;
 import kong.unirest.json.JSONObject;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -170,11 +150,10 @@ public class AuthenticatorClient {
     private void checkForForwardingExceptionAndThrowIfPresent(final String location) {
         extractParameterValueOptional(location, "error")
             .ifPresent(errorCode -> {
-                Optional<Integer> gematikCode = Optional.empty();
+                Optional<String> gematikCode = Optional.empty();
                 Optional<IdpErrorType> errorDescription = Optional.empty();
                 try {
-                    gematikCode = extractParameterValueOptional(location, "gematik_code")
-                        .map(Integer::parseInt);
+                    gematikCode = extractParameterValueOptional(location, "gematik_code");
                     errorDescription = extractParameterValueOptional(location,
                         "error_description")
                         .flatMap(IdpErrorType::fromSerializationValue);
@@ -300,18 +279,28 @@ public class AuthenticatorClient {
             .header(HttpHeaders.USER_AGENT, USER_AGENT)
             .asString();
         final JsonWebToken discoveryDocument = new JsonWebToken(discoveryDocumentResponse.getBody());
-        final Map<String, Object> discoveryClaims = discoveryDocument.extractBodyClaims();
 
+        final Supplier<IdpClientRuntimeException> exceptionSupplier =
+            () -> new IdpClientRuntimeException("Incomplete Discovery Document encountered!");
         return DiscoveryDocumentResponse.builder()
-            .authorizationEndpoint(discoveryClaims.get("authorization_endpoint").toString())
-            .tokenEndpoint(discoveryClaims.get("token_endpoint").toString())
-            .ssoEndpoint(discoveryClaims.get("sso_endpoint").toString())
-            .discSig(discoveryDocument.getClientCertificateFromHeader().get())
-            .pairingEndpoint(discoveryClaims.get("uri_pair").toString())
-            .authPairEndpoint(discoveryClaims.get("auth_pair_endpoint").toString())
+            .authorizationEndpoint(discoveryDocument.getStringBodyClaim(AUTHORIZATION_ENDPOINT)
+                .orElseThrow(exceptionSupplier))
+            .tokenEndpoint(discoveryDocument.getStringBodyClaim(TOKEN_ENDPOINT)
+                .orElseThrow(exceptionSupplier))
+            .ssoEndpoint(discoveryDocument.getStringBodyClaim(SSO_ENDPOINT)
+                .orElseThrow(exceptionSupplier))
+            .discSig(discoveryDocument.getClientCertificateFromHeader()
+                .orElseThrow(exceptionSupplier))
 
-            .idpSig(retrieveServerCertFromLocation(discoveryClaims.get("uri_puk_idp_sig").toString()))
-            .idpEnc(retrieveServerPuKFromLocation(discoveryClaims.get("uri_puk_idp_enc").toString()))
+            .pairingEndpoint(discoveryDocument.getStringBodyClaim(URI_PAIR)
+                .orElse("<IDP DOES NOT SUPPORT ALTERNATIVE AUTHENTICATION>"))
+            .authPairEndpoint(discoveryDocument.getStringBodyClaim(AUTH_PAIR_ENDPOINT)
+                .orElse("<IDP DOES NOT SUPPORT ALTERNATIVE AUTHENTICATION>"))
+
+            .idpSig(retrieveServerCertFromLocation(discoveryDocument.getStringBodyClaim(URI_PUK_IDP_SIG)
+                .orElseThrow(exceptionSupplier)))
+            .idpEnc(retrieveServerPuKFromLocation(discoveryDocument.getStringBodyClaim(URI_PUK_IDP_ENC)
+                .orElseThrow(exceptionSupplier)))
 
             .build();
     }

@@ -43,7 +43,6 @@ import de.gematik.idp.tests.Rfc;
 import de.gematik.idp.token.IdpJoseObject;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
-import de.gematik.pki.certificate.TucPki018Verifier;
 import java.security.Key;
 import java.time.ZonedDateTime;
 import java.util.Map;
@@ -72,11 +71,7 @@ public class TokenRetrievalTest {
     @Autowired
     private IdpKey idpSig;
     @Autowired
-    private IdpKey idpEnc;
-    @Autowired
     private Key symmetricEncryptionKey;
-    @Autowired
-    private TucPki018Verifier tucPki018Verifier;
     private IdpClient idpClient;
     private PkiIdentity egkUserIdentity;
     @LocalServerPort

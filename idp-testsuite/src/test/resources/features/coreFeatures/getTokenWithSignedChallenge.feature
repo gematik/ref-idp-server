@@ -79,6 +79,16 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     And IDP I request an access token
 
+    When IDP I extract the header claims from token ACCESS_TOKEN_ENCRYPTED
+    Then IDP the header claims should match in any order
+        """
+          {
+            alg: "dir",
+            enc: "A256GCM",
+            cty: "NJWT",
+            exp: "[\\d]*"
+          }
+        """
     When IDP I extract the header claims from token ACCESS_TOKEN
     Then IDP the header claims should match in any order
         """
@@ -110,17 +120,16 @@ Feature: Fordere Access Token mit einer signierten Challenge an
           }
         """
     Examples: GetToken - Zertifikate zur Signatur der Challenge
-      | cert                                                        | professionOID     | idNumber                          | organisationName                  | family_name | given_name                |
-      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12         | 1.2.276.0.76.4.49 | X110411675                        | Test GKV-SVNOT-VALID              | Bödefeld    | Darius Michael Brian Ubbo |
-      | /certs/valid/80276883110000018680-C_CH_AUT_R2048.p12        | 1.2.276.0.76.4.49 | X110411675                        | Test GKV-SVNOT-VALID              | Bödefeld    | Darius Michael Brian Ubbo |
-      | /certs/valid/80276883110000129068-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.54 | 3-SMC-B-Testkarte-883110000129068 | 3-SMC-B-Testkarte-883110000129068 | Blankenberg | Dominik-Peter             |
-      # TODO REF IDP-608 Reactivate testcases below
-      #| /certs/valid/80276883110000129071-C_SMCB_HCI_AUT_E256.p12 | 1.2.276.0.76.4.53 | 5-SMC-B-Testkarte-883110000129071 | $NULL            | $NULL       | $NULL      |
-      #| /certs/valid/80276883110000129074-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.52 | 1-SMC-B-Testkarte-883110000129074 | Psychotherapeutische Praxis Norbert Graf AngermännNOT-VALID | Angermänn   | Norbert                   |
-      #| /certs/valid/80276883110000129077-C_SMCB_HCI_AUT_E256.p12   | 1.2.276.0.76.4.50 | 1-SMC-B-Testkarte-883110000129077 | Praxis Rainer Graf d' AgóstinoNOT-VALID                     | Agóstino    | Rainer                    |
-      #| /certs/valid/80276883110000129080-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.51 | 2-SMC-B-Testkarte-883110000129080 | 2-SMC-B-Testkarte-883110000129080                           | $NULL         | $NULL                       |
-      #| /certs/valid/80276883110000129083-C_HP_AUT_E256.p12         | 1.2.276.0.76.4.30 | 1-HBA-Testkarte-883110000129083  | $NULL                                                         | MaiÞer      | Roland                    |
-      #| /certs/valid/80276883110000129086-C_HP_AUT_R2048.p12        | 1.2.276.0.76.4.31 | 2-HBA-Testkarte-883110000129086   | $NULL                                                         | Szczyrbel   | Gustav Freiherr           |
+      | cert                                                        | professionOID     | idNumber                          | organisationName                                            | family_name | given_name                |
+      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12         | 1.2.276.0.76.4.49 | X110411675                        | Test GKV-SVNOT-VALID                                        | Bödefeld    | Darius Michael Brian Ubbo |
+      | /certs/valid/80276883110000018680-C_CH_AUT_R2048.p12        | 1.2.276.0.76.4.49 | X110411675                        | Test GKV-SVNOT-VALID                                        | Bödefeld    | Darius Michael Brian Ubbo |
+      | /certs/valid/80276883110000129068-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.54 | 3-SMC-B-Testkarte-883110000129068 | 3-SMC-B-Testkarte-883110000129068                           | Blankenberg | Dominik-Peter             |
+      | /certs/valid/80276883110000129071-C_SMCB_HCI_AUT_E256.p12   | 1.2.276.0.76.4.53 | 5-SMC-B-Testkarte-883110000129071 | $NULL                                                       | $NULL       | $NULL                     |
+      | /certs/valid/80276883110000129074-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.52 | 1-SMC-B-Testkarte-883110000129074 | Psychotherapeutische Praxis Norbert Graf AngermännNOT-VALID | Angermänn   | Norbert                   |
+      | /certs/valid/80276883110000129077-C_SMCB_HCI_AUT_E256.p12   | 1.2.276.0.76.4.50 | 1-SMC-B-Testkarte-883110000129077 | Praxis Rainer Graf d' AgóstinoNOT-VALID                     | Agóstino    | Rainer                    |
+      | /certs/valid/80276883110000129080-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.51 | 2-SMC-B-Testkarte-883110000129080 | 2-SMC-B-Testkarte-883110000129080                           | $NULL       | $NULL                     |
+      | /certs/valid/80276883110000129083-C_HP_AUT_E256.p12         | 1.2.276.0.76.4.30 | 1-HBA-Testkarte-883110000129083   | $NULL                                                       | MaiÞer      | Roland                    |
+      | /certs/valid/80276883110000129086-C_HP_AUT_R2048.p12        | 1.2.276.0.76.4.31 | 2-HBA-Testkarte-883110000129086   | $NULL                                                       | Szczyrbel   | Gustav Freiherr           |
 
 
   @TCID:IDP_REF_TOK_003 @PRIO:1
@@ -142,6 +151,16 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     And IDP I request an access token
 
+    When IDP I extract the header claims from token ID_TOKEN_ENCRYPTED
+    Then IDP the header claims should match in any order
+        """
+          {
+            alg: "dir",
+            enc: "A256GCM",
+            cty: "NJWT",
+            exp: "[\\d]*"
+          }
+        """
     When IDP I extract the header claims from token ID_TOKEN
     Then IDP the header claims should match in any order
         """
@@ -434,16 +453,8 @@ Feature: Fordere Access Token mit einer signierten Challenge an
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
     And IDP I sign the challenge with '<cert>'
     And IDP I request a code token with signed challenge
-    Then the response status is 400
-    And IDP the JSON response should match
-        """
-          { error:              "invalid_request",
-	        gematik_error_text: "Das AUT Zertifikat ist ungültig",
-	        gematik_timestamp:  "[\\d]*",
-	        gematik_uuid:       ".*",
-	        gematik_code:       "2020"
-          }
-        """
+    Then IDP the response is an 400 error with gematik code 2020 and error "invalid_request"
+
 
     Examples: GetToken - Zertifikate und Claims
       | cert                                               |

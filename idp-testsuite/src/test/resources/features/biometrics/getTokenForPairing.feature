@@ -123,8 +123,6 @@ Feature: Fordere Access Token für Pairing an
     And IDP I expect the Context with key SSO_TOKEN_ENCRYPTED to match '.*'
 
   @Afo:A_20731 @Afo:A_20464 @Afo:A_20952 @Afo:A_21410
-  @Todo:CompareSubjectInfosInAccessTokenAndInCert
-  @Todo:audFestlegen
   @Approval
   @TCID:IDP_REF_BIOTOKEN_003
     # TODO: wollen wir noch den Wert der auth_time gegen den Zeitpunkt der Authentifizierung pruefen
@@ -158,7 +156,7 @@ Feature: Fordere Access Token für Pairing an
             exp:              "[\\d]*",
             jti:              "${json-unit.ignore}",
             iat:              "[\\d]*",
-            idNummer:         "[A-Z][\\d]{9,10}",
+            idNummer:         "X110411675",
             iss:              "${TESTENV.issuer}",
             scope:            "(openid pairing|pairing openid)",
             sub:              ".*"
@@ -206,8 +204,6 @@ Feature: Fordere Access Token für Pairing an
     And IDP I expect the Context with key SSO_TOKEN to match '$NULL'
 
   @Afo:A_20731 @Afo:A_20464 @Afo:A_20952
-  @Todo:CompareSubjectInfosInAccessTokenAndInCert
-  @Todo:audFestlegen
   @Approval
   @TCID:IDP_REF_BIOTOKEN_005
     # TODO: wollen wir noch den Wert der auth_time gegen den Zeitpunkt der Authentifizierung pruefen
@@ -233,6 +229,17 @@ Feature: Fordere Access Token für Pairing an
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     And IDP I request an access token
 
+    When IDP I extract the header claims from token ACCESS_TOKEN_ENCRYPTED
+    Then IDP the header claims should match in any order
+        """
+          {
+            alg: "dir",
+            enc: "A256GCM",
+            cty: "NJWT",
+            exp: "[\\d]*"
+          }
+        """
+
     When IDP I extract the header claims from token ACCESS_TOKEN
     Then IDP the header claims should match in any order
         """
@@ -253,7 +260,7 @@ Feature: Fordere Access Token für Pairing an
             exp:              "[\\d]*",
             jti:              "${json-unit.ignore}",
             iat:              "[\\d]*",
-            idNummer:         "[A-Z][\\d]{9,10}",
+            idNummer:         "X110411675",
             iss:              "${TESTENV.issuer}",
             scope:            "(openid pairing|pairing openid)",
             sub:              ".*"

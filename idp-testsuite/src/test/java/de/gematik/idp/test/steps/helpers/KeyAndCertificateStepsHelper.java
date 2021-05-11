@@ -39,25 +39,25 @@ public class KeyAndCertificateStepsHelper {
     public KeyAndCertificateStepsHelper() {
     }
 
-    public X509Certificate readCertFrom(final String certFile)
+    public X509Certificate readCertFrom(final String certFile, final String password)
         throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException {
         final InputStream is = getClass().getResourceAsStream(certFile);
         Assertions.assertThat(is).withFailMessage("Unable to locate cert resource '" + certFile + "'").isNotNull();
         final KeyStore keyStore = KeyStore.getInstance("pkcs12", new BouncyCastleProvider());
         try (final ByteArrayInputStream bis = new ByteArrayInputStream(is.readAllBytes())) {
-            keyStore.load(bis, "00".toCharArray());
+            keyStore.load(bis, password.toCharArray());
         }
         return (X509Certificate) keyStore.getCertificate(keyStore.aliases().nextElement());
     }
 
-    public Key readPrivateKeyFromKeyStore(final String keyStoreFileName)
+    public Key readPrivateKeyFromKeyStore(final String keyStoreFileName, final String password)
         throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException {
         final InputStream is = getClass().getResourceAsStream(keyStoreFileName);
         Assertions.assertThat(is).withFailMessage("Unable to locate key resource '" + keyStoreFileName + "'")
             .isNotNull();
         final KeyStore keyStore = KeyStore.getInstance("pkcs12", new BouncyCastleProvider());
-        keyStore.load(new ByteArrayInputStream(is.readAllBytes()), "00".toCharArray());
-        return keyStore.getKey(keyStore.aliases().nextElement(), "00".toCharArray());
+        keyStore.load(new ByteArrayInputStream(is.readAllBytes()), password.toCharArray());
+        return keyStore.getKey(keyStore.aliases().nextElement(), password.toCharArray());
     }
 
     @SneakyThrows

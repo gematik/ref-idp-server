@@ -154,7 +154,7 @@ public class ChallengeTokenValidationService {
         } catch (final JsonProcessingException e) {
             throw new IdpServerException(IdpErrorResponse.builder()
                 .detailMessage("Device information in auth data invalid")
-                .code(4666)
+                .code("4666")
                 .error(null)
                 .build(), e);
         }

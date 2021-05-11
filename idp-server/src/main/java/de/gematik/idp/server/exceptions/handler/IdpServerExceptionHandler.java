@@ -90,9 +90,9 @@ public class IdpServerExceptionHandler {
         final UriBuilder uriBuilder = UriBuilder.fromPath(serverUrlService.determineServerUrl())
             .queryParam("error", UriUtils.encodeQueryParam(
                 errorResponse.getError().getSerializationValue(), Charset.defaultCharset()))
-            .queryParam("gematik_code", errorResponse.getCode())
-            .queryParam("gematik_timestamp", UriUtils.encodeQueryParam(
-                errorResponse.getTimestamp(), Charset.defaultCharset()))
+            .queryParam("gematik_code", UriUtils.encodeQueryParam(
+                errorResponse.getCode(), Charset.defaultCharset()))
+            .queryParam("gematik_timestamp", errorResponse.getTimestamp())
             .queryParam("gematik_uuid", UriUtils.encodeQueryParam(
                 errorResponse.getErrorUuid(), Charset.defaultCharset()))
             .queryParam("gematik_error_text", UriUtils.encodeQueryParam(
@@ -250,7 +250,7 @@ public class IdpServerExceptionHandler {
             .code(exception.getErrorCode())
             .error(exception.getErrorType())
             .errorUuid(UUID.randomUUID().toString())
-            .timestamp(String.valueOf(ZonedDateTime.now().toEpochSecond()))
+            .timestamp(ZonedDateTime.now().toEpochSecond())
             .detailMessage(exception.getMessage())
             .build();
     }

@@ -39,7 +39,6 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
 
     Given IDP I request an pairing access token with eGK cert '<auth_cert>'
     And IDP I deregister the device with '<key_id>'
-    Then the response status is 204
 
     Examples: Zu deregistrierende Daten
       | auth_cert                                     | key_id             |
@@ -173,16 +172,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
 
     When IDP I request an access token
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
-    Then the response status is 409
-    And IDP the JSON response should match
-        """
-          { ____error:              "invalid_request",
-	        gematik_error_text: ".*",
-	        gematik_timestamp:  "[\\d]*",
-	        gematik_uuid:       ".*",
-	        gematik_code:       "4004"
-          }
-        """
+    Then IDP the response is an 409 error with gematik code 4004 and error "invalid_request"
+
       # TODO RISE add error attribute, see https://gematik-ext.atlassian.net/browse/STIDPD-142
 
   @Approval @Ready
@@ -209,16 +200,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel02 | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
-    Then the response status is 409
-    And IDP the JSON response should match
-        """
-          { ____error:              "invalid_request",
-	        gematik_error_text: ".*",
-	        gematik_timestamp:  "[\\d]*",
-	        gematik_uuid:       ".*",
-	        gematik_code:       "4004"
-          }
-        """
+    Then IDP the response is an 409 error with gematik code 4004 and error "invalid_request"
+
  # TODO RISE add error attribute, see https://gematik-ext.atlassian.net/browse/STIDPD-142
 
   @Approval @Ready

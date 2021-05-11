@@ -16,9 +16,25 @@
 
 package de.gematik.idp.token;
 
-import static de.gematik.idp.field.ClaimName.*;
+import static de.gematik.idp.field.ClaimName.AUDIENCE;
+import static de.gematik.idp.field.ClaimName.AUTHENTICATION_CLASS_REFERENCE;
+import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
+import static de.gematik.idp.field.ClaimName.AUTHORIZED_PARTY;
+import static de.gematik.idp.field.ClaimName.AUTH_TIME;
+import static de.gematik.idp.field.ClaimName.CLIENT_ID;
+import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
+import static de.gematik.idp.field.ClaimName.FAMILY_NAME;
+import static de.gematik.idp.field.ClaimName.GIVEN_NAME;
+import static de.gematik.idp.field.ClaimName.ID_NUMBER;
+import static de.gematik.idp.field.ClaimName.ISSUED_AT;
+import static de.gematik.idp.field.ClaimName.ISSUER;
+import static de.gematik.idp.field.ClaimName.JWT_ID;
+import static de.gematik.idp.field.ClaimName.ORGANIZATION_NAME;
+import static de.gematik.idp.field.ClaimName.PROFESSION_OID;
+import static de.gematik.idp.field.ClaimName.SCOPE;
+import static de.gematik.idp.field.ClaimName.SUBJECT;
+import static de.gematik.idp.field.ClaimName.TYPE;
 import static de.gematik.idp.token.TokenBuilderUtil.buildSubjectClaim;
-
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtBuilder;
@@ -28,7 +44,11 @@ import de.gematik.idp.exceptions.RequiredClaimException;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.field.IdpScope;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.SneakyThrows;
@@ -55,11 +75,10 @@ public class AccessTokenBuilder {
         final String clientId = authenticationToken.getBodyClaim(CLIENT_ID)
             .orElseThrow(() -> new RequiredClaimException("Unable to obtain " + CLIENT_ID.getJoseName() + "!"))
             .toString();
-
         CLAIMS_TO_TAKE_FROM_AUTHENTICATION_TOKEN.stream()
             .map(claimName -> Pair.of(claimName, authenticationToken.getBodyClaim(claimName)))
-            .filter(pair -> pair.getValue().isPresent())
-            .forEach(pair -> claimsMap.put(pair.getKey().getJoseName(), pair.getValue().get()));
+            .forEach(pair -> claimsMap
+                .put(pair.getKey().getJoseName(), pair.getValue().isPresent() ? pair.getValue().get() : null));
         // for pairing scope remove user consent claims (except for id nummer)
         if (authenticationToken.getScopesBodyClaim().contains(IdpScope.PAIRING)) {
             Arrays.stream(nonPairingClaims).forEach(claim -> claimsMap.remove(claim.getJoseName()));

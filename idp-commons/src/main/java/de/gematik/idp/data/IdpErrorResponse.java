@@ -35,9 +35,9 @@ public class IdpErrorResponse {
 
     private IdpErrorType error;
     @JsonProperty("gematik_code")
-    private int code;
+    private String code;
     @JsonProperty("gematik_timestamp")
-    private String timestamp;
+    private long timestamp;
     @JsonProperty("gematik_uuid")
     private String errorUuid;
     @JsonProperty("gematik_error_text")

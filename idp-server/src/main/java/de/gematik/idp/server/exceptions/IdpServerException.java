@@ -29,7 +29,7 @@ public class IdpServerException extends ResponseStatusException {
     private static final long serialVersionUID = -6555732805035877954L;
 
     private final IdpErrorType errorType;
-    private int errorCode = -1;
+    private String errorCode = "-1";
 
     public IdpServerException(final IdpErrorResponse errorResponse, final Exception e) {
         super(mapToStatus(errorResponse), errorResponse.getDetailMessage(), e);
@@ -64,28 +64,28 @@ public class IdpServerException extends ResponseStatusException {
     public IdpServerException(final int errorCode, final IdpErrorType errorType, final String message) {
         super(HttpStatus.BAD_REQUEST, message);
         this.errorType = errorType;
-        this.errorCode = errorCode;
+        this.errorCode = String.valueOf(errorCode);
     }
 
     public IdpServerException(final int errorCode, final IdpErrorType errorType, final String message,
         final HttpStatus returnStatus) {
         super(returnStatus, message);
         this.errorType = errorType;
-        this.errorCode = errorCode;
+        this.errorCode = String.valueOf(errorCode);
     }
 
     public IdpServerException(final int errorCode, final IdpErrorType errorType, final String message,
         final Exception e) {
         super(HttpStatus.BAD_REQUEST, message, e);
         this.errorType = errorType;
-        this.errorCode = errorCode;
+        this.errorCode = String.valueOf(errorCode);
     }
 
     public IdpServerException(final int errorCode, final IdpErrorType errorType, final String message,
         final HttpStatus returnStatus, final Exception e) {
         super(returnStatus, message, e);
         this.errorType = errorType;
-        this.errorCode = errorCode;
+        this.errorCode = String.valueOf(errorCode);
     }
 
     @Override

@@ -26,7 +26,7 @@ import lombok.Getter;
 public class IdpClientRuntimeException extends RuntimeException {
 
     private static final long serialVersionUID = -3280232274428362763L;
-    private final Optional<Integer> gematikErrorCode;
+    private final Optional<String> gematikErrorCode;
     private final Optional<IdpErrorType> idpErrorType;
 
     public IdpClientRuntimeException(final Exception e) {
@@ -47,7 +47,7 @@ public class IdpClientRuntimeException extends RuntimeException {
         idpErrorType = Optional.empty();
     }
 
-    public IdpClientRuntimeException(final String s, final Optional<Integer> gematikCode, final Optional<IdpErrorType> errorDescription) {
+    public IdpClientRuntimeException(final String s, final Optional<String> gematikCode, final Optional<IdpErrorType> errorDescription) {
         super(s);
         gematikErrorCode = gematikCode;
         idpErrorType = errorDescription;

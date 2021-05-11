@@ -8,11 +8,7 @@ import io.restassured.http.Headers;
 import io.restassured.response.Response;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Data;
@@ -70,7 +66,7 @@ public class RestAssuredCapture {
 
         return RbelHttpRequest.builder()
             .method(method)
-            .path((RbelPathElement) rbel.convertMessage(url))
+            .path((RbelUriElement) rbel.convertMessage(url))
             .header(mapHeader(h))
             .body(convertMessageBody(body, h.getValue("content-type")))
             .build();
@@ -106,11 +102,10 @@ public class RestAssuredCapture {
     }
 
     private RbelMultiValuedMapElement mapHeader(final Headers headers) {
-        final Map<String, String> headersMap = headers.asList().stream()
-            .collect(Collectors.toMap(Header::getName, Header::getValue));
-        return new RbelMultiValuedMapElement(
-            headersMap.entrySet().stream()
-                .collect(Collectors.toMap(Entry::getKey, entry -> List.of(rbel.convertMessage(entry.getValue()))))
-        );
+        final Map<String, List<RbelElement>> multiValueMap = new HashMap<>();
+        headers.asList()
+            .forEach(header -> multiValueMap.computeIfAbsent(header.getName(), key -> new ArrayList<>())
+                .add(rbel.convertMessage(header.getValue())));
+        return new RbelMultiValuedMapElement(multiValueMap);
     }
 }

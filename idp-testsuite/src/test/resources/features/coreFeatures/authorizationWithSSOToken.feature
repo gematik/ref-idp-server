@@ -94,6 +94,18 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx2 | 234567 | code          |
     And IDP I request a code token with sso token successfully
 
+    When IDP I extract the header claims from token TOKEN_CODE_ENCRYPTED
+    Then IDP the header claims should match in any order
+        """
+          {
+            alg: "dir",
+            enc: "A256GCM",
+            cty: "NJWT",
+            exp: "[\\d]*",
+            ____kid: ".*"
+          }
+        """
+
     When IDP I extract the header claims from token TOKEN_CODE
     Then IDP the header claims should match in any order
         """
@@ -133,6 +145,7 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
   @Afo:A_20319
   @Approval @Ready
   @Signature
+  @RefImplOnly
   Scenario: AuthorSSO - Validiere Signatur des Code Token
 
   ```

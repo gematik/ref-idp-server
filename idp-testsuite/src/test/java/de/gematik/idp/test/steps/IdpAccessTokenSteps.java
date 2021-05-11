@@ -36,11 +36,13 @@ import java.util.Map;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jose4j.jwt.JwtClaims;
 import org.json.JSONObject;
 
+@Slf4j
 public class IdpAccessTokenSteps extends IdpStepsBase {
 
     private final CucumberValuesConverter cucumberValuesConverter = new CucumberValuesConverter();
@@ -106,6 +108,8 @@ public class IdpAccessTokenSteps extends IdpStepsBase {
             threadIdToRestAssuredCaptureMap.get(getThreadId()).getRbel().getRbelKeyManager()
                 .addKey("token_key", tokenKey, RbelKey.PRECEDENCE_KEY_FOLDER);
         }
+        log.info(
+            "Using dynamic token key " + Base64.getUrlEncoder().withoutPadding().encodeToString(tokenKey.getEncoded()));
         Context.getDiscoveryDocument();
         final PublicKey pukToken = DiscoveryDocument.getPublicKeyFromContextKey(ContextKey.PUK_ENC);
         params.put(
@@ -121,13 +125,17 @@ public class IdpAccessTokenSteps extends IdpStepsBase {
 
         if (r.getStatusCode() == 200) {
             final JSONObject json = new JSONObject(r.getBody().asString());
+            ctxt.put(ContextKey.ACCESS_TOKEN_ENCRYPTED, json.getString("access_token"));
             // decrypt access and id token
             ctxt.put(ContextKey.ACCESS_TOKEN, keyAndCertificateStepsHelper
                 .decryptAndExtractNjwt(json.getString("access_token"), tokenKey));
+            ctxt.put(ContextKey.ID_TOKEN_ENCRYPTED, json.getString("id_token"));
             ctxt.put(ContextKey.ID_TOKEN,
                 keyAndCertificateStepsHelper.decryptAndExtractNjwt(json.getString("id_token"), tokenKey));
         } else {
+            ctxt.put(ContextKey.ACCESS_TOKEN_ENCRYPTED, null);
             ctxt.put(ContextKey.ACCESS_TOKEN, null);
+            ctxt.put(ContextKey.ID_TOKEN_ENCRYPTED, null);
             ctxt.put(ContextKey.ID_TOKEN, null);
         }
     }

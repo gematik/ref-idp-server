@@ -6,13 +6,13 @@
     <artifactId>idp-testsuite</artifactId>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
-    <version>15.0.0</version>
+    <version>16.0.0</version>
 
     <parent>
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>15.0.0</version>
+        <version>16.0.0</version>
     </parent>
 
     <properties>
@@ -43,8 +43,9 @@
                                         <resource>
                                             <directory>${basedir}/../idp-server/src/main/resources</directory>
                                             <includes>
-                                                <include>**/*</include>
+                                                <include>**/application.yml</include>
                                             </includes>
+                                            <filtering>true</filtering>
                                         </resource>
                                     </resources>
                                 </configuration>
@@ -52,7 +53,7 @@
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <id>copy-server-config</id>
-                                <phase>pre-integration-test</phase>
+                                <phase>prepare-package</phase>
                             </execution>
                         </executions>
                         <version>3.2.0</version>

@@ -141,6 +141,18 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
     And IDP I request a code token with signed challenge successfully
 
+    When IDP I extract the header claims from token TOKEN_CODE_ENCRYPTED
+    Then IDP the header claims should match in any order
+        """
+          {
+            alg: "dir",
+            enc: "A256GCM",
+            cty: "NJWT",
+            exp: "[\\d]*",
+            ____kid: ".*"
+          }
+        """
+
     When IDP I extract the header claims from token TOKEN_CODE
     Then IDP the header claims should match in any order
         """

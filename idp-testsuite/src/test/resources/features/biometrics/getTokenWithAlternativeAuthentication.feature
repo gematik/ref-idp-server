@@ -32,10 +32,10 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
 
     Given IDP I request an pairing access token with eGK cert '<auth_cert>'
     And IDP I deregister the device with '<key_id>'
-    Then the response status is 204
+#    Then the response status is 204
 
     Examples: Zu deregistrierende Daten
-      | auth_cert                                     | key_id       |
+      | auth_cert                                     | key_id      |
       | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidget001 |
       | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidget002 |
       | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidget003 |
@@ -58,7 +58,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create pairing data with
       | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidget001   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidget001    | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -71,7 +71,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create authentication data with
       | authentication_data_version | auth_cert                                     | key_identifier | amr                    |
-      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidget001   | ["mfa", "hwk", "face"] |
+      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidget001    | ["mfa", "hwk", "face"] |
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
@@ -89,7 +89,6 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
 
 
   @Afo:A_20731 @Afo:A_20464 @Afo:A_20952 @Afo:A_21320 @Afo:A_21321 @Afo:A_20524
-  @Todo:CompareSubjectInfosInAccessTokenAndInCert
   @Approval
   @OpenBug
   @TCID:IDP_REF_BIOTOKEN_008
@@ -108,7 +107,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create pairing data with
       | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidget002   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidget002    | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -121,11 +120,22 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create authentication data with
       | authentication_data_version | auth_cert                                     | key_identifier | amr                    |
-      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidget002   | ["mfa", "hwk", "face"] |
+      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidget002    | ["mfa", "hwk", "face"] |
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     And IDP I request an access token
+
+    When IDP I extract the header claims from token ACCESS_TOKEN_ENCRYPTED
+    Then IDP the header claims should match in any order
+        """
+          {
+            alg: "dir",
+            enc: "A256GCM",
+            cty: "NJWT",
+            exp: "[\\d]*"
+          }
+        """
 
     When IDP I extract the header claims from token ACCESS_TOKEN
     Then IDP the header claims should match in any order
@@ -139,17 +149,17 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     Then IDP the body claims should match in any order
         """
           { acr:              "gematik-ehealth-loa-high",
-            aud:              "${TESTENV.aud.pairing}",
+            aud:              "${TESTENV.aud}",
             amr:              ["mfa", "hwk", "face"],
             auth_time:        "[\\d]*",
             azp:              "${TESTENV.client_id}",
             client_id:        "${TESTENV.client_id}",
             exp:              "[\\d]*",
             jti:              "${json-unit.ignore}",
-            family_name:      "(.{1,64})",
-            given_name:       "(.{1,64})",
+            family_name:      "Lausén",
+            given_name:       "Maike",
             iat:              "[\\d]*",
-            idNummer:         "[A-Z][\\d]{9,10}",
+            idNummer:         "X510554251",
             iss:              "${TESTENV.issuer}",
             organizationName: "(.{1,64})",
             professionOID:    "1\\.2\\.276\\.0\\.76\\.4\\.(3\\d|4\\d|178|23[2-90]|240|241)",
@@ -169,7 +179,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create pairing data with
       | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidget003   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidget003    | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -182,11 +192,22 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create authentication data with
       | authentication_data_version | auth_cert                                     | key_identifier | amr                    |
-      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidget003   | ["mfa", "hwk", "face"] |
+      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidget003    | ["mfa", "hwk", "face"] |
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     And IDP I request an access token
+
+    When IDP I extract the header claims from token ID_TOKEN_ENCRYPTED
+    Then IDP the header claims should match in any order
+        """
+          {
+            alg: "dir",
+            enc: "A256GCM",
+            cty: "NJWT",
+            exp: "[\\d]*"
+          }
+        """
 
     When IDP I extract the header claims from token ID_TOKEN
     Then IDP the header claims should match in any order
@@ -199,9 +220,9 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     When IDP I extract the body claims from token ID_TOKEN
     Then IDP the body claims should match in any order
         """
-          { acr:              "eidas-loa-high",
-            amr:              ["mfa", "hwk", "face"],
-            at_hash:          ".*",
+          { acr:              "gematik-ehealth-loa-high",
+            amr:              ["mfa","hwk","face"],
+            at_hash:          "[A-Za-z0-9\\-\\_]*",
             aud:              "${TESTENV.client_id}",
             auth_time:        "[\\d]*",
             azp:              "${TESTENV.client_id}",
@@ -211,11 +232,12 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
             iat:              "[\\d]*",
             idNummer:         "[A-Z][\\d]{9,10}",
             iss:              "${TESTENV.issuer}",
-            nonce:            "98765",
+            nonce:            "12345",
             professionOID:    "1\\.2\\.276\\.0\\.76\\.4\\.(3\\d|4\\d|178|23[2-90]|240|241)",
             organizationName: "(.{1,64})",
-            sub:              ".*"
-          }
+            sub:              ".*",
+            jti:              ".*"
+           }
         """
 
 # ------------------------------------------------------------------------------------------------------------------

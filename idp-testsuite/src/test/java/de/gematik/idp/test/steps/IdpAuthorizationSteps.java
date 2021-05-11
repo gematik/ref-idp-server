@@ -18,7 +18,6 @@ package de.gematik.idp.test.steps;
 
 import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
 import static org.assertj.core.api.Assertions.assertThat;
-
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.test.steps.helpers.IdpTestEnvironmentConfigurator;
 import de.gematik.idp.test.steps.helpers.JsonChecker;
@@ -58,11 +57,11 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
     private final JsonChecker jsoncheck = new JsonChecker();
 
     @SneakyThrows
-    public void signChallenge(final String keyfile) {
+    public void signChallenge(final String keyfile, final String password) {
         final String challenge = Context.get().getString(ContextKey.CHALLENGE);
 
-        final Key pkey = keyAndCertificateStepsHelper.readPrivateKeyFromKeyStore(keyfile);
-        final X509Certificate cert = keyAndCertificateStepsHelper.readCertFrom(keyfile);
+        final Key pkey = keyAndCertificateStepsHelper.readPrivateKeyFromKeyStore(keyfile, password);
+        final X509Certificate cert = keyAndCertificateStepsHelper.readCertFrom(keyfile, password);
 
         final JSONObject claims = new JSONObject();
         claims.put("njwt", challenge);

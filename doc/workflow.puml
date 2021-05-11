@@ -32,6 +32,12 @@ end note
 
 ||40||
 
+'Für Primärsystemhersteller only
+'!includesub workflow.base.puml!SignChallenge
+'!includesub workflow.base.puml!RequestAuthorizationCodeWithSignedChallenge
+'||40||
+
+'Für alle anderen
 alt #ffffe0 : <font color="#ff6000">request token code with SIGNED_CHALLENGE flow
     !includesub workflow.base.puml!SignChallenge
     !includesub workflow.base.puml!RequestAuthorizationCodeWithSignedChallenge
@@ -43,8 +49,7 @@ else #ffeeee : <font color="red">request token code with ALT AUTH flow
     !includesub workflow.base.puml!RequestAuthorizationCodeWithAltAuth
     ||40||
 end
-
-    authM -> authM : optionally store SSO_TOKEN
+authM -> authM : optionally store SSO_TOKEN
 
 !includesub workflow.base.puml!CreateKeyVerifier
 

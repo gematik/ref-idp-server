@@ -57,11 +57,13 @@ public class ClaimsStepHelper {
     @Step
     public void extractClaimsFromToken(final ClaimLocation cType, final String token)
         throws JoseException, InvalidJwtException, JSONException {
-        if (Set.of(ContextKey.TOKEN_CODE_ENCRYPTED, ContextKey.SSO_TOKEN_ENCRYPTED).contains(token)) {
+        if (Set.of(ContextKey.ACCESS_TOKEN_ENCRYPTED, ContextKey.ID_TOKEN_ENCRYPTED,
+            ContextKey.TOKEN_CODE_ENCRYPTED, ContextKey.SSO_TOKEN_ENCRYPTED).contains(token)) {
             extractClaimsFromString(cType, Context.get().get(token).toString(), true);
         } else {
             Assertions.assertThat(token)
-                .isIn(ContextKey.TOKEN_CODE, ContextKey.SIGNED_CHALLENGE, ContextKey.ACCESS_TOKEN, ContextKey.ID_TOKEN);
+                .isIn(ContextKey.TOKEN_CODE, ContextKey.SIGNED_CHALLENGE, ContextKey.ACCESS_TOKEN,
+                    ContextKey.ID_TOKEN);
             extractClaimsFromString(cType, Context.get().get(token).toString(), false);
         }
     }

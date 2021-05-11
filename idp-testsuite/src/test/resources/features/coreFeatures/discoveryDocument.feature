@@ -31,12 +31,12 @@ Feature: Fordere Discovery Dokument an
   Die Antwort des Servers muss:
 
   - den HTTP Status 200 und
-  - den Content Typ application/json haben (optional gefolgt von einem charset)
+  - den Content Typ application/jwt haben (optional gefolgt von einem charset)
 
 
     When IDP I request the discovery document
     Then the response status is 200
-    And IDP the response content type matches 'application/json.*'
+    And IDP the response content type matches 'application/jwt.*'
 
   @TCID:IDP_REF_DISC_002 @PRIO:1
   @Afo:A_20591
@@ -74,6 +74,7 @@ Feature: Fordere Discovery Dokument an
     Then IDP the header claims should match in any order
         """
         {
+          typ: "JWT",
           alg: "BP256R1",
           kid: "${json-unit.ignore}",
           x5c: "${json-unit.ignore}"

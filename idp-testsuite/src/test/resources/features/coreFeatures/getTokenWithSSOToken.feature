@@ -97,6 +97,17 @@ Feature: Fordere Access Token mittels SSO Token an
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     And IDP I request an access token
 
+    When IDP I extract the header claims from token ACCESS_TOKEN_ENCRYPTED
+    Then IDP the header claims should match in any order
+        """
+          {
+            alg: "dir",
+            enc: "A256GCM",
+            cty: "NJWT",
+            exp: "[\\d]*"
+          }
+        """
+
     When IDP I extract the header claims from token ACCESS_TOKEN
     Then IDP the header claims should match in any order
         """
@@ -159,6 +170,17 @@ Feature: Fordere Access Token mittels SSO Token an
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     And IDP I request an access token
 
+    When IDP I extract the header claims from token ID_TOKEN_ENCRYPTED
+    Then IDP the header claims should match in any order
+        """
+          {
+            alg: "dir",
+            enc: "A256GCM",
+            cty: "NJWT",
+            exp: "[\\d]*"
+          }
+        """
+
     When IDP I extract the header claims from token ID_TOKEN
     Then IDP the header claims should match in any order
         """
@@ -173,7 +195,7 @@ Feature: Fordere Access Token mittels SSO Token an
           { acr:              "gematik-ehealth-loa-high",
             amr:              ["mfa", "sc", "pin"],
             at_hash:          ".*",
-            aud:              "${TESTENV.client_id}",
+            ____aud:              "${TESTENV.client_id}",
             auth_time:        "[\\d]*",
             azp:              "${TESTENV.client_id}",
             exp:              "[\\d]*",

@@ -36,8 +36,8 @@ public class IdpBiometricsSteps extends IdpStepsBase {
 
     @SneakyThrows
     public void signPairingData(final String keyfile) {
-        final Key pkey = keyAndCertificateStepsHelper.readPrivateKeyFromKeyStore(keyfile);
-        final Certificate cert = keyAndCertificateStepsHelper.readCertFrom(keyfile);
+        final Key pkey = keyAndCertificateStepsHelper.readPrivateKeyFromKeyStore(keyfile, "00");
+        final Certificate cert = keyAndCertificateStepsHelper.readCertFrom(keyfile, "00");
         final Map<String, Object> pairingData = Context.get().getObjectMapCopy(ContextKey.PAIRING_DATA);
 
         pairingData.putIfAbsent("pairing_data_version", "1.0");
@@ -49,7 +49,7 @@ public class IdpBiometricsSteps extends IdpStepsBase {
         if (pairingData.get("auth_cert_subject_public_key_info") != null) {
             authCertificate.set(
                 keyAndCertificateStepsHelper
-                    .readCertFrom(pairingData.get("auth_cert_subject_public_key_info").toString()));
+                    .readCertFrom(pairingData.get("auth_cert_subject_public_key_info").toString(), "00"));
             final PublicKey pubKey = authCertificate.get().getPublicKey();
             pairingData.put("auth_cert_subject_public_key_info", Base64.encodeBase64URLSafeString(pubKey.getEncoded()));
         }
@@ -58,14 +58,14 @@ public class IdpBiometricsSteps extends IdpStepsBase {
                 pairingData.get("se_subject_public_key_info").toString());
             pairingData.put("se_subject_public_key_info", Base64.encodeBase64URLSafeString(pubKeyKeyData.getEncoded()));
         }
-        if ("$FILL_FROM_CERT" .equals(pairingData.get("serialnumber"))) {
+        if ("$FILL_FROM_CERT".equals(pairingData.get("serialnumber"))) {
             pairingData.put("serialnumber", extractSerialNumberFromCertificate(authCertificate.get()));
         }
-        if ("$FILL_FROM_CERT" .equals(pairingData.get("issuer"))) {
+        if ("$FILL_FROM_CERT".equals(pairingData.get("issuer"))) {
             pairingData.put("issuer",
                 Base64.encodeBase64URLSafeString(authCertificate.get().getIssuerX500Principal().getEncoded()));
         }
-        if ("$FILL_FROM_CERT" .equals(pairingData.get("not_after"))) {
+        if ("$FILL_FROM_CERT".equals(pairingData.get("not_after"))) {
             pairingData
                 .put("not_after", authCertificate.get().getNotAfter().toInstant().getEpochSecond());
         } else if (pairingData.get("not_after") != null) {
@@ -102,7 +102,7 @@ public class IdpBiometricsSteps extends IdpStepsBase {
         authenticationData.put("device_information", createDeviceInfoJSON());
         if (authenticationData.get("auth_cert") != null) {
             final String certFile = authenticationData.get("auth_cert").toString();
-            final Certificate cert = keyAndCertificateStepsHelper.readCertFrom(certFile);
+            final Certificate cert = keyAndCertificateStepsHelper.readCertFrom(certFile, "00");
             authenticationData.put("auth_cert", Base64.encodeBase64URLSafeString(cert.getEncoded()));
         }
         authenticationData.putIfAbsent("authentication_data_version", version);
@@ -121,7 +121,7 @@ public class IdpBiometricsSteps extends IdpStepsBase {
 
     @SneakyThrows
     public void registerDeviceWithCert(final String certFile, final String versionReg) {
-        final Certificate cert = keyAndCertificateStepsHelper.readCertFrom(certFile);
+        final Certificate cert = keyAndCertificateStepsHelper.readCertFrom(certFile, "00");
 
         final JSONObject regData = new JSONObject();
         regData.put("signed_pairing_data", Context.get().get(ContextKey.SIGNED_PAIRING_DATA));
@@ -154,9 +154,9 @@ public class IdpBiometricsSteps extends IdpStepsBase {
     @SneakyThrows
     public void deregisterDeviceWithKey(String keyVerifier) {
         final Map<String, String> headers = initializeAuthHeaders();
-        if ("$NULL" .equals(keyVerifier)) {
+        if ("$NULL".equals(keyVerifier)) {
             keyVerifier = null;
-        } else if ("$REMOVE" .equals(keyVerifier)) {
+        } else if ("$REMOVE".equals(keyVerifier)) {
             keyVerifier = "";
         } else {
             keyVerifier = normalizeKeyIdentifier(keyVerifier);

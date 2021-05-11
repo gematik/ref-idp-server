@@ -17,13 +17,27 @@
 package de.gematik.idp.test.steps;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import de.gematik.idp.test.steps.helpers.*;
-import de.gematik.idp.test.steps.model.*;
+import de.gematik.idp.test.steps.helpers.ClaimsStepHelper;
+import de.gematik.idp.test.steps.helpers.CucumberValuesConverter;
+import de.gematik.idp.test.steps.helpers.IdpTestEnvironmentConfigurator;
+import de.gematik.idp.test.steps.helpers.JsonChecker;
+import de.gematik.idp.test.steps.helpers.KeyAndCertificateStepsHelper;
+import de.gematik.idp.test.steps.helpers.SerenityJSONObject;
+import de.gematik.idp.test.steps.model.AccessTokenType;
+import de.gematik.idp.test.steps.model.ClaimLocation;
+import de.gematik.idp.test.steps.model.CodeAuthType;
+import de.gematik.idp.test.steps.model.DateCompareMode;
+import de.gematik.idp.test.steps.model.HttpMethods;
+import de.gematik.idp.test.steps.model.HttpStatus;
 import de.gematik.test.bdd.Context;
 import de.gematik.test.bdd.ContextKey;
 import de.gematik.test.bdd.Variables;
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.*;
+import io.cucumber.java.After;
+import io.cucumber.java.Before;
+import io.cucumber.java.DataTableType;
+import io.cucumber.java.ParameterType;
+import io.cucumber.java.Scenario;
 import io.cucumber.java.de.Gegebensei;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -116,7 +130,8 @@ public class StepsGlue {
     public void iRequestAnAccessTokenWitheGKAndGivenValues(final String accessType, final String certFile,
         final DataTable dataTable) {
         requestAnAccessTokenWitheGK(accessType, CodeAuthType.SIGNED_CHALLENGE,
-            cucumberValuesConverter.parseDocString(certFile), cucumberValuesConverter.getMapFromDatatable(dataTable));
+            cucumberValuesConverter.parseDocString(certFile), "00",
+            cucumberValuesConverter.getMapFromDatatable(dataTable));
     }
 
     /**
@@ -141,10 +156,10 @@ public class StepsGlue {
         final DataTable dataTable) {
         Map<String, String> data = cucumberValuesConverter.getMapFromDatatable(dataTable);
         requestAnAccessTokenWitheGK(accessType, CodeAuthType.SIGNED_CHALLENGE,
-            cucumberValuesConverter.parseDocString(certFile), data);
+            cucumberValuesConverter.parseDocString(certFile), "00", data);
         data = cucumberValuesConverter.getMapFromDatatable(dataTable);
         requestAnAccessTokenWitheGK(accessType, CodeAuthType.SSO_TOKEN,
-            cucumberValuesConverter.parseDocString(certFile), data);
+            cucumberValuesConverter.parseDocString(certFile), "00", data);
     }
 
     /**
@@ -165,7 +180,7 @@ public class StepsGlue {
     public void iRequestAnAccessTokenWitheGK(final AccessTokenType accessType, final String certFile) {
         final Map<String, String> data = new HashMap<>(Map.of("scope", accessType.toScope() + " openid"));
         requestAnAccessTokenWitheGK(accessType.toString(), CodeAuthType.SIGNED_CHALLENGE,
-            cucumberValuesConverter.parseDocString(certFile), data);
+            cucumberValuesConverter.parseDocString(certFile), "00", data);
     }
 
     /**
@@ -187,15 +202,122 @@ public class StepsGlue {
     public void iRequestAnAccessTokenViaSsoToken(final AccessTokenType accessType, final String certFile) {
         Map<String, String> data = new HashMap<>(Map.of("scope", accessType.toScope() + " openid"));
         requestAnAccessTokenWitheGK(accessType.toString(), CodeAuthType.SIGNED_CHALLENGE,
-            cucumberValuesConverter.parseDocString(certFile), data);
+            cucumberValuesConverter.parseDocString(certFile), "00", data);
         data = new HashMap<>(Map.of("scope", accessType.toScope() + " openid"));
         requestAnAccessTokenWitheGK(accessType.toString(), CodeAuthType.SSO_TOKEN,
-            cucumberValuesConverter.parseDocString(certFile), data);
+            cucumberValuesConverter.parseDocString(certFile), "00", data);
+    }
+
+    /**
+     * convenience step to request an access token of given type via signed challenge, signing the challenge with given
+     * certificate in a single step. This step needs a data table following the step with the parameters to be used,
+     * when creating the token.
+     *
+     * @param accessType type of access token to request (erezept or pairing)
+     * @param certFile   certificate to use for signing the challenge
+     * @param password   password to access the p12 key store
+     * @param dataTable  optional list of parameters (client_id, scope, code_challenge, code_challenge_method,
+     *                   redirect_uri, state, nonce, rsponse_type)
+     * @testenv client_id, redirect_uri
+     * @gematik.context.in USER_AGENT
+     * @gematik.context.out RESPONSE, CLAIMS?, HEADER_CLAIMS?, DISC_DOC, CHALLENGE, USER_CONSENT, SIGNED_CHALLENGE,
+     * SSO_TOKEN, SSO_TOKEN_ENCRYPTED, TOKEN_REDIRECT_URL, CODE_VERIFIER, CLIENT_ID, STATE, TOKEN_CODE,
+     * TOKEN_CODE_ENCRYPTED, REDIRECT_URI, PUK_DISC, PUK_SIGN, PUK_ENC, ACCESS_TOKEN, ID_TOKEN
+     * @see CucumberValuesConverter
+     */
+    @Given("IDP I request an {word} access token with eGK cert {string}, password {string} and given values")
+    public void iRequestAnAccessTokenWitheGKKeyStorePasswordAndGivenValues(final String accessType,
+        final String certFile,
+        final String password, final DataTable dataTable) {
+        requestAnAccessTokenWitheGK(accessType, CodeAuthType.SIGNED_CHALLENGE,
+            cucumberValuesConverter.parseDocString(certFile), password,
+            cucumberValuesConverter.getMapFromDatatable(dataTable));
+    }
+
+    /**
+     * convenience step to request an access token of given type via SSO token. For this first we need to obtain an SSO
+     * Token via signed challenge, signing the challenge with given certificate. Then we use this sso token to request
+     * another access token for given scope. This step needs a data table following the step with the parameters to be
+     * used, when creating the token.
+     *
+     * @param accessType type of access token to request (erezept or pairing)
+     * @param certFile   certificate to use for signing the challenge
+     * @param password   password to access the p12 key store
+     * @param dataTable  optional list of parameters (client_id, scope, code_challenge, code_challenge_method,
+     *                   redirect_uri, state, nonce, rsponse_type)
+     * @testenv client_id, redirect_uri
+     * @gematik.context.in USER_AGENT
+     * @gematik.context.out RESPONSE, CLAIMS?, HEADER_CLAIMS?, DISC_DOC, CHALLENGE, USER_CONSENT, SIGNED_CHALLENGE,
+     * SSO_TOKEN, SSO_TOKEN_ENCRYPTED, TOKEN_REDIRECT_URL, CODE_VERIFIER, CLIENT_ID, STATE, TOKEN_CODE,
+     * TOKEN_CODE_ENCRYPTED, REDIRECT_URI, PUK_DISC, PUK_SIGN, PUK_ENC, ACCESS_TOKEN, ID_TOKEN
+     * @see CucumberValuesConverter
+     */
+    @Given("IDP I request an {word} access token via SSO token with eGK cert {string}, password {string} and given values")
+    public void iRequestAnAccessTokenViaSsoTokenWithKeyStorePasswordAndGivenValues(final String accessType,
+        final String certFile,
+        final String password, final DataTable dataTable) {
+        Map<String, String> data = cucumberValuesConverter.getMapFromDatatable(dataTable);
+        requestAnAccessTokenWitheGK(accessType, CodeAuthType.SIGNED_CHALLENGE,
+            cucumberValuesConverter.parseDocString(certFile), password, data);
+        data = cucumberValuesConverter.getMapFromDatatable(dataTable);
+        requestAnAccessTokenWitheGK(accessType, CodeAuthType.SSO_TOKEN,
+            cucumberValuesConverter.parseDocString(certFile), password, data);
+    }
+
+    /**
+     * convenience step to request an access token of given type via signed challenge with default values, signing the
+     * challenge with given certificate in a single step.
+     *
+     * @param accessType type of access token to request
+     * @param certFile   certificate to use for signing the challenge
+     * @param password   password to access the p12 key store
+     * @testenv client_id, redirect_uri
+     * @gematik.context.in USER_AGENT
+     * @gematik.context.out RESPONSE, CLAIMS?, HEADER_CLAIMS?, DISC_DOC, CHALLENGE, USER_CONSENT, SIGNED_CHALLENGE,
+     * SSO_TOKEN, SSO_TOKEN_ENCRYPTED, TOKEN_REDIRECT_URL, CODE_VERIFIER, CLIENT_ID, STATE, TOKEN_CODE,
+     * TOKEN_CODE_ENCRYPTED, REDIRECT_URI, PUK_DISC, PUK_SIGN, PUK_ENC, ACCESS_TOKEN, ID_TOKEN
+     * @see CucumberValuesConverter
+     */
+    @Given("IDP I request an {AccessTokenType} access token with eGK cert {string} and password {string}")
+    @SneakyThrows
+    public void iRequestAnAccessTokenWitheGKAndKeyStorePassword(final AccessTokenType accessType, final String certFile,
+        final String password) {
+        final Map<String, String> data = new HashMap<>(Map.of("scope", accessType.toScope() + " openid"));
+        requestAnAccessTokenWitheGK(accessType.toString(), CodeAuthType.SIGNED_CHALLENGE,
+            cucumberValuesConverter.parseDocString(certFile), password, data);
+    }
+
+    /**
+     * convenience step to request an access token of given type via SSO token with default values. For this first we
+     * need to obtain an SSO Token via signed challenge, signing the challenge with given certificate. Then we use this
+     * sso token to request another access token for given scope.
+     *
+     * @param accessType type of access token to request
+     * @param certFile   certificate to use for signing the challenge
+     * @param password   password to access the p12 key store
+     * @testenv client_id, redirect_uri
+     * @gematik.context.in USER_AGENT
+     * @gematik.context.out RESPONSE, CLAIMS?, HEADER_CLAIMS?, DISC_DOC, CHALLENGE, USER_CONSENT, SIGNED_CHALLENGE,
+     * SSO_TOKEN, SSO_TOKEN_ENCRYPTED, TOKEN_REDIRECT_URL, CODE_VERIFIER, CLIENT_ID, STATE, TOKEN_CODE,
+     * TOKEN_CODE_ENCRYPTED, REDIRECT_URI, PUK_DISC, PUK_SIGN, PUK_ENC, ACCESS_TOKEN, ID_TOKEN
+     * @see CucumberValuesConverter
+     */
+    @Given("IDP I request an {AccessTokenType} access token via SSO token with eGK cert {string} and password {string}")
+    @SneakyThrows
+    public void iRequestAnAccessTokenWithKeyStorePasswordViaSsoToken(final AccessTokenType accessType,
+        final String certFile,
+        final String password) {
+        Map<String, String> data = new HashMap<>(Map.of("scope", accessType.toScope() + " openid"));
+        requestAnAccessTokenWitheGK(accessType.toString(), CodeAuthType.SIGNED_CHALLENGE,
+            cucumberValuesConverter.parseDocString(certFile), password, data);
+        data = new HashMap<>(Map.of("scope", accessType.toScope() + " openid"));
+        requestAnAccessTokenWitheGK(accessType.toString(), CodeAuthType.SSO_TOKEN,
+            cucumberValuesConverter.parseDocString(certFile), password, data);
     }
 
     @SneakyThrows
     private void requestAnAccessTokenWitheGK(final String accessType, final CodeAuthType authType,
-        final String certFile, final Map<String, String> data) {
+        final String certFile, final String password, final Map<String, String> data) {
         final String codeVerifier = data.getOrDefault("codeVerifier", RandomStringUtils.random(60, true, true));
         data.remove("codeVerifier");
         auth.setCodeVerifier(codeVerifier);
@@ -210,7 +332,7 @@ public class StepsGlue {
         data.putIfAbsent("response_type", "code");
 
         auth.getChallenge(data, HttpStatus.SUCCESS);
-        author.signChallenge(cucumberValuesConverter.parseDocString(certFile));
+        author.signChallenge(cucumberValuesConverter.parseDocString(certFile), password);
         author.getCode(authType, HttpStatus.SUCCESS);
         Context.get().put(ContextKey.REDIRECT_URI, data.get("redirect_uri"));
         access.getToken(HttpStatus.SUCCESS, null);
@@ -300,7 +422,21 @@ public class StepsGlue {
     // =================================================================================================================
 
     /**
-     * sign the stored challenge with given certificate
+     * sign the stored challenge with given certificate and default password "00"
+     *
+     * @param keyfile  file to read the certificate from
+     * @param password password to access the p12 key store
+     * @gematik.context.in CHALLENGE
+     * @gematik.context.out SIGNED_CHALLENGE
+     * @see CucumberValuesConverter
+     */
+    @When("IDP I sign the challenge with {string} and password {string}")
+    public void iSignTheChallengeWithAndPassword(final String keyfile, final String password) {
+        author.signChallenge(cucumberValuesConverter.parseDocString(keyfile), password);
+    }
+
+    /**
+     * sign the stored challenge with given certificate and default password "00"
      *
      * @param keyfile file to read the certificate from
      * @gematik.context.in CHALLENGE
@@ -309,7 +445,7 @@ public class StepsGlue {
      */
     @When("IDP I sign the challenge with {string}")
     public void iSignTheChallengeWith(final String keyfile) {
-        author.signChallenge(cucumberValuesConverter.parseDocString(keyfile));
+        author.signChallenge(cucumberValuesConverter.parseDocString(keyfile), "00");
     }
 
     /**

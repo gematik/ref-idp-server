@@ -116,6 +116,13 @@ public class JsonChecker {
                         .filter(key -> !key.toString().startsWith("____"))
                         .toArray());
 
+            // check json keys are all in oracle (either as name or as ____name
+            final JSONObject finalOracle = oracle;
+            json.keySet().forEach(
+                key -> assertThat(finalOracle.has(key.toString()) || finalOracle.has("____" + key))
+                    .withFailMessage("EXTRA Key " + key + " in JSON").isTrue()
+            );
+
             final Iterator<String> keyIt = oracle.keys();
             while (keyIt.hasNext()) {
                 final String oracleKey = keyIt.next();

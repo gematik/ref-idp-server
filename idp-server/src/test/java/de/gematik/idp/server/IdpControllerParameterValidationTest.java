@@ -278,7 +278,7 @@ public class IdpControllerParameterValidationTest {
         assertThat(response.getBody().getObject().get("error"))
             .isEqualTo(errorType.getSerializationValue());
         assertThat(response.getBody().getObject().get("gematik_code"))
-            .isEqualTo(errorCode);
+            .isEqualTo(String.valueOf(errorCode));
         assertThat(response.getBody().getObject().get("gematik_error_text"))
             .isEqualTo(errorText);
     }

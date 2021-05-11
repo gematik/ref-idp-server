@@ -61,11 +61,6 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <artifactId>bcprov-jdk16</artifactId>
-                <groupId>org.bouncycastle</groupId>
-                <version>${version.bouncycastle.bcpprov}</version>
-            </dependency>
-            <dependency>
                 <artifactId>bcpkix-jdk15on</artifactId>
                 <groupId>org.bouncycastle</groupId>
                 <version>${version.bouncycastle.bcpkix}</version>
@@ -83,7 +78,7 @@
             <dependency>
                 <groupId>de.gematik</groupId>
                 <artifactId>rbellogger</artifactId>
-                <version>0.7.4</version>
+                <version>0.8.2</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -126,8 +121,7 @@
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
         <sonar.language>java</sonar.language>
-        <version.bouncycastle.bcpkix>1.66</version.bouncycastle.bcpkix>
-        <version.bouncycastle.bcpprov>1.46</version.bouncycastle.bcpprov>
+        <version.bouncycastle.bcpkix>1.68</version.bouncycastle.bcpkix>
         <version.build-helper-maven-plugin>3.2.0</version.build-helper-maven-plugin>
         <version.jsoniter>0.9.16</version.jsoniter>
         <version.lombok>1.18.16</version.lombok>
@@ -146,5 +140,5 @@
         <version.test.regex>none</version.test.regex>
     </properties>
 
-    <version>15.0.0</version>
+    <version>16.0.0</version>
 </project>

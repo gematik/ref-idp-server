@@ -27,6 +27,7 @@ import lombok.NoArgsConstructor;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
+import org.jose4j.keys.BigEndianBigInteger;
 
 @Data
 @AllArgsConstructor
@@ -70,12 +71,8 @@ public class IdpEccKeyDescriptor extends IdpKeyDescriptor {
             final ECPoint generator = bcecPublicKey.getQ();
             descriptorBuilder
                 .eccCurveName("BP-256")
-                .eccPointXValue(
-                    Base64.getUrlEncoder().withoutPadding()
-                        .encodeToString(generator.getAffineXCoord().toBigInteger().toByteArray()))
-                .eccPointYValue(
-                    Base64.getUrlEncoder().withoutPadding()
-                        .encodeToString(generator.getAffineYCoord().toBigInteger().toByteArray()));
+                .eccPointXValue(BigEndianBigInteger.toBase64Url(generator.getAffineXCoord().toBigInteger()))
+                .eccPointYValue(BigEndianBigInteger.toBase64Url(generator.getAffineYCoord().toBigInteger()));
 
             return descriptorBuilder.build();
         } catch (final ClassCastException e) {

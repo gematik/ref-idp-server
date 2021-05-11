@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+
+  idpserver:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+      args:
+        mode: untested
+        buildparameters: --no-transfer-progress
+    image: idp-global:sysint
+    container_name: c_idpserver
+    ports:
+      - "8999:8080"
