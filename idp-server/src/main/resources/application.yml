@@ -179,6 +179,10 @@ idp:
         detailMessage: "grant_type wird nicht unterstützt"
         error: UNSUPPORTED_GRANT_TYPE
         code: 3014
+      4000:
+        detailMessage: "Der Auftrag zur Deaktivierung des Pairings konnte nicht angenommen werden."
+        error: INVALID_REQUEST
+        code: 4000
       4001:
         detailMessage: "key_identifier wurde nicht übermittelt"
         error: INVALID_REQUEST

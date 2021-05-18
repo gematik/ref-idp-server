@@ -23,9 +23,11 @@ end note
 
 ||40||
 
+'PS
 !includesub workflow.base.puml!GetCertsFromFD
-!includesub workflow.base.puml!ChooseCodeVerifier
+
 !includesub workflow.base.puml!GetDiscoveryDoc
+!includesub workflow.base.puml!ChooseCodeVerifier
 !includesub workflow.base.puml!GetKeysFromIDP
 !includesub workflow.base.puml!RequestAuthenticationChallenge
 !includesub workflow.base.puml!ConfirmUserConsent

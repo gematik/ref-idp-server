@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2021 gematik GmbH
  * 
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * 
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an 'AS IS' BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -64,7 +64,6 @@ public class IdpTestEnvironmentConfigurator extends TestEnvironmentConfigurator 
         } else {
             return new SecretKeySpec(HexUtils.fromHexString(getTestEnvProperty(propName + ".hex", "")),
                 "AES");
-
         }
     }
 
@@ -73,13 +72,13 @@ public class IdpTestEnvironmentConfigurator extends TestEnvironmentConfigurator 
         // initialize Jose4j to support Gematik specific brainpool curves
         BrainpoolCurves.init();
 
-        final String idpLocalDiscdoc = System.getenv(IDP_LOCAL_DISCDOC);
-        final String idpServerPort = System.getenv(IDP_SERVER_PORT);
+        final String idpLocalDiscdoc = getProperty(IDP_LOCAL_DISCDOC);
+        final String idpServerPort = getProperty(IDP_SERVER_PORT);
 
         log.info("  initializing IDP Testenvironment...");
         if (idpLocalDiscdoc == null || idpLocalDiscdoc.isBlank()) {
-            if (System.getenv().containsKey(IDP_SERVER)) {
-                DISCOVERY_URL = System.getenv(IDP_SERVER);
+            if (getProperty(IDP_SERVER) != null) {
+                DISCOVERY_URL = getProperty(IDP_SERVER);
             } else {
                 final int serverPort;
                 final String s = System.getProperty(IDP_SERVER_PORT);

@@ -1,14 +1,14 @@
 #
 # Copyright (c) 2021 gematik GmbH
 # 
-# Licensed under the Apache License, Version 2.0 (the "License");
+# Licensed under the Apache License, Version 2.0 (the License);
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # 
-#    http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 # 
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
+# distributed under the License is distributed on an 'AS IS' BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
@@ -25,6 +25,7 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
 
 
   @TCID:IDP_REF_DEREG_001
+    @Approval
   Scenario Outline: GetToken signed authentication data - Gutfall - Löschen alle Pairings vor Start der Tests
 
   ```
@@ -110,10 +111,7 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
 
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     When IDP I deregister the device with 'keyidderegNEDDA'
-    Then the response status is 204
-    And IDP the response should match
-      """
-      """
+    Then IDP the response is an 400 error with gematik code 4000 and error 'invalid_request'
 
   @Approval @Ready
   @Afo:A_21448
@@ -135,10 +133,7 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I deregister the device with 'keyiddereg200'
-    Then the response status is 204
-    And IDP the response should match
-      """
-      """
+    Then IDP the response is an 400 error with gematik code 4000 and error 'invalid_request'
 
   # Scenario: Biometrie Deregister - Lösche Pairing mit Zertifikate ohne IDNummer
   # So nicht testbar, da kein access token angefordert werden kann
@@ -187,8 +182,10 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
   Scenario: Biometrie Deregister - Lösche Pairing fehlender key identifier in der Anfrage
     Given IDP I request an pairing access token via SSO token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     When IDP I deregister the device with '$REMOVE'
-    Then IDP the response is an 405 error with gematik code -1 and error 'invalid_request'
-
+    Then the response status is 405
+    And IDP the response should match
+        """
+        """
 
   @Approval
   @Afo:A_21448
@@ -202,7 +199,4 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
 
     Given IDP I request an pairing access token via SSO token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     When IDP I deregister the device with '$NULL'
-    Then the response status is 204
-    And IDP the response should match
-        """
-        """
+    Then IDP the response is an 400 error with gematik code 4000 and error 'invalid_request'

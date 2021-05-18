@@ -1,14 +1,14 @@
 #
 # Copyright (c) 2021 gematik GmbH
 # 
-# Licensed under the Apache License, Version 2.0 (the "License");
+# Licensed under the Apache License, Version 2.0 (the License);
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # 
-#    http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 # 
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
+# distributed under the License is distributed on an 'AS IS' BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
@@ -493,7 +493,6 @@ Feature: Fordere Access Token mit einer signierten Challenge an
 
   @TCID:IDP_REF_TOK_016 @PRIO:2 @Negative
     @Approval @Ready
-    @OpenBug @Todo:IDP-582
   Scenario Outline: GetTokenSigned - ID Token User Consent Inhalte des Zertifikats sind null
   ```
   Wir signieren eine Challenge mit einem Zertifikate, welches ungültige Null Einträge beim User Consent hat.
@@ -507,12 +506,8 @@ Feature: Fordere Access Token mit einer signierten Challenge an
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
     And IDP I sign the challenge with '<cert>'
-    And IDP I request a code token with signed challenge successfully
-    And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
-    And IDP I request an access token
-
-    When IDP I extract the body claims from token ID_TOKEN
-    Then IDP the body claim '<claim>' should match '$REMOVE'
+    And IDP I request a code token with signed challenge
+    Then IDP the response is an 400 error with gematik code 2020 and error 'invalid_request'
 
     Examples: GetToken - Zertifikate und Claims
       | cert                                          |

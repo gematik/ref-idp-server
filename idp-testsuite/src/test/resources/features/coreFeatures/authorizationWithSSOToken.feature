@@ -1,14 +1,14 @@
 #
 # Copyright (c) 2021 gematik GmbH
 # 
-# Licensed under the Apache License, Version 2.0 (the "License");
+# Licensed under the Apache License, Version 2.0 (the License);
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # 
-#    http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 # 
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
+# distributed under the License is distributed on an 'AS IS' BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
@@ -207,7 +207,7 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
 
     When IDP I wait PT3M5S
     And IDP I request a code token with sso token
-    Then IDP the response is an 302 error with gematik code 2040 and error 'access_denied'
+    Then IDP the response is an 400 error with gematik code 2032 and error 'invalid_request'
 
     # ------------------------------------------------------------------------------------------------------------------
     #

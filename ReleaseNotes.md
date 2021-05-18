@@ -1,3 +1,6 @@
+# Release 17.0.0
+- Anpassungen bei Fehlermeldungen
+
 # Release 16.0.0
 - JWK-Koordinaten sind nun BigEndian kodiert
 - Datentypen in Fehlermeldungen korrigiert

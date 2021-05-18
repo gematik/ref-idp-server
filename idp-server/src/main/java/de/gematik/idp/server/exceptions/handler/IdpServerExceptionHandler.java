@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2021 gematik GmbH
  * 
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * 
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an 'AS IS' BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -115,7 +115,7 @@ public class IdpServerExceptionHandler {
                 .map(value -> UriUtils.encodeQueryParam(value, StandardCharsets.UTF_8))
                 .ifPresent(descr -> uriBuilder.queryParam("error_description", descr));
         } catch (final RuntimeException e) {
-            //swallow
+            // swallow
         }
     }
 
@@ -132,7 +132,7 @@ public class IdpServerExceptionHandler {
                 .map(value -> UriUtils.encodeQueryParam(value, StandardCharsets.UTF_8))
                 .ifPresent(state -> uriBuilder.queryParam("state", state));
         } catch (final RuntimeException e) {
-            //swallow
+            // swallow
         }
     }
 
@@ -149,7 +149,8 @@ public class IdpServerExceptionHandler {
                 .or(() -> tryToExtractErrorCodeFromExceptionMessageAndConvertToIdpException(exc))
                 .or(() -> tryToMapJoseExceptionToIdpException(exc))
                 .orElseGet(() -> new IdpServerException("Ein Fehler ist aufgetreten", exc, IdpErrorType.SERVER_ERROR,
-                    HttpStatus.BAD_REQUEST)), request, response);
+                    HttpStatus.BAD_REQUEST)),
+            request, response);
     }
 
     private Optional<IdpServerException> tryToExtractErrorCodeFromConstraintViolationAndConvertToIdpException(
@@ -194,7 +195,8 @@ public class IdpServerExceptionHandler {
         final WebRequest request, final HttpServletResponse response) {
         return handleIdpServerException(
             new IdpServerException("Invalid Request", exc, IdpErrorType.SERVER_ERROR,
-                HttpStatus.INTERNAL_SERVER_ERROR), request, response);
+                HttpStatus.INTERNAL_SERVER_ERROR),
+            request, response);
     }
 
     @ExceptionHandler({HttpMediaTypeNotAcceptableException.class, HttpMediaTypeNotSupportedException.class})
@@ -208,7 +210,8 @@ public class IdpServerExceptionHandler {
         final WebRequest request, final HttpServletResponse response) {
         return handleIdpServerException(
             new IdpServerException("Invalid Request", exc, IdpErrorType.INVALID_REQUEST,
-                HttpStatus.CONFLICT), request, response);
+                HttpStatus.CONFLICT),
+            request, response);
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
@@ -225,11 +228,9 @@ public class IdpServerExceptionHandler {
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<IdpErrorResponse> handleMethodNotSupported(
-        final HttpRequestMethodNotSupportedException ex, final WebRequest request,
-        final HttpServletResponse response) {
-        return handleIdpServerException(
-            new IdpServerException(ex.getMessage(), ex, IdpErrorType.INVALID_REQUEST,
-                HttpStatus.METHOD_NOT_ALLOWED), request, response);
+        final HttpRequestMethodNotSupportedException ex) {
+        log.info("Returning error to client: {}", ex.getMessage());
+        return new ResponseEntity<>(getHeader(), HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     private void logEntry(final IdpErrorResponse body, final Exception exc) {

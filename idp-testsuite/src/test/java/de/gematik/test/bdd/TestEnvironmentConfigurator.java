@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2021 gematik GmbH
  * 
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * 
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an 'AS IS' BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -69,8 +69,8 @@ public class TestEnvironmentConfigurator {
         log.info("-----------------------------------------------------------------------------------------------");
         log.info("- T E S T   E N V I R O N M E N T");
         log.info("");
-        log.info("HTTPS PROXY : " + getSystemProperty("https.proxyHost") + ":" + getSystemProperty("https.proxyPort"));
-        log.info("HTTP PROXY  : " + getSystemProperty("http.proxyHost") + ":" + getSystemProperty("http.proxyPort"));
+        log.info("HTTPS PROXY : " + getProperty("https.proxyHost") + ":" + getProperty("https.proxyPort"));
+        log.info("HTTP PROXY  : " + getProperty("http.proxyHost") + ":" + getProperty("http.proxyPort"));
         log.debug("  initializing Testenvironment '" + testEnv + "'...");
         log.info("-------------");
         log.info("CONFIG FILE : " + configFile.getAbsolutePath());
@@ -103,12 +103,14 @@ public class TestEnvironmentConfigurator {
         return str;
     }
 
-    protected static String getSystemProperty(final String property) {
-        return System.getProperty(property, "NOT SET");
+    protected static String getSystemEnvString(final String envName) {
+        return Optional.ofNullable(getProperty(envName))
+            .orElse("NOT SET");
     }
 
-    protected static String getSystemEnvString(final String envName) {
-        return Optional.ofNullable(System.getenv(envName)).orElse("NOT SET");
+    public static String getProperty(String key) {
+        return System.getProperty(key,
+            System.getenv(key)); // fallback
     }
 }
 

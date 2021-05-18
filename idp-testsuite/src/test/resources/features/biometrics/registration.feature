@@ -1,14 +1,14 @@
 #
 # Copyright (c) 2021 gematik GmbH
 # 
-# Licensed under the Apache License, Version 2.0 (the "License");
+# Licensed under the Apache License, Version 2.0 (the License);
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # 
-#    http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 # 
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
+# distributed under the License is distributed on an 'AS IS' BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
@@ -32,6 +32,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
 
 
   @TCID:IDP_REF_ALTAUTREG_000
+    @Approval
   Scenario Outline: Biometrie AltAutReg - Gutfall - Löschen alle Pairings vor Start der Tests
 
   ```
@@ -248,10 +249,10 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     And IDP the response is an <status> error with gematik code <errid> and error '<errcode>'
 
     Examples: Liste mit Einträgen wo immer ein Zertifikat unterschiedlich aber gültig ist
-      | status | errcode               | errid | key_identifier     | cert_access                      | cert_keydata     | cert_public_key                       | cert_sign                             | cert_register                         |
-      | 500    | internal_server_error | -1    | keyidentdiffcert03 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-folgekarte-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12      | egk-idp-idnumber-a-valid-ecc.p12      |
-      | 400    | invalid_request       | -1    | keyidentdiffcert04 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12      | egk-idp-idnumber-a-folgekarte-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12      |
-      | 400    | invalid_request       | -1    | keyidentdiffcert05 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12      | egk-idp-idnumber-a-valid-ecc.p12      | egk-idp-idnumber-a-folgekarte-ecc.p12 |
+      | status | errcode       | errid | key_identifier     | cert_access                      | cert_keydata     | cert_public_key                       | cert_sign                             | cert_register                         |
+      | 403    | access_denied | 4001  | keyidentdiffcert03 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-folgekarte-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12      | egk-idp-idnumber-a-valid-ecc.p12      |
+      | 403    | access_denied | 4001  | keyidentdiffcert04 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12      | egk-idp-idnumber-a-folgekarte-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12      |
+      | 403    | access_denied | 4001  | keyidentdiffcert05 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12      | egk-idp-idnumber-a-valid-ecc.p12      | egk-idp-idnumber-a-folgekarte-ecc.p12 |
 
 
     # not done above TODO ERRROR
@@ -401,13 +402,13 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | /keys/valid/Pub_Se_Aut-1.pem | <keyidentifier> | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | <invalidcert>                     |
     And IDP I sign pairing data with '<invalidcert>'
     And IDP I register the device with '<invalidcert>'
-    Then IDP the response is an 500 error with gematik code -1 and error 'invalid_request'
+    Then IDP the response is an 403 error with gematik code 4001 and error 'invalid_request'
 
     Examples: AltAutReg - Ungültige Zertifikate
-      | keyidentifier     | invalidcert                                              |
-      | keyidentinvcert01 | /certs/invalid/egk-idp-idnumber-a-expired-ecc.p12        |
-      | keyidentinvcert02 | /certs/invalid/egk-idp-idnumber-a-invalid-issuer-ecc.p12 |
-      | keyidentinvcert03 | /certs/invalid/egk-idp-idnumber-a-revoked-ecc.p12        |
+      | keyidentifier     | invalidcert                                          |
+      | keyidentinvcert01 | /certs/invalid/egk-idp-idnumber-a-expired-ecc.p12    |
+      | keyidentinvcert02 | /certs/invalid/egk-idp-idnumber-a-invalid-issuer.p12 |
+      | keyidentinvcert03 | /certs/invalid/egk-idp-idnumber-a-revoked-ecc.p12    |
 
   @Approval @OpenBug
     @Afo:A_21422

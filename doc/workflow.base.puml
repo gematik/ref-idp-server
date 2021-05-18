@@ -1,6 +1,6 @@
 @startuml
 !startsub Actors
-actor "Versicherte:r" as V
+actor "Anwender:in" as V
 participant "Fachlogik" as FL
 participant Authenticator as authM
 participant Fachdienst as FD
@@ -20,29 +20,30 @@ FL -> FD : GET CertList
 FL <-- FD : RETURN certificates
 !endsub
 
-!startsub ChooseCodeVerifier
-== choose code verifier ==
-
-    FL -> FL : generate CODE_VERIFIER
-    FL -> FL : CODE_CHALLENGE = hash(CODE_VERIFIER)
-    hnote right #lightgreen : sha256
-    deactivate FL
-!endsub
-
 !startsub GetDiscoveryDoc
 == get discovery doc  ==
-    authM -> IDPDisc ++ : getDiscoveryDocument()\nGET uri_disc
+    FL -> IDPDisc ++ : getDiscoveryDocument()\nGET uri_disc
+    deactivate FL
     IDPDisc -> IDPDisc : build discovery document
     IDPDisc -> IDPDisc : sign discovery document
     hnote right #lightgreen : sign with prk_idp_sig
-    authM <-- IDPDisc -- : RETURN jwt(signed discovery document)
-    activate authM
-    authM -> authM : tuc_pli18 auf puk_idp_sig cert
+    activate FL
+    FL <-- IDPDisc -- : RETURN jwt(signed discovery document)
+    FL -> FL : validate signature (tuc_pki18 auf puk_idp_sig cert)
     hnote right #lightgreen : cert from x5c header
+!endsub
+
+!startsub ChooseCodeVerifier
+== choose code verifier ==
+    FL -> FL : generate CODE_VERIFIER
+    FL -> FL : CODE_CHALLENGE = hash(CODE_VERIFIER)
+    hnote right #lightgreen : sha256
+    authM <- FL -- : forward CODE_CHALLENGE
 !endsub
 
 !startsub GetKeysFromIDP
 == get keys from Idp ==
+    activate authM
     authM -> IDPDisc ++ : GET uri_puk_idp_enc
     authM <-- IDPDisc : RETURN jwk(puk_idp_enc public key)
     authM -> IDPDisc : GET uri_puk_idp_sig
@@ -137,25 +138,20 @@ FL <-- FD : RETURN certificates
     FL -> FL : encrypted KEY_VERIFIER = jwe(KEY_VERIFIER)
     hnote right #lightgreen : encrypt with idp_puk_enc
     FL -> FL : store TOKEN_KEY (for derycpting access and id token later on)
-    FL -> authM ++
-    deactivate FL
 !endsub
 
 !startsub GetTokens
 == get tokens ==
-
-    authM -> IDPToken ++ : getTokens()\nPOST token_endpoint AUTHORIZATION_CODE, jwe(KEY_VERIFIER)
-    deactivate authM
+    FL -> IDPToken ++ : getTokens()\nPOST token_endpoint AUTHORIZATION_CODE, jwe(KEY_VERIFIER)
+    deactivate FL
     IDPToken -> IDPToken : decrypt KEY_VERIFIER jwe -> TOKEN_KEY
     hnote left #lightgreen : with prk_idp_enc
     IDPToken -> IDPToken : validate client, code and KEY_VERIFIER
     hnote left #lightgreen : verify signature
     IDPToken -> IDPToken : encrypt ACCESS_TOKEN and ID_TOKEN
     hnote left #lightgreen : with TOKEN_KEY
-    authM <-- IDPToken -- : RETURN jwe(ACCESS_TOKEN, TOKEN_KEY),\njwe(ID_TOKEN, TOKEN_KEY)
-    activate authM
-    authM --> FL : FORWARD jwe(ACCESS_TOKEN, TOKEN_KEY),\njwe(ID_TOKEN, TOKEN_KEY)
-    deactivate authM
+    FL <-- IDPToken -- : RETURN jwe(ACCESS_TOKEN, TOKEN_KEY),\njwe(ID_TOKEN, TOKEN_KEY)
+'    deactivate FL
 !endsub
 
 !startsub UseAccessTokenAtFD
@@ -166,6 +162,7 @@ FL <-- FD : RETURN certificates
     hnote left #lightgreen : with TOKEN_KEY
     FL -> FL : decrypt ID_TOKEN
     hnote left #lightgreen : with TOKEN_KEY
+    FL -> FL : validate ACCESS_TOKEN and ID_TOKEN
     FL -> FL : encrypt ACCESS_TOKEN
     hnote left #lightgreen : with shared secret between FL and FD
     FL -> FD ++ : sendAccessTokenAndRequestedFachdaten()
