@@ -60,7 +60,8 @@ public class ChallengeTokenValidationService {
             .flatMap(List<String>::stream)
             .collect(Collectors.toSet());
         final boolean isAltAuth = amr.containsAll(Arrays.asList("mfa", "hwk")) &&
-            (amr.contains("fpt") || amr.contains("face") || amr.contains("pin") || amr.contains("pwd"));
+                (amr.contains("fpt") || amr.contains("face") || amr.contains("pin") ||
+                        amr.contains("pwd") || amr.contains("generic-biometric"));
         if (isAltAuth) {
             try {
                 validateAlternateAuthenticationDataAndThrowExceptionIfFail(signedChallenge);

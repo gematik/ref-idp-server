@@ -44,6 +44,7 @@ import de.gematik.idp.token.IdpJoseObject;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
 import java.security.Key;
+import java.security.Signature;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
@@ -52,6 +53,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
 import org.apache.http.HttpHeaders;
+import org.bouncycastle.crypto.digests.SHA512Digest;
+import org.bouncycastle.crypto.signers.RSADigestSigner;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -104,6 +108,16 @@ public class TokenRetrievalTest {
             .isEqualTo(300);
     }
 
+    @Test
+    public void issuerShouldBePresentInAccessAndIdToken() throws UnirestException {
+        final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
+
+        assertThat(tokenResponse.getIdToken().getBodyClaim(ClaimName.ISSUER).get().toString())
+            .isNotBlank();
+        assertThat(tokenResponse.getAccessToken().getBodyClaim(ClaimName.ISSUER).get().toString())
+            .isNotBlank();
+    }
+
     @Rfc({"OpenID Connect Core 1.0 incorporating errata set 1 - 3.1.3.3.  Successful Token Response",
         "RFC6750 October 2012 - 4.  Example Access Token Response"})
     @Test
@@ -119,6 +133,26 @@ public class TokenRetrievalTest {
     public void getAccessTokenWithRsa(
         @Filename("833621999741600_c.hci.aut-apo-rsa") final PkiIdentity rsaEgkIdentity) throws UnirestException {
         final IdpTokenResult tokenResponse = idpClient.login(rsaEgkIdentity);
+
+        assertThat(tokenResponse.getTokenType())
+            .as("TokenType")
+            .isEqualTo("Bearer");
+    }
+
+    @Test
+    public void getAccessTokenWithRsaWithExternalAuthenticate(
+        @Filename("833621999741600_c.hci.aut-apo-rsa") final PkiIdentity rsaEgkIdentity) throws UnirestException {
+        final IdpTokenResult tokenResponse = idpClient.login(rsaEgkIdentity.getCertificate(),
+            tbsData -> {
+                try {
+                    Signature rsaSign = Signature.getInstance("SHA256withRSAandMGF1", new BouncyCastleProvider());
+                    rsaSign.initSign(rsaEgkIdentity.getPrivateKey());
+                    rsaSign.update(tbsData, 0, tbsData.length);
+                    return rsaSign.sign();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
 
         assertThat(tokenResponse.getTokenType())
             .as("TokenType")

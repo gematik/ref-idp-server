@@ -6,13 +6,13 @@
     <artifactId>idp-testsuite</artifactId>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
-    <version>17.0.0</version>
+    <version>18.0.0</version>
 
     <parent>
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>17.0.0</version>
+        <version>18.0.0</version>
     </parent>
 
     <properties>
@@ -529,6 +529,7 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- to be replaced with tiger-aforeporter-plugin -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -584,6 +585,53 @@
                     </tags>
                 </configuration>
             </plugin>
+            <!-- reactivate once we can run this against aurora on jenkins machines
+            <plugin>
+                <groupId>de.gematik.test</groupId>
+                <artifactId>tiger-aurora-plugin</artifactId>
+                <version>0.2.0-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <id>aurora-testrun-import</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>import-testrun</goal>
+                        </goals>
+                        <configuration>
+                            <auroraComment>Testcomment</auroraComment>
+                            <auroraProfile></auroraProfile>
+                            <auroraProjectId></auroraProjectId>
+                            <auroraTestrunId></auroraTestrunId>
+                            <auroraUser></auroraUser>
+                            <auroraEncPassword></auroraEncPassword>
+                            <bddRootFolder>target/site/serenity</bddRootFolder>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            -->
+            <!--
+                        <plugin>
+                            <groupId>de.gematik.test</groupId>
+                            <artifactId>tiger-aforeporter-plugin</artifactId>
+                            <version>0.2.0-SNAPSHOT</version>
+                            <configuration>
+                                <afoFile>idp-testsuite/requirements.json</afoFile>
+                                <bddRootFolder>idp-testsuite/src/test/resources/features</bddRootFolder>
+                                <reportHtmlFile>idp-testsuite/target/site/serenity/aforeport.html</reportHtmlFile>
+                                <serenityRootFolder>idp-testsuite/target/site/serenity</serenityRootFolder>
+                            </configuration>
+                            <executions>
+                                <execution>
+                                    <id>create-aforeport</id>
+                                    <phase>post-integration-test</phase>
+                                    <goals>
+                                        <goal>aforeport</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                        -->
 
         </plugins>
     </build>

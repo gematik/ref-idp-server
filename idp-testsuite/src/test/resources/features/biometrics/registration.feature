@@ -66,8 +66,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | name       | manufacturer   | product   | model   | os   | os_version   |
       | eRezeptApp | <manufacturer> | <product> | <model> | <os> | <os_version> |
     And IDP I create pairing data with
-      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
-      | /keys/valid/Pub_Se_Aut-1.pem | <keyid>        | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | se_subject_public_key_info   | key_identifier | product   | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
+      | /keys/valid/Pub_Se_Aut-1.pem | <keyid>        | <product> | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     Then the response status is 200
@@ -187,8 +187,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | name       | manufacturer | product | model | os      | os_version |
       | eRezeptApp | Motorola     | GOTA 1  | G2    | Android | 1.3.2      |
     And IDP I create pairing data with
-      | se_subject_public_key_info   | key_identifier   | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel02 | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | se_subject_public_key_info   | key_identifier   | product | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel02 | GOTA 1  | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I request an access token
@@ -213,8 +213,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | name       | manufacturer | product | model | os     | os_version |
       | eRezeptApp | Motorola     | GOTA 1  | G2    | Ubuntu | 1.3.2      |
     And IDP I create pairing data with
-      | se_subject_public_key_info   | key_identifier   | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel03 | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | se_subject_public_key_info   | key_identifier   | product | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidentdoppel03 | GOTA 1  | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I request an access token

@@ -60,8 +60,8 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | name       | manufacturer   | product   | model   | os   | os_version   |
       | eRezeptApp | <manufacturer> | <product> | <model> | <os> | <os_version> |
     And IDP I create pairing data with
-      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
-      | /keys/valid/Pub_Se_Aut-1.pem | <keyid>        | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+      | se_subject_public_key_info   | key_identifier | product   | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
+      | /keys/valid/Pub_Se_Aut-1.pem | <keyid>        | <product> | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 

@@ -25,7 +25,7 @@ import java.security.cert.X509Certificate;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 public class IdpStepsBaseTest {
 

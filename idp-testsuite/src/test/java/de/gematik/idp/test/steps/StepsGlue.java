@@ -17,27 +17,13 @@
 package de.gematik.idp.test.steps;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import de.gematik.idp.test.steps.helpers.ClaimsStepHelper;
-import de.gematik.idp.test.steps.helpers.CucumberValuesConverter;
-import de.gematik.idp.test.steps.helpers.IdpTestEnvironmentConfigurator;
-import de.gematik.idp.test.steps.helpers.JsonChecker;
-import de.gematik.idp.test.steps.helpers.KeyAndCertificateStepsHelper;
-import de.gematik.idp.test.steps.helpers.SerenityJSONObject;
-import de.gematik.idp.test.steps.model.AccessTokenType;
-import de.gematik.idp.test.steps.model.ClaimLocation;
-import de.gematik.idp.test.steps.model.CodeAuthType;
-import de.gematik.idp.test.steps.model.DateCompareMode;
-import de.gematik.idp.test.steps.model.HttpMethods;
-import de.gematik.idp.test.steps.model.HttpStatus;
+import de.gematik.idp.test.steps.helpers.*;
+import de.gematik.idp.test.steps.model.*;
 import de.gematik.test.bdd.Context;
 import de.gematik.test.bdd.ContextKey;
 import de.gematik.test.bdd.Variables;
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.After;
-import io.cucumber.java.Before;
-import io.cucumber.java.DataTableType;
-import io.cucumber.java.ParameterType;
-import io.cucumber.java.Scenario;
+import io.cucumber.java.*;
 import io.cucumber.java.de.Gegebensei;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -316,7 +302,7 @@ public class StepsGlue {
     }
 
     @SneakyThrows
-    private void requestAnAccessTokenWitheGK(final String accessType, final CodeAuthType authType,
+    public void requestAnAccessTokenWitheGK(final String accessType, final CodeAuthType authType,
         final String certFile, final String password, final Map<String, String> data) {
         final String codeVerifier = data.getOrDefault("codeVerifier", RandomStringUtils.random(60, true, true));
         data.remove("codeVerifier");

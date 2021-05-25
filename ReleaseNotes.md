@@ -1,3 +1,8 @@
+# Release 18.0.0
+- IDP-Client für ExternalizedSignature bei RSA erweitert
+- AMR erweitert (Fix für Biometrie)
+- Token-Flow Korrektur: Issuer wird korrekt befüllt
+
 # Release 17.0.0
 - Anpassungen bei Fehlermeldungen
 

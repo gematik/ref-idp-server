@@ -24,6 +24,7 @@ import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
 import de.gematik.idp.client.BiometrieClient;
 import de.gematik.idp.client.IdpClient;
+import de.gematik.idp.client.data.DiscoveryDocumentResponse;
 import de.gematik.idp.client.data.RegistrationData;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.field.IdpScope;
@@ -58,7 +59,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -78,8 +78,6 @@ public class TokenLoggerTest {
     private PkiIdentity smcbIdentity;
     @LocalServerPort
     private int localServerPort;
-    @MockBean
-    private ServerUrlService serverUrlService;
     @Autowired
     private AuthenticationChallengeBuilder authenticationChallengeBuilder;
     private RbelLogger rbelLogger;
@@ -265,9 +263,7 @@ public class TokenLoggerTest {
     private void addParameterNotesRequest(final String httpVerb, final String url,
         final Map<String, String> parameterNotes) {
         for (final Entry<String, String> entry : parameterNotes.entrySet()) {
-            JEXL_NOTE_FUNCTIONS.put(//"message.url =^ '" + url + "' "
-                //+ "&& message.method=='" + httpVerb + "' "
-                "key == '" + entry.getKey() + "'", entry.getValue());
+            JEXL_NOTE_FUNCTIONS.put("key == '" + entry.getKey() + "'", entry.getValue());
         }
     }
 
@@ -334,10 +330,10 @@ public class TokenLoggerTest {
             .initialize();
         wiremockPort.set(new URL(wiremockCapture.getProxyAdress()).getPort());
 
-        doReturn(wiremockCapture.getProxyAdress())
-            .when(serverUrlService).determineServerUrl(any());
-        doReturn(wiremockCapture.getProxyAdress())
-            .when(serverUrlService).determineServerUrl();
+//        doReturn(wiremockCapture.getProxyAdress())
+//            .when(serverUrlService).determineServerUrl(any());
+//        doReturn(wiremockCapture.getProxyAdress())
+//            .when(serverUrlService).determineServerUrl();
         ReflectionTestUtils.setField(authenticationChallengeBuilder, "uriIdpServer", wiremockCapture.getProxyAdress());
 
         log.info("wiremock url: " + wiremockCapture.getProxyAdress());
@@ -355,12 +351,14 @@ public class TokenLoggerTest {
     public void writeAllTokensToFile() throws IOException {
         performAndWriteFlow(() -> {
             idpClient.initialize();
+            patchIdpUrls(idpClient);
 
             idpClient.login(egkUserIdentity);
         }, targetFolder + "tokenFlowEgk.html", "EGK-Login beim IdP");
 
         performAndWriteFlow(() -> {
             idpClient.initialize();
+            patchIdpUrls(idpClient);
 
             final IdpJwe ssoToken = idpClient.login(egkUserIdentity).getSsoToken();
 
@@ -374,11 +372,13 @@ public class TokenLoggerTest {
                 .redirectUrl(TestConstants.REDIRECT_URI_GEAMTIK_TEST_PS)
                 .build();
             psIdpClient.initialize();
+            patchIdpUrls(psIdpClient);
             psIdpClient.login(smcbIdentity);
         }, targetFolder + "tokenFlowPs.html", "Primärsystem-Login beim IdP ohne SSO-Token");
 
         performAndWriteFlow(() -> {
             idpClient.initialize();
+            patchIdpUrls(idpClient);
             idpClient.setScopes(Set.of(IdpScope.PAIRING, IdpScope.OPENID));
 
             final BiometrieClient biometrieClient = BiometrieClient.builder()
@@ -394,6 +394,20 @@ public class TokenLoggerTest {
 
             idpClient.loginWithAltAuth(registrationData, smcbIdentity.getPrivateKey());
         }, targetFolder + "biometrie.html", "Registrierung eines neuen Geräts beim Server");
+    }
+
+    private void patchIdpUrls(IdpClient idpClient) {
+        final DiscoveryDocumentResponse ddResponse = idpClient.getDiscoveryDocumentResponse();
+        ddResponse.setAuthorizationEndpoint(ddResponse.getAuthorizationEndpoint()
+            .replace(wiremockCapture.getProxyFor(), wiremockCapture.getProxyAdress()));
+        ddResponse.setAuthPairEndpoint(ddResponse.getAuthPairEndpoint()
+            .replace(wiremockCapture.getProxyFor(), wiremockCapture.getProxyAdress()));
+        ddResponse.setPairingEndpoint(ddResponse.getPairingEndpoint()
+            .replace(wiremockCapture.getProxyFor(), wiremockCapture.getProxyAdress()));
+        ddResponse.setSsoEndpoint(ddResponse.getSsoEndpoint()
+            .replace(wiremockCapture.getProxyFor(), wiremockCapture.getProxyAdress()));
+        ddResponse.setTokenEndpoint(ddResponse.getTokenEndpoint()
+            .replace(wiremockCapture.getProxyFor(), wiremockCapture.getProxyAdress()));
     }
 
     private void performAndWriteFlow(final Runnable performer, final String filename, final String title)

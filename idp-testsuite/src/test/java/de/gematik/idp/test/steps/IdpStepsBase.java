@@ -74,8 +74,49 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Slf4j
 public class IdpStepsBase {
 
-    protected final KeyAndCertificateStepsHelper keyAndCertificateStepsHelper = new KeyAndCertificateStepsHelper();
     protected final static Map<String, RestAssuredCapture> threadIdToRestAssuredCaptureMap = new HashMap<>();
+    private static final Map<String, List<Scenario>> processedScenarios = new HashMap<>();
+    private static int scPassed = 0;
+    private static int scFailed = 0;
+    protected final KeyAndCertificateStepsHelper keyAndCertificateStepsHelper = new KeyAndCertificateStepsHelper();
+
+    // =================================================================================================================
+    //
+    // R E S P O N S E R E L A T E D S T E P S
+    //
+    // =================================================================================================================
+
+    private static void logRequestToRbelLogger(final String uri, final Map<String, String> headers,
+        final Map<String, String> params,
+        final String body, final String s) {
+        final RestAssuredCapture capture = threadIdToRestAssuredCaptureMap.get(getThreadId());
+        if (capture != null) {
+            capture.logRequest(s, uri, headers, body, params);
+        }
+    }
+
+    private static void logResponseToRbelLogger(final Response r) {
+        final RestAssuredCapture capture = threadIdToRestAssuredCaptureMap.get(getThreadId());
+        if (capture != null) {
+            capture.logResponse(r);
+        }
+    }
+
+    @NotNull
+    protected static String getThreadId() {
+        return String.valueOf(Thread.currentThread().getId());
+    }
+
+    public static Response simpleGet(final String url) {
+        if (IdpTestEnvironmentConfigurator.isRbelLoggerActive()) {
+            logRequestToRbelLogger(url, null, null, "", "GET");
+        }
+        final Response r = SerenityRest.get(url);
+        if (IdpTestEnvironmentConfigurator.isRbelLoggerActive()) {
+            logResponseToRbelLogger(r);
+        }
+        return r;
+    }
 
     @Step
     public void iRequestTheUriFromClaim(final String claim, final HttpMethods method, final HttpStatus result)
@@ -118,12 +159,6 @@ public class IdpStepsBase {
             Thread.sleep(sleepms);
         }
     }
-
-    // =================================================================================================================
-    //
-    // R E S P O N S E R E L A T E D S T E P S
-    //
-    // =================================================================================================================
 
     @Step
     Response requestResponseAndAssertStatus(final String uri,
@@ -182,38 +217,6 @@ public class IdpStepsBase {
         SerenityReportUtils.addCurlCommand(reqDetails.toString(StandardCharsets.UTF_8));
 
         checkHTTPStatus(r, status);
-        return r;
-    }
-
-    private static void logRequestToRbelLogger(final String uri, final Map<String, String> headers,
-        final Map<String, String> params,
-        final String body, final String s) {
-        final RestAssuredCapture capture = threadIdToRestAssuredCaptureMap.get(getThreadId());
-        if (capture != null) {
-            capture.logRequest(s, uri, headers, body, params);
-        }
-    }
-
-    private static void logResponseToRbelLogger(final Response r) {
-        final RestAssuredCapture capture = threadIdToRestAssuredCaptureMap.get(getThreadId());
-        if (capture != null) {
-            capture.logResponse(r);
-        }
-    }
-
-    @NotNull
-    protected static String getThreadId() {
-        return String.valueOf(Thread.currentThread().getId());
-    }
-
-    public static Response simpleGet(final String url) {
-        if (IdpTestEnvironmentConfigurator.isRbelLoggerActive()) {
-            logRequestToRbelLogger(url, null, null, "", "GET");
-        }
-        final Response r = SerenityRest.get(url);
-        if (IdpTestEnvironmentConfigurator.isRbelLoggerActive()) {
-            logResponseToRbelLogger(r);
-        }
         return r;
     }
 
@@ -304,7 +307,6 @@ public class IdpStepsBase {
         assertThat(parameters.get(parameter)).contains(value);
     }
 
-
     protected String getLocationHeader(final Response r) {
         assertThat(r.getHeaders()).anySatisfy(h -> assertThat(h.getName().toLowerCase()).isEqualTo("location"));
         String loc = r.getHeader("location");
@@ -386,10 +388,6 @@ public class IdpStepsBase {
         threadIdToRestAssuredCaptureMap.put(getThreadId(), capture);
     }
 
-    private static final Map<String, List<Scenario>> processedScenarios = new HashMap<>();
-    private static int scPassed = 0;
-    private static int scFailed = 0;
-
     public void exportRbelLog(final Scenario scenario) {
 
         switch (scenario.getStatus()) {
@@ -420,20 +418,20 @@ public class IdpStepsBase {
         final int dataVariantIdx = processedScenarios.get(scenarioId).size();
         processedScenarios.get(scenarioId).add(scenario);
 
-        final RbelHtmlRenderer renderer = new RbelHtmlRenderer();
-        renderer.setSubTitle(
-            "<p><b>" + scenario.getName() + "</b>&nbsp&nbsp;<u>" + (dataVariantIdx + 1) + "</u></p>"
-                + "<p><i>" + scenario.getUri() + "</i></p>");
-        final String html = renderer.doRender(
-            threadIdToRestAssuredCaptureMap.get(getThreadId()).getRbel().getMessageHistory());
         try {
+            final RbelHtmlRenderer renderer = new RbelHtmlRenderer();
+            renderer.setSubTitle(
+                "<p><b>" + scenario.getName() + "</b>&nbsp&nbsp;<u>" + (dataVariantIdx + 1) + "</u></p>"
+                    + "<p><i>" + scenario.getUri() + "</i></p>");
+            final String html = renderer.doRender(
+                threadIdToRestAssuredCaptureMap.get(getThreadId()).getRbel().getMessageHistory());
             String name = scenario.getName();
             final String map = "äaÄAöoÖOüuÜUßs _(_)_[_]_{_}_<_>_|_$_%_&_/_\\_?_:_*_\"_";
             for (int i = 0; i < map.length(); i += 2) {
                 name = name.replace(map.charAt(i), map.charAt(i + 1));
             }
             if (name.length() > 100) { // Serenity can not deal with longer filenames
-                name = name.substring(0, 60) + UUID.nameUUIDFromBytes(name.getBytes(StandardCharsets.UTF_8)).toString();
+                name = name.substring(0, 60) + UUID.nameUUIDFromBytes(name.getBytes(StandardCharsets.UTF_8));
             }
             if (dataVariantIdx > 0) {
                 name = name + "_" + (dataVariantIdx + 1);
@@ -443,8 +441,8 @@ public class IdpStepsBase {
             (Serenity.recordReportData().asEvidence().withTitle("RBellog " + (dataVariantIdx + 1))).downloadable()
                 .fromFile(logFile.toPath());
             log.info("Saved HTML report to " + logFile.getAbsolutePath());
-        } catch (final IOException e) {
-            log.error("Unable to save rbel log for scenario " + scenario.getName());
+        } catch (Exception e) {
+            log.error("Unable to save rbel log for scenario {}", scenario.getName(), e);
         }
     }
 }

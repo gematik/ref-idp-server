@@ -6,6 +6,7 @@ test-output/
 /doc/*.svg
 /idp-testsuite/logs/
 /idp-testsuite/testartefacts/20*
+/idp-operations/dependency-reduced-pom.xml
 
 build.sh
 docker-compose.deploy.yml

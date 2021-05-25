@@ -39,6 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -115,22 +116,26 @@ public class IdpClient implements IIdpClient {
         final String signedJwt = jsonWebSignature.getHeaders().getEncodedHeader() + "."
             + jsonWebSignature.getEncodedPayload() + "."
             + Base64.getUrlEncoder().withoutPadding().encodeToString(
-            getSignatureBytes(contentSigner, jsonWebSignature));
+            getSignatureBytes(contentSigner, jsonWebSignature, sigData -> {
+                if (certificate.getPublicKey() instanceof RSAPublicKey) {
+                    return sigData;
+                } else {
+                    try {
+                        return convertDerToConcatenated(sigData, 64);
+                    } catch (final IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }));
         return new JsonWebToken(signedJwt)
             .encrypt(discoveryDocumentResponse.getIdpEnc())
             .getRawString();
     }
 
     private byte[] getSignatureBytes(final Function<byte[], byte[]> contentSigner,
-        final JsonWebSignature jsonWebSignature) {
-        final byte[] signatureBytes = contentSigner.apply((jsonWebSignature.getHeaders().getEncodedHeader() + "."
-            + jsonWebSignature.getEncodedPayload()).getBytes(StandardCharsets.UTF_8));
-        try {
-            final byte[] strippedSignatureBytes = convertDerToConcatenated(signatureBytes, 64);
-            return strippedSignatureBytes;
-        } catch (final IOException e) {
-            return signatureBytes;
-        }
+        final JsonWebSignature jsonWebSignature, final Function<byte[], byte[]> signatureStripper) {
+        return signatureStripper.apply(contentSigner.apply((jsonWebSignature.getHeaders().getEncodedHeader() + "."
+            + jsonWebSignature.getEncodedPayload()).getBytes(StandardCharsets.UTF_8)));
     }
 
     @Override
