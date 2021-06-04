@@ -85,7 +85,7 @@ public class TokenService {
             .expiresIn(300)
             .accessToken(accessToken.encrypt(tokenKey).getRawString())
             .idToken(idTokenBuilder
-                .buildIdToken(clientId, authenticationToken, DigestUtils.sha256(accessToken.getRawString()))
+                .buildIdToken(clientId, authenticationToken, accessToken)
                 .encrypt(tokenKey)
                 .getRawString())
             .build();

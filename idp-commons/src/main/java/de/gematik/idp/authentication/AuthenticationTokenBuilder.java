@@ -68,6 +68,9 @@ public class AuthenticationTokenBuilder {
         claimsMap.put(AUTH_TIME.getJoseName(), issueingTime.toEpochSecond());
         claimsMap.put(SERVER_NONCE.getJoseName(), RandomStringUtils.randomAlphanumeric(20));
         claimsMap.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
+        claimsMap.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(),
+            serverChallengeClaims.getOrDefault(AUTHENTICATION_METHODS_REFERENCE.getJoseName(),
+                List.of("mfa", "sc", "pin")));
 
         final Map<String, Object> headerMap = new HashMap<>();
         headerMap.put(TYPE.getJoseName(), "JWT");

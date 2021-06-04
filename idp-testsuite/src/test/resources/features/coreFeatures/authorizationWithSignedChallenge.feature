@@ -57,13 +57,37 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
           }
         """
 
-  @WiP
+  @TCID:IDP_REF_AUTH_067 @PRIO:2
+  @Approval @Ready
   Scenario: AuthorChallenge - Validiere signierte Challenge mit PS256
   ```
   Wir wählen einen gültigen Code verifier, fordern einen Challenge Token an und signieren diesen mit einem RSA Zertifikat.
   Die signierte Challenge muss:
 
   - die richtigen Claims im Token haben
+
+    Given IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
+      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 1234  | code          |
+    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_R2048.p12'
+
+    When IDP I extract the header claims from token SIGNED_CHALLENGE
+    Then IDP the header claims should match in any order
+        """
+          { alg: "PS256",
+            cty: "NJWT",
+            typ: "JWT",
+            x5c: "${json-unit.ignore}"
+          }
+        """
+    When IDP I extract the body claims from token SIGNED_CHALLENGE
+    Then IDP the body claims should match in any order
+        """
+          {
+            njwt: "${json-unit.ignore}"
+          }
+        """
 
   @TCID:IDP_REF_AUTH_052 @PRIO:1
   @Afo:A_20699 @Afo:A_20951 @Afo:A_20693
@@ -185,7 +209,8 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
             scope:                 "${TESTENV.scopes_basisflow_regex}",
             snc:                   ".*",
             state:                 "state23456",
-            token_type:            "code"
+            token_type:            "code",
+            amr:                   "${json-unit.ignore}"
         }
         """
 

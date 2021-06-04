@@ -64,7 +64,6 @@ Feature: Fordere Access Token mit einer signierten Challenge an
   @TCID:IDP_REF_TOK_002 @PRIO:1
     @Afo:A_20731 @Afo:A_20464 @Afo:A_20952 @Afo:A_21320 @Afo:A_21321 @Afo:A_20313
     @Approval @Ready
-    @issue:STIDPD-137
   Scenario Outline: GetTokenSigned - Gutfall - Validiere Access Token Claims
   ```
   Wir fordern einen Access Token an und überprüfen dass der Access Token korrekte Header und Body Claims enthält.
@@ -461,7 +460,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
       | /certs/invalid/egk-idp-famname-toolong-ecc.p12     |
       | /certs/invalid/egk-idp-firstname-toolong-ecc.p12   |
       | /certs/invalid/egk-idp-idnum-invalididnum2-ecc.p12 |
-#      | /certs/invalid/egk-idp-profid-invoid1-ecc.p12      | # TODO wird bei RISE nicht als Fehler erkannt.
+#      | /certs/invalid/egk-idp-profid-invoid1-ecc.p12      | # falsche rolle wird bei RISE nicht abgelehnt
 #      | /certs/invalid/egk-idp-profid-invoid2-ecc.p12      | #
       | /certs/invalid/egk-idp-orgname-toolong-ecc.p12     |
 

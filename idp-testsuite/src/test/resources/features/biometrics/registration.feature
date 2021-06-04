@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
+@Product:IDP-D
 @Biometrics
-@Todo:ImplementErrorMessages
 @Afo:A_21415
 @Afo:A_21425
 @Afo:A_21427
@@ -32,7 +32,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
 
 
   @TCID:IDP_REF_ALTAUTREG_000
-    @Approval
+    @Approval @PRIO:1
   Scenario Outline: Biometrie AltAutReg - Gutfall - Löschen alle Pairings vor Start der Tests
 
   ```
@@ -50,10 +50,12 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyident003        |
       | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyident004        |
       | /certs/valid/egk-idp-idnumber-b-valid-ecc.p12 | keyident004        |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidinvamr01      |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidinvamr02      |
 
   @Approval @Ready
     @Afo:A_21423
-    @TCID:IDP_REF_ALTAUTREG_001
+    @TCID:IDP_REF_ALTAUTREG_001 @PRIO:1
   Scenario Outline: AltAutReg - Gutfall - Registriere ein Pairing
 
   ```
@@ -87,14 +89,15 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | Fair Phone   | FairPhone 3 | F3      | Android | 1.0.2 f    | keyident001unknown |
 
 
-  # TODO user agent ? Relevanz, add testcases without user agents if relevant
+  # testfall für not_after mit Wert aus der Vergangenheit wird nicht entworfen. wenn das zertifikat wirklich abgelaufen ist, scheitert man damit schon am access_token
+  # wird für die Registrierung ein anderes Zertifikat als für den access_token verwendet, denn zeigt sich das an der serialNumber
+  # damit bleibt für not_after in vergangenheit kein relevantes szenario übrig
 
-  # TODO not_after mit Wert aus der Vergangenheit
+  # ein testfall bei dem ein anderer Puk/Priv_SE_AUT registriert und dann verwendet wird, findet sich unter authorizationWithAlternativeAuthentication
 
-  # TODO add variants for different PukSE AUThs
   @Approval @Ready
   @Afo:A_21412
-  @TCID:IDP_REF_ALTAUTREG_002
+  @TCID:IDP_REF_ALTAUTREG_002 @PRIO:1
   Scenario: AltAutReg - Gutfall - Zwei Pairings mit identem Identifier und Pub SE Auth aber unterschiedlicher IdNummer
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I create a device information token with
@@ -127,7 +130,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
 
   @Approval @Ready
   @Afo:A_21412
-  @TCID:IDP_REF_ALTAUTREG_003
+  @TCID:IDP_REF_ALTAUTREG_003 @PRIO:1
   Scenario: AltAutReg - Gutfall - Zwei Pairings mit unterschiedlichem key identifier und unterschiedlicher IDNummer
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I create a device information token with
@@ -159,7 +162,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
         """
 
   @Approval @Ready
-  @TCID:IDP_REF_ALTAUTREG_004
+  @TCID:IDP_REF_ALTAUTREG_004 @PRIO:1 @Negative
   Scenario: AltAutReg - Zweifacher Eintragungsversuch Idente Daten
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I create a device information token with
@@ -175,12 +178,11 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     Then IDP the response is an 409 error with gematik code 4004 and error "invalid_request"
 
-      # TODO RISE add error attribute, see https://gematik-ext.atlassian.net/browse/STIDPD-142
 
   @Approval @Ready
   @Afo:A_21412
   @Afo:A_21427
-  @TCID:IDP_REF_ALTAUTREG_005
+  @TCID:IDP_REF_ALTAUTREG_005 @PRIO:1 @Negative
   Scenario: AltAutReg - Zweifacher Eintragungsversuch Devicedaten unterschiedlich
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I create a device information token with
@@ -203,10 +205,9 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     Then IDP the response is an 409 error with gematik code 4004 and error "invalid_request"
 
- # TODO RISE add error attribute, see https://gematik-ext.atlassian.net/browse/STIDPD-142
 
   @Approval @Ready
-  @TCID:IDP_REF_ALTAUTREG_006
+  @TCID:IDP_REF_ALTAUTREG_006 @PRIO:1  @Negative
   Scenario: AltAutReg - Zweifacher Eintragungsversuch alles bis auf key identifier und Zertifikat unterschiedlich
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I create a device information token with
@@ -231,9 +232,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
 
   @OpenBug @issue:IDP-453
     @Approval
-    @Afo:A_21422
-    @Afo:A_21421
-    @TCID:IDP_REF_ALTAUTREG_007
+    @Afo:A_21422   @Afo:A_21421
+    @TCID:IDP_REF_ALTAUTREG_007 @PRIO:1 @Negative
   Scenario Outline: AltAutReg - Unterschiedliche Zertifikate mit identer IDNummer in Verwendung
     # Real world scenario: alte Karte verloren, neue Karte, neues Zert, alte Karte wieder verwendet, bevor diese abgelaufen ist/gesperrt wurde
     Given IDP I request an pairing access token with eGK cert '/certs/valid/<cert_access>'
@@ -255,12 +255,9 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | 403    | access_denied | 4001  | keyidentdiffcert05 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12      | egk-idp-idnumber-a-valid-ecc.p12      | egk-idp-idnumber-a-folgekarte-ecc.p12 |
 
 
-    # not done above TODO ERRROR
-
-
   @Approval @Ready
     @Afo:A_21422
-    @TCID:IDP_REF_ALTAUTREG_008
+    @TCID:IDP_REF_ALTAUTREG_008 @PRIO:1 @Negative
   Scenario Outline: AltAutReg - Unterschiedliche Zertifikate mit unterschiedlicher IDNummer in Verwendung
     Given IDP I request an pairing access token with eGK cert '/certs/valid/<cert_access>'
 
@@ -276,19 +273,18 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     And IDP the response is an <status> error with gematik code <errid> and error '<errcode>'
 
     Examples: Liste mit Einträgen wo immer ein Zertifikat mit anderer IDNummer unterschiedlich aber gültig ist
-      | status | errcode         | errid | key_identifier     | cert_access                      | cert_keydata     | cert_public_key                  | cert_sign                        | cert_register                    |
+      | status | errcode       | errid | key_identifier     | cert_access                      | cert_keydata     | cert_public_key                  | cert_sign                        | cert_register                    |
      # | 400    | invalid_parameter_value | -1    | keyidentdiffcert01 | egk-idp-idnumber-a-folgekarte-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 |
-      | 403    | invalid_request | 4001  | keyidentdiffcert01 | egk-idp-idnumber-b-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 |
+      | 403    | access_denied | 4001  | keyidentdiffcert01 | egk-idp-idnumber-b-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 |
       # | 409    | invalid_request | 4004  | keyidentdiffcert03 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-b-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 |
-      | 403    | invalid_request | 4001  | keyidentdiffcert04 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-b-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 |
-      | 403    | invalid_request | 4001  | keyidentdiffcert05 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-b-valid-ecc.p12 |
-      # TODO REF second request liefert 200!
+      | 403    | access_denied | 4001  | keyidentdiffcert04 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-b-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 |
+      | 403    | access_denied | 4001  | keyidentdiffcert05 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12 | egk-idp-idnumber-b-valid-ecc.p12 |
       # Das erste Example ist kein Fehler. In diesem Setting hat der IDP keine Möglichkeit zu bemerken, dass für die Beantragung des ACCESS_TOKEN ein anderes Zertifikat/Schlüssel verwendet
       # wurde, als für die Registrierung. Alles was er hier hat, ist die ID_NUMBER (KVNR) und die ist dieselbe.
 
   @Approval
     @Afo:A_21423
-    @TCID:IDP_REF_ALTAUTREG_009
+    @TCID:IDP_REF_ALTAUTREG_009 @PRIO:1  @Negative
   Scenario Outline: AltAutReg - Null Werte in device info
 
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
@@ -301,7 +297,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | /keys/valid/Pub_Se_Aut-1.pem | <keyidentifier> | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
-    Then IDP the response is an 403 error with gematik code 4001 and error 'invalid_request'
+    Then IDP the response is an 403 error with gematik code 4001 and error 'access_denied'
 
     Examples: AltAutReg - Null Device Info Beispiele
       | keyidentifier  | name       | manufacturer | product     | model | os      | version |
@@ -314,7 +310,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
 
   @Approval
     @Afo:A_21423
-    @TCID:IDP_REF_ALTAUTREG_010
+    @TCID:IDP_REF_ALTAUTREG_010 @PRIO:1  @Negative
   Scenario Outline: AltAutReg - Fehlende Werte in device info
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -326,7 +322,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | /keys/valid/Pub_Se_Aut-1.pem | <keyidentifier> | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
-    Then IDP the response is an 403 error with gematik code 4001 and error 'invalid_request'
+    Then IDP the response is an 403 error with gematik code 4001 and error 'access_denied'
 
     Examples: AltAutReg - Fehlende Device info Beispiele
       | keyidentifier    | name       | manufacturer | product     | model   | os      | version |
@@ -339,7 +335,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
 
   @Approval
     @Afo:A_21470
-    @TCID:IDP_REF_ALTAUTREG_011
+    @TCID:IDP_REF_ALTAUTREG_011 @PRIO:1 @Negative
   Scenario Outline: AltAutReg - Null Werte in pairing data
 
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
@@ -352,7 +348,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | <key_data>                 | <keyidentifier> | <product> | <serialnumber> | <issuer> | <not_after> | <public_key>                      |
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
-    Then IDP the response is an 403 error with gematik code 4001 and error 'invalid_request'
+    Then IDP the response is an 403 error with gematik code 4001 and error 'access_denied'
 
     Examples: AltAutReg - Null Pairing Data Beispiele
       | keyidentifier  | key_data                     | product     | serialnumber    | issuer  | not_after  | public_key                                    |
@@ -365,7 +361,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
 
   @Approval
     @Afo:A_21470
-    @TCID:IDP_REF_ALTAUTREG_012
+    @TCID:IDP_REF_ALTAUTREG_012 @PRIO:1 @Negative
   Scenario Outline: AltAutReg - Fehlende Werte in pairing data
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -377,7 +373,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | <key_data>                 | <keyidentifier> | <product> | <serialnumber> | <issuer> | <not_after> | <public_key>                      |
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
-    Then IDP the response is an 403 error with gematik code 4001 and error 'invalid_request'
+    Then IDP the response is an 403 error with gematik code 4001 and error 'access_denied'
 
     Examples: AltAutReg - Fehlende Pairing Data Beispiele
       | keyidentifier    | key_data                     | product     | serialnumber    | issuer  | not_after  | public_key                                    |
@@ -390,7 +386,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
 
   @Approval @issue:IDP-470 @OpenBug
     @Afo:A_21421
-    @TCID:IDP_REF_ALTAUTREG_013
+    @TCID:IDP_REF_ALTAUTREG_013 @PRIO:1 @Negative
   Scenario Outline: AltAutReg - Ungültige Zertifikate (selfsigned, outdated, revoced)
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -402,7 +398,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | /keys/valid/Pub_Se_Aut-1.pem | <keyidentifier> | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | <invalidcert>                     |
     And IDP I sign pairing data with '<invalidcert>'
     And IDP I register the device with '<invalidcert>'
-    Then IDP the response is an 403 error with gematik code 4001 and error 'invalid_request'
+    Then IDP the response is an 403 error with gematik code 4001 and error 'access_denied'
 
     Examples: AltAutReg - Ungültige Zertifikate
       | keyidentifier     | invalidcert                                          |
@@ -412,7 +408,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
 
   @Approval @OpenBug
     @Afo:A_21422
-    @TCID:IDP_REF_ALTAUTREG_014
+    @TCID:IDP_REF_ALTAUTREG_014 @PRIO:1 @Negative
   Scenario Outline: AltAutReg - Registriere Pairing mit Zertifikat ohne IDNummer
     Given IDP I request an pairing access token with eGK cert '/certs/valid/<cert_access>'
 
@@ -427,11 +423,10 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     Then IDP the response is an <status> error with gematik code <errid> and error '<errcode>'
 
     Examples: Liste mit Einträgen wo immer ein Zertifikat ohne IdNummer verwendet wird
-      | status | errcode          | errid | key_identifier | cert_access                      | cert_keydata     | cert_public_key                   | cert_sign                         | cert_register                     |
-      | 403    | invalid_request< | 4001  | keyidentnoid03 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-missing1-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12  | egk-idp-idnumber-a-valid-ecc.p12  |
-      | 403    | invalid_request  | 4001  | keyidentnoid04 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12  | egk-idp-idnumber-missing1-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12  |
-      | 403    | invalid_request  | 4001  | keyidentnoid05 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12  | egk-idp-idnumber-a-valid-ecc.p12  | egk-idp-idnumber-missing1-ecc.p12 |
-      # TODO REF first variant liefert 200 retour! public key of cert is not validated at all
+      | status | errcode       | errid | key_identifier | cert_access                      | cert_keydata     | cert_public_key                   | cert_sign                         | cert_register                     |
+      | 403    | access_denied | 4001  | keyidentnoid03 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-missing1-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12  | egk-idp-idnumber-a-valid-ecc.p12  |
+      | 403    | access_denied | 4001  | keyidentnoid04 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12  | egk-idp-idnumber-missing1-ecc.p12 | egk-idp-idnumber-a-valid-ecc.p12  |
+      | 403    | access_denied | 4001  | keyidentnoid05 | egk-idp-idnumber-a-valid-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc.p12  | egk-idp-idnumber-a-valid-ecc.p12  | egk-idp-idnumber-missing1-ecc.p12 |
       # dieser Testfall ist etwas akademisch, weil die Zertifikatsherausgeber sicherstellen, dass es keine korrekt signierte Zertifikate ohne ID-Number gibt.
       # Nichts spricht dagegen, sich trotzdem anzugucken, wie sich der IDP verhalten würde, aber die Eintrittswahrscheinlichkeit dieses Fehlers ist eher gering.
 
@@ -447,11 +442,10 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
 
   @Afo:A_20463
   @Afo:A_21413
-  @Afo:A_21418
   @Afo:A_21425
   @LongRunning
   @Approval @Ready
-  @TCID:IDP_REF_ALTAUTREG_015
+  @TCID:IDP_REF_ALTAUTREG_015 @PRIO:1 @Negative
   Scenario: AltAutReg - Pairing mit veraltetem Access Token wird abgelehnt
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I create a device information token with
@@ -465,12 +459,12 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     When IDP I wait PT5M
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     Then IDP the response is an 403 error with gematik code 4001 and error 'access_denied'
- # TODO REF status 403 and error code 4001, error value to be discussed https://gematik-ext.atlassian.net/browse/STIDPD-142
-  # TODO Hannes klärt Scenario: AltAutReg - Gültigkeitsdauer der signierten Pairing data?
+    # access_token ist 300 sekunden gültig, die Gültigkeitsdauer der signierten Pairing data entspricht der Gültigkeitsdauer der für die Signatur verwendeten eGK (für Geräte
+    # die auf der allow-Liste stehen)
 
   @Approval
   @Afo:A_21413
-  @TCID:IDP_REF_ALTAUTREG_016
+  @TCID:IDP_REF_ALTAUTREG_016 @PRIO:1 @Negative
   Scenario: AltAutReg - Zugriff mit ACCESS_TOKEN von signierter Challenge mit falschem Scope (erezept)
     Given IDP I request an erezept access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -486,7 +480,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
 
   @Approval
   @Afo:A_21413
-  @TCID:IDP_REF_ALTAUTREG_017
+  @TCID:IDP_REF_ALTAUTREG_017 @PRIO:1 @Negative
   Scenario: AltAutReg - Zugriff mit ACCESS_TOKEN via SSO Token mit falschem Scope (erezept)
     Given IDP I request an erezept access token via SSO token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -501,7 +495,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     Then IDP the response is an 403 error with gematik code 4001 and error 'access_denied'
 
   @Approval @Ready
-    @TCID:IDP_REF_ALTAUTREG_018
+    @TCID:IDP_REF_ALTAUTREG_018 @PRIO:1 @Negative
   Scenario Outline: AltAutReg - Registriere ein Pairing mit falschen Versionen
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -513,7 +507,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | <versionPairingData> | /keys/valid/Pub_Se_Aut-1.pem | <keyid>        | ES256                          | FairPhone 3 | 419094927676993 | Android | 1893456000 | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12' and version '<versionReg>'
-    Then IDP the response is an 403 error with gematik code 4001 and error 'invalid_request'
+    Then IDP the response is an 403 error with gematik code 4001 and error 'access_denied'
 
     Examples: invalid versions
       | versionDevInfo | versionDevTyp | versionReg | versionPairingData | keyid           |
@@ -526,3 +520,49 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | 1.0            | 1.0           | 1.1        | 1.0                | keyinvversreg21 |
       | 1.0            | 1.0           | 1.0        | 0.9                | keyinvversreg30 |
       | 1.0            | 1.0           | 1.0        | 1.1                | keyinvversreg31 |
+
+
+  @TCID:IDP_REF_ALTAUTREG_019 @PRIO:2
+  @OpenBug
+  @issue:IDP-658
+  @Afo:A_21419
+  @Approval @Ready
+  Scenario:AltAutReg - Zugriff mit ACCESS_TOKEN mit falschem AMR
+
+  ```
+  Wir fordern mit alternativer Auth einen Access Token an, und benutzen diesen für eine weitere Registrierung. Das muss abgelehnt werden, weil AMR != SC, PIN
+
+    Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
+    And IDP I create a device information token with
+      | name       | manufacturer | product     | model | os      | os_version |
+      | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
+    And IDP I create pairing data with
+      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidinvamr01  | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+    And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
+    And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
+
+    And IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
+      | client_id            | scope          | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
+      | ${TESTENV.client_id} | pairing openid | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 12345 | code          |
+    And IDP I create a device information token with
+      | name       | manufacturer | product     | model | os      | os_version |
+      | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
+    And IDP I create authentication data with
+      | authentication_data_version | auth_cert                                     | key_identifier | amr                   |
+      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidinvamr01  | ["mfa", "hwk", "kba"] |
+    And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
+    And IDP I request a code token with alternative authentication successfully
+    And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
+    And IDP I request an access token
+
+    When IDP I create a device information token with
+      | name       | manufacturer | product     | model | os      | os_version |
+      | eRezeptApp | Fair Phone   | FairPhone 4 | F3    | Android | 1.0.2 f    |
+    And IDP I create pairing data with
+      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidinvamr02  | FairPhone 4 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
+    And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
+    And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
+    Then IDP the response is an 403 error with gematik code 4001 and error 'access_denied'

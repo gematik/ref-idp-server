@@ -103,8 +103,8 @@ Feature: Fordere Discovery Dokument an
           { acr_values_supported:                   '["gematik-ehealth-loa-high"]',
             authorization_endpoint:                 "http.*",
             sso_endpoint:                           "http.*",
-            ____auth_pair_endpoint:                     "http.*",
-            ____uri_pair:                               "http.*",
+            auth_pair_endpoint:                     "http.*",
+            uri_pair:                               "http.*",
             exp:                                    "[\\d]*",
             grant_types_supported:                  '["authorization_code"]',
             iat:                                    "[\\d]*",
@@ -123,7 +123,6 @@ Feature: Fordere Discovery Dokument an
             ____code_challenge_methods_supported:   '["S256"]'
           }
         """
-    # TODO RISE make pairing endpoint attributes mandatory
 
   @TCID:IDP_REF_DISC_005 @PRIO:2
   @Afo:A_20698
@@ -179,7 +178,7 @@ Feature: Fordere Discovery Dokument an
 
     When IDP I extract the body claims
     Then IDP URI in claim "uri_disc" exists with method GET and status 200
-    And IDP URI in claim "uri_disc" exists with method POST and status 405
+    And IDP URI in claim "uri_disc" exists with method GET and status 200
     And IDP URI in claim "authorization_endpoint" exists with method GET and status 400
     And IDP URI in claim "authorization_endpoint" exists with method POST and status 400
     And IDP URI in claim "sso_endpoint" exists with method GET and status 405

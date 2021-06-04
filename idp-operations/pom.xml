@@ -14,7 +14,7 @@
 
     <artifactId>idp-operations</artifactId>
     <groupId>de.gematik.idp</groupId>
-    <version>18.0.0-SNAPSHOT</version>
+    <version>18.0.3</version>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -39,6 +39,12 @@
             <artifactId>serenity-rest-assured</artifactId>
             <groupId>net.serenity-bdd</groupId>
             <version>${version.serenity.core}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.16</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

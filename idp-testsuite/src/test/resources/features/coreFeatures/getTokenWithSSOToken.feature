@@ -307,9 +307,10 @@ Feature: Fordere Access Token mittels SSO Token an
 
   @TCID:IDP_REF_TOK_057 @PRIO:4
   @Afo:A_20315 @Afo:A_20692
-  @Approval @RefImplOnly
+  @Afo:A_20947
+  @Afo:A_20948
+  @Approval
   @Timeout
-  @WiP
   Scenario: GetTokenSSO - Veralteter SSO Token wird abgelehnt
   ```
   Wir laden einen veralteten SSO Token vom Dateisystem und überprüfen, dass der Server eine Anfrage für einen Access Token ablehnt.
@@ -320,7 +321,7 @@ Feature: Fordere Access Token mittels SSO Token an
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state         | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx2a | 887711 | code          |
 
-    And IDP I load SSO_TOKEN_ENCRYPTED from folder 'old_sso_token'
+    And IDP I load SSO_TOKEN_ENCRYPTED from folder '${TESTENV.old_sso_token_folder}'
     And IDP I load SSO_TOKEN from folder 'old_sso_token'
     And IDP I request a code token with sso token
     Then IDP the response is an 400 error with gematik code 2040 and error 'access_denied'

@@ -27,6 +27,7 @@ import java.security.Key;
 import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import lombok.Data;
 
@@ -37,7 +38,7 @@ public class SsoTokenBuilder {
     private final String issuerUrl;
     private final Key tokenEncryptionKey;
 
-    public IdpJwe buildSsoToken(final X509Certificate certificate, final ZonedDateTime issuingTime) {
+    public IdpJwe buildSsoToken(final X509Certificate certificate, final ZonedDateTime issuingTime, List<String> amrString) {
         final Map<String, Object> bodyClaimsMap = new HashMap<>();
         final Map<String, Object> headerClaimsMap = new HashMap<>();
         headerClaimsMap.put(ALGORITHM.getJoseName(), BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256);
@@ -46,6 +47,7 @@ public class SsoTokenBuilder {
         bodyClaimsMap.put(ISSUER.getJoseName(), issuerUrl);
         bodyClaimsMap.put(ISSUED_AT.getJoseName(), issuingTime.toEpochSecond());
         bodyClaimsMap.put(AUTH_TIME.getJoseName(), issuingTime.toEpochSecond());
+        bodyClaimsMap.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), amrString);
 
         bodyClaimsMap.putAll(X509ClaimExtraction.extractClaimsFromCertificate(certificate));
         return jwtProcessor.buildJwt(new JwtBuilder()

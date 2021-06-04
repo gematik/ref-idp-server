@@ -110,7 +110,7 @@ public class PairingService {
             authenticationChallengeVerifier
                 .verifyResponseWithCertAndThrowExceptionIfFail(authCert, signedPairingData);
         } catch (final ChallengeSignatureInvalidException csie) {
-            throw new IdpServerException(IdpServerException.ERROR_ID_ACCESS_DENIED, IdpErrorType.INVALID_REQUEST,
+            throw new IdpServerException(IdpServerException.ERROR_ID_ACCESS_DENIED, IdpErrorType.ACCESS_DENIED,
                 "Challenge signature invalid!", HttpStatus.FORBIDDEN, csie);
         }
         if (deviceValidationService.assess(deviceInformation.getDeviceType())
@@ -132,7 +132,7 @@ public class PairingService {
                 .validate(registrationData);
             if (!validationViolations.isEmpty()) {
                 throw new IdpServerException(IdpServerException.ERROR_ID_ACCESS_DENIED,
-                    IdpErrorType.INVALID_REQUEST,
+                    IdpErrorType.ACCESS_DENIED,
                     "Validation error found in registration_data", HttpStatus.FORBIDDEN);
             }
             dataVersionService.checkDataVersion(registrationData);
@@ -149,7 +149,7 @@ public class PairingService {
             .filter(claimName -> signedPairingData.getBodyClaim(claimName).isEmpty())
             .findAny();
         if (missingClaim.isPresent()) {
-            throw new IdpServerException(IdpServerException.ERROR_ID_ACCESS_DENIED, IdpErrorType.INVALID_REQUEST,
+            throw new IdpServerException(IdpServerException.ERROR_ID_ACCESS_DENIED, IdpErrorType.ACCESS_DENIED,
                 "Unable to find " + missingClaim.get().getJoseName() + " in signed_pairing_data",
                 HttpStatus.FORBIDDEN);
         }
@@ -205,13 +205,13 @@ public class PairingService {
                     authCert);
             final String idNumberCert = getIdNumberFromCertClaimsAndThrowExceptionIfNotExists(certClaims);
             if (!idNumber.equals(idNumberCert)) {
-                throw new IdpServerException(IdpServerException.ERROR_ID_ACCESS_DENIED, IdpErrorType.INVALID_REQUEST,
+                throw new IdpServerException(IdpServerException.ERROR_ID_ACCESS_DENIED, IdpErrorType.ACCESS_DENIED,
                     "IdNumber does not match to certificate!", HttpStatus.FORBIDDEN);
             }
         } catch (final IdpServerException ise) {
             throw ise;
         } catch (final Exception e) {
-            throw new IdpServerException(IdpServerException.ERROR_ID_ACCESS_DENIED, IdpErrorType.INVALID_REQUEST,
+            throw new IdpServerException(IdpServerException.ERROR_ID_ACCESS_DENIED, IdpErrorType.ACCESS_DENIED,
                 "Error while extracting claim from certificate!", HttpStatus.FORBIDDEN);
         }
     }
@@ -220,7 +220,7 @@ public class PairingService {
         final Optional<String> idNumber = Optional.ofNullable(certClaims.get(ClaimName.ID_NUMBER.getJoseName()))
             .filter(String.class::isInstance).map(String.class::cast);
         return idNumber.orElseThrow(() -> new IdpServerException(IdpServerException.ERROR_ID_ACCESS_DENIED,
-            IdpErrorType.INVALID_REQUEST,
+            IdpErrorType.ACCESS_DENIED,
             "Information ID_NUMBER not found in certificate", HttpStatus.FORBIDDEN));
     }
 

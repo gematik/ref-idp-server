@@ -1,10 +1,11 @@
 #!/bin/bash
-NEWJAR=idp-operations-18.0.0-SNAPSHOT-min.jar
+VERSION=18.0.3
+NEWJAR=idp-operations-$VERSION-min.jar
 
 echo "-------------------------------------------"
 echo "Copying shaded to min jar..."
-rm -f target/idp-operations-18.0.0-SNAPSHOT-*.jar.tmp
-cp target/idp-operations-18.0.0-SNAPSHOT.jar target/$NEWJAR
+rm -f target/idp-operations-$VERSION*.jar.tmp
+cp target/idp-operations-$VERSION.jar target/$NEWJAR
 
 echo "-------------------------------------------"
 echo "Removing obsolete packages/folders..."

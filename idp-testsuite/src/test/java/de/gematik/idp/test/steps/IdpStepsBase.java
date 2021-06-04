@@ -18,7 +18,6 @@ package de.gematik.idp.test.steps;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
-
 import de.gematik.idp.test.steps.helpers.IdpTestEnvironmentConfigurator;
 import de.gematik.idp.test.steps.helpers.KeyAndCertificateStepsHelper;
 import de.gematik.idp.test.steps.model.CodeAuthType;
@@ -111,7 +110,8 @@ public class IdpStepsBase {
         if (IdpTestEnvironmentConfigurator.isRbelLoggerActive()) {
             logRequestToRbelLogger(url, null, null, "", "GET");
         }
-        final Response r = SerenityRest.get(url);
+        final Response r = SerenityRest.with().header("X-Auth", "MTRqU2cwPXx+Pit4aCVUT2pNVVN2VDllPj1cUUUqCg==")
+            .get(url);
         if (IdpTestEnvironmentConfigurator.isRbelLoggerActive()) {
             logResponseToRbelLogger(r);
         }
@@ -186,6 +186,7 @@ public class IdpStepsBase {
         headers.putIfAbsent("User-Agent",
             Context.get().getMapForCurrentThread().getOrDefault(ContextKey.USER_AGENT,
                 IdpTestEnvironmentConfigurator.getTestEnvVar("user_agent_valid")).toString());
+        headers.putIfAbsent("X-Auth", "MTRqU2cwPXx+Pit4aCVUT2pNVVN2VDllPj1cUUUqCg==");
         reqSpec.headers(headers);
 
         if (IdpTestEnvironmentConfigurator.isRbelLoggerActive()) {
@@ -441,7 +442,7 @@ public class IdpStepsBase {
             (Serenity.recordReportData().asEvidence().withTitle("RBellog " + (dataVariantIdx + 1))).downloadable()
                 .fromFile(logFile.toPath());
             log.info("Saved HTML report to " + logFile.getAbsolutePath());
-        } catch (Exception e) {
+        } catch (final Exception e) {
             log.error("Unable to save rbel log for scenario {}", scenario.getName(), e);
         }
     }

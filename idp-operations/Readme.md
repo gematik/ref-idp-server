@@ -10,7 +10,7 @@ Use cases:
 * discdoc
 * signedchallenge
 * ssotoken
-* altauth (not implemented)
+* altauth
 
 ## how to build
 
@@ -19,6 +19,9 @@ to avoid creating the fat jar on every build run of idp the fat jar is only buil
 ```
 mvn package -P operations
 ```
+
+To reduce the jar size to a halfway reasonable size use the minify.sh script
+(for windows, expects 7z to be installed in default folder)
 
 ## exit codes
 

@@ -17,10 +17,7 @@
 package de.gematik.idp.server.services;
 
 import static de.gematik.idp.error.IdpErrorType.INVALID_REQUEST;
-import static de.gematik.idp.field.ClaimName.CHALLENGE_TOKEN;
-import static de.gematik.idp.field.ClaimName.CLIENT_ID;
-import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
-import static de.gematik.idp.field.ClaimName.REDIRECT_URI;
+import static de.gematik.idp.field.ClaimName.*;
 
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
 import de.gematik.idp.error.IdpErrorType;
@@ -41,6 +38,7 @@ import java.net.URISyntaxException;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -226,10 +224,25 @@ public class IdpAuthenticator {
             .map(IdpClientConfiguration::isReturnSsoToken);
         if (addSsoToken.orElse(false)) {
             locationBuilder
-                .addParameter("ssotoken", ssoTokenBuilder.buildSsoToken(certificate, authTime).getRawString());
+                .addParameter("ssotoken", ssoTokenBuilder.buildSsoToken(certificate, authTime, getAmrString(claimsMap))
+                    .getRawString());
         }
 
         locationBuilder.addParameter("state", state);
+    }
+
+    private List<String> getAmrString(Map<String, Object> claimsMap) {
+        if (claimsMap.containsKey(AUTHENTICATION_METHODS_REFERENCE.getJoseName())) {
+            final Object o = claimsMap.get(AUTHENTICATION_METHODS_REFERENCE.getJoseName());
+            if (o instanceof List) {
+                return (List) o;
+            } else {
+                throw new IdpServerException("Invalid format of AMR-claim given", INVALID_REQUEST,
+                    HttpStatus.BAD_REQUEST);
+            }
+        } else {
+            return List.of("mfa", "sc", "pin");
+        }
     }
 
     private void verifyClientCertificate(final X509Certificate nestedX509ClientCertificate) {

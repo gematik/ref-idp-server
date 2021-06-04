@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+@Product:IDP-D
 @Biometrics
 Feature: Fordere Access Token für Pairing an
   Frontends müssen mit einer eGK einen pairing Access/SSO/ID Token für den Zugriff auf die Pairing-Schnittstelle des IDP bekommen.
@@ -24,7 +25,7 @@ Feature: Fordere Access Token für Pairing an
 
   @Approval
   @Afo:A_20698
-  @TCID:IDP_REF_BIOTOKEN_001
+  @TCID:IDP_REF_BIOTOKEN_001 @PRIO:1
   Scenario: Biometrie Auth - Gutfall - Fordere Challenge für Pairing an
 
   ```
@@ -94,7 +95,7 @@ Feature: Fordere Access Token für Pairing an
 
   @Afo:A_20699 @Afo:A_20951
   @Approval
-  @TCID:IDP_REF_BIOTOKEN_002
+  @TCID:IDP_REF_BIOTOKEN_002 @PRIO:1
   Scenario: Biometrie Author mit signierter Challenge - Gutfall - Validiere Antwortstruktur
 
   ```
@@ -124,8 +125,7 @@ Feature: Fordere Access Token für Pairing an
 
   @Afo:A_20731 @Afo:A_20464 @Afo:A_20952 @Afo:A_21410
   @Approval
-  @TCID:IDP_REF_BIOTOKEN_003
-    # TODO: wollen wir noch den Wert der auth_time gegen den Zeitpunkt der Authentifizierung pruefen
+  @TCID:IDP_REF_BIOTOKEN_003 @PRIO:1
   Scenario: Biometrie GetToken mit signierter Challenge - Gutfall - Validiere Access Token Claims
     Given IDP I choose code verifier '${TESTENV.code_verifier01}'
     And IDP I request a challenge with
@@ -165,7 +165,7 @@ Feature: Fordere Access Token für Pairing an
 
   @Afo:A_20699 @Afo:A_20951
   @Approval
-  @TCID:IDP_REF_BIOTOKEN_004
+  @TCID:IDP_REF_BIOTOKEN_004 @PRIO:1
   Scenario: Biometrie Author mit SSO Token - Gutfall - Validiere Antwortstruktur
 
   ```
@@ -205,8 +205,7 @@ Feature: Fordere Access Token für Pairing an
 
   @Afo:A_20731 @Afo:A_20464 @Afo:A_20952
   @Approval
-  @TCID:IDP_REF_BIOTOKEN_005
-    # TODO: wollen wir noch den Wert der auth_time gegen den Zeitpunkt der Authentifizierung pruefen
+  @TCID:IDP_REF_BIOTOKEN_005 @PRIO:1
   Scenario: Biometrie GetToken mit SSO Token - Gutfall - Validiere Access Token Claims
 
 
@@ -267,16 +266,8 @@ Feature: Fordere Access Token für Pairing an
           }
         """
 
-  @WIP
-  Scenario: Biometrie Auth - Null/Remove/Ungültige Werte?
-  ```
-  Analog zu den Auth tests im Basic flow muss der Server diese Anfragen für den scope pairing mit einer Fehlermeldung ablehnen.
 
-
-    #egk, signed_pairing_data etc passt alles. aber der client hat sich einen access token für den pairing endpoint mit seiner alternativen auth erstellen lassen
-    #todo: klaeren, ob das schon beim ausstellen des access token abgelehnt werden muss oder erst an dieser stelle? -> vermutlich schon beim token endpunkt
   @WIP
   Scenario: Biometrie Register - Zugriff mit ACCESS_TOKEN mit falschem amr
-
-
-      # TODO Zert ohne idnummer sollte schon beim access_token abgelehnt werden
+    #egk, signed_pairing_data etc passt alles. aber der client hat sich einen access token für den pairing endpoint mit seiner alternativen auth erstellen lassen
+  # das thema wird in IDP-655 aufgenommen. falls es hier einen Testfall gibt, dann kommt der nach registration.feature

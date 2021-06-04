@@ -48,7 +48,7 @@ public class DataVersionService {
             .filter(ALLOWED_VERSION::equals)
             .isPresent();
         if (!versionOk) {
-            throw new IdpServerException(IdpServerException.ERROR_ID_ACCESS_DENIED, IdpErrorType.INVALID_REQUEST,
+            throw new IdpServerException(IdpServerException.ERROR_ID_ACCESS_DENIED, IdpErrorType.ACCESS_DENIED,
                 String.format("%s version is not supported!", type), HttpStatus.FORBIDDEN);
         }
     }

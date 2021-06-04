@@ -31,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -57,6 +58,7 @@ public class IdTokenBuilderTest {
         bodyClaims.put(ID_NUMBER.getJoseName(), "id_number");
         bodyClaims.put(GIVEN_NAME.getJoseName(), "given_name");
         bodyClaims.put(FAMILY_NAME.getJoseName(), "family_name");
+        bodyClaims.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), List.of("foo", "bar"));
         bodyClaims.put(JWKS_URI.getJoseName(), "jwks_uri");
         bodyClaims.put(NONCE.getJoseName(), NONCE_VALUE);
         bodyClaims.put(CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP);
@@ -79,8 +81,7 @@ public class IdTokenBuilderTest {
     @Test
     public void checkIdTokenClaims() {
         final JsonWebToken idToken = idTokenBuilder
-            .buildIdToken(TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, "fdsjkfldsöaf".getBytes(
-                StandardCharsets.UTF_8));
+            .buildIdToken(TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, authenticationToken);
 
         assertThat(idToken.getBodyClaims())
             .containsEntry(ISSUER.getJoseName(), uriIdpServer)
@@ -106,8 +107,7 @@ public class IdTokenBuilderTest {
     @Test
     public void checkIdTokenClaimTimestamps() {
         final JsonWebToken idToken = idTokenBuilder
-            .buildIdToken(TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, "fdsjkfldsöaf".getBytes(
-                StandardCharsets.UTF_8));
+            .buildIdToken(TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, authenticationToken);
 
         final long now = ZonedDateTime.now().toEpochSecond();
         final long expBody = idToken.getExpiresAtBody().toEpochSecond();
@@ -121,12 +121,12 @@ public class IdTokenBuilderTest {
     @Rfc("OpenID Connect Core 1.0 - 3.1.3.6.")
     @Test
     public void checkIdTokenClaimAtHash() {
-        final byte[] accesTokenHash = DigestUtils.sha256("fdsjkfldsöaf");
         final JsonWebToken idToken = idTokenBuilder
-            .buildIdToken(TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, accesTokenHash);
+            .buildIdToken(TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, authenticationToken);
 
         assertThat(Base64.getUrlDecoder().decode(idToken.getStringBodyClaim(ACCESS_TOKEN_HASH).get()))
-            .isEqualTo(ArrayUtils.subarray(accesTokenHash, 0, (128 / 8)))
+            .isEqualTo(ArrayUtils.subarray(DigestUtils.sha256(authenticationToken.getRawString()),
+                0, (128 / 8)))
             .hasSize(128 / 8);
     }
 
@@ -140,6 +140,7 @@ public class IdTokenBuilderTest {
         bodyClaims.put(JWKS_URI.getJoseName(), "jwks_uri");
         bodyClaims.put(NONCE.getJoseName(), NONCE_VALUE);
         bodyClaims.put(CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP);
+        bodyClaims.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), List.of("foo", "bar"));
         bodyClaims.put(SCOPE.getJoseName(), IdpScope.EREZEPT.getJwtValue());
         authenticationToken = new JwtBuilder()
             .replaceAllHeaderClaims(Map.of("headerNotCopy", "headerNotCopy"))
@@ -148,8 +149,7 @@ public class IdTokenBuilderTest {
             .buildJwt();
 
         final JsonWebToken idToken = idTokenBuilder
-            .buildIdToken(TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, "fdsjkfldsöaf".getBytes(
-                StandardCharsets.UTF_8));
+            .buildIdToken(TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, authenticationToken);
 
         assertThat(idToken.getBodyClaims())
             .containsEntry(ISSUER.getJoseName(), uriIdpServer)
@@ -172,10 +172,10 @@ public class IdTokenBuilderTest {
         bodyClaims.put(ID_NUMBER.getJoseName(), "id_number");
         bodyClaims.put(CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP);
         bodyClaims.put(SCOPE.getJoseName(), IdpScope.EREZEPT.getJwtValue());
+        bodyClaims.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), List.of("foo", "bar"));
         createIdTokenBuilder(bodyClaims);
         final JsonWebToken idToken = idTokenBuilder
-            .buildIdToken(TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, "fdsjkfldsöaf".getBytes(
-                StandardCharsets.UTF_8));
+            .buildIdToken(TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, authenticationToken);
         assertThat(idToken.getBodyClaim(AUDIENCE))
             .get().isEqualTo(TestConstants.CLIENT_ID_E_REZEPT_APP);
     }
@@ -186,10 +186,10 @@ public class IdTokenBuilderTest {
         bodyClaims.put(ID_NUMBER.getJoseName(), "id_number");
         bodyClaims.put(CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP);
         bodyClaims.put(SCOPE.getJoseName(), IdpScope.PAIRING.getJwtValue());
+        bodyClaims.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), List.of("foo", "bar"));
         createIdTokenBuilder(bodyClaims);
         final JsonWebToken idToken = idTokenBuilder
-            .buildIdToken(TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, "fdsjkfldsöaf".getBytes(
-                StandardCharsets.UTF_8));
+            .buildIdToken(TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, authenticationToken);
         assertThat(idToken.getBodyClaim(AUDIENCE))
             .get().isEqualTo(TestConstants.CLIENT_ID_E_REZEPT_APP);
     }

@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+@Product:IDP-D
 @Biometrics
 Feature: Alternative Authentisierung, Anwendung am IDP Server
 
@@ -24,7 +25,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     And IDP I retrieve public keys from URIs
 
 
-  @TCID:IDP_REF_ALTAUTH_001
+  @TCID:IDP_REF_ALTAUTH_001 @PRIO:1
     @Approval
   Scenario Outline: Author mit alternativer Authentisierung - Gutfall - Löschen alle Pairings vor Start der Tests
 
@@ -45,7 +46,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
 
 
   @Afo:A_21439 @Afo:A_21449 @Afo:A_21440
-    @TCID:IDP_REF_ALTAUTH_002
+    @TCID:IDP_REF_ALTAUTH_002 @PRIO:1
     @Approval
   Scenario Outline: Author mit alternativer Authentisierung - Gutfall - Validiere Antwortstruktur
 
@@ -73,8 +74,8 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | name       | manufacturer   | product   | model   | os   | os_version   |
       | eRezeptApp | <manufacturer> | <product> | <model> | <os> | <os_version> |
     And IDP I create authentication data with
-      | authentication_data_version | auth_cert                                     | key_identifier | amr                    |
-      | 1.0                         | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | <keyid>        | ["mfa", "hwk", "face"] |
+      | authentication_data_version | auth_cert                                     | key_identifier | amr                                 |
+      | 1.0                         | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | <keyid>        | ["mfa", "hwk", "generic-biometric"] |
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication
     Then the response status is 302
@@ -95,7 +96,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
 
 
   @Afo:A_20731 @Afo:A_20377 @Afo:A_20697 @Afo:A_21317
-  @Approval @RefImplOnly
+  @Approval @RefImplOnly @PRIO:1
   @TCID:IDP_REF_ALTAUTH_003
   Scenario: Author mit alternativer Authentisierung - Gutfall - Validiere Location Header und Code Token Claims
 
@@ -124,8 +125,8 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | name       | manufacturer | product     | model | os      | os_version |
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create authentication data with
-      | authentication_data_version | auth_cert                                     | key_identifier | amr                    |
-      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth002   | ["mfa", "hwk", "face"] |
+      | authentication_data_version | auth_cert                                     | key_identifier | amr                   |
+      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth002   | ["mfa", "hwk", "kba"] |
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication successfully
 
@@ -160,13 +161,14 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
             scope:                 "${TESTENV.scopes_basisflow_regex}",
             snc:                   ".*",
             state:                 "xxxstatexxx",
-            token_type:            "code"
+            token_type:            "code",
+            amr:                   ["mfa", "hwk", "kba"]
         }
         """
 
   @Afo:A_20319
   @Signature @Approval @RefImplOnly
-  @TCID:IDP_REF_ALTAUTH_004
+  @TCID:IDP_REF_ALTAUTH_004 @PRIO:1
   Scenario: Author mit alternativer Authentisierung - Validiere Signatur des Code Token
 
   ```
@@ -202,7 +204,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
 
   @Afo:A_20695
   @Signature @Approval @RefImplOnly
-  @TCID:IDP_REF_ALTAUTH_005
+  @TCID:IDP_REF_ALTAUTH_005 @PRIO:1
   Scenario: Author mit alternativer Authentisierung - Validiere Signatur des SSO Token
 
   ```
@@ -229,8 +231,8 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | name       | manufacturer | product     | model | os      | os_version |
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create authentication data with
-      | authentication_data_version | auth_cert                                     | key_identifier | amr                    |
-      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth004   | ["mfa", "hwk", "face"] |
+      | authentication_data_version | auth_cert                                     | key_identifier | amr                                 |
+      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth004   | ["mfa", "hwk", "generic-biometric"] |
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication successfully
 
@@ -242,7 +244,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     #
     # negative cases
   @Approval
-  @TCID:IDP_REF_ALTAUTH_006
+  @TCID:IDP_REF_ALTAUTH_006 @PRIO:1
   Scenario: Author mit alternativer Authentisierung - Pairing anlegen für Negativtests
 
   ```
@@ -261,7 +263,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
 
   @Approval
   @Afo:A_21438
-  @TCID:IDP_REF_ALTAUTH_007
+  @TCID:IDP_REF_ALTAUTH_007 @PRIO:1 @Negative
   Scenario: Author mit alternativer Authentisierung - Aufruf ohne Parameter encrypted_signed_authentication_data
 
   ```
@@ -281,7 +283,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
 
   @Approval
     @Afo:A_21434
-    @TCID:IDP_REF_ALTAUTH_008
+    @TCID:IDP_REF_ALTAUTH_008 @PRIO:1 @Negative
   Scenario Outline: Author mit alternativer Authentisierung - fehlende Inhalte in encrypted_signed_authentication_data
 
   ```
@@ -305,14 +307,14 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     Then IDP the response is an 400 error with gematik code <error_code> and error '<error>'
 
     Examples: Parameter für authentication data
-      | auth_cert                                     | key_id       | amr                    | error_code | error         |
-      | $NULL                                         | keyidauth007 | ["mfa", "hwk", "face"] | 2000       | access_denied |
-      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | $NULL        | ["mfa", "hwk", "face"] | 2000       | access_denied |
-      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth007 | $NULL                  | 2000       | access_denied |
+      | auth_cert                                     | key_id       | amr                                 | error_code | error         |
+      | $NULL                                         | keyidauth007 | ["mfa", "hwk", "generic-biometric"] | 2000       | access_denied |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | $NULL        | ["mfa", "hwk", "generic-biometric"] | 2000       | access_denied |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth007 | $NULL                               | 2000       | access_denied |
 
   @Approval
   @Afo:A_20699
-  @TCID:IDP_REF_ALTAUTH_009
+  @TCID:IDP_REF_ALTAUTH_009 @PRIO:1 @Negative
   Scenario: Author mit alternativer Authentisierung - fehlerhafte Challenge in encrypted_signed_authentication_data
 
   ```
@@ -337,8 +339,8 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     Then IDP the response is an 400 error with gematik code 2000 and error 'access_denied'
 
   @Approval
-  @Afo:21438
-  @TCID:IDP_REF_ALTAUTH_010
+  @Afo:A_21438
+  @TCID:IDP_REF_ALTAUTH_010 @PRIO:1 @Negative
   Scenario: Author mit alternativer Authentisierung - fehlerhafte Signatur der encrypted_signed_authentication_data
 
   ```
@@ -359,11 +361,10 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-2-pkcs8.der'
     When IDP I request a code token with alternative authentication
     Then IDP the response is an 400 error with gematik code 2000 and error 'access_denied'
-    # TODO REF error_code: 2000 for all requests, error entry to be discussed https://gematik-ext.atlassian.net/browse/STIDPD-142
 
   @Approval
     @Afo:A_21434
-    @TCID:IDP_REF_ALTAUTH_011
+    @TCID:IDP_REF_ALTAUTH_011 @PRIO:1 @Negative
   Scenario Outline: Author mit alternativer Authentisierung - Konflikt mit zuvor registrierten Daten - falsche Inhalte in encrypted_signed_authentication_data
 
   ```
@@ -390,5 +391,4 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | auth_cert                                     | key_id           | error_code | error         |
       | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 | keyidauth007     | 2000       | access_denied |
       | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauthInvalid | 2000       | access_denied |
-      # TODO REF error_code: 2000 for all requests, error entry to be discussed https://gematik-ext.atlassian.net/browse/STIDPD-142
 

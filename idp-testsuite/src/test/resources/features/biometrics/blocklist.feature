@@ -15,6 +15,7 @@
 #
 
 
+@Product:IDP-D
 @Biometrics
 @Blocklist
 Feature: Blocklist für Registrierung und alternative Authentisierung am IDP Server
@@ -27,7 +28,7 @@ Feature: Blocklist für Registrierung und alternative Authentisierung am IDP Ser
 
 
   @Approval @Ready
-    @TCID:IDP_REF_BLOCK_001
+    @TCID:IDP_REF_BLOCK_001 @PRIO:1
   Scenario Outline: Blocklist - Gutfall - Löschen alle Pairings vor Start der Tests
 
   ```
@@ -53,7 +54,7 @@ Feature: Blocklist für Registrierung und alternative Authentisierung am IDP Ser
 
   @Afo:A_21423
   @TCID:IDP_REF_BLOCK_002
-  @Approval
+  @Approval @PRIO:1
   Scenario: Blocklist - Gutfall - Ablehnen der Registriere eines geblockten Geräts
 
   ```
@@ -70,12 +71,11 @@ Feature: Blocklist für Registrierung und alternative Authentisierung am IDP Ser
     And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     Then IDP the response is an 400 error with gematik code 4002 and error 'access_denied'
-    #todo: hier ist noch offen was der fehlertext ist
 
 
   @Afo:A_21404
     @TCID:IDP_REF_BLOCK_003
-    @Approval @Ready
+    @Approval @Ready @PRIO:1
   Scenario Outline: Blocklist - Gutfall - Registrieren eines nicht geblockten Geräts
 
   ```
@@ -113,7 +113,7 @@ Feature: Blocklist für Registrierung und alternative Authentisierung am IDP Ser
 
   @Afo:A_21423
   @TCID:IDP_REF_BLOCK_004
-  @Approval
+  @Approval @PRIO:1
   Scenario: Blocklist - Gutfall - Ablehnung von alternativer Authentisierung mit geblocktem Gerät
 
   ```
@@ -147,7 +147,7 @@ Feature: Blocklist für Registrierung und alternative Authentisierung am IDP Ser
 
   @Afo:A_21404
     @TCID:IDP_REF_BLOCK_005
-    @Approval @Ready
+    @Approval @Ready @PRIO:1
   Scenario Outline: Blocklist - Gutfall - alternativer Authentisierung mit nicht geblocktem Gerät
 
   ```

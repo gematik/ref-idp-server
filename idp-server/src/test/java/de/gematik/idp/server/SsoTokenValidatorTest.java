@@ -36,6 +36,7 @@ import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.SsoTokenBuilder;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -116,6 +117,6 @@ public class SsoTokenValidatorTest {
     }
 
     private IdpJwe generateValidSsoToken() {
-        return ssoTokenBuilder.buildSsoToken(egkUserIdentity.getCertificate(), ZonedDateTime.now());
+        return ssoTokenBuilder.buildSsoToken(egkUserIdentity.getCertificate(), ZonedDateTime.now(), List.of(""));
     }
 }

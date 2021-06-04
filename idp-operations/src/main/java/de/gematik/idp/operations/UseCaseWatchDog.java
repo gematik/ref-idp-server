@@ -1,9 +1,6 @@
 package de.gematik.idp.operations;
 
-import de.gematik.idp.test.steps.IdpAccessTokenSteps;
-import de.gematik.idp.test.steps.IdpAuthenticationSteps;
-import de.gematik.idp.test.steps.IdpAuthorizationSteps;
-import de.gematik.idp.test.steps.IdpDiscoveryDocumentSteps;
+import de.gematik.idp.test.steps.*;
 import de.gematik.idp.test.steps.helpers.CucumberValuesConverter;
 import de.gematik.idp.test.steps.helpers.IdpTestEnvironmentConfigurator;
 import de.gematik.idp.test.steps.model.AccessTokenType;
@@ -12,11 +9,11 @@ import de.gematik.idp.test.steps.model.HttpStatus;
 import de.gematik.test.bdd.Context;
 import de.gematik.test.bdd.ContextKey;
 import de.gematik.test.bdd.TestEnvironmentConfigurator;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import net.thucydides.core.annotations.Steps;
 import org.apache.commons.lang3.RandomStringUtils;
 
 @Slf4j
@@ -58,6 +55,10 @@ public class UseCaseWatchDog {
                         cucumberValuesConverter.parseDocString(certFile), "00", data);
                     return;
                 case "altauth":
+                    data.put("scope", "pairing openid");
+                    performAltAuthUseCase(data, certFile);
+
+                    break;
                 default:
                     log.error("Unknown use case '" + args[0] + "'");
                     System.exit(128);
@@ -68,19 +69,102 @@ public class UseCaseWatchDog {
         }
     }
 
-    @Steps
+    private static void performAltAuthUseCase(final Map<String, String> data, final String certFile)
+        throws URISyntaxException {
+        final String keyid = "key_" + System.currentTimeMillis();
+        try {
+            disc.initializeFromDiscoveryDocument();
+            Context.getDiscoveryDocument().readPublicKeysFromURIs();
+            requestAnAccessTokenWitheGK(AccessTokenType.PAIRING.toString(), CodeAuthType.SIGNED_CHALLENGE,
+                certFile, "00", data);
+
+            final Map<String, String> mapDevInfo = new HashMap<>(Map.of(
+                "name", "eRezeptApp",
+                "manufacturer", "Fair Phone",
+                "product", "FairPhone 3",
+                "model", "F3",
+                "os", "Android"));
+            mapDevInfo.put("os_version", "1.0.2 f");
+            Context.get().put(ContextKey.DEVICE_INFO, mapDevInfo);
+
+            final Map<String, String> mapPairData = new HashMap<>(Map.of(
+                "se_subject_public_key_info", "/keys/valid/Pub_Se_Aut-1.pem",
+                "key_identifier", keyid,
+                "product", "FairPhone 3",
+                "serialnumber", "$FILL_FROM_CERT",
+                "issuer", "$FILL_FROM_CERT"));
+            mapPairData.put("not_after", "$FILL_FROM_CERT");
+            mapPairData
+                .put("auth_cert_subject_public_key_info", certFile);
+            Context.get().put(ContextKey.PAIRING_DATA, mapPairData);
+
+            biosteps.signPairingData(certFile);
+            biosteps.registerDeviceWithCert(certFile, "1.0");
+            biosteps.assertResponseStatusIs(HttpStatus.SUCCESS);
+
+            auth.setCodeVerifier(
+                "drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj");
+            final Map<String, String> mapChallenge = new HashMap<>(Map.of(
+                "client_id", "eRezeptApp",
+                "scope", "openid pairing",
+                "code_challenge", "Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg",
+                "code_challenge_method", "S256",
+                "redirect_uri", "http://redirect.gematik.de/erezept",
+                "state", "operationsTest",
+                "nonce", "123456",
+                "response_type", "code"));
+            auth.getChallenge(mapChallenge, HttpStatus.SUCCESS);
+
+            mapDevInfo.clear();
+            mapDevInfo.putAll(Map.of(
+                "name", "eRezeptApp",
+                "manufacturer", "Fair Phone",
+                "product", "FairPhone 3",
+                "model", "F3",
+                "os", "Android"));
+            mapDevInfo.put("os_version", "1.0.2 f");
+            Context.get().put(ContextKey.DEVICE_INFO, mapDevInfo);
+
+            final Map<String, String> mapAuthData = Map.of(
+                "authentication_data_version", "1.0",
+                "auth_cert", certFile,
+                "key_identifier", keyid,
+                "amr", "[\"mfa\", \"hwk\", \"face\"]");
+            biosteps.createAuthenticationData(mapAuthData);
+
+            biosteps.signAuthenticationData("/keys/valid/Priv_Se_Aut-1-pkcs8.der", "1.0");
+
+            author.getCode(CodeAuthType.ALTERNATIVE_AUTHENTICATION, HttpStatus.SUCCESS);
+            Context.get().putString(ContextKey.REDIRECT_URI, "http://redirect.gematik.de/erezept");
+            access.getToken(HttpStatus.SUCCESS, null);
+        } finally {
+            log.info("CLEANING UP!");
+            final Map<String, String> mapUnregister = new HashMap<>(Map.of(
+                "client_id", "eRezeptApp",
+                "scope", "pairing openid",
+                "code_challenge_method", "S256",
+                "redirect_uri", "http://redirect.gematik.de/erezept",
+                "state", "operationsTest",
+                "nonce", "123456",
+                "response_type", "code"));
+
+            requestAnAccessTokenWitheGK(AccessTokenType.PAIRING.toString(), CodeAuthType.SIGNED_CHALLENGE,
+                certFile, "00", mapUnregister);
+            biosteps.deregisterDeviceWithKey(keyid);
+            biosteps.assertResponseStatusIs(HttpStatus.SUCCESS);
+        }
+    }
+
     static IdpDiscoveryDocumentSteps disc = new IdpDiscoveryDocumentSteps();
 
-    @Steps
     static IdpAuthenticationSteps auth = new IdpAuthenticationSteps();
 
-    @Steps
     static IdpAuthorizationSteps author = new IdpAuthorizationSteps();
 
-    @Steps
     static IdpAccessTokenSteps access = new IdpAccessTokenSteps();
 
-    @Steps
+    static IdpBiometricsSteps biosteps = new IdpBiometricsSteps();
+
     static CucumberValuesConverter cucumberValuesConverter = new CucumberValuesConverter();
 
     @SneakyThrows

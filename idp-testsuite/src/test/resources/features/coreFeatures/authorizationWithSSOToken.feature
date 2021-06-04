@@ -245,7 +245,9 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
 
 
   @Afo:A_20948  @Afo:A_20949 @Negative
-  @WiP
+  @TCID:IDP_REF_AUTH_106
+  @PRIO:2
+  @Approval @Ready
   Scenario: AuthorSSO - Anfrage mit modifiziertem SSO Token
 
   ```
@@ -254,15 +256,45 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
   Dann löschen wir den Context mit Ausnahme des erhaltenen SSO Tokens, modifizieren diesen und wiederholen die
   Schritte nur fordern wir nun einen TOKEN_CODE mit dem modifizierten SSO Token an.
 
-  Die Server muss diese Anfrage mit HTTP Status 302 und einer Fehlermeldung im Location Header ablehnen.
+  Die Server muss diese Anfrage mit HTTP Status 400 und einer Fehlermeldung ablehnen.
 
-
-    Given IDP I choose code verifier '${TESTENV.code_verifier01}'
+    Given IDP I choose code verifier '${TESTENV.code_verifier02}'
     And IDP I request a challenge with
-      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
-      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 9999  | code          |
-        # TODO first perform with signed challenge then modify sso token then retry with modified sso token
-        # TODO how to modify the sso token to ensure that the idp checks the signature correctly
+      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce  | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1 | 123456 | code          |
+    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I request a code token with signed challenge successfully
+    And IDP I start new interaction keeping only
+      | SSO_TOKEN_ENCRYPTED |
+    And IDP I flip bit -20 on context with key SSO_TOKEN_ENCRYPTED
+    And IDP I initialize scenario from discovery document endpoint
+    And IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
+      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state        | nonce  | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx2 | 234567 | code          |
 
     When IDP I request a code token with sso token
-    Then IDP the response is an 302 error with gematik code 9999 and error 'TODO'
+    Then IDP the response is an 400 error with gematik code 2040 and error 'access_denied'
+
+    
+  @TCID:IDP_REF_AUTH_008 @PRIO:2
+  @OpenBug
+  @issue:IDP-659
+  @Afo:A_20588
+  @Afo:A_20589
+  @Approval @Ready
+  Scenario: Auth - Gesperrter User Agent
+
+  ```
+  Wir fordern einen Challenge Token mit einem gesperrten User Agent an.
+  Als Antwort erwarten wir einen entsprechenden HTTP code, error id und error code
+
+    Given IDP I choose code verifier 'zdrfcvz3iw47fgderuzbq834werb3q84wgrb3zercb8q3wbd834wefb348ch3rq9e8fd9sac'
+        # REM code_challenge for given verifier can be obtained from https://tonyxu-io.github.io/pkce-generator/
+    And IDP I set user agent to 'Bad-Actor-App/2.0'
+    When IDP I request a challenge with
+      | client_id            | scope                      | code_challenge                              | code_challenge_method | redirect_uri            | state       | nonce     | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | code          |
+    Then the response status is failed state
+    And IDP the response is an 401 error with gematik code 1041 and error 'invalid_request'
+    And IDP I set user agent to 'gematik.Testsuite/1.0/eRezeptApp'

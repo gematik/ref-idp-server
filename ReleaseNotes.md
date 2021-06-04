@@ -1,3 +1,9 @@
+# Release 18.1.0
+- Fehlermeldungen in Testsuite überarbeitet
+- Server wertet AMR aus
+- Testsuite ergänzt um Test zum AMR, zum userAgent, zu abgelaufenen SSO-Token
+
+
 # Release 18.0.0
 - IDP-Client für ExternalizedSignature bei RSA erweitert
 - AMR erweitert (Fix für Biometrie)

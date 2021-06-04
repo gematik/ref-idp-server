@@ -392,6 +392,8 @@ public class TokenLoggerTest {
 
             biometrieClient.getAllPairings();
 
+            idpClient.setScopes(Set.of(IdpScope.EREZEPT, IdpScope.OPENID));
+
             idpClient.loginWithAltAuth(registrationData, smcbIdentity.getPrivateKey());
         }, targetFolder + "biometrie.html", "Registrierung eines neuen Geräts beim Server");
     }

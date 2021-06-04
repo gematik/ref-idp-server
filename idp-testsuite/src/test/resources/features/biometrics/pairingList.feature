@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+@Product:IDP-D
 @Biometrics
 Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
 
@@ -24,7 +25,7 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
     And IDP I retrieve public keys from URIs
 
   @Approval @Ready
-    @TCID:IDP_REF_LIST_000
+    @TCID:IDP_REF_LIST_000 @PRIO:1
   Scenario Outline: Biometrie Pairingliste - Gutfall - Löschen alle Pairings vor Start der Tests
 
   ```
@@ -41,7 +42,7 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
 
   @Approval @Ready
   @Afo:A_21424 @Afo:A_21450 @Afo:A_21452
-  @TCID:IDP_REF_LIST_001
+  @TCID:IDP_REF_LIST_001 @PRIO:1
   Scenario: Biometrie Pairingliste - Gutfall - Erzeuge einen Pairingeintrag für IDNummer und fordere Pairingliste an
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
     And IDP I create a device information token with
@@ -78,7 +79,7 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
 
   @Approval @Ready
   @Afo:A_21452
-  @TCID:IDP_REF_LIST_002
+  @TCID:IDP_REF_LIST_002 @PRIO:1
   Scenario: Biometrie Pairingliste - Gutfall - Erzeuge mehrere Pairingeinträge für IDNummer und fordere Pairingliste an
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
     And IDP I create a device information token with
@@ -127,7 +128,7 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
 
   @Approval @Ready
   @Afo:A_21452
-  @TCID:IDP_REF_LIST_003
+  @TCID:IDP_REF_LIST_003 @PRIO:1 @Negative
   Scenario: Biometrie Pairingliste - Fordere Pairingliste an für IdNummer, welche kein Pairing hat
     And IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-e-valid-ecc.p12'
     When IDP I request all pairings
@@ -141,25 +142,17 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
 
   @Approval @Ready
   @Afo:A_21442
-  @TCID:IDP_REF_LIST_004
+  @TCID:IDP_REF_LIST_004 @PRIO:1 @Negative
   Scenario: Biometrie Pairingliste - Fordere Pairingliste an mit eRezept Access Token
     And IDP I request an erezept access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     When IDP I request all pairings
     Then IDP the response is an 403 error with gematik code 4001 and error 'access_denied'
 
-        # TODO RISE add error attribute, see https://gematik-ext.atlassian.net/browse/STIDPD-142
-
 
   @Approval @Ready
   @Afo:A_21442
-  @TCID:IDP_REF_LIST_005
+  @TCID:IDP_REF_LIST_005 @PRIO:1 @Negative
   Scenario: Biometrie Pairingliste - Fordere Pairingliste an mit eRezept SSO Token
     And IDP I request an erezept access token via SSO token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     When IDP I request all pairings
     Then IDP the response is an 403 error with gematik code 4001 and error 'access_denied'
-
-      # TODO RISE add error attribute, see https://gematik-ext.atlassian.net/browse/STIDPD-142
-
-
-  # obsolet da wir keinen access token kriegen
-  # Scenario: Biometrie Pairingliste - Fordere Pairingliste an mit Zertifikat ohne IDNummer

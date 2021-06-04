@@ -17,7 +17,6 @@
 package de.gematik.idp.server.services;
 
 import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
-
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.server.controllers.IdpKey;
@@ -54,7 +53,7 @@ public class SsoTokenValidator {
         try {
             return ssoToken.decryptNestedJwt(tokenEncryptionKey);
         } catch (final RuntimeException e) {
-            throw new IdpServerInvalidRequestException("Error during SSO-Token decryption");
+            throw new IdpServerException(2040, IdpErrorType.ACCESS_DENIED, "Error during SSO-Token decryption");
         }
     }
 
