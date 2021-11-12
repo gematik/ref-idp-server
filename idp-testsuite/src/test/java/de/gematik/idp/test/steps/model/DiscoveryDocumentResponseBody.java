@@ -19,9 +19,9 @@ package de.gematik.idp.test.steps.model;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.crypto.model.PkiIdentity;
+import io.restassured.common.mapper.TypeRef;
 import io.restassured.mapper.ObjectMapper;
 import io.restassured.mapper.ObjectMapperType;
-import io.restassured.mapper.TypeRef;
 import io.restassured.path.json.JsonPath;
 import io.restassured.path.json.config.JsonPathConfig;
 import io.restassured.path.xml.XmlPath;
@@ -91,6 +91,11 @@ public class DiscoveryDocumentResponseBody implements ResponseBody {
     @SneakyThrows
     @Override
     public String prettyPrint() {
+        return signedContent;
+    }
+
+    @Override
+    public String asPrettyString() {
         return signedContent;
     }
 

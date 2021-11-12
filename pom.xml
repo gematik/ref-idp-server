@@ -1,7 +1,95 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <groupId>org.springframework.boot</groupId>
+        <version>2.5.3</version>
+    </parent>
+
+    <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
+    <version>19.1.0</version>
+    <packaging>pom</packaging>
+
+
+    <description>IDP</description>
+
+    <modules>
+        <module>idp-crypto</module>
+        <module>idp-test</module>
+        <module>idp-commons</module>
+        <module>idp-client</module>
+        <module>idp-server</module>
+        <module>idp-sektoral</module>
+        <module>idp-testsuite</module>
+        <module>idp-report</module>
+    </modules>
+
+    <organization>
+        <name>gematik GmbH</name>
+        <url>http://www.gematik.de</url>
+    </organization>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <artifactId>bcpkix-jdk15on</artifactId>
+                <groupId>org.bouncycastle</groupId>
+                <version>${version.bouncycastle.bcpkix}</version>
+            </dependency>
+            <dependency>
+                <groupId>de.gematik.pki</groupId>
+                <artifactId>gemLibPki</artifactId>
+                <version>0.4.1</version>
+            </dependency>
+            <dependency>
+                <artifactId>aforeporter</artifactId>
+                <groupId>de.gematik.idp.aforeporter</groupId>
+                <version>1.2.1</version>
+            </dependency>
+            <dependency>
+                <groupId>de.gematik</groupId>
+                <artifactId>rbellogger</artifactId>
+                <version>0.18.0-151</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <properties>
+        <docker.image.name.smartcard>gstopdr1.top.local/idp/idp-server</docker.image.name.smartcard>
+        <docker.image.name.sektoralidp>gstopdr1.top.local/idp/idp-sektoral</docker.image.name.sektoralidp>
+        <java.version>11</java.version>
+        <mpir.skip>true</mpir.skip>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/../idp-report/target/site/jacoco-aggregate/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+        <sonar.language>java</sonar.language>
+        <version.bouncycastle.bcpkix>1.68</version.bouncycastle.bcpkix>
+        <version.build-helper-maven-plugin>3.2.0</version.build-helper-maven-plugin>
+        <version.jsoniter>0.9.16</version.jsoniter>
+        <version.lombok>1.18.16</version.lombok>
+        <version.tiger>0.16.1</version.tiger>
+        <version.maven-clean-plugin>3.1.0</version.maven-clean-plugin>
+        <version.maven-compiler-plugin>3.8.1</version.maven-compiler-plugin>
+        <version.maven-jar-plugin>3.2.0</version.maven-jar-plugin>
+        <version.maven-javadoc-plugin>3.0.1</version.maven-javadoc-plugin>
+        <version.docker-maven-plugin>0.34.1</version.docker-maven-plugin>
+
+        <!-- only needed for mvn site to avoid stack traces flooding the console -->
+        <version.maven-resources-plugin>3.0.2</version.maven-resources-plugin>
+
+        <!-- settings for upload to sonar server -->
+        <version.maven-source-plugin>3.0.1</version.maven-source-plugin>
+        <version.maven-surefire-plugin>2.22.2</version.maven-surefire-plugin>
+        <version.spring-boot>2.5.5</version.spring-boot>
+        <version.test.regex>none</version.test.regex>
+    </properties>
 
     <build>
         <plugins>
@@ -58,87 +146,5 @@
             </plugin>
         </plugins>
     </build>
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <artifactId>bcpkix-jdk15on</artifactId>
-                <groupId>org.bouncycastle</groupId>
-                <version>${version.bouncycastle.bcpkix}</version>
-            </dependency>
-            <dependency>
-                <groupId>de.gematik.pki</groupId>
-                <artifactId>gemLibPki</artifactId>
-                <version>0.4.1</version>
-            </dependency>
-            <dependency>
-                <artifactId>aforeporter</artifactId>
-                <groupId>de.gematik.idp.aforeporter</groupId>
-                <version>1.2.1</version>
-            </dependency>
-            <dependency>
-                <groupId>de.gematik</groupId>
-                <artifactId>rbellogger</artifactId>
-                <version>0.8.4</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
-    <description>IDP</description>
-    <groupId>de.gematik.idp</groupId>
-    <modelVersion>4.0.0</modelVersion>
-
-    <modules>
-        <module>idp-crypto</module>
-        <module>idp-test</module>
-        <module>idp-commons</module>
-        <module>idp-client</module>
-        <module>idp-server</module>
-        <module>idp-testsuite</module>
-        <module>idp-report</module>
-    </modules>
-
-    <organization>
-        <name>gematik GmbH</name>
-        <url>http://www.gematik.de</url>
-    </organization>
-
-    <packaging>pom</packaging>
-
-    <parent>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <groupId>org.springframework.boot</groupId>
-        <version>2.4.5</version>
-    </parent>
-
-    <properties>
-        <docker.image.name>idp-server</docker.image.name>
-        <java.version>11</java.version>
-        <mpir.skip>true</mpir.skip>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/../idp-report/target/site/jacoco-aggregate/jacoco.xml
-        </sonar.coverage.jacoco.xmlReportPaths>
-        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
-        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
-        <sonar.language>java</sonar.language>
-        <version.bouncycastle.bcpkix>1.68</version.bouncycastle.bcpkix>
-        <version.build-helper-maven-plugin>3.2.0</version.build-helper-maven-plugin>
-        <version.jsoniter>0.9.16</version.jsoniter>
-        <version.lombok>1.18.16</version.lombok>
-        <version.maven-clean-plugin>3.1.0</version.maven-clean-plugin>
-        <version.maven-compiler-plugin>3.8.1</version.maven-compiler-plugin>
-        <version.maven-jar-plugin>3.2.0</version.maven-jar-plugin>
-        <version.maven-javadoc-plugin>3.0.1</version.maven-javadoc-plugin>
-
-        <!-- only needed for mvn site to avoid stack traces flooding the console -->
-        <version.maven-resources-plugin>3.0.2</version.maven-resources-plugin>
-
-        <!-- settings for upload to sonar server -->
-        <version.maven-source-plugin>3.0.1</version.maven-source-plugin>
-        <version.maven-surefire-plugin>2.22.2</version.maven-surefire-plugin>
-        <version.spring-boot>2.3.4.RELEASE</version.spring-boot>
-        <version.test.regex>none</version.test.regex>
-    </properties>
-
-    <version>18.1.0</version>
 </project>

@@ -5,10 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
 import de.gematik.idp.test.steps.model.DiscoveryDocument;
 import de.gematik.test.bdd.Context;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -41,7 +38,12 @@ public class KeyAndCertificateStepsHelper {
 
     public X509Certificate readCertFrom(final String certFile, final String password)
         throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException {
-        final InputStream is = getClass().getResourceAsStream(certFile);
+        final InputStream is;
+        if (certFile.startsWith("file://")) {
+            is = new FileInputStream(certFile.substring("file://".length()));
+        } else {
+            is = getClass().getResourceAsStream(certFile);
+        }
         Assertions.assertThat(is).withFailMessage("Unable to locate cert resource '" + certFile + "'").isNotNull();
         final KeyStore keyStore = KeyStore.getInstance("pkcs12", new BouncyCastleProvider());
         try (final ByteArrayInputStream bis = new ByteArrayInputStream(is.readAllBytes())) {
@@ -52,7 +54,12 @@ public class KeyAndCertificateStepsHelper {
 
     public Key readPrivateKeyFromKeyStore(final String keyStoreFileName, final String password)
         throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException {
-        final InputStream is = getClass().getResourceAsStream(keyStoreFileName);
+        final InputStream is;
+        if (keyStoreFileName.startsWith("file://")) {
+            is = new FileInputStream(keyStoreFileName.substring("file://".length()));
+        } else {
+            is = getClass().getResourceAsStream(keyStoreFileName);
+        }
         Assertions.assertThat(is).withFailMessage("Unable to locate key resource '" + keyStoreFileName + "'")
             .isNotNull();
         final KeyStore keyStore = KeyStore.getInstance("pkcs12", new BouncyCastleProvider());
@@ -62,7 +69,12 @@ public class KeyAndCertificateStepsHelper {
 
     @SneakyThrows
     public PrivateKey readPrivatKeyFromPkcs8(final String keyFile) {
-        final InputStream is = getClass().getResourceAsStream(keyFile);
+        final InputStream is;
+        if (keyFile.startsWith("file://")) {
+            is = new FileInputStream(keyFile.substring("file://".length()));
+        } else {
+            is = getClass().getResourceAsStream(keyFile);
+        }
         Assertions.assertThat(is).withFailMessage("Unable to locate key resource '" + keyFile + "'").isNotNull();
         final PKCS8EncodedKeySpec privKeySpec = new PKCS8EncodedKeySpec(is.readAllBytes());
         final KeyFactory factory = KeyFactory.getInstance("EC");
@@ -71,7 +83,12 @@ public class KeyAndCertificateStepsHelper {
 
     @SneakyThrows
     public SubjectPublicKeyInfo readSubjectPublicKeyInfoFromPem(final String keyFile) {
-        final InputStream is = getClass().getResourceAsStream(keyFile);
+        final InputStream is;
+        if (keyFile.startsWith("file://")) {
+            is = new FileInputStream(keyFile.substring("file://".length()));
+        } else {
+            is = getClass().getResourceAsStream(keyFile);
+        }
         final PEMParser pemParser = new PEMParser(new InputStreamReader(is));
         return SubjectPublicKeyInfo.getInstance(pemParser.readObject());
     }

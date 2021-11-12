@@ -16,12 +16,12 @@
 
 package de.gematik.idp.test.steps.model;
 
+import io.restassured.common.mapper.TypeRef;
 import io.restassured.http.Cookie;
 import io.restassured.http.Cookies;
 import io.restassured.http.Headers;
 import io.restassured.mapper.ObjectMapper;
 import io.restassured.mapper.ObjectMapperType;
-import io.restassured.mapper.TypeRef;
 import io.restassured.path.json.JsonPath;
 import io.restassured.path.json.config.JsonPathConfig;
 import io.restassured.path.xml.XmlPath;
@@ -54,6 +54,11 @@ public class DiscoveryDocumentResponse implements Response {
 
     @Override
     public String prettyPrint() {
+        return body.prettyPrint();
+    }
+
+    @Override
+    public String asPrettyString() {
         return body.prettyPrint();
     }
 

@@ -24,9 +24,10 @@ public enum CodeAuthType {
     SSO_TOKEN_NO_CHALLENGE,
     NO_PARAMS,
     SIGNED_CHALLENGE_WITH_SSO_TOKEN,
-    ALTERNATIVE_AUTHENTICATION;
+    ALTERNATIVE_AUTHENTICATION,
+    THIRD_PARTY_AUTHORIZATION_CODE;
 
-    public final static String CUCUMBER_REGEX = "(signed challenge|sso token|sso token no challenge|no params|signed challenge with sso token|alternative authentication)";
+    public final static String CUCUMBER_REGEX = "(signed challenge|sso token|sso token no challenge|no params|signed challenge with sso token|alternative authentication|third party authorization code)";
 
     private final String value;
 

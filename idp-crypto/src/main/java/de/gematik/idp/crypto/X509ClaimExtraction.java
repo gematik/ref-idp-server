@@ -21,7 +21,6 @@ import static de.gematik.idp.crypto.TiCertificateType.EGK;
 import static de.gematik.idp.crypto.TiCertificateType.HBA;
 import static de.gematik.idp.crypto.TiCertificateType.SMCB;
 import static de.gematik.idp.crypto.model.CertificateExtractedFieldEnum.*;
-
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
@@ -69,7 +68,13 @@ public class X509ClaimExtraction {
 
         if (certificateType == HBA) {
             claimMap.put(ORGANIZATION_NAME.getFieldname(), null);
-        } else if (certificateType == SMCB || certificateType == EGK) {
+        } else if (certificateType == SMCB) {
+            final Optional<String> valueFromDn = getValueFromDn(certificate.getSubjectX500Principal(), RFC4519Style.cn);
+            if (valueFromDn.isPresent() && valueFromDn.get().length() > 64) {
+                throw new IdpCryptoException("Value in certificate too long!");
+            }
+            claimMap.put(ORGANIZATION_NAME.getFieldname(), valueFromDn.orElse(null));
+        } else if (certificateType == EGK) {
             final Optional<String> valueFromDn = getValueFromDn(certificate.getSubjectX500Principal(), RFC4519Style.o);
             if (valueFromDn.isPresent() && valueFromDn.get().length() > 64) {
                 throw new IdpCryptoException("Value in certificate too long!");
@@ -119,7 +124,7 @@ public class X509ClaimExtraction {
 
     private static List<String> getAllValuesFromDn(final X500Principal principal, final ASN1ObjectIdentifier field) {
         return Stream.of(X500Name.getInstance(principal.getEncoded())
-            .getRDNs(field))
+                .getRDNs(field))
             .flatMap(rdn -> Stream.of(rdn.getTypesAndValues()))
             .filter(attributeTypeAndValue -> attributeTypeAndValue.getType().equals(field))
             .map(AttributeTypeAndValue::getValue)

@@ -22,12 +22,20 @@ import de.gematik.idp.test.steps.IdpStepsBase;
 import de.gematik.idp.test.steps.helpers.IdpTestEnvironmentConfigurator;
 import de.gematik.test.bdd.Context;
 import de.gematik.test.bdd.ContextKey;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.security.*;
+import java.security.KeyFactory;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -67,9 +75,18 @@ public class DiscoveryDocument {
     private final String tokenEndpoint;
     private final String pairingEndpoint;
     private final String jwksUri;
+    private final String thirdPartyEndpoint;
+    private final String kkAppListUri;
 
     public DiscoveryDocument(final JSONObject jsoBody, final JSONObject jsoHeader)
         throws JSONException {
+        if (!IdpTestEnvironmentConfigurator.getFqdnInternet().isEmpty()) {
+            jsoBody.keySet().stream()
+                .filter(key -> jsoBody.get(key) instanceof String)
+                .forEach(key -> jsoBody.put(key, jsoBody.getString(key)
+                    .replace(IdpTestEnvironmentConfigurator.getFqdnDiscoveryDocument(),
+                        IdpTestEnvironmentConfigurator.getFqdnInternet())));
+        }
         jsonBody = jsoBody;
         jsonHeader = jsoHeader;
         authorizationEndpoint = jsoBody.getString("authorization_endpoint");
@@ -79,6 +96,10 @@ public class DiscoveryDocument {
         altAuthEndpoint = jsoBody.has("auth_pair_endpoint") ? jsoBody.getString("auth_pair_endpoint") : "UNDEFINED";
         pairingEndpoint = jsoBody.has("uri_pair") ? jsoBody.getString("uri_pair") : "UNDEFINED";
         jwksUri = jsoBody.getString("jwks_uri");
+        thirdPartyEndpoint =
+            jsoBody.has("third_party_authorization_endpoint") ? jsoBody.getString("third_party_authorization_endpoint")
+                : "UNDEFINED";
+        kkAppListUri = jsoBody.has("kk_app_list_uri") ? jsoBody.getString("kk_app_list_uri") : "UNDEFINED";
         IdpTestEnvironmentConfigurator.initializeIDPTestEnvironment();
     }
 

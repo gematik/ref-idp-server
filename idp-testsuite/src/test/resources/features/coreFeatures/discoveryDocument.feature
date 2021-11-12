@@ -120,6 +120,8 @@ Feature: Fordere Discovery Dokument an
             subject_types_supported:                '["pairwise"]',
             token_endpoint:                         "http.*",
             token_endpoint_auth_methods_supported:  '["none"]',
+            kk_app_list_uri :                       "http.*",
+            third_party_authorization_endpoint:     "http.*",
             ____code_challenge_methods_supported:   '["S256"]'
           }
         """

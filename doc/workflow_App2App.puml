@@ -1,0 +1,47 @@
+@startuml
+
+title
+<img:images/IDPLogo-64.png> <u>App2App workflow</u>
+end title
+
+skinparam sequenceArrowThickness 1
+skinparam roundcorner 20
+skinparam sequenceParticipant underline
+skinparam maxMessageSize 400
+skinparam ParticipantPadding 10
+
+actor "Anwender:in" as V
+participant "eRP-App" as EA
+participant "Smartphone-OS" as OS
+participant "Authenticator-App für Kassen-IDP" as KA
+participant "Kassen-IDP" as KIDP
+    ||20||
+note over EA,KA
+    Die Authenticator-App des Kassen-IDPs und die eRP-App müssen auf demselben Smartphone laufen
+end note
+
+note over EA, KIDP
+client_id und redirect_uri der eRP-App müssen beim Kassen-IDP registriert sein
+end note
+    ||40||
+V -> EA : Anwender:in startet Interaktion
+EA -> OS : URL Authentication Endpoint ansprechen\nAuthorizationRequest\nGET client_id, redirect_uri,...
+    ||20||
+OS -> OS : Es wird die für diese URL registrierte\nApp bestimmt
+    ||20||
+OS -> KA : Öffnen der App mit der übergebenen URL\nzuvor erstellter AuthorizationRequest\nGET client_id, redirect_uri,...
+KA <-> KIDP : Authentisierung des Nutzers
+    ||20||
+KA <- KIDP : Authorization Code application/x-www-form-urlencoded in\nHTPP 302 location=redirect_uri
+
+KA -> OS : URL der redirect_uri ansprechen
+    ||20||
+OS -> OS : Es wird die für diese URL registrierte\nApp bestimmt
+    ||20||
+OS -> EA : Öffnen der App mit der übergebenen URL\nAuthorization Code in Parametern
+    ||20||
+EA -> KIDP : URL Token Endpoint ansprechen
+    ||20||
+EA <- KIDP : Token Response mit ACCESS_TOKEN und ID_TOKEN
+
+@enduml

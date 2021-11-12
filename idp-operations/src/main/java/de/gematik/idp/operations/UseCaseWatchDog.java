@@ -105,11 +105,11 @@ public class UseCaseWatchDog {
             auth.setCodeVerifier(
                 "drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj");
             final Map<String, String> mapChallenge = new HashMap<>(Map.of(
-                "client_id", "eRezeptApp",
+                "client_id", IdpTestEnvironmentConfigurator.getTestEnvVar("client_id"),
                 "scope", "openid pairing",
                 "code_challenge", "Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg",
                 "code_challenge_method", "S256",
-                "redirect_uri", "http://redirect.gematik.de/erezept",
+                "redirect_uri", IdpTestEnvironmentConfigurator.getTestEnvVar("redirect_uri"),
                 "state", "operationsTest",
                 "nonce", "123456",
                 "response_type", "code"));
@@ -135,15 +135,16 @@ public class UseCaseWatchDog {
             biosteps.signAuthenticationData("/keys/valid/Priv_Se_Aut-1-pkcs8.der", "1.0");
 
             author.getCode(CodeAuthType.ALTERNATIVE_AUTHENTICATION, HttpStatus.SUCCESS);
-            Context.get().putString(ContextKey.REDIRECT_URI, "http://redirect.gematik.de/erezept");
+            Context.get()
+                .putString(ContextKey.REDIRECT_URI, IdpTestEnvironmentConfigurator.getTestEnvVar("redirect_uri"));
             access.getToken(HttpStatus.SUCCESS, null);
         } finally {
             log.info("CLEANING UP!");
             final Map<String, String> mapUnregister = new HashMap<>(Map.of(
-                "client_id", "eRezeptApp",
+                "client_id", IdpTestEnvironmentConfigurator.getTestEnvVar("client_id"),
                 "scope", "pairing openid",
                 "code_challenge_method", "S256",
-                "redirect_uri", "http://redirect.gematik.de/erezept",
+                "redirect_uri", IdpTestEnvironmentConfigurator.getTestEnvVar("redirect_uri"),
                 "state", "operationsTest",
                 "nonce", "123456",
                 "response_type", "code"));

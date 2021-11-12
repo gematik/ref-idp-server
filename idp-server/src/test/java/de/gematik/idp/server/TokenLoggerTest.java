@@ -16,41 +16,24 @@
 
 package de.gematik.idp.server;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-
 import de.gematik.idp.IdpConstants;
+import de.gematik.idp.RbelWiremockCapture;
 import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
 import de.gematik.idp.client.BiometrieClient;
 import de.gematik.idp.client.IdpClient;
-import de.gematik.idp.client.data.DiscoveryDocumentResponse;
 import de.gematik.idp.client.data.RegistrationData;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.rbellogger.RbelLogger;
-import de.gematik.rbellogger.captures.WiremockCapture;
-import de.gematik.rbellogger.converter.RbelConfiguration;
+import de.gematik.rbellogger.configuration.RbelConfiguration;
 import de.gematik.rbellogger.converter.initializers.RbelKeyFolderInitializer;
-import de.gematik.rbellogger.data.RbelJweElement;
-import de.gematik.rbellogger.data.RbelStringElement;
+import de.gematik.rbellogger.data.RbelElement;
 import de.gematik.rbellogger.key.RbelKey;
 import de.gematik.rbellogger.key.RbelKeyManager;
 import de.gematik.rbellogger.renderer.RbelHtmlRenderer;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.security.KeyPair;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.crypto.spec.SecretKeySpec;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
@@ -63,6 +46,19 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import javax.crypto.spec.SecretKeySpec;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.security.KeyPair;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+
 @ExtendWith(SpringExtension.class)
 @ExtendWith(PkiKeyResolver.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -71,17 +67,20 @@ public class TokenLoggerTest {
 
     private final static Map<String, String> MASKING_FUNCTIONS = new HashMap<>();
     private final static Map<String, String> JEXL_NOTE_FUNCTIONS = new HashMap<>();
+
     private final AtomicReference<Integer> wiremockPort = new AtomicReference<>();
     private final String targetFolder = "target/classes/static/";
+
     private IdpClient idpClient;
     private PkiIdentity egkUserIdentity;
     private PkiIdentity smcbIdentity;
+
     @LocalServerPort
     private int localServerPort;
     @Autowired
     private AuthenticationChallengeBuilder authenticationChallengeBuilder;
     private RbelLogger rbelLogger;
-    private WiremockCapture wiremockCapture;
+    private RbelWiremockCapture wiremockCapture;
 
     {
         JEXL_NOTE_FUNCTIONS.put("type=='RbelJwtSignature'",
@@ -155,11 +154,11 @@ public class TokenLoggerTest {
             Map.of("scope",
                 "Der Scope entspricht dem zwischen E-Rezept-Fachdienst und IDP festgelegten Wert. Mit diesem antwortet der E-Rezept-Fachdienst bei fehlendem ACCESS_TOKEN und http-Statuscode 401.",
                 "state",
-                "Dieser Parameter wird vom Client zufällig generiert, um CSRF zu verhindern. Indem der Server mit diesem Wert antwortet, werden Redirects legitmiert.",
+                "Dieser Parameter wird vom Client zufällig generiert, um CSRF zu verhindern. Indem der Server mit diesem Wert antwortet, werden Redirects legitmiert. WICHTIG: Darf nicht länger als 32 Zeichen sein.",
                 "client_id",
                 "Die Client-ID des Primärsystems wird beim Registrieren des Primärsystems beim IDP festgelegt.",
                 "nonce",
-                "String zu Verhinderung von CSRF-Attacken. Dieser Wert ist optional. Wenn er mitgegeben wird muss der gleiche Wert im abschließend ausgegebenen ID-Token wieder auftauchen.",
+                "String zu Verhinderung von CSRF-Attacken. Dieser Wert ist optional. Wenn er mitgegeben wird muss der gleiche Wert im abschließend ausgegebenen ID-Token wieder auftauchen. WICHTIG: Darf nicht länger als 32 Zeichen sein.",
                 "redirect_uri",
                 "Die URL wird vom Primärsystem beim Registrierungsprozess im IDP hinterlegt und leitet die Antwort des Servers an diese Adresse um.",
                 "response_type",
@@ -258,32 +257,32 @@ public class TokenLoggerTest {
         JEXL_NOTE_FUNCTIONS
             .put("element.class.simpleName=='RbelJweEncryptionInfo' && element.decryptedUsingKeyWithId == 'token_key'",
                 "Wird vom Server mit dem token_key verschlüsselt der in der korrespondierenden Anfrage übertragen wurde.");
+        JEXL_NOTE_FUNCTIONS
+            .put("path=='body.signed_challenge.header.exp'",
+                "Dieser EXP-Header muss exakt dem EXP-Wert aus dem Body der Server-Challenge entsprechen.");
     }
 
     private void addParameterNotesRequest(final String httpVerb, final String url,
-        final Map<String, String> parameterNotes) {
+                                          final Map<String, String> parameterNotes) {
         for (final Entry<String, String> entry : parameterNotes.entrySet()) {
             JEXL_NOTE_FUNCTIONS.put("key == '" + entry.getKey() + "'", entry.getValue());
         }
     }
 
     private void addParameterNotesResponse(final String httpVerb, final String url,
-        final Map<String, String> parameterNotes) {
+                                           final Map<String, String> parameterNotes) {
         for (final Entry<String, String> entry : parameterNotes.entrySet()) {
-            JEXL_NOTE_FUNCTIONS.put(//"request.url =^ '" + url + "' "
-                //+ "&& request.method=='" + httpVerb + "' && message.isResponse "
-                "key == '" + entry.getKey() + "'", entry.getValue());
+            JEXL_NOTE_FUNCTIONS.put("key == '" + entry.getKey() + "'", entry.getValue());
         }
     }
 
     private void addRequestResponseNotes(final String verb, final String url, final String requestNote,
-        final String responseNote) {
+                                         final String responseNote) {
         JEXL_NOTE_FUNCTIONS.put("message.url =^ '" + url + "' "
             + "&& message.method=='" + verb + "' && type == 'RbelHttpRequest'", requestNote);
         JEXL_NOTE_FUNCTIONS.put("request.url =^ '" + url + "' && request.method=='" + verb + "' "
             + "&& type == 'RbelHttpResponse'", responseNote);
     }
-
 
     @BeforeEach
     public void startup(
@@ -295,16 +294,25 @@ public class TokenLoggerTest {
                     new SecretKeySpec(DigestUtils.sha256("geheimerSchluesselDerNochGehashtWird"), "AES"),
                     RbelKey.PRECEDENCE_KEY_FOLDER)
                 .addInitializer(new RbelKeyFolderInitializer("src/main/resources"))
-                .addPostConversionListener(RbelJweElement.class, RbelKeyManager.RBEL_IDP_TOKEN_KEY_LISTENER)
-                .addPreConversionMapper(RbelStringElement.class, (path, context) -> {
-                    if (path.getContent().contains("localhost:" + wiremockPort.get())) {
-                        return new RbelStringElement(
-                            path.getContent().replace("localhost:" + wiremockPort.get(), "url.des.idp"));
-                    } else if (path.getContent().contains("localhost:" + localServerPort)) {
-                        return new RbelStringElement(
-                            path.getContent().replace("localhost:" + localServerPort, "url.des.idp"));
+                .addPostConversionListener(RbelKeyManager.RBEL_IDP_TOKEN_KEY_LISTENER)
+                .addPreConversionMapper(RbelElement.class, (element, context) -> {
+                    if (element.getRawStringContent().contains("localhost:" + wiremockPort.get())) {
+                        return element.toBuilder()
+                            .rawContent(
+                                element.getRawStringContent()
+                                    .replace("localhost:" + wiremockPort.get(), "url.des.idp")
+                                    .getBytes()
+                            )
+                            .build();
+                    } else if (element.getRawStringContent().contains("localhost:" + localServerPort)) {
+                        return element.toBuilder()
+                            .rawContent(
+                            element.getRawStringContent()
+                                .replace("localhost:" + localServerPort, "url.des.idp")
+                                .getBytes())
+                            .build();
                     } else {
-                        return path;
+                        return element;
                     }
                 })
         );
@@ -323,21 +331,17 @@ public class TokenLoggerTest {
     private void initializeWiremockCapture() throws MalformedURLException {
         rbelLogger.getMessageHistory().clear();
 
-        wiremockCapture = WiremockCapture.builder()
+        wiremockCapture = RbelWiremockCapture.builder()
             .rbelConverter(rbelLogger.getRbelConverter())
             .proxyFor("http://localhost:" + localServerPort)
             .build()
             .initialize();
         wiremockPort.set(new URL(wiremockCapture.getProxyAdress()).getPort());
 
-//        doReturn(wiremockCapture.getProxyAdress())
-//            .when(serverUrlService).determineServerUrl(any());
-//        doReturn(wiremockCapture.getProxyAdress())
-//            .when(serverUrlService).determineServerUrl();
         ReflectionTestUtils.setField(authenticationChallengeBuilder, "uriIdpServer", wiremockCapture.getProxyAdress());
 
         log.info("wiremock url: " + wiremockCapture.getProxyAdress());
-        log.info("proxy for: " + wiremockCapture.getProxyFor());
+        log.info("proxy for: " + wiremockCapture.getProxyAdress());
         log.info("spring url: http://localhost:" + localServerPort);
 
         idpClient = IdpClient.builder()
@@ -350,15 +354,15 @@ public class TokenLoggerTest {
     @Test
     public void writeAllTokensToFile() throws IOException {
         performAndWriteFlow(() -> {
-            idpClient.initialize();
             patchIdpUrls(idpClient);
+            idpClient.initialize();
 
             idpClient.login(egkUserIdentity);
         }, targetFolder + "tokenFlowEgk.html", "EGK-Login beim IdP");
 
         performAndWriteFlow(() -> {
-            idpClient.initialize();
             patchIdpUrls(idpClient);
+            idpClient.initialize();
 
             final IdpJwe ssoToken = idpClient.login(egkUserIdentity).getSsoToken();
 
@@ -371,14 +375,15 @@ public class TokenLoggerTest {
                 .discoveryDocumentUrl(wiremockCapture.getProxyAdress() + IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT)
                 .redirectUrl(TestConstants.REDIRECT_URI_GEAMTIK_TEST_PS)
                 .build();
-            psIdpClient.initialize();
             patchIdpUrls(psIdpClient);
+            psIdpClient.initialize();
+
             psIdpClient.login(smcbIdentity);
         }, targetFolder + "tokenFlowPs.html", "Primärsystem-Login beim IdP ohne SSO-Token");
 
         performAndWriteFlow(() -> {
-            idpClient.initialize();
             patchIdpUrls(idpClient);
+            idpClient.initialize();
             idpClient.setScopes(Set.of(IdpScope.PAIRING, IdpScope.OPENID));
 
             final BiometrieClient biometrieClient = BiometrieClient.builder()
@@ -398,18 +403,8 @@ public class TokenLoggerTest {
         }, targetFolder + "biometrie.html", "Registrierung eines neuen Geräts beim Server");
     }
 
-    private void patchIdpUrls(IdpClient idpClient) {
-        final DiscoveryDocumentResponse ddResponse = idpClient.getDiscoveryDocumentResponse();
-        ddResponse.setAuthorizationEndpoint(ddResponse.getAuthorizationEndpoint()
-            .replace(wiremockCapture.getProxyFor(), wiremockCapture.getProxyAdress()));
-        ddResponse.setAuthPairEndpoint(ddResponse.getAuthPairEndpoint()
-            .replace(wiremockCapture.getProxyFor(), wiremockCapture.getProxyAdress()));
-        ddResponse.setPairingEndpoint(ddResponse.getPairingEndpoint()
-            .replace(wiremockCapture.getProxyFor(), wiremockCapture.getProxyAdress()));
-        ddResponse.setSsoEndpoint(ddResponse.getSsoEndpoint()
-            .replace(wiremockCapture.getProxyFor(), wiremockCapture.getProxyAdress()));
-        ddResponse.setTokenEndpoint(ddResponse.getTokenEndpoint()
-            .replace(wiremockCapture.getProxyFor(), wiremockCapture.getProxyAdress()));
+    private void patchIdpUrls(final IdpClient idpClient) {
+        idpClient.setFixedIdpHost(wiremockCapture.getProxyAdress());
     }
 
     private void performAndWriteFlow(final Runnable performer, final String filename, final String title)

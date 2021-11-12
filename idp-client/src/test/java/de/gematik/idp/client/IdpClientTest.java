@@ -47,7 +47,7 @@ public class IdpClientTest {
             .tokenEndpoint("fdsafds")
             .build())
             .when(authenticatorClient)
-            .retrieveDiscoveryDocument(anyString());
+            .retrieveDiscoveryDocument(anyString(), any());
 
         doAnswer(call -> ((Function) call.getArguments()[1]).apply(null))
             .when(authenticatorClient)

@@ -23,9 +23,11 @@ import de.gematik.idp.test.steps.model.HttpMethods;
 import de.gematik.idp.test.steps.model.HttpStatus;
 import de.gematik.test.bdd.Context;
 import de.gematik.test.bdd.ContextKey;
+import io.restassured.config.SSLConfig;
 import io.restassured.response.Response;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import net.serenitybdd.rest.SerenityRest;
 import net.thucydides.core.annotations.Step;
 
 @Slf4j
@@ -36,10 +38,13 @@ public class IdpDiscoveryDocumentSteps extends IdpStepsBase {
     @SneakyThrows
     public void initializeFromDiscoveryDocument() {
         log.info("DiscoveryURL is " + IdpTestEnvironmentConfigurator.getDiscoveryDocumentURL());
+        SerenityRest.setDefaultConfig(SerenityRest.config().sslConfig(new SSLConfig().relaxedHTTPSValidation()));
         final Response r = IdpStepsBase.simpleGet(IdpTestEnvironmentConfigurator.getDiscoveryDocumentURL());
+        final String discoveryDocumentBodyAsString = r.getBody().asString();
+
         Context.get()
             .put(ContextKey.DISC_DOC, new DiscoveryDocument(
-                claimsStepHelper.getClaims(r.getBody().asString()),
+                claimsStepHelper.getClaims(discoveryDocumentBodyAsString),
                 claimsStepHelper.extractHeaderClaimsFromJWSString(r.getBody().asString())));
     }
 

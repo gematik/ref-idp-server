@@ -17,9 +17,8 @@
 package de.gematik.idp.crypto;
 
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
+import java.security.SecureRandom;
 import java.util.Base64;
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 import org.bouncycastle.util.encoders.Hex;
 
 public class Nonce {
@@ -36,7 +35,7 @@ public class Nonce {
                     + NONCE_BYTE_AMOUNT_MAX);
         }
 
-        final Random random = ThreadLocalRandom.current();
+        final SecureRandom random = new SecureRandom();
         final byte[] randomArray = new byte[randomByteAmount];
         random.nextBytes(randomArray);
         return new String(Base64.getUrlEncoder().withoutPadding().encode(randomArray));
@@ -50,7 +49,7 @@ public class Nonce {
         if (strlen % 2 != 0) {
             throw new IdpCryptoException("Requested string length is expected to be even.");
         }
-        final Random random = ThreadLocalRandom.current();
+        final SecureRandom random = new SecureRandom();
         final byte[] randomArray = new byte[strlen / 2];
         random.nextBytes(randomArray);
         return Hex.toHexString(randomArray);

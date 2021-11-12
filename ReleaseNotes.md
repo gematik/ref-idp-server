@@ -1,3 +1,13 @@
+# Release 19.1.0
+- Bereitstellung eines MVP für einen sektoralen IDP
+- Unterstützung des Fast Track Flows im IDP Server
+- Erweiterung der Testsuite um Testfälle für den Fast Track (gekennzeichnet über @FastTrack Annotation)
+- Die vom sektoralen IDP bereitgestellten Token sind momentan noch statisch
+- Der sektorale IDP bietet keine Authentisierungsmethode an, sondern liefert direkt den AUTHORIZATION_CODE aus
+- Noch keine Tokenverschlüsslung auf der Strecke zwischen zentralem und sektoralem IDP
+- Erweiterung eines Testfalls um weitere HBA-Ausprägungen
+- Für SMC-Bs wird jetzt der commonName statt des organizationNames verwendet
+
 # Release 18.1.0
 - Fehlermeldungen in Testsuite überarbeitet
 - Server wertet AMR aus

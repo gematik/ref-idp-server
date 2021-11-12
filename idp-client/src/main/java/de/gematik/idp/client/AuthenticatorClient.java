@@ -20,7 +20,6 @@ import static de.gematik.idp.authentication.UriUtils.extractParameterValue;
 import static de.gematik.idp.authentication.UriUtils.extractParameterValueOptional;
 import static de.gematik.idp.crypto.CryptoLoader.getCertificateFromPem;
 import static de.gematik.idp.field.ClaimName.*;
-
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
 import de.gematik.idp.client.data.*;
@@ -30,6 +29,7 @@ import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
 import java.math.BigInteger;
+import java.net.URI;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -49,10 +49,12 @@ import javax.ws.rs.core.HttpHeaders;
 import kong.unirest.*;
 import kong.unirest.jackson.JacksonObjectMapper;
 import kong.unirest.json.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jose4j.jwt.JwtClaims;
 import org.springframework.http.MediaType;
 
+@Slf4j
 public class AuthenticatorClient {
 
     private static final String USER_AGENT = "IdP-Client";
@@ -83,7 +85,7 @@ public class AuthenticatorClient {
             .collect(Collectors.joining(" "));
 
         final GetRequest request = Unirest.get(
-            authorizationRequest.getLink())
+                authorizationRequest.getLink())
             .queryString(CLIENT_ID.getJoseName(), authorizationRequest.getClientId())
             .queryString(RESPONSE_TYPE.getJoseName(), "code")
             .queryString(REDIRECT_URI.getJoseName(), authorizationRequest.getRedirectUri())
@@ -112,8 +114,7 @@ public class AuthenticatorClient {
         final Consumer<HttpResponse<String>> afterAuthenticationCallback) {
 
         final MultipartBody request = Unirest
-            .post(authenticationRequest.getAuthenticationEndpointUrl()
-            )
+            .post(authenticationRequest.getAuthenticationEndpointUrl())
             .field("signed_challenge", authenticationRequest.getSignedChallenge().getRawString())
             .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .header(HttpHeaders.USER_AGENT, USER_AGENT);
@@ -175,7 +176,7 @@ public class AuthenticatorClient {
         final Function<MultipartBody, MultipartBody> beforeAuthenticationCallback,
         final Consumer<HttpResponse<String>> afterAuthenticationCallback) {
         final MultipartBody request = Unirest.post(authenticationRequest.getAuthenticationEndpointUrl()
-        )
+            )
             .field("ssotoken", authenticationRequest.getSsoToken())
             .field("unsigned_challenge", authenticationRequest.getChallengeToken().getRawString())
             .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
@@ -274,8 +275,10 @@ public class AuthenticatorClient {
         return IdpJwe.createWithPayloadAndEncryptWithKey(claims.toJson(), idpEnc, "JSON");
     }
 
-    public DiscoveryDocumentResponse retrieveDiscoveryDocument(final String discoveryDocumentUrl) {
-        final HttpResponse<String> discoveryDocumentResponse = Unirest.get(discoveryDocumentUrl)
+    public DiscoveryDocumentResponse retrieveDiscoveryDocument(final String discoveryDocumentUrl,
+        final Optional<String> fixedIdpHost) {
+        final HttpResponse<String> discoveryDocumentResponse = Unirest.get(
+                patchIdpHost(discoveryDocumentUrl, fixedIdpHost))
             .header(HttpHeaders.USER_AGENT, USER_AGENT)
             .asString();
         final JsonWebToken discoveryDocument = new JsonWebToken(discoveryDocumentResponse.getBody());
@@ -283,31 +286,58 @@ public class AuthenticatorClient {
         final Supplier<IdpClientRuntimeException> exceptionSupplier =
             () -> new IdpClientRuntimeException("Incomplete Discovery Document encountered!");
         return DiscoveryDocumentResponse.builder()
-            .authorizationEndpoint(discoveryDocument.getStringBodyClaim(AUTHORIZATION_ENDPOINT)
-                .orElseThrow(exceptionSupplier))
-            .tokenEndpoint(discoveryDocument.getStringBodyClaim(TOKEN_ENDPOINT)
-                .orElseThrow(exceptionSupplier))
-            .ssoEndpoint(discoveryDocument.getStringBodyClaim(SSO_ENDPOINT)
-                .orElseThrow(exceptionSupplier))
+            .authorizationEndpoint(patchIdpHost(discoveryDocument.getStringBodyClaim(AUTHORIZATION_ENDPOINT)
+                .orElseThrow(exceptionSupplier), fixedIdpHost))
+            .tokenEndpoint(patchIdpHost(discoveryDocument.getStringBodyClaim(TOKEN_ENDPOINT)
+                .orElseThrow(exceptionSupplier), fixedIdpHost))
+            .ssoEndpoint(patchIdpHost(discoveryDocument.getStringBodyClaim(SSO_ENDPOINT)
+                .orElseThrow(exceptionSupplier), fixedIdpHost))
             .discSig(discoveryDocument.getClientCertificateFromHeader()
                 .orElseThrow(exceptionSupplier))
 
-            .pairingEndpoint(discoveryDocument.getStringBodyClaim(URI_PAIR)
-                .orElse("<IDP DOES NOT SUPPORT ALTERNATIVE AUTHENTICATION>"))
-            .authPairEndpoint(discoveryDocument.getStringBodyClaim(AUTH_PAIR_ENDPOINT)
-                .orElse("<IDP DOES NOT SUPPORT ALTERNATIVE AUTHENTICATION>"))
+            .pairingEndpoint(patchIdpHost(discoveryDocument.getStringBodyClaim(URI_PAIR)
+                .orElse("<IDP DOES NOT SUPPORT ALTERNATIVE AUTHENTICATION>"), fixedIdpHost))
+            .authPairEndpoint(patchIdpHost(discoveryDocument.getStringBodyClaim(AUTH_PAIR_ENDPOINT)
+                .orElse("<IDP DOES NOT SUPPORT ALTERNATIVE AUTHENTICATION>"), fixedIdpHost))
 
-            .idpSig(retrieveServerCertFromLocation(discoveryDocument.getStringBodyClaim(URI_PUK_IDP_SIG)
-                .orElseThrow(exceptionSupplier)))
-            .idpEnc(retrieveServerPuKFromLocation(discoveryDocument.getStringBodyClaim(URI_PUK_IDP_ENC)
-                .orElseThrow(exceptionSupplier)))
+            .idpSig(retrieveServerCertFromLocation(patchIdpHost(discoveryDocument.getStringBodyClaim(URI_PUK_IDP_SIG)
+                .orElseThrow(exceptionSupplier), fixedIdpHost)))
+            .idpEnc(retrieveServerPuKFromLocation(patchIdpHost(discoveryDocument.getStringBodyClaim(URI_PUK_IDP_ENC)
+                .orElseThrow(exceptionSupplier), fixedIdpHost)))
 
             .build();
     }
 
+    private String patchIdpHost(final String unpatchedUrl, final Optional<String> fixedIdpHost) {
+        if (fixedIdpHost.isEmpty()) {
+            return unpatchedUrl;
+        }
+
+        try {
+            final URI newHostUri = new URI(fixedIdpHost.get());
+            final URI unpatchedUri = new URI(unpatchedUrl);
+            if (!fixedIdpHost.get().contains("://")) {
+                final String patchedUri = unpatchedUri.getScheme() + "://" + newHostUri + unpatchedUri.getRawPath();
+                log.info("Patching URL. Original: {}, Patch: {}, Result: {}", unpatchedUrl, fixedIdpHost.get(),
+                    patchedUri);
+                return patchedUri;
+            } else {
+                final String patchedUri =
+                    Optional.ofNullable(newHostUri.getScheme()).orElse(unpatchedUri.getScheme()) + "://"
+                        + Optional.ofNullable(newHostUri.getRawAuthority()).orElse(unpatchedUri.getRawAuthority())
+                        + Optional.ofNullable(newHostUri.getPath()).orElse("") + unpatchedUri.getPath();
+
+                log.info("Patching URL. Original: {}, Patch: {}, Result: {}", unpatchedUrl, fixedIdpHost.get(),
+                    patchedUri);
+                return patchedUri;
+            }
+        } catch (final Exception e) {
+            throw new IdpClientRuntimeException("Error while patching with template '" + fixedIdpHost.get() + "'", e);
+        }
+    }
+
     private X509Certificate retrieveServerCertFromLocation(final String uri) {
-        final HttpResponse<JsonNode> pukAuthResponse = Unirest
-            .get(uri)
+        final HttpResponse<JsonNode> pukAuthResponse = Unirest.get(uri)
             .header(HttpHeaders.USER_AGENT, USER_AGENT)
             .asJson();
         final JSONObject keyObject = pukAuthResponse.getBody().getObject();

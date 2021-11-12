@@ -16,8 +16,8 @@
 
 package de.gematik.idp.authentication;
 
+import static de.gematik.idp.IdpConstants.AMR_FAST_TRACK;
 import static de.gematik.idp.field.ClaimName.*;
-
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.crypto.Nonce;
@@ -46,6 +46,8 @@ public class AuthenticationTokenBuilder {
     private final IdpJwtProcessor jwtProcessor;
     private final Key encryptionKey;
     private final AuthenticationChallengeVerifier authenticationChallengeVerifier;
+    private final String issuerUrl;
+
 
     public IdpJwe buildAuthenticationToken(
         final X509Certificate clientCertificate,
@@ -76,9 +78,9 @@ public class AuthenticationTokenBuilder {
         headerMap.put(TYPE.getJoseName(), "JWT");
 
         return jwtProcessor.buildJwt(new JwtBuilder()
-            .addAllBodyClaims(claimsMap)
-            .addAllHeaderClaims(headerMap)
-            .expiresAt(issueingTime.plusMinutes(1)))
+                .addAllBodyClaims(claimsMap)
+                .addAllHeaderClaims(headerMap)
+                .expiresAt(issueingTime.plusMinutes(1)))
             .encrypt(encryptionKey);
     }
 
@@ -90,13 +92,24 @@ public class AuthenticationTokenBuilder {
         }
     }
 
+    /*
+     * hier wird zwischen dem "klassischen" und dem fast track flow unterschieden. bei letzterem gibt es kein zertifikat
+     * im sso_token, so dass alle nutzerspezifischen claims direkt aus dem sso_token gelesen werden müssen
+     */
     public IdpJwe buildAuthenticationTokenFromSsoToken(final JsonWebToken ssoToken,
         final JsonWebToken challengeToken, final ZonedDateTime issueingTime) {
-        final X509Certificate confirmationCertificate = extractConfirmationCertificate(ssoToken);
 
         final Map<String, Object> claimsMap = new HashMap<>();
-
-        claimsMap.putAll(extractClaimsFromCertificate(confirmationCertificate));
+        if (ssoToken.getBodyClaims().containsKey(CONFIRMATION.getJoseName())) {
+            final X509Certificate confirmationCertificate = extractConfirmationCertificate(ssoToken);
+            claimsMap.putAll(extractClaimsFromCertificate(confirmationCertificate));
+        } else {
+            claimsMap.put(GIVEN_NAME.getJoseName(), extractClaimFromChallengeToken(ssoToken, GIVEN_NAME));
+            claimsMap.put(FAMILY_NAME.getJoseName(), extractClaimFromChallengeToken(ssoToken, FAMILY_NAME));
+            claimsMap.put(ID_NUMBER.getJoseName(), extractClaimFromChallengeToken(ssoToken, ID_NUMBER));
+            claimsMap.put(ORGANIZATION_NAME.getJoseName(), extractClaimFromChallengeToken(ssoToken, ORGANIZATION_NAME));
+            claimsMap.put(PROFESSION_OID.getJoseName(), extractClaimFromChallengeToken(ssoToken, PROFESSION_OID));
+        }
 
         claimsMap.put(CODE_CHALLENGE.getJoseName(), extractClaimFromChallengeToken(challengeToken, CODE_CHALLENGE));
         claimsMap.put(CODE_CHALLENGE_METHOD.getJoseName(),
@@ -118,9 +131,47 @@ public class AuthenticationTokenBuilder {
         headerClaims.put(TYPE.getJoseName(), "JWT");
 
         return jwtProcessor.buildJwt(new JwtBuilder()
-            .replaceAllHeaderClaims(headerClaims)
-            .replaceAllBodyClaims(claimsMap)
-            .expiresAt(ZonedDateTime.now().plusHours(1)))
+                .replaceAllHeaderClaims(headerClaims)
+                .replaceAllBodyClaims(claimsMap)
+                .expiresAt(ZonedDateTime.now().plusHours(1)))
+            .encrypt(encryptionKey);
+    }
+
+    public IdpJwe buildAuthenticationTokenFromSektoralIdToken(final JsonWebToken idToken,
+        final ZonedDateTime issueingTime, final Map<String, String> sessionData) {
+
+        final Map<String, Object> claimsMap = new HashMap<>();
+
+        claimsMap.put(GIVEN_NAME.getJoseName(), extractClaimFromChallengeToken(idToken, GIVEN_NAME));
+        claimsMap.put(FAMILY_NAME.getJoseName(), extractClaimFromChallengeToken(idToken, FAMILY_NAME));
+        claimsMap.put(ID_NUMBER.getJoseName(), extractClaimFromChallengeToken(idToken, ID_NUMBER));
+        claimsMap.put(PROFESSION_OID.getJoseName(), extractClaimFromChallengeToken(idToken, PROFESSION_OID));
+
+        claimsMap.put(CODE_CHALLENGE.getJoseName(), sessionData.get(CODE_CHALLENGE.getJoseName()));
+        claimsMap.put(CODE_CHALLENGE_METHOD.getJoseName(), sessionData.get(CODE_CHALLENGE_METHOD.getJoseName()));
+        if (sessionData.get(NONCE.getJoseName()) != null) {
+            claimsMap.put(NONCE.getJoseName(), sessionData.get(NONCE.getJoseName()));
+        }
+        claimsMap.put(CLIENT_ID.getJoseName(), sessionData.get(CLIENT_ID.getJoseName()));
+        claimsMap.put(REDIRECT_URI.getJoseName(), sessionData.get(REDIRECT_URI.getJoseName()));
+        claimsMap.put(SCOPE.getJoseName(), "openid e-rezept");
+        claimsMap.put(ISSUED_AT.getJoseName(), issueingTime.toEpochSecond());
+        claimsMap.put(STATE.getJoseName(), sessionData.get(STATE.getJoseName()));
+        claimsMap.put(RESPONSE_TYPE.getJoseName(), sessionData.get(RESPONSE_TYPE.getJoseName()));
+        claimsMap.put(TOKEN_TYPE.getJoseName(), "code");
+        claimsMap.put(AUTH_TIME.getJoseName(), ZonedDateTime.now().toEpochSecond());
+        claimsMap.put(SERVER_NONCE.getJoseName(), RandomStringUtils.randomAlphanumeric(20));
+        claimsMap.put(ISSUER.getJoseName(), issuerUrl);
+        claimsMap.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
+        claimsMap.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), List.of(AMR_FAST_TRACK));
+
+        final Map<String, Object> headerMap = new HashMap<>();
+        headerMap.put(TYPE.getJoseName(), "JWT");
+
+        return jwtProcessor.buildJwt(new JwtBuilder()
+                .addAllHeaderClaims(headerMap)
+                .addAllBodyClaims(claimsMap)
+                .expiresAt(ZonedDateTime.now().plusHours(1)))
             .encrypt(encryptionKey);
     }
 

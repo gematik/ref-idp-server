@@ -18,7 +18,6 @@ package de.gematik.idp.crypto;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-
 import java.io.File;
 import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
@@ -54,7 +53,7 @@ public class X509ClaimExtractionTest {
         assertThat(claims)
             .containsEntry("given_name", null)
             .containsEntry("family_name", null)
-            .containsEntry("organizationName", "3-2-EPA-833621999741600 NOT-VALID")
+            .containsEntry("organizationName", "Aschoffsche Apotheke TEST-ONLY")
             .containsEntry("professionOID", "1.2.276.0.76.4.54")
             .containsEntry("idNummer", "3-2-EPA-833621999741600");
     }
@@ -66,7 +65,7 @@ public class X509ClaimExtractionTest {
         assertThat(claims)
             .containsEntry("given_name", "Rainer")
             .containsEntry("family_name", "Agóstino")
-            .containsEntry("organizationName", "Praxis Rainer Graf d' AgóstinoNOT-VALID")
+            .containsEntry("organizationName", "Praxis Rainer Graf d' AgóstinoTEST-ONLY")
             .containsEntry("professionOID", "1.2.276.0.76.4.50")
             .containsEntry("idNummer", "1-SMC-B-Testkarte-883110000129077");
     }
@@ -78,7 +77,7 @@ public class X509ClaimExtractionTest {
         assertThat(claims)
             .containsEntry("given_name", null)
             .containsEntry("family_name", null)
-            .containsEntry("organizationName", null)
+            .containsEntry("organizationName", "Krankenhaus St. KilianTEST-ONLY")
             .containsEntry("professionOID", "1.2.276.0.76.4.53")
             .containsEntry("idNummer", "5-SMC-B-Testkarte-883110000129072");
     }
@@ -151,13 +150,13 @@ public class X509ClaimExtractionTest {
 
     private byte[] certificateDataFromP12(final String filename) throws IOException, CertificateEncodingException {
         return CryptoLoader.getCertificateFromP12(
-            FileUtils.readFileToByteArray(new File(filename)), "00")
+                FileUtils.readFileToByteArray(new File(filename)), "00")
             .getEncoded();
     }
 
     private byte[] certificateDataFrom(final String filename) throws IOException, CertificateEncodingException {
         return CryptoLoader.getCertificateFromPem(
-            FileUtils.readFileToByteArray(new File(filename)))
+                FileUtils.readFileToByteArray(new File(filename)))
             .getEncoded();
     }
 }

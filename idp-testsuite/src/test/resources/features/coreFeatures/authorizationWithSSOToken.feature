@@ -276,8 +276,8 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
     When IDP I request a code token with sso token
     Then IDP the response is an 400 error with gematik code 2040 and error 'access_denied'
 
-    
-  @TCID:IDP_REF_AUTH_008 @PRIO:2
+
+  @TCID:IDP_REF_AUTH_107 @PRIO:2
   @OpenBug
   @issue:IDP-659
   @Afo:A_20588

@@ -207,7 +207,7 @@ caching:
 logging:
   level:
     org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
-    de.gematik: DEBUG
+    de.gematik: INFO
 management:
   endpoints:
     web:

@@ -21,12 +21,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.HandlerInterceptor;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+import org.springframework.web.servlet.AsyncHandlerInterceptor;
 
 @Service
 @RequiredArgsConstructor
-public class ServerVersionInterceptor extends HandlerInterceptorAdapter implements HandlerInterceptor {
+public class ServerVersionInterceptor implements AsyncHandlerInterceptor {
 
     private final IdpConfiguration idpConfiguration;
 
@@ -38,6 +37,6 @@ public class ServerVersionInterceptor extends HandlerInterceptorAdapter implemen
 
         response.setHeader("Version", idpConfiguration.getVersion());
 
-        return super.preHandle(request, response, handler);
+        return true;
     }
 }

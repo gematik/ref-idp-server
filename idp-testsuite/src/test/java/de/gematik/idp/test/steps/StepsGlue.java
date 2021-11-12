@@ -90,6 +90,9 @@ public class StepsGlue {
     @Steps
     ClaimsStepHelper claimStepHelper;
 
+    @Steps
+    IdpSektoralIdpSteps sektoralIdp;
+
     // =================================================================================================================
     //
     // B A S I C F L O W S
@@ -102,7 +105,10 @@ public class StepsGlue {
      * when creating the token.
      *
      * @param accessType type of access token to request (erezept or pairing)
-     * @param certFile   certificate to use for signing the challenge
+     * @param certFile   certificate resource to use for signing the challenge (either looked up via getResource() or if
+     *                   the string starts with "file://" looked up via file system look up. The file name string is not
+     *                   expected to be a file URL, so you may use normal file system paths afterwards (either relative
+     *                   or absolute))
      * @param dataTable  optional list of parameters (client_id, scope, code_challenge, code_challenge_method,
      *                   redirect_uri, state, nonce, rsponse_type)
      * @testenv client_id, redirect_uri
@@ -127,7 +133,10 @@ public class StepsGlue {
      * used, when creating the token.
      *
      * @param accessType type of access token to request (erezept or pairing)
-     * @param certFile   certificate to use for signing the challenge
+     * @param certFile   certificate resource to use for signing the challenge (either looked up via getResource() or if
+     *                   the string starts with "file://" looked up via file system look up. The file name string is not
+     *                   expected to be a file URL, so you may use normal file system paths afterwards (either relative
+     *                   or absolute))
      * @param dataTable  optional list of parameters (client_id, scope, code_challenge, code_challenge_method,
      *                   redirect_uri, state, nonce, rsponse_type)
      * @testenv client_id, redirect_uri
@@ -153,7 +162,10 @@ public class StepsGlue {
      * challenge with given certificate in a single step.
      *
      * @param accessType type of access token to request
-     * @param certFile   certificate to use for signing the challenge
+     * @param certFile   certificate resource to use for signing the challenge (either looked up via getResource() or if
+     *                   the string starts with "file://" looked up via file system look up. The file name string is not
+     *                   expected to be a file URL, so you may use normal file system paths afterwards (either relative
+     *                   or absolute))
      * @testenv client_id, redirect_uri
      * @gematik.context.in USER_AGENT
      * @gematik.context.out RESPONSE, CLAIMS?, HEADER_CLAIMS?, DISC_DOC, CHALLENGE, USER_CONSENT, SIGNED_CHALLENGE,
@@ -175,7 +187,10 @@ public class StepsGlue {
      * sso token to request another access token for given scope.
      *
      * @param accessType type of access token to request
-     * @param certFile   certificate to use for signing the challenge
+     * @param certFile   certificate resource to use for signing the challenge (either looked up via getResource() or if
+     *                   the string starts with "file://" looked up via file system look up. The file name string is not
+     *                   expected to be a file URL, so you may use normal file system paths afterwards (either relative
+     *                   or absolute))
      * @testenv client_id, redirect_uri
      * @gematik.context.in USER_AGENT
      * @gematik.context.out RESPONSE, CLAIMS?, HEADER_CLAIMS?, DISC_DOC, CHALLENGE, USER_CONSENT, SIGNED_CHALLENGE,
@@ -200,7 +215,10 @@ public class StepsGlue {
      * when creating the token.
      *
      * @param accessType type of access token to request (erezept or pairing)
-     * @param certFile   certificate to use for signing the challenge
+     * @param certFile   certificate resource to use for signing the challenge (either looked up via getResource() or if
+     *                   the string starts with "file://" looked up via file system look up. The file name string is not
+     *                   expected to be a file URL, so you may use normal file system paths afterwards (either relative
+     *                   or absolute))
      * @param password   password to access the p12 key store
      * @param dataTable  optional list of parameters (client_id, scope, code_challenge, code_challenge_method,
      *                   redirect_uri, state, nonce, rsponse_type)
@@ -227,7 +245,10 @@ public class StepsGlue {
      * used, when creating the token.
      *
      * @param accessType type of access token to request (erezept or pairing)
-     * @param certFile   certificate to use for signing the challenge
+     * @param certFile   certificate resource to use for signing the challenge (either looked up via getResource() or if
+     *                   the string starts with "file://" looked up via file system look up. The file name string is not
+     *                   expected to be a file URL, so you may use normal file system paths afterwards (either relative
+     *                   or absolute))
      * @param password   password to access the p12 key store
      * @param dataTable  optional list of parameters (client_id, scope, code_challenge, code_challenge_method,
      *                   redirect_uri, state, nonce, rsponse_type)
@@ -255,7 +276,10 @@ public class StepsGlue {
      * challenge with given certificate in a single step.
      *
      * @param accessType type of access token to request
-     * @param certFile   certificate to use for signing the challenge
+     * @param certFile   certificate resource to use for signing the challenge (either looked up via getResource() or if
+     *                   the string starts with "file://" looked up via file system look up. The file name string is not
+     *                   expected to be a file URL, so you may use normal file system paths afterwards (either relative
+     *                   or absolute))
      * @param password   password to access the p12 key store
      * @testenv client_id, redirect_uri
      * @gematik.context.in USER_AGENT
@@ -279,7 +303,10 @@ public class StepsGlue {
      * sso token to request another access token for given scope.
      *
      * @param accessType type of access token to request
-     * @param certFile   certificate to use for signing the challenge
+     * @param certFile   certificate resource to use for signing the challenge (either looked up via getResource() or if
+     *                   the string starts with "file://" looked up via file system look up. The file name string is not
+     *                   expected to be a file URL, so you may use normal file system paths afterwards (either relative
+     *                   or absolute))
      * @param password   password to access the p12 key store
      * @testenv client_id, redirect_uri
      * @gematik.context.in USER_AGENT
@@ -399,6 +426,21 @@ public class StepsGlue {
     @SneakyThrows
     public void iRequestAChallengeWith(final DataTable params) {
         auth.getChallenge(cucumberValuesConverter.getMapFromDatatable(params), HttpStatus.NOCHECK);
+    }
+
+    /**
+     * send an authorization request to auth endpoint with given parameters.
+     *
+     * @param params list of params to be sent to the server
+     * @gematik.context.in USER_AGENT
+     * @gematik.context.out CLIENT_ID, RESPONSE, CHALLENGE, USER_CONSENT
+     * @see CucumberValuesConverter
+     */
+    @When("IDP I send an authorization request to {IdpEndpointType} with")
+    @SneakyThrows
+    public void iSendAuthorizationRequestWith(final IdpEndpointType idpEndpointType, final DataTable params) {
+        auth.sendAuthorizationRequest(idpEndpointType, cucumberValuesConverter.getMapFromDatatable(params),
+            HttpStatus.NOCHECK);
     }
 
     // =================================================================================================================
@@ -1037,6 +1079,31 @@ public class StepsGlue {
         Context.get().put(ContextKey.USER_AGENT, cucumberValuesConverter.parseDocString(userAgent));
     }
 
+    // =================================================================================================================
+    //
+    // S E K T O R A L E R   I D P
+    //
+    // =================================================================================================================
+
+    /**
+     * put sektoral idp enpoints in context
+     *
+     * @gematik.context.in USER_AGENT
+     * @gematik.context.out RESPONSE, DISC_DOC
+     */
+    @Given("IDP I initialize the sektoral idp endpoints")
+    @Gegebensei("IDP ich initialisiere die Endpunkte des Sektoralen IDPs")
+    @SneakyThrows
+    public void iInitializeSektoralIdpEndpoints() {
+        sektoralIdp.initializeSektoralIdp();
+    }
+
+    // =================================================================================================================
+    //
+    // Z E N T R A L E R   I D P   F A S T   T R A C K
+    //
+    // =================================================================================================================
+
 
     // =================================================================================================================
     //
@@ -1089,6 +1156,10 @@ public class StepsGlue {
         return AccessTokenType.fromString(accessTokenTypeStr);
     }
 
+    @ParameterType(IdpEndpointType.CUCUMBER_REGEX)
+    public IdpEndpointType IdpEndpointType(final String idpEndpointTypeStr) {
+        return IdpEndpointType.fromString(idpEndpointTypeStr);
+    }
 
     @Before
     public void initRbelLogger() {
@@ -1099,4 +1170,5 @@ public class StepsGlue {
     public void exportHTMLAndShutdownRbelLogger(final Scenario scenario) {
         disc.exportRbelLog(scenario);
     }
+
 }

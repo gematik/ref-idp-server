@@ -16,8 +16,9 @@
 
 package de.gematik.idp.token;
 
+import static de.gematik.idp.IdpConstants.AMR_FAST_TRACK;
 import static de.gematik.idp.field.ClaimName.*;
-
+import static de.gematik.idp.token.TokenClaimExtraction.extractClaimsFromJwtBody;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers;
@@ -38,7 +39,8 @@ public class SsoTokenBuilder {
     private final String issuerUrl;
     private final Key tokenEncryptionKey;
 
-    public IdpJwe buildSsoToken(final X509Certificate certificate, final ZonedDateTime issuingTime, List<String> amrString) {
+    public IdpJwe buildSsoToken(final X509Certificate certificate, final ZonedDateTime issuingTime,
+        final List<String> amrString) {
         final Map<String, Object> bodyClaimsMap = new HashMap<>();
         final Map<String, Object> headerClaimsMap = new HashMap<>();
         headerClaimsMap.put(ALGORITHM.getJoseName(), BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256);
@@ -51,9 +53,36 @@ public class SsoTokenBuilder {
 
         bodyClaimsMap.putAll(X509ClaimExtraction.extractClaimsFromCertificate(certificate));
         return jwtProcessor.buildJwt(new JwtBuilder()
-            .addAllHeaderClaims(headerClaimsMap)
-            .addAllBodyClaims(bodyClaimsMap)
-            .expiresAt(issuingTime.plusHours(12)))
+                .addAllHeaderClaims(headerClaimsMap)
+                .addAllBodyClaims(bodyClaimsMap)
+                .expiresAt(issuingTime.plusHours(12)))
             .encrypt(tokenEncryptionKey);
     }
+
+    public IdpJwe buildSsoTokenFromSektoralIdToken(final JsonWebToken idToken,
+        final ZonedDateTime issueingTime) {
+        final Map<String, Object> bodyClaimsMap = new HashMap<>();
+        final Map<String, Object> headerClaimsMap = new HashMap<>();
+        final Map<String, Object> claimsFromIdToken = extractClaimsFromJwtBody(idToken.getRawString());
+        headerClaimsMap.put(ALGORITHM.getJoseName(), BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256);
+        headerClaimsMap.put(TYPE.getJoseName(), "JWT");
+        bodyClaimsMap.put(ISSUER.getJoseName(), issuerUrl);
+        bodyClaimsMap.put(ISSUED_AT.getJoseName(), issueingTime.toEpochSecond());
+        bodyClaimsMap.put(AUTH_TIME.getJoseName(), issueingTime.toEpochSecond());
+
+        bodyClaimsMap.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), List.of(AMR_FAST_TRACK));
+
+        bodyClaimsMap.put(GIVEN_NAME.getJoseName(), claimsFromIdToken.get(GIVEN_NAME.getJoseName()));
+        bodyClaimsMap.put(FAMILY_NAME.getJoseName(), claimsFromIdToken.get(FAMILY_NAME.getJoseName()));
+        bodyClaimsMap.put(ID_NUMBER.getJoseName(), claimsFromIdToken.get(ID_NUMBER.getJoseName()));
+        bodyClaimsMap.put(PROFESSION_OID.getJoseName(), claimsFromIdToken.get(PROFESSION_OID.getJoseName()));
+        bodyClaimsMap.put(ORGANIZATION_NAME.getJoseName(), claimsFromIdToken.get(ORGANIZATION_NAME.getJoseName()));
+
+        return jwtProcessor.buildJwt(new JwtBuilder()
+                .addAllHeaderClaims(headerClaimsMap)
+                .addAllBodyClaims(bodyClaimsMap)
+                .expiresAt(issueingTime.plusHours(12)))
+            .encrypt(tokenEncryptionKey);
+    }
+
 }

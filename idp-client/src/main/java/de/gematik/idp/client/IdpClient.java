@@ -21,7 +21,6 @@ import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifie
 import static de.gematik.idp.crypto.KeyAnalysis.isEcKey;
 import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
 import static org.jose4j.jws.EcdsaUsingShaAlgorithm.convertDerToConcatenated;
-
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.authentication.UriUtils;
@@ -31,6 +30,7 @@ import de.gematik.idp.crypto.EcSignerUtility;
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.field.ClaimName;
+import de.gematik.idp.field.ClientUtilities;
 import de.gematik.idp.field.CodeChallengeMethod;
 import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.token.IdpJwe;
@@ -97,6 +97,7 @@ public class IdpClient implements IIdpClient {
     private Function<AuthorizationResponse, AuthorizationResponse> authorizationResponseMapper = Function.identity();
     @Builder.Default
     private Function<AuthenticationResponse, AuthenticationResponse> authenticationResponseMapper = Function.identity();
+    private String fixedIdpHost;
     private DiscoveryDocumentResponse discoveryDocumentResponse;
 
     @SneakyThrows
@@ -315,7 +316,7 @@ public class IdpClient implements IIdpClient {
         final JsonWebToken signedAuthenticationData = new JwtBuilder()
             .addBodyClaim(ClaimName.EXPIRES_AT,
                 authorizationResponse.getAuthenticationChallenge().getChallenge()
-                    .getBodyClaim(ClaimName.EXPIRES_AT).get())
+                    .getBodyClaim(ClaimName.EXPIRES_AT).orElseThrow())
             .addBodyClaim(ClaimName.CHALLENGE_TOKEN,
                 authorizationResponse.getAuthenticationChallenge().getChallenge().getRawString())
             .addBodyClaim(ClaimName.AUTHENTICATION_CERTIFICATE, registrationData.getAuthCert())
@@ -395,7 +396,7 @@ public class IdpClient implements IIdpClient {
     public IdpClient initialize() {
         LOGGER.info("Initializing using url '{}'", discoveryDocumentUrl);
         discoveryDocumentResponse = authenticatorClient
-            .retrieveDiscoveryDocument(discoveryDocumentUrl);
+            .retrieveDiscoveryDocument(discoveryDocumentUrl, Optional.ofNullable(fixedIdpHost));
         return this;
     }
 

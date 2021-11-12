@@ -10,6 +10,7 @@ test-output/
 
 build.sh
 docker-compose.deploy.yml
+docker-compose_idpSektoral.deploy.yml
 Dockerfile
 DockerfileMySql
 Jenkinsfile
@@ -17,8 +18,10 @@ Jenkinsfile_InternalRelease
 Jenkinsfile_DeployGitlab
 ref-localhost.sh
 ref-springboot.sh
-rise-rru.sh
-rise-rtu.sh
+rise-ru.sh
+rise-tu.sh
+rise-tu-ti.sh
+doc/rise/idp-rest-api-4.0-RC1.openapi.json
 idp-server/README.md
 idp-server/pom-docu.xml
 idp-server/buildDockerImage.sh
@@ -29,3 +32,6 @@ idp-testsuite/Jenkinsfile
 idp-testsuite/doc/IDPSrv-Produktzerlegung.mm
 idp-testsuite/doc/IDPSrv-Produktzerlegung.pdf
 idp-testsuite/docker-compose.integration.yml
+idp-testsuite/test-reports/serenity-internet.7z
+idp-testsuite/test-reports/serenity-ti.7z
+

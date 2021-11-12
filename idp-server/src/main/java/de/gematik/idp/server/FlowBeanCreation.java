@@ -23,6 +23,8 @@ import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpKey;
+import de.gematik.idp.server.data.KkAppList;
+import de.gematik.idp.server.data.KkAppListEntry;
 import de.gematik.idp.server.exceptions.IdpServerStartupException;
 import de.gematik.idp.server.services.DiscoveryDocumentBuilder;
 import de.gematik.idp.token.AccessTokenBuilder;
@@ -34,9 +36,8 @@ import de.gematik.pki.tsl.TslInformationProvider;
 import de.gematik.pki.tsl.TslReader;
 import de.gematik.pki.tsl.TspService;
 import java.security.Key;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -58,12 +59,12 @@ public class FlowBeanCreation {
     @Bean
     public AuthenticationTokenBuilder authenticationTokenBuilder() {
         return new AuthenticationTokenBuilder(idpSigProcessor, symmetricEncryptionKey,
-            authenticationChallengeVerifier());
+            authenticationChallengeVerifier(), serverUrlService.getIssuerUrl());
     }
 
     @Bean
     public AccessTokenBuilder accessTokenBuilder() {
-        final Map<IdpScope, String> scopeToAudienceUrls = new HashMap<>();
+        final EnumMap<IdpScope, String> scopeToAudienceUrls = new EnumMap<>(IdpScope.class);
         idpConfiguration.getScopeAudienceUrls()
             .forEach((scopeName, audienceUrl) -> scopeToAudienceUrls
                 .put(IdpScope.fromJwtValue(scopeName).orElseThrow(), audienceUrl));
@@ -122,6 +123,25 @@ public class FlowBeanCreation {
                 CertificateProfile.C_HCI_AUT_RSA, CertificateProfile.C_HCI_AUT_ECC,
                 CertificateProfile.C_HP_AUT_RSA, CertificateProfile.C_HP_AUT_ECC))
             .build();
+    }
+
+    @Bean
+    public KkAppList kkAppList() {
+        final KkAppList theAppList = new KkAppList();
+
+        theAppList.add(KkAppListEntry.builder()
+            .kkAppId("kkAppId001")
+            .kkAppName("Gematik KK")
+            .kkAppUri("https://kk.dev.gematik.solutions")
+            .build());
+
+        theAppList.add(KkAppListEntry.builder()
+            .kkAppId("kkAppId002")
+            .kkAppName("Andere KK")
+            .kkAppUri("https://to.be.defined")
+            .build());
+
+        return theAppList;
     }
 
     private String getSubjectSaltValue() {

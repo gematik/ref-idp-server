@@ -32,8 +32,10 @@ import de.gematik.idp.client.IdpTokenResult;
 import de.gematik.idp.client.data.AuthenticationResponse;
 import de.gematik.idp.client.data.AuthorizationResponse;
 import de.gematik.idp.crypto.model.PkiIdentity;
+import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.field.IdpScope;
+import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
@@ -46,16 +48,22 @@ import de.gematik.idp.token.JsonWebToken;
 import java.security.Key;
 import java.security.Signature;
 import java.time.ZonedDateTime;
+import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import kong.unirest.MultipartBody;
 import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
 import org.apache.http.HttpHeaders;
-import org.bouncycastle.crypto.digests.SHA512Digest;
-import org.bouncycastle.crypto.signers.RSADigestSigner;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -76,6 +84,8 @@ public class TokenRetrievalTest {
     private IdpKey idpSig;
     @Autowired
     private Key symmetricEncryptionKey;
+    @Autowired
+    private IdpConfiguration idpConfiguration;
     private IdpClient idpClient;
     private PkiIdentity egkUserIdentity;
     @LocalServerPort
@@ -715,5 +725,99 @@ public class TokenRetrievalTest {
                 startsWith(REDIRECT_URI_E_REZEPT_APP);
         });
         idpClient.login(egkUserIdentity);
+    }
+
+    @Test
+    public void patchedDdUrlWithScheme_shouldWork() throws UnirestException {
+        try {
+            idpConfiguration.setServerUrl("http://falsche.url.des.servers");
+
+            idpClient.setFixedIdpHost("http://localhost:" + localServerPort);
+            idpClient.initialize();
+            idpClient.login(egkUserIdentity);
+        } finally {
+            idpConfiguration.setServerUrl(null);
+        }
+    }
+
+    @Test
+    public void patchedDdUrlsWithoutScheme_shouldWork() throws UnirestException {
+        try {
+            idpConfiguration.setServerUrl("http://falsche.url.des.servers");
+
+            idpClient.setFixedIdpHost("localhost:" + localServerPort);
+            idpClient.initialize();
+            idpClient.login(egkUserIdentity);
+        } finally {
+            idpConfiguration.setServerUrl(null);
+        }
+    }
+
+    @Test
+    public void wrongCtyInSignedChallenge_serverShouldRefuse() throws UnirestException {
+        idpClient.initialize();
+
+        idpClient.setBeforeAuthenticationMapper(patchJweHeader(
+                jsonObject -> {
+                    try {
+                        jsonObject.put("cty", "fdsjakfld");
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+        ));
+
+        assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
+                .isInstanceOf(IdpClientRuntimeException.class)
+                .hasFieldOrPropertyWithValue("gematikErrorCode", Optional.of("2030"))
+                .hasFieldOrPropertyWithValue("idpErrorType", Optional.of(IdpErrorType.INVALID_REQUEST))
+                .hasMessageContaining("CTY fehlerhaft");
+    }
+
+    @Test
+    public void wrongPublicKeyTypeInSignedChallenge_serverShouldRefuse() throws UnirestException {
+        idpClient.initialize();
+
+        idpClient.setBeforeAuthenticationMapper(patchJweHeader(
+                jsonObject -> {
+                    try {
+                        jsonObject.put("epk", new JSONObject()
+                                .put("kty", "EC")
+                                .put("x", "azaX-pGFbJaHmnOWF-aeBpOnFYG7SkqZc9FmN5aLQDc")
+                                .put("y", "dQy03va33Kps2u3fVKXAgOcqkN-8zwHgYOMbtp2iA-0")
+                                .put("crv", "P-256"));
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+        ));
+
+        assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
+                .isInstanceOf(IdpClientRuntimeException.class)
+                .hasFieldOrPropertyWithValue("gematikErrorCode", Optional.of("2030"))
+                .hasFieldOrPropertyWithValue("idpErrorType", Optional.of(IdpErrorType.INVALID_REQUEST))
+                .hasMessageContaining("EPK-Typ fehlerhaft");
+    }
+
+    private Function<MultipartBody, MultipartBody> patchJweHeader(Consumer<JSONObject> patcher) {
+        return body -> {
+            try {
+                String[] jwe = body.multiParts().stream()
+                        .filter(part -> part.getName().equals("signed_challenge"))
+                        .findAny().get().getValue().toString().split("\\.");
+                final JSONObject jsonObject = new JSONObject(new JSONTokener(new String(Base64.getDecoder().decode(jwe[0]))));
+                patcher.accept(jsonObject);
+
+                String newJwe = Base64.getUrlEncoder().withoutPadding().encodeToString(jsonObject.toString().getBytes())
+                        + ".." + jwe[2] + "." + jwe[3] + "." + jwe[4];
+                return Unirest
+                        .post(body.getUrl())
+                        .field("signed_challenge", newJwe)
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                        .header(javax.ws.rs.core.HttpHeaders.USER_AGENT, "fds");
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
     }
 }

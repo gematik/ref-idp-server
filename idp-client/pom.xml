@@ -73,25 +73,24 @@
             <artifactId>commons-io</artifactId>
             <groupId>commons-io</groupId>
             <scope>test</scope>
-            <version>2.7</version>
+            <version>2.11.0</version>
         </dependency>
 
         <dependency>
             <artifactId>lombok</artifactId>
             <groupId>org.projectlombok</groupId>
             <scope>provided</scope>
-            <version>${version.lombok}</version>
         </dependency>
 
         <dependency>
             <artifactId>unirest-java</artifactId>
             <groupId>com.konghq</groupId>
-            <version>3.7.04</version>
+            <version>3.13.0</version>
         </dependency>
         <dependency>
             <artifactId>unirest-objectmapper-jackson</artifactId>
             <groupId>com.konghq</groupId>
-            <version>3.11.09</version>
+            <version>3.13.0</version>
         </dependency>
 
         <dependency>
@@ -114,8 +113,8 @@
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>18.1.0</version>
+        <version>19.1.0</version>
     </parent>
 
-    <version>18.1.0</version>
+    <version>19.1.0</version>
 </project>

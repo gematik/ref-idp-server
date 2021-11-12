@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.client;
+package de.gematik.idp.field;
 
 import java.util.Base64;
 import lombok.AccessLevel;

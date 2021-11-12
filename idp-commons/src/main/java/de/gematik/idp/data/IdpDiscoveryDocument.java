@@ -16,7 +16,7 @@
 
 package de.gematik.idp.data;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,7 +27,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class IdpDiscoveryDocument {
 
     private String authorizationEndpoint;
@@ -35,6 +35,7 @@ public class IdpDiscoveryDocument {
     private String ssoEndpoint;
     private String uriPair;
     private String tokenEndpoint;
+    private String thirdPartyAuthorizationEndpoint;
     private String uriDisc;
     private String issuer;
     private String jwksUri;
@@ -51,4 +52,5 @@ public class IdpDiscoveryDocument {
     private String[] acrValuesSupported;
     private String[] tokenEndpointAuthMethodsSupported;
     private String[] codeChallengeMethodsSupported;
+    private String kkAppListUri;
 }

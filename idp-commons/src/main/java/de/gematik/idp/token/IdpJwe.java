@@ -16,9 +16,6 @@
 
 package de.gematik.idp.token;
 
-import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
-import static de.gematik.idp.field.ClaimName.NESTED_JWT;
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -27,13 +24,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.token.IdpJwe.Deserializer;
-import java.io.IOException;
-import java.security.Key;
-import java.security.PublicKey;
-import java.time.ZonedDateTime;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,6 +34,17 @@ import org.jose4j.jwe.ContentEncryptionAlgorithmIdentifiers;
 import org.jose4j.jwe.JsonWebEncryption;
 import org.jose4j.jwe.KeyManagementAlgorithmIdentifiers;
 import org.jose4j.lang.JoseException;
+
+import java.io.IOException;
+import java.security.Key;
+import java.security.PublicKey;
+import java.time.ZonedDateTime;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+
+import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
+import static de.gematik.idp.field.ClaimName.NESTED_JWT;
 
 @EqualsAndHashCode
 @Getter

@@ -27,13 +27,10 @@ import de.gematik.idp.test.steps.model.HttpStatus;
 import de.gematik.idp.test.steps.utils.RestAssuredCapture;
 import de.gematik.idp.test.steps.utils.SerenityReportUtils;
 import de.gematik.rbellogger.RbelLogger;
-import de.gematik.rbellogger.converter.RbelConfiguration;
-import de.gematik.rbellogger.converter.RbelConverter;
+import de.gematik.rbellogger.configuration.RbelConfiguration;
+import de.gematik.rbellogger.converter.RbelConverterPlugin;
 import de.gematik.rbellogger.converter.initializers.RbelKeyFolderInitializer;
-import de.gematik.rbellogger.data.RbelHttpResponse;
-import de.gematik.rbellogger.data.RbelJsonElement;
-import de.gematik.rbellogger.data.RbelJweElement;
-import de.gematik.rbellogger.data.RbelMapElement;
+import de.gematik.rbellogger.data.facet.RbelJsonFacet;
 import de.gematik.rbellogger.key.RbelKey;
 import de.gematik.rbellogger.key.RbelKeyManager;
 import de.gematik.rbellogger.renderer.RbelHtmlRenderer;
@@ -46,15 +43,23 @@ import io.restassured.http.ContentType;
 import io.restassured.http.Header;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.time.Duration;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.function.BiConsumer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -121,8 +126,13 @@ public class IdpStepsBase {
     @Step
     public void iRequestTheUriFromClaim(final String claim, final HttpMethods method, final HttpStatus result)
         throws JSONException {
+        String urlFromClaim = Context.getCurrentClaims().getString(claim);
+        if (!IdpTestEnvironmentConfigurator.getFqdnInternet().isEmpty()) {
+            urlFromClaim = urlFromClaim.replace(IdpTestEnvironmentConfigurator.getFqdnDiscoveryDocument(),
+                IdpTestEnvironmentConfigurator.getFqdnInternet());
+        }
         Context.get().put(ContextKey.RESPONSE,
-            requestResponseAndAssertStatus(Context.getCurrentClaims().getString(claim), null, method, null,
+            requestResponseAndAssertStatus(urlFromClaim, null, method, null,
                 null, result));
     }
 
@@ -133,8 +143,14 @@ public class IdpStepsBase {
         Assertions.assertThat(Context.getCurrentClaims().has(claim))
             .withFailMessage("Current claims do not contain key " + claim)
             .isTrue();
-        requestResponseAndAssertStatus(Context.getCurrentClaims().getString(claim), null, method, null, null,
-            status);
+        String urlFromClaim = Context.getCurrentClaims().getString(claim);
+        if (!IdpTestEnvironmentConfigurator.getFqdnInternet().isEmpty()) {
+            urlFromClaim = urlFromClaim.replace(IdpTestEnvironmentConfigurator.getFqdnDiscoveryDocument(),
+                IdpTestEnvironmentConfigurator.getFqdnInternet());
+        }
+        Context.get().put(ContextKey.RESPONSE,
+            requestResponseAndAssertStatus(urlFromClaim, null, method, null, null,
+                status));
     }
 
     @SneakyThrows
@@ -206,7 +222,7 @@ public class IdpStepsBase {
         final StringBuilder sb = new StringBuilder();
         r.getHeaders().asList().forEach(header ->
             sb.append(header.getName()).append(" = ").append(header.getValue()).append("\n            "));
-        log.info("  Headers:  \n            {}", sb.toString());
+        log.info("  Headers:  \n            {}", sb);
         String bodyStr = r.getBody().prettyPrint();
         if (bodyStr.isBlank()) {
             bodyStr = StringUtils.abbreviate(r.getBody().asString(), 1000);
@@ -322,21 +338,19 @@ public class IdpStepsBase {
             return;
         }
 
-        final BiConsumer<RbelHttpResponse, RbelConverter> RBEL_IDP_PUK_ENC_LISTENER = (element, converter) ->
-            Optional.ofNullable(element.getBody())
-                .filter(RbelJsonElement.class::isInstance)
-                .map(RbelJsonElement.class::cast)
-                .map(rbeljson -> new JSONObject(rbeljson.getRawMessage()))
+        final RbelConverterPlugin RBEL_IDP_PUK_ENC_LISTENER = (element, converter) ->
+            Optional.ofNullable(element)
+                .filter(el -> el.hasFacet(RbelJsonFacet.class))
+                .map(rbeljson -> new JSONObject(rbeljson.getRawStringContent()))
                 .filter(json -> json.has("kid") && json.getString("kid").equals("puk_idp_enc") && json.has("kty"))
                 .ifPresent(
                     json -> converter.getRbelKeyManager().addKey(json.getString("kid"),
                         DiscoveryDocument.getPublicKeyFromJWK(json), RbelKey.PRECEDENCE_KEY_FOLDER + 100));
 
-        final BiConsumer<RbelHttpResponse, RbelConverter> RBELBODY_IDP_CERT_SIG_LISTENER = (element, converter) ->
-            Optional.ofNullable(element.getBody())
-                .filter(RbelJsonElement.class::isInstance)
-                .map(RbelJsonElement.class::cast)
-                .map(rbeljson -> new JSONObject(rbeljson.getRawMessage()))
+        final RbelConverterPlugin RBELBODY_IDP_CERT_SIG_LISTENER = (element, converter) ->
+            Optional.ofNullable(element)
+                .filter(el -> el.hasFacet(RbelJsonFacet.class))
+                .map(rbeljson -> new JSONObject(rbeljson.getRawStringContent()))
                 .filter(
                     json -> json.has("kid") && json.getString("kid").equals("puk_idp_sig")
                         && json.has("kty") && json.has("x5c"))
@@ -351,26 +365,14 @@ public class IdpStepsBase {
                         }
                     });
 
-        final BiConsumer<RbelHttpResponse, RbelConverter> RBELHEADER_IDP_CERT_SIG_LISTENER = (element, converter) ->
-            Optional.ofNullable(element.getHeader())
-                .filter(RbelMapElement.class::isInstance)
-                .map(RbelMapElement.class::cast)
-                .map(RbelMapElement::getElementMap)
-                .filter(
-                    map -> map.containsKey("kid") && map.get("kid").getContent().equals("puk_idp_sig")
-                        && map.containsKey("kty") && map.containsKey("x5c"))
+        final RbelConverterPlugin RBELHEADER_IDP_CERT_SIG_LISTENER = (element, converter) ->
+            Optional.ofNullable(element)
+                .filter(el -> el.hasFacet(RbelJsonFacet.class))
+                .map(rbeljson -> new JSONObject(rbeljson.getRawStringContent()))
+                .filter(json -> json.has("kid") && json.getString("kid").equals("puk_idp_sig") && json.has("kty"))
                 .ifPresent(
-                    map -> {
-                        try {
-                            final JSONObject json = new JSONObject(map.entrySet().stream().collect(Collectors.toMap(
-                                Entry::getKey, (entry) -> entry.getValue().getContent())));
-                            converter.getRbelKeyManager().addKey(json.getString("kid"),
-                                DiscoveryDocument.getCertificateFromJWK(json).getPublicKey(),
-                                RbelKey.PRECEDENCE_KEY_FOLDER + 100);
-                        } catch (final CertificateException e) {
-                            e.printStackTrace();
-                        }
-                    });
+                    json -> converter.getRbelKeyManager().addKey(json.getString("kid"),
+                        DiscoveryDocument.getPublicKeyFromJWK(json), RbelKey.PRECEDENCE_KEY_FOLDER + 100));
 
         final RbelLogger rbel = RbelLogger.build(new RbelConfiguration()
             .addKey("IDP symmetricEncryptionKey signed_challenge",
@@ -380,10 +382,10 @@ public class IdpStepsBase {
                 IdpTestEnvironmentConfigurator.getSymmetricEncryptionKey(CodeAuthType.SSO_TOKEN),
                 RbelKey.PRECEDENCE_KEY_FOLDER)
             .addInitializer(new RbelKeyFolderInitializer("src/test/resources/rbel-ref"))
-            .addPostConversionListener(RbelJweElement.class, RbelKeyManager.RBEL_IDP_TOKEN_KEY_LISTENER)
-            .addPostConversionListener(RbelHttpResponse.class, RBEL_IDP_PUK_ENC_LISTENER)
-            .addPostConversionListener(RbelHttpResponse.class, RBELHEADER_IDP_CERT_SIG_LISTENER)
-            .addPostConversionListener(RbelHttpResponse.class, RBELBODY_IDP_CERT_SIG_LISTENER));
+            .addPostConversionListener(RbelKeyManager.RBEL_IDP_TOKEN_KEY_LISTENER)
+            .addPostConversionListener(RBEL_IDP_PUK_ENC_LISTENER)
+            .addPostConversionListener(RBELHEADER_IDP_CERT_SIG_LISTENER)
+            .addPostConversionListener(RBELBODY_IDP_CERT_SIG_LISTENER));
         final RestAssuredCapture capture = new RestAssuredCapture();
         capture.initialize(rbel);
         threadIdToRestAssuredCaptureMap.put(getThreadId(), capture);

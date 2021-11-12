@@ -22,12 +22,20 @@ import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
-
+import de.gematik.idp.field.ClaimName;
+import de.gematik.idp.server.controllers.IdpKey;
+import de.gematik.idp.tests.Afo;
+import de.gematik.idp.tests.Remark;
+import de.gematik.idp.tests.Rfc;
+import de.gematik.idp.token.JsonWebToken;
+import de.gematik.idp.token.TokenClaimExtraction;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
+import kong.unirest.HttpResponse;
+import kong.unirest.Unirest;
+import kong.unirest.UnirestException;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,17 +45,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import de.gematik.idp.field.ClaimName;
-import de.gematik.idp.server.controllers.IdpKey;
-import de.gematik.idp.tests.Afo;
-import de.gematik.idp.tests.Remark;
-import de.gematik.idp.tests.Rfc;
-import de.gematik.idp.token.JsonWebToken;
-import de.gematik.idp.token.TokenClaimExtraction;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -67,9 +64,9 @@ public class DiscoveryDocumentTest {
     public void setUpLocalHostUrl() {
         testHostUrl = "http://localhost:" + localServerPort;
         doReturn(CONFIGURED_SERVER_URL)
-                .when(serverUrlService).determineServerUrl(any());
+            .when(serverUrlService).determineServerUrl(any());
         doReturn(CONFIGURED_ISSUER_URL)
-                .when(serverUrlService).getIssuerUrl();
+            .when(serverUrlService).getIssuerUrl();
     }
 
     @Test
@@ -93,27 +90,29 @@ public class DiscoveryDocumentTest {
         final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
 
         assertThat(extractClaimMapFromResponse(httpResponse))
-                .containsOnlyKeys("issuer",
-                        "authorization_endpoint",
-                        "auth_pair_endpoint",
-                        "sso_endpoint",
-                        "uri_pair",
-                        "token_endpoint",
-                        "jwks_uri",
-                        "subject_types_supported",
-                        "id_token_signing_alg_values_supported",
-                        "response_types_supported",
-                        "scopes_supported",
-                        "response_modes_supported",
-                        "grant_types_supported",
-                        "acr_values_supported",
-                        "token_endpoint_auth_methods_supported",
-                        "exp",
-                        "iat",
-                        "uri_puk_idp_enc",
-                        "uri_puk_idp_sig",
-                        "uri_disc",
-                        "code_challenge_methods_supported");
+            .containsOnlyKeys("issuer",
+                "authorization_endpoint",
+                "auth_pair_endpoint",
+                "sso_endpoint",
+                "uri_pair",
+                "token_endpoint",
+                "jwks_uri",
+                "subject_types_supported",
+                "id_token_signing_alg_values_supported",
+                "response_types_supported",
+                "scopes_supported",
+                "response_modes_supported",
+                "grant_types_supported",
+                "acr_values_supported",
+                "token_endpoint_auth_methods_supported",
+                "exp",
+                "iat",
+                "uri_puk_idp_enc",
+                "uri_puk_idp_sig",
+                "uri_disc",
+                "code_challenge_methods_supported",
+                "kk_app_list_uri",
+                "third_party_authorization_endpoint");
     }
 
     @Remark("Ruecksprache mit Tommy in IDP-123, wir verwenden pairwise")
@@ -121,9 +120,9 @@ public class DiscoveryDocumentTest {
     @Test
     public void testValueForSubjectTypesSupported() throws UnirestException {
         final List<String> subjectTypesSupported = (List) extractClaimMapFromResponse(retrieveDiscoveryDocument())
-                .get("subject_types_supported");
+            .get("subject_types_supported");
         assertThat(subjectTypesSupported)
-                .containsExactlyInAnyOrder("pairwise");
+            .containsExactlyInAnyOrder("pairwise");
     }
 
     @Test
@@ -131,7 +130,7 @@ public class DiscoveryDocumentTest {
     @Remark("wir machen den authorizationCodeFlow, daher hier der Wert code")
     public void testValueForResponseTypesSupported() throws UnirestException {
         final List<String> responseTypesSupported = (List) extractClaimMapFromResponse(retrieveDiscoveryDocument())
-                .get("response_types_supported");
+            .get("response_types_supported");
         assertThat(responseTypesSupported).containsExactlyInAnyOrder("code");
     }
 
@@ -140,7 +139,7 @@ public class DiscoveryDocumentTest {
     @Remark("OIDC verlangt den scope openid, e-rezept ergibt sich aus Beispielen in der Spec")
     public void testValueForScopesSupported() throws UnirestException {
         final List<String> scopesSupported = (List) extractClaimMapFromResponse(retrieveDiscoveryDocument())
-                .get("scopes_supported");
+            .get("scopes_supported");
         assertThat(scopesSupported).containsExactlyInAnyOrder("openid", "e-rezept", "pairing");
     }
 
@@ -148,7 +147,7 @@ public class DiscoveryDocumentTest {
     @Remark("Ruecksprache mit der Spec hat zu BP256R1 gefuehrt, weil es zuvor keinen Bezeichner fuer ECDSA mit brainpool256r1 bei JWS gab")
     public void testValueForIdTokenSigningAlgValuesSupported() throws UnirestException {
         final List<String> responseTypesSupported = (List) extractClaimMapFromResponse(retrieveDiscoveryDocument())
-                .get("id_token_signing_alg_values_supported");
+            .get("id_token_signing_alg_values_supported");
         assertThat(responseTypesSupported).containsExactlyInAnyOrder("BP256R1");
     }
 
@@ -157,7 +156,7 @@ public class DiscoveryDocumentTest {
     @Remark("wir haben nur den authorization_code grant type")
     public void testValueForGrantTypesSupported() throws UnirestException {
         final List<String> grantTypesSupported = (List) extractClaimMapFromResponse(retrieveDiscoveryDocument())
-                .get("grant_types_supported");
+            .get("grant_types_supported");
         assertThat(grantTypesSupported).containsExactlyInAnyOrder("authorization_code");
     }
 
@@ -165,7 +164,7 @@ public class DiscoveryDocumentTest {
     @Rfc("https://openid.net/specs/oauth-v2-multiple-response-types-1_0.html")
     public void testValueForResponseModesSupported() throws UnirestException {
         final List<String> responseModesSupported = (List) extractClaimMapFromResponse(retrieveDiscoveryDocument())
-                .get("response_modes_supported");
+            .get("response_modes_supported");
 
         assertThat(responseModesSupported).containsExactlyInAnyOrder("query");
     }
@@ -174,7 +173,7 @@ public class DiscoveryDocumentTest {
     @Remark("Ruecksprache mit Tommy in IDP-123, keine Ahnung, woher man das sonst wissen kann")
     public void testValueForAcrValuesSupported() throws UnirestException {
         final List<String> acrValuesSupported = (List<String>) retrieveAndParseDiscoveryDocument()
-                .getBodyClaim(ClaimName.ACR_VALUES_SUPPORTED).get();
+            .getBodyClaim(ClaimName.ACR_VALUES_SUPPORTED).get();
 
         assertThat(acrValuesSupported).containsExactlyInAnyOrder("gematik-ehealth-loa-high");
     }
@@ -184,8 +183,8 @@ public class DiscoveryDocumentTest {
     @Remark("bei uns findet keine Auth am Token Endpoint statt, daher none, Parameter vorhanden weil Defaultwert HTTP-Basic-Auth wäre")
     public void testValueForTokenEndpointAuthMethodsValuesSupported() throws UnirestException {
         final List<String> tokenEndpointAuthMethodsSupported = (List) extractClaimMapFromResponse(
-                retrieveDiscoveryDocument())
-                        .get("token_endpoint_auth_methods_supported");
+            retrieveDiscoveryDocument())
+            .get("token_endpoint_auth_methods_supported");
         assertThat(tokenEndpointAuthMethodsSupported).containsExactlyInAnyOrder("none");
     }
 
@@ -194,7 +193,7 @@ public class DiscoveryDocumentTest {
     @Rfc("rfc8414 section 2")
     public void testValueForIssuer() throws UnirestException {
         final String issuer = (String) extractClaimMapFromResponse(retrieveDiscoveryDocument())
-                .get("issuer");
+            .get("issuer");
         assertThat(issuer).isEqualTo(CONFIGURED_ISSUER_URL);
     }
 
@@ -203,9 +202,9 @@ public class DiscoveryDocumentTest {
     @Remark("nach ruecksprache mit Tommy wird nicht die Bezeichnung aus der afo, sondern die von oidc vorgesehene verwendet")
     public void testValueForAuthorizationEndpoint() throws UnirestException {
         final String authorizationEndpointValue = extractClaimMapFromResponse(retrieveDiscoveryDocument())
-                .get("authorization_endpoint").toString();
+            .get("authorization_endpoint").toString();
         assertThat(authorizationEndpointValue)
-                .isEqualTo(CONFIGURED_SERVER_URL + BASIC_AUTHORIZATION_ENDPOINT);
+            .isEqualTo(CONFIGURED_SERVER_URL + BASIC_AUTHORIZATION_ENDPOINT);
     }
 
     @Test
@@ -213,18 +212,18 @@ public class DiscoveryDocumentTest {
     @Remark("nach ruecksprache mit Tommy wird nicht die Bezeichnung aus der afo, sondern die von oidc vorgesehene verwendet")
     public void testValueForTokenEndpoint() throws UnirestException {
         final String tokenEndpointValue = extractClaimMapFromResponse(retrieveDiscoveryDocument())
-                .get("token_endpoint").toString();
+            .get("token_endpoint").toString();
         assertThat(tokenEndpointValue)
-                .isEqualTo(CONFIGURED_SERVER_URL + TOKEN_ENDPOINT);
+            .isEqualTo(CONFIGURED_SERVER_URL + TOKEN_ENDPOINT);
     }
 
     @Test
     @Afo("A_20458")
     public void testValueForJwksUri() throws UnirestException {
         assertThat(retrieveAndParseDiscoveryDocument()
-                .getStringBodyClaim(ClaimName.JWKS_URI)
-                .get())
-                        .startsWith(CONFIGURED_SERVER_URL);
+            .getStringBodyClaim(ClaimName.JWKS_URI)
+            .get())
+            .startsWith(CONFIGURED_SERVER_URL);
     }
 
     @Test
@@ -232,21 +231,21 @@ public class DiscoveryDocumentTest {
     @Remark("Laut Aussage von Gerriet muss das DiscoveryDocument als JWS signiert werden.")
     public void testDiscoveryDocumentSignature() throws UnirestException {
         retrieveAndParseDiscoveryDocument()
-                .verify(discSig.getIdentity().getCertificate().getPublicKey());
+            .verify(discSig.getIdentity().getCertificate().getPublicKey());
     }
 
     @Test
     @Afo("A_20691")
     public void testValueExpiration() throws UnirestException {
         assertThat(retrieveAndParseDiscoveryDocument().getExpiresAtBody())
-                .isBetween(ZonedDateTime.now().minusMinutes(1).plusHours(24),
-                        ZonedDateTime.now().plusHours(24));
+            .isBetween(ZonedDateTime.now().minusMinutes(1).plusHours(24),
+                ZonedDateTime.now().plusHours(24));
     }
 
     @Test
     public void testValueIssuedAt() throws UnirestException {
         assertThat(retrieveAndParseDiscoveryDocument().getIssuedAt())
-                .isBetween(ZonedDateTime.now().minusMinutes(1), ZonedDateTime.now());
+            .isBetween(ZonedDateTime.now().minusMinutes(1), ZonedDateTime.now());
     }
 
     @Remark("Nach RFC 8414, wir verwenden S256, Section 2")
@@ -254,24 +253,24 @@ public class DiscoveryDocumentTest {
     @Test
     public void testValueForCodeChallengeMethodsSupported() throws UnirestException {
         final List<String> codeChallengeMethodsSupported = (List) extractClaimMapFromResponse(
-                retrieveDiscoveryDocument())
-                        .get("code_challenge_methods_supported");
+            retrieveDiscoveryDocument())
+            .get("code_challenge_methods_supported");
         assertThat(codeChallengeMethodsSupported)
-                .containsExactlyInAnyOrder("S256");
+            .containsExactlyInAnyOrder("S256");
     }
 
     @Test
     @Afo("A_20591")
     public void testDiscoveryDocumentSigningCertificateReference() throws UnirestException {
         assertThat(retrieveAndParseDiscoveryDocument()
-                .getHeaderClaim(ClaimName.X509_CERTIFICATE_CHAIN)).isPresent();
+            .getHeaderClaim(ClaimName.X509_CERTIFICATE_CHAIN)).isPresent();
     }
 
     @Test
     public void postShouldGive405() throws UnirestException {
         assertThat(Unirest.post(testHostUrl + DISCOVERY_DOCUMENT_ENDPOINT)
-                .asString().getStatus())
-                        .isEqualTo(HttpStatus.SC_METHOD_NOT_ALLOWED);
+            .asString().getStatus())
+            .isEqualTo(HttpStatus.SC_METHOD_NOT_ALLOWED);
     }
 
     private Map<String, Object> extractClaimMapFromResponse(final HttpResponse<String> httpResponse) {
@@ -284,6 +283,6 @@ public class DiscoveryDocumentTest {
 
     private HttpResponse<String> retrieveDiscoveryDocument() {
         return Unirest.get(testHostUrl + DISCOVERY_DOCUMENT_ENDPOINT)
-                .asString();
+            .asString();
     }
 }

@@ -31,7 +31,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
 @SpringBootApplication(scanBasePackages = {"de.gematik", "net.dracoblue"})
@@ -72,7 +71,7 @@ public class IdpServer implements WebMvcConfigurer {
 
     @Bean
     public WebMvcConfigurer headerConfigurer() {
-        return new WebMvcConfigurerAdapter() {
+        return new WebMvcConfigurer() {
             @Override
             public void addInterceptors(final InterceptorRegistry registry) {
                 registry.addInterceptor(httpResponsHeaderHandlerInterceptor);

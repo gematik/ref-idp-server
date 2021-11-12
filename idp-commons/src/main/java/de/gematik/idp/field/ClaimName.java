@@ -92,7 +92,8 @@ public enum ClaimName {
     URI_PAIR("uri_pair"),
     AUTH_PAIR_ENDPOINT("auth_pair_endpoint"),
     URI_PUK_IDP_SIG("uri_puk_idp_sig"),
-    URI_PUK_IDP_ENC("uri_puk_idp_enc");
+    URI_PUK_IDP_ENC("uri_puk_idp_enc"),
+    EPHEMERAL_PUBLIC_KEY("epk");
 
     @JsonValue
     private final String joseName;

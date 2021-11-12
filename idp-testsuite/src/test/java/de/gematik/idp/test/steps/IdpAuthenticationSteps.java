@@ -18,15 +18,19 @@ package de.gematik.idp.test.steps;
 
 import de.gematik.idp.test.steps.model.HttpMethods;
 import de.gematik.idp.test.steps.model.HttpStatus;
+import de.gematik.idp.test.steps.model.IdpEndpointType;
 import de.gematik.test.bdd.Context;
 import de.gematik.test.bdd.ContextKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.web.util.UriComponentsBuilder;
 
 public class IdpAuthenticationSteps extends IdpStepsBase {
 
@@ -60,4 +64,48 @@ public class IdpAuthenticationSteps extends IdpStepsBase {
             ctxt.put(ContextKey.USER_CONSENT, json.getJSONObject("user_consent"));
         }
     }
+
+    public void sendAuthorizationRequest(final IdpEndpointType idpEndpointType,
+        Map<String, String> mapParsedParams, final HttpStatus status) {
+
+        final Map<String, Object> ctxt = de.gematik.test.bdd.Context.get().getMapForCurrentThread();
+
+        if (mapParsedParams.containsValue("$FILL_FROM_REDIRECT")) {
+            final String location = getLocationHeader(Context.getCurrentResponse());
+            final Map<String, String> parameters = UriComponentsBuilder.fromUriString(location).build()
+                .getQueryParams().toSingleValueMap();
+            mapParsedParams = getFillFromRedirect(mapParsedParams, parameters);
+        }
+        
+        final String url;
+        switch (idpEndpointType) {
+            case Sektoral_IDP:
+                url = Context.get().getString(ContextKey.AUTH_URL_SEKTORAL_IDP);
+                break;
+            case Smartcard_IDP:
+                if (mapParsedParams.containsKey("client_id")) {
+                    final String cid = mapParsedParams.get("client_id");
+                    ctxt.put(ContextKey.CLIENT_ID, cid);
+                }
+                url = Context.getDiscoveryDocument().getThirdPartyEndpoint();
+                break;
+            default:
+                throw new java.lang.IllegalStateException("Unexpected value: " + idpEndpointType);
+        }
+        ctxt.put(ContextKey.RESPONSE, requestResponseAndAssertStatus(
+            url, null, HttpMethods.GET,
+            mapParsedParams, null, status));
+    }
+
+
+    @NotNull
+    public Map<String, String> getFillFromRedirect(final Map<String, String> mapParsedParams,
+        final Map<String, String> parameters) {
+        final Map<String, String> fillFromRedirect = mapParsedParams.entrySet().stream().collect(
+            Collectors.toMap(Map.Entry::getKey,
+                e -> e.getValue().equals("$FILL_FROM_REDIRECT") ? parameters.get(e.getKey()) : e.getValue()));
+        return fillFromRedirect;
+    }
+
 }
+

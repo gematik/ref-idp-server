@@ -1,0 +1,75 @@
+@startuml
+
+title
+<img:images/IDPLogo-64.png> <u>CIBA workflow</u>
+end title
+
+skinparam sequenceArrowThickness 1
+skinparam roundcorner 20
+skinparam sequenceParticipant underline
+skinparam maxMessageSize 400
+skinparam ParticipantPadding 10
+
+actor "Anwender:in" as V
+participant "eRP-App" as EA
+participant "Kassen-IDP" as KIDP
+participant "Authenticator für Kassen-IDP" as KA
+    ||20||
+note over KA
+    Der Authenticator für den Kassen-IDP kann ein
+    beliebiges Gerät sein. Das muss nicht das Smartphone
+    mit der eRP-App sein.
+end note
+
+note over EA
+    Die eRP APP muss für jeden unterstützen Kassen-IDP
+    den Authentication Endpoint kennen. Sie muss einen
+    nutzerspezifischen Hint haben, mit dem der Kassen-IDP
+    weiß, welcher Nutzer authentisiert werden muss.
+end note
+
+note over KIDP
+    Der Kassen-IDP benötigt eine Möglichkeit, für einen
+    über den Hint von der eRP-App ermittelten Nutzer
+    eine Authentisierung zu initiieren
+end note
+
+note over EA, KIDP
+  Zuvor muss eine Registrierung der eRP-App beim zu verwendenden Kassen-IDP stattgefunden haben. Dabei wurde
+  für Clients, die Ping oder Push verwenden wollen, ein Client Notification Endpoint festgelegt.
+end note
+    ||40||
+V -> EA : Anwender:in startet Interaktion und wählt IDP aus
+EA -> KIDP : POST AuthenticationRequest\napplication/x-www-form-urlencoded\nscope, *_hint, client_notification_token, (user_code), ...
+KIDP -> KIDP : AuthenticationRequest validieren
+KIDP -> KIDP : User durch Hint im Request identifizieren
+KIDP -> EA : HTTP 200 mit application/json\nauth_req_id,expires_in,(intervall)
+EA -> EA : Response validieren und nauth_req_id merken
+    ||40||
+note over KIDP, KA
+User Code ist ein optinaler Mechanismus, um zu verhindern, dass dieser
+Authentisierungsvorgang ungewünscht für einen User initiiert wird
+end note
+
+KIDP <-> KA : Authentisierung des zuvor identifizierten Users
+    ||40||
+alt #ffffe0 : <font color="#ff6000">Poll flow
+EA -> KIDP : HTTP POST Token Request\napplication/x-www-form-urlencoded, grant_type, auth_req_id
+EA <- KIDP : Response?
+EA -> KIDP : HTTP POST Token Request\napplication/x-www-form-urlencoded, grant_type, auth_req_id
+EA <- KIDP : Successful Response mit ACCESS_TOKEN und ID_TOKEN
+    ||40||
+else #eeeeee : <font color="#333333">Ping flow
+EA <- KIDP : HTTP POST Ping Callback\nan Client Notification Endpoint\n(zuvor registriert)
+EA -> KIDP : HTTP POST Token Request\napplication/x-www-form-urlencoded, grant_type, auth_req_id
+EA <- KIDP : Successful Response mit ACCESS_TOKEN und ID_TOKEN
+    ||40||
+else #ffeeee : <font color="red">Push Flow
+EA <- KIDP : HTTP POST Push Callback mit ACCESS_TOKEN, ID_TOKEN, \nauth_req_id,...
+    ||40||
+end
+
+
+
+
+@enduml

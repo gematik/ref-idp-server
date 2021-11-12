@@ -271,3 +271,47 @@ Feature: Authentifiziere Anwendung am IDP Server
             # REM state could be any value
       | 302         | 2005   | unsupported_response_type | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01}                                  | S256                  | ${TESTENV.redirect_uri}          | xxxstatexxx | 12345 | invalid_type  |
             # REM nonce could be any value
+
+  #bei diesem Test sind keine Afos verlinkt, weil es dazu keine Afos/RFCs gibt. Die Vorgabe kommt aus dem Umsetzungskonzept von RISE
+  @TCID:IDP_REF_AUTH_008 @PRIO:2
+  @Approval @Ready
+  Scenario: Auth - Parameter state und nonce mit maximaler Länge
+
+  ```
+  Wir fordern einen Challenge Token mit einem gültigen Request an,
+  in welchem die Parameter state und nonce die maximale Länge von 32 Zeichen besitzen, die die Schnittstellenbeschreibung/das Umsetzungskonzept von RISE vorschreibt.
+
+  Als Antwort erwarten wir keinen Fehler
+
+
+    When IDP I request a challenge with
+      | client_id            | scope                      | code_challenge                              | code_challenge_method | redirect_uri            | state                            | nonce                            | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | abcdefghijklmnopqrstuvwxyz012345 | abcdefghijklmnopqrstuvwxyz012345 | code          |
+    Then the response status is 200
+
+
+
+      #bei diesem Test sind keine Afos verlinkt, weil es dazu keine Afos/RFCs gibt. Die Vorgabe kommt aus dem Umsetzungskonzept von RISE
+  @TCID:IDP_REF_AUTH_009 @PRIO:2 @Negative
+    @Approval @Ready
+    @OpenBug
+    @issuer:IDP-664
+  Scenario Outline: Auth - Parameter state und nonce zu lang
+
+  ```
+  Wir fordern einen Challenge Token mit einem ungültigen Request an,
+  in welchem je einer der Parameter state oder nonce länger als die 32 Zeichen sind, die die Schnittstellenbeschreibung/das Umsetzungskonzept von RISE vorschreibt.
+
+  Als Antwort erwarten wir einen entsprechenden HTTP code, error id und error code
+
+
+    When IDP I request a challenge with
+      | client_id            | scope                      | code_challenge                              | code_challenge_method | redirect_uri            | state   | nonce   | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | <state> | <nonce> | code          |
+    Then the response status is failed state
+    And IDP the response is an <http_code> error with gematik code <err_id> and error '<err>'
+
+    Examples: Auth - Fehlende Parameter Beispiele
+      | http_code | err_id | err             | state                             | nonce                             |
+      | 302       | 2006   | invalid_request | abcdefghijklmnopqrstuvwxyz0123456 | 123456789                         |
+      | 302       | 2007   | invalid_request | xxxstatexxx                       | abcdefghijklmnopqrstuvwxyz0123456 |

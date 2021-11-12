@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.client;
+package de.gematik.idp;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
+import de.gematik.idp.field.ClientUtilities;
 import de.gematik.idp.tests.Remark;
 import de.gematik.idp.tests.Rfc;
 import org.junit.jupiter.api.Test;

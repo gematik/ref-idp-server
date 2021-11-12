@@ -6,25 +6,29 @@
     <artifactId>idp-testsuite</artifactId>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
-    <version>18.1.0</version>
+    <version>19.1.0</version>
 
     <parent>
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>18.1.0</version>
+        <version>19.1.0</version>
     </parent>
 
     <properties>
-        <version.assertj>3.18.1</version.assertj>
-        <version.cucumber>6.6.0</version.cucumber>
-        <version.serenity.core>2.3.4</version.serenity.core>
-        <version.serenity.cucumber.6>2.3.4</version.serenity.cucumber.6>
-        <version.serenity.maven.plugin>2.3.4</version.serenity.maven.plugin>
+        <version.assertj>3.21.0</version.assertj>
+        <version.cucumber>6.11.0</version.cucumber>
+        <version.serenity.core>2.6.0</version.serenity.core>
+        <version.serenity.cucumber.6>2.6.0</version.serenity.cucumber.6>
+        <version.serenity.maven.plugin>2.4.34</version.serenity.maven.plugin>
+
+        <idp-server.spring.profile>idp</idp-server.spring.profile>
+        <sektoral-idp.spring.profile>sektoralIdp</sektoral-idp.spring.profile>
     </properties>
 
     <profiles>
         <profile>
+            <!-- Profile to reserve ports and start IDP-Server and Sektoral-IDP for Integration Tests-->
             <activation>
                 <property>
                     <name>!env.IDP_SERVER</name>
@@ -33,30 +37,41 @@
             <build>
                 <plugins>
                     <plugin>
-                        <artifactId>maven-resources-plugin</artifactId>
+                        <groupId>com.coderplus.maven.plugins</groupId>
+                        <artifactId>copy-rename-maven-plugin</artifactId>
+                        <version>1.0.1</version>
                         <executions>
                             <execution>
-                                <configuration>
-                                    <encoding>UTF-8</encoding>
-                                    <outputDirectory>target/test-classes</outputDirectory>
-                                    <resources>
-                                        <resource>
-                                            <directory>${basedir}/../idp-server/src/main/resources</directory>
-                                            <includes>
-                                                <include>**/application.yml</include>
-                                            </includes>
-                                            <filtering>true</filtering>
-                                        </resource>
-                                    </resources>
-                                </configuration>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <id>copy-server-config</id>
+                                <id>copy-idp-server-config</id>
                                 <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>copy</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceFile>
+                                        ${basedir}/../idp-server/src/main/resources/application.yml
+                                    </sourceFile>
+                                    <destinationFile>
+                                        target/test-classes/application-${idp-server.spring.profile}.yml
+                                    </destinationFile>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>copy-sektoral-idp-config</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>copy</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceFile>
+                                        ${basedir}/../idp-sektoral/src/main/resources/application.yml
+                                    </sourceFile>
+                                    <destinationFile>
+                                        target/test-classes/application-${sektoral-idp.spring.profile}.yml
+                                    </destinationFile>
+                                </configuration>
                             </execution>
                         </executions>
-                        <version>3.2.0</version>
                     </plugin>
                     <plugin>
                         <artifactId>build-helper-maven-plugin</artifactId>
@@ -64,7 +79,8 @@
                             <execution>
                                 <configuration>
                                     <portNames>
-                                        <portName>tomcat.http.port</portName>
+                                        <portName>idp-server.http.port</portName>
+                                        <portName>idp-sektoral.http.port</portName>
                                     </portNames>
                                 </configuration>
                                 <goals>
@@ -78,57 +94,49 @@
                         <version>${version.build-helper-maven-plugin}</version>
                     </plugin>
                     <plugin>
-                        <artifactId>spring-boot-maven-plugin</artifactId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
-                            <wait>1000</wait>
-                            <maxAttempts>180</maxAttempts>
+                            <includes>
+                                <include>**/Parallel*IT.java</include>
+                            </includes>
+                            <parallel>classes</parallel>
+                            <perCoreThreadCount>true</perCoreThreadCount>
+                            <!--suppress UnresolvedMavenProperty, MavenModelInspection -->
+                            <skipITs>${skip.inttests}</skipITs>
+                            <systemPropertyVariables>
+                                <GEMATIK_TESTCONFIG>${gematik.testconfig}</GEMATIK_TESTCONFIG>
+                                <!--suppress UnresolvedMavenProperty -->
+                                <cucumber.filter.tags>@Approval and not @OpenBug and not @WiP and not @LongRunning
+                                </cucumber.filter.tags>
+                            </systemPropertyVariables>
+                            <environmentVariables>
+                                <IDP_SERVER_PORT>${idp-server.http.port}</IDP_SERVER_PORT>
+                                <IDP_SEKTORAL_PORT>${idp-sektoral.http.port}</IDP_SEKTORAL_PORT>
+                                <IDP_SEKTORAL>http://127.0.0.1</IDP_SEKTORAL>
+                                <TIGER_TESTENV_SERVERS_IDP_EXTERNALJAROPTIONS_HEALTHCHECK>
+                                    http://127.0.0.1:${idp-server.http.port}
+                                </TIGER_TESTENV_SERVERS_IDP_EXTERNALJAROPTIONS_HEALTHCHECK>
+                                <TIGER_TESTENV_SERVERS_IDP_EXTERNALJAROPTIONS_ARGUMENTS_0>
+                                    --server.port=${idp-server.http.port}
+                                </TIGER_TESTENV_SERVERS_IDP_EXTERNALJAROPTIONS_ARGUMENTS_0>
+                                <TIGER_TESTENV_SERVERS_IDP_SOURCE_0>
+                                    local://idp-server-${version}.jar
+                                </TIGER_TESTENV_SERVERS_IDP_SOURCE_0>
+                                <TIGER_TESTENV_SERVERS_IDPSEKTORAL_EXTERNALJAROPTIONS_HEALTHCHECK>
+                                    http://127.0.0.1:${idp-sektoral.http.port}
+                                </TIGER_TESTENV_SERVERS_IDPSEKTORAL_EXTERNALJAROPTIONS_HEALTHCHECK>
+                                <TIGER_TESTENV_SERVERS_IDPSEKTORAL_EXTERNALJAROPTIONS_ARGUMENTS_0>
+                                    --server.port=${idp-sektoral.http.port}
+                                </TIGER_TESTENV_SERVERS_IDPSEKTORAL_EXTERNALJAROPTIONS_ARGUMENTS_0>
+                                <TIGER_TESTENV_SERVERS_IDPSEKTORAL_SOURCE_0>
+                                    local://idp-sektoral-${version}.jar
+                                </TIGER_TESTENV_SERVERS_IDPSEKTORAL_SOURCE_0>
+                                <TIGER_ACTIVE>1</TIGER_ACTIVE>
+                            </environmentVariables>
+                            <forkMode>once</forkMode>
                         </configuration>
-                        <executions>
-                            <execution>
-                                <configuration>
-                                    <skip>true</skip>
-                                </configuration>
-                                <goals>
-                                    <goal>repackage</goal>
-                                </goals>
-                                <id>repackage</id>
-                            </execution>
-                            <execution>
-                                <configuration>
-                                    <arguments>
-                                        <argument>--server.port=${tomcat.http.port}</argument>
-                                    </arguments>
-                                    <!-- BOTH tags are needed to get all folders into the classpath for spring boot to startup correctly-->
-                                    <classesDirectory>${project.basedir}/../idp-server/target/classes
-                                    </classesDirectory>
-                                    <folders>
-                                        <folder>../idp-server/target/classes</folder>
-                                        <folder>../idp-commons/target/classes</folder>
-                                        <folder>../idp-crypto/target/classes</folder>
-                                    </folders>
-                                    <mainClass>de.gematik.idp.server.IdpServer</mainClass>
-                                    <!--suppress UnresolvedMavenProperty, MavenModelInspection -->
-                                    <skip>${skip.inttests}</skip>
-                                </configuration>
-                                <goals>
-                                    <goal>start</goal>
-                                </goals>
-                                <id>pre-integration-test</id>
-                            </execution>
-                            <execution>
-                                <configuration>
-                                    <!--suppress UnresolvedMavenProperty, MavenModelInspection -->
-                                    <skip>${skip.inttests}</skip>
-                                </configuration>
-                                <goals>
-                                    <goal>stop</goal>
-                                </goals>
-                                <id>stop</id>
-                                <phase>post-integration-test</phase>
-                            </execution>
-                        </executions>
-                        <groupId>org.springframework.boot</groupId>
-                        <version>${version.spring-boot}</version>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <version>3.0.0-M5</version>
                     </plugin>
                 </plugins>
             </build>
@@ -148,6 +156,32 @@
                 <profile.assembly.suffix>-online</profile.assembly.suffix>
                 <report.server.host>${env.IDP_SERVER}</report.server.host>
             </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <includes>
+                                <include>**/Parallel*IT.java</include>
+                            </includes>
+                            <parallel>classes</parallel>
+                            <perCoreThreadCount>true</perCoreThreadCount>
+                            <!--suppress UnresolvedMavenProperty, MavenModelInspection -->
+                            <skipITs>${skip.inttests}</skipITs>
+                            <systemPropertyVariables>
+                                <GEMATIK_TESTCONFIG>${gematik.testconfig}</GEMATIK_TESTCONFIG>
+                                <!--suppress UnresolvedMavenProperty -->
+                                <cucumber.filter.tags>@Approval and not @OpenBug and not @WiP and not @LongRunning
+                                </cucumber.filter.tags>
+                                <TIGER_ACTIVE>1</TIGER_ACTIVE>
+                            </systemPropertyVariables>
+                            <forkMode>once</forkMode>
+                        </configuration>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <version>3.0.0-M5</version>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 
@@ -163,7 +197,7 @@
         <dependency>
             <artifactId>json</artifactId>
             <groupId>org.json</groupId>
-            <version>20201115</version>
+            <version>20210307</version>
         </dependency>
 
 
@@ -188,12 +222,10 @@
         <dependency>
             <artifactId>spring-boot-starter-test</artifactId>
             <groupId>org.springframework.boot</groupId>
-            <version>${version.spring-boot}</version>
         </dependency>
         <dependency>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
             <groupId>org.springframework.boot</groupId>
-            <version>${version.spring-boot}</version>
         </dependency>
 
         <!-- BDD / REST -->
@@ -225,19 +257,18 @@
             <artifactId>datatable</artifactId>
             <groupId>io.cucumber</groupId>
             <scope>test</scope>
-            <version>3.5.0</version>
+            <version>4.1.0</version>
         </dependency>
         <dependency>
             <artifactId>datatable-matchers</artifactId>
             <groupId>io.cucumber</groupId>
             <scope>test</scope>
-            <version>3.5.0</version>
+            <version>4.1.0</version>
         </dependency>
         <dependency>
             <artifactId>lombok</artifactId>
             <groupId>org.projectlombok</groupId>
             <scope>provided</scope>
-            <version>${version.lombok}</version>
         </dependency>
         <dependency>
             <artifactId>assertj-core</artifactId>
@@ -250,7 +281,7 @@
             <artifactId>json-unit-spring</artifactId>
             <groupId>net.javacrumbs.json-unit</groupId>
             <scope>test</scope>
-            <version>2.21.0</version>
+            <version>2.28.0</version>
         </dependency>
         <dependency>
             <groupId>org.skyscreamer</groupId>
@@ -269,6 +300,30 @@
             <artifactId>rbellogger</artifactId>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.junit.vintage/junit-vintage-engine -->
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.coderplus.maven.plugins/copy-rename-maven-plugin -->
+        <dependency>
+            <groupId>com.coderplus.maven.plugins</groupId>
+            <artifactId>copy-rename-maven-plugin</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>de.gematik.test</groupId>
+            <artifactId>tiger-test-lib</artifactId>
+            <version>${version.tiger}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.gematik.test</groupId>
+            <artifactId>tiger-test-lib</artifactId>
+            <type>test-jar</type>
+            <version>${version.tiger}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -385,6 +440,8 @@
                             <customVmTemplate>src/test/resources/cucumber-serenity-runner.vm</customVmTemplate>
                             <glue>
                                 <package>de.gematik.idp.test.steps</package>
+                                <package>de.gematik.test.tiger.hooks</package>
+                                <package>de.gematik.test.tiger.glue</package>
                             </glue>
                             <parallelScheme>FEATURE</parallelScheme>
                             <!-- deactivated as jenkins xunit plugin is not very flexible and does not work well with serenity junit xml exports
@@ -403,29 +460,6 @@
                         <phase>generate-test-sources</phase>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <configuration>
-                    <includes>
-                        <include>**/Parallel*IT.java</include>
-                    </includes>
-                    <parallel>classes</parallel>
-                    <perCoreThreadCount>true</perCoreThreadCount>
-                    <!--suppress UnresolvedMavenProperty, MavenModelInspection -->
-                    <skipITs>${skip.inttests}</skipITs>
-                    <systemPropertyVariables>
-                        <IDP_SERVER_PORT>${tomcat.http.port}</IDP_SERVER_PORT>
-                        <GEMATIK_TESTCONFIG>${gematik.testconfig}</GEMATIK_TESTCONFIG>
-                        <!--suppress UnresolvedMavenProperty -->
-                        <cucumber.filter.tags>@Approval and not @OpenBug and not @WiP and not @LongRunning
-                        </cucumber.filter.tags>
-                    </systemPropertyVariables>
-                    <threadCount>16</threadCount>
-                    <forkCount>2</forkCount>
-                </configuration>
-                <groupId>org.apache.maven.plugins</groupId>
-                <version>3.0.0-M5</version>
             </plugin>
 
             <plugin>

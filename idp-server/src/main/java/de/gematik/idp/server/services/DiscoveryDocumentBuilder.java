@@ -17,12 +17,10 @@
 package de.gematik.idp.server.services;
 
 import static de.gematik.idp.IdpConstants.*;
-
-import java.time.ZonedDateTime;
-
 import de.gematik.idp.data.IdpDiscoveryDocument;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.controllers.KeyInformationController;
+import java.time.ZonedDateTime;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -34,27 +32,29 @@ public class DiscoveryDocumentBuilder {
     public IdpDiscoveryDocument buildDiscoveryDocument(final String serverUrl, final String issuerUrl) {
         final ZonedDateTime currentTime = ZonedDateTime.now();
         return IdpDiscoveryDocument.builder()
-                .authorizationEndpoint(serverUrl + BASIC_AUTHORIZATION_ENDPOINT)
-                .tokenEndpoint(serverUrl + TOKEN_ENDPOINT)
-                .uriDisc(serverUrl + DISCOVERY_DOCUMENT_ENDPOINT)
-                .authPairEndpoint(serverUrl + ALTERNATIVE_AUTHORIZATION_ENDPOINT)
-                .ssoEndpoint(serverUrl + SSO_ENDPOINT)
-                .uriPair(serverUrl + PAIRING_ENDPOINT)
-                .grantTypesSupported(new String[] { "authorization_code" })
-                .idTokenSigningAlgValuesSupported(new String[] { "BP256R1" })
-                .scopesSupported(new String[] { "openid", "e-rezept", "pairing" })
-                .responseTypesSupported(new String[] { "code" })
-                .subjectTypesSupported(new String[] { "pairwise" })
-                .tokenEndpointAuthMethodsSupported(new String[] { "none" })
-                .acrValuesSupported(new String[] { "gematik-ehealth-loa-high" })
-                .responseModesSupported(new String[] { "query" })
-                .issuer(issuerUrl)
-                .jwksUri(serverUrl + "/jwks")
-                .exp(currentTime.plusHours(24).toEpochSecond())
-                .iat(currentTime.toEpochSecond())
-                .uriPukIdpEnc(serverUrl + KeyInformationController.PUK_URI_ENC)
-                .uriPukIdpSig(serverUrl + KeyInformationController.PUK_URI_SIG)
-                .codeChallengeMethodsSupported(new String[] { "S256" })
-                .build();
+            .authorizationEndpoint(serverUrl + BASIC_AUTHORIZATION_ENDPOINT)
+            .tokenEndpoint(serverUrl + TOKEN_ENDPOINT)
+            .uriDisc(serverUrl + DISCOVERY_DOCUMENT_ENDPOINT)
+            .authPairEndpoint(serverUrl + ALTERNATIVE_AUTHORIZATION_ENDPOINT)
+            .ssoEndpoint(serverUrl + SSO_ENDPOINT)
+            .uriPair(serverUrl + PAIRING_ENDPOINT)
+            .thirdPartyAuthorizationEndpoint(serverUrl + THIRD_PARTY_ENDPOINT)
+            .grantTypesSupported(new String[]{"authorization_code"})
+            .idTokenSigningAlgValuesSupported(new String[]{"BP256R1"})
+            .scopesSupported(new String[]{"openid", "e-rezept", "pairing"})
+            .responseTypesSupported(new String[]{"code"})
+            .subjectTypesSupported(new String[]{"pairwise"})
+            .tokenEndpointAuthMethodsSupported(new String[]{"none"})
+            .acrValuesSupported(new String[]{"gematik-ehealth-loa-high"})
+            .responseModesSupported(new String[]{"query"})
+            .issuer(issuerUrl)
+            .jwksUri(serverUrl + "/jwks")
+            .exp(currentTime.plusHours(24).toEpochSecond())
+            .iat(currentTime.toEpochSecond())
+            .uriPukIdpEnc(serverUrl + KeyInformationController.PUK_URI_ENC)
+            .uriPukIdpSig(serverUrl + KeyInformationController.PUK_URI_SIG)
+            .codeChallengeMethodsSupported(new String[]{"S256"})
+            .kkAppListUri(serverUrl + APPLIST_ENDPOINT)
+            .build();
     }
 }

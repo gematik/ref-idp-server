@@ -22,7 +22,6 @@ import static de.gematik.idp.field.ClaimName.CODE_VERIFIER;
 import static de.gematik.idp.field.ClaimName.KEY_ID;
 import static de.gematik.idp.field.ClaimName.TOKEN_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
-
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.JwtBuilder;
@@ -69,6 +68,17 @@ public class IdpControllerParameterValidationTest {
         Pair.of("nonce", "foobarschmar"),
         Pair.of("scope", "openid e-rezept"));
 
+    private static final List<Pair<String, String>> getThirdPartyAuthorizationParameterMap = List.of(
+        Pair.of("client_id", TestConstants.CLIENT_ID_E_REZEPT_APP),
+        Pair.of("state", "state_erp"),
+        Pair.of("redirect_uri", REDIRECT_URI_E_REZEPT_APP),
+        Pair.of("code_challenge", "m1yM_9krH3fPE2aOkRXzHQDU0lKn0mI0-Gp165Pgb1Z"),
+        Pair.of("code_challenge_method", "S256"),
+        Pair.of("response_type", "code"),
+        Pair.of("nonce", "anyfoobar"),
+        Pair.of("scope", "e-rezept openid"),
+        Pair.of("kk_app_id", "kkAppId001"));
+
     @LocalServerPort
     private int port;
     @Autowired
@@ -97,7 +107,7 @@ public class IdpControllerParameterValidationTest {
     @Test
     public void getAuthenticationChallenge_invalidClientId_shouldGiveError() {
         assertErrorResponseMatches(buildGetChallengeRequest(
-            getInvalidationFunction("client_id", "invalid_client_id")),
+                getInvalidationFunction("client_id", "invalid_client_id")),
             2012, INVALID_REQUEST, "client_id ist ungültig");
     }
 
@@ -267,6 +277,20 @@ public class IdpControllerParameterValidationTest {
             3004, INVALID_REQUEST, "key_verifier wurde nicht übermittelt");
     }
 
+    @Test
+    public void getThirdPartyAuthorizationRequest_should302() {
+        assertThat(buildGetThirdPartyAuthorizationRequest(getInvalidationFunction("scope", "e-rezept openid"))
+            .asString().getStatus())
+            .isEqualTo(302);
+    }
+
+    @Test
+    public void getThirdPartyAuthorizationRequest_should400() {
+        assertThat(buildGetThirdPartyAuthorizationRequest(getInvalidationFunction("client_id", null))
+            .asString().getStatus())
+            .isEqualTo(400);
+    }
+
     @SneakyThrows
     private void assertErrorResponseMatches(final HttpRequest getRequest, final int errorCode,
         final IdpErrorType errorType, final String errorText) {
@@ -308,6 +332,19 @@ public class IdpControllerParameterValidationTest {
             .get("http://localhost:" + port + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT);
 
         getChallengeParameterMap.stream()
+            .map(entryStringFunction)
+            .filter(Objects::nonNull)
+            .forEach(entry -> getRequest.queryString(entry.getKey(), entry.getValue()));
+
+        return getRequest;
+    }
+
+    private GetRequest buildGetThirdPartyAuthorizationRequest(
+        final Function<Entry<String, String>, Entry<String, String>> entryStringFunction) {
+        final GetRequest getRequest = Unirest
+            .get("http://localhost:" + port + IdpConstants.THIRD_PARTY_ENDPOINT);
+
+        getThirdPartyAuthorizationParameterMap.stream()
             .map(entryStringFunction)
             .filter(Objects::nonNull)
             .forEach(entry -> getRequest.queryString(entry.getKey(), entry.getValue()));

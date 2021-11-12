@@ -23,13 +23,20 @@ import lombok.NoArgsConstructor;
 public final class IdpConstants {
 
     public static final String DISCOVERY_DOCUMENT_ENDPOINT = "/.well-known/openid-configuration";
+    public static final String APPLIST_ENDPOINT = "/directory/kk_apps";
     public static final String BASIC_AUTHORIZATION_ENDPOINT = "/sign_response";
     public static final String ALTERNATIVE_AUTHORIZATION_ENDPOINT = "/alt_response";
     public static final String SSO_ENDPOINT = "/sso_response";
     public static final String TOKEN_ENDPOINT = "/token";
     public static final String PAIRING_ENDPOINT = "/pairings";
+    public static final String THIRD_PARTY_ENDPOINT = "/extauth";
     public static final String DEVICE_VALIDATION_ENDPOINT = "/device_validation";
     public static final String DEFAULT_SERVER_URL = "https://idp.zentral.idp.splitdns.ti-dienste.de";
     public static final String EIDAS_LOA_HIGH = "gematik-ehealth-loa-high";
     public static final int JTI_LENGTH = 16;
+    public static final String AMR_FAST_TRACK = "mfa";
+
+    public static final String SEKTORAL_IDP_AUTHORIZATION_ENDPOINT = "/authorization";
+
+
 }

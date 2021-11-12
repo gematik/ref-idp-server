@@ -18,7 +18,6 @@ package de.gematik.idp.server.services;
 
 import static de.gematik.idp.error.IdpErrorType.INVALID_REQUEST;
 import static de.gematik.idp.field.ClaimName.*;
-
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.exceptions.IdpJoseException;
@@ -66,11 +65,29 @@ public class IdpAuthenticator {
 
     public String getBasicFlowTokenLocation(final IdpJwe signedChallenge) {
         try {
+            verifyJweHeaderClaims(signedChallenge);
             final JsonWebToken decryptChallenge = decryptChallenge(signedChallenge);
             verifyExpInChallenge(signedChallenge);
             return buildBasicFlowTokenLocation(decryptChallenge).build().toString();
         } catch (final URISyntaxException e) {
             throw new IdpServerLocationBuildException(e);
+        }
+    }
+
+    private void verifyJweHeaderClaims(final IdpJwe signedChallenge) {
+        if (signedChallenge.getHeaderClaim(CONTENT_TYPE)
+            .filter(cty -> "NJWT".equals(cty))
+            .isEmpty()) {
+            log.error(signedChallenge.getHeaderDecoded());
+            throw new IdpServerException(2030, INVALID_REQUEST, "CTY fehlerhaft");
+        }
+        if (signedChallenge.getHeaderClaim(EPHEMERAL_PUBLIC_KEY)
+            .filter(Map.class::isInstance)
+            .map(Map.class::cast)
+            .filter(epkMap -> "BP-256".equals(epkMap.get("crv")))
+            .isEmpty()) {
+            log.error(signedChallenge.getHeaderDecoded());
+            throw new IdpServerException(2030, INVALID_REQUEST, "EPK-Typ fehlerhaft");
         }
     }
 
@@ -116,6 +133,18 @@ public class IdpAuthenticator {
                 .toString();
             final URIBuilder locationBuilder = new URIBuilder(redirectUrl);
             buildSsoTokenLocation(ssoToken, challengeToken, locationBuilder);
+            return locationBuilder.build().toString();
+        } catch (final URISyntaxException e) {
+            throw new IdpServerLocationBuildException(e);
+        }
+    }
+
+    public String getAuthorizationCodeLocation(final JsonWebToken idToken,
+        final Map<String, String> sessionData) {
+        try {
+            final String redirectUrl = sessionData.get(REDIRECT_URI.getJoseName());
+            final URIBuilder locationBuilder = new URIBuilder(redirectUrl);
+            buildLocationUriThirdPartyAuth(locationBuilder, idToken, sessionData);
             return locationBuilder.build().toString();
         } catch (final URISyntaxException e) {
             throw new IdpServerLocationBuildException(e);
@@ -231,7 +260,18 @@ public class IdpAuthenticator {
         locationBuilder.addParameter("state", state);
     }
 
-    private List<String> getAmrString(Map<String, Object> claimsMap) {
+    private void buildLocationUriThirdPartyAuth(final URIBuilder locationBuilder, final JsonWebToken idToken,
+        final Map<String, String> sessionData) {
+        final ZonedDateTime authTime = ZonedDateTime.now();
+        locationBuilder.addParameter("code",
+            authenticationTokenBuilder.buildAuthenticationTokenFromSektoralIdToken(idToken, authTime, sessionData)
+                .getRawString());
+        locationBuilder.addParameter("state", sessionData.get(STATE.getJoseName()));
+        locationBuilder.addParameter("ssotoken",
+            ssoTokenBuilder.buildSsoTokenFromSektoralIdToken(idToken, authTime).getRawString());
+    }
+
+    private List<String> getAmrString(final Map<String, Object> claimsMap) {
         if (claimsMap.containsKey(AUTHENTICATION_METHODS_REFERENCE.getJoseName())) {
             final Object o = claimsMap.get(AUTHENTICATION_METHODS_REFERENCE.getJoseName());
             if (o instanceof List) {

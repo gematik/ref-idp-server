@@ -16,7 +16,7 @@
 
 package de.gematik.idp.server.data;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -26,7 +26,7 @@ import lombok.Data;
 @Data
 @Builder
 @AllArgsConstructor
-@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class PairingList {
 
     private final List<PairingDto> pairingEntries;

@@ -20,6 +20,7 @@ public class TestConstants {
 
     public static final String CLIENT_ID_E_REZEPT_APP = "eRezeptApp";
     public static final String REDIRECT_URI_E_REZEPT_APP = "http://redirect.gematik.de/erezept";
+    public static final String REDIRECT_URI_IDP_DIENST = "http://redirect.gematik.de/idpdienst/extauth";
     public static final String CLIENT_ID_GEAMTIK_TEST_PS = "gematikTestPs";
     public static final String REDIRECT_URI_GEAMTIK_TEST_PS = "http://test-ps.gematik.de/erezept";
 }
