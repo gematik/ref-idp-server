@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2022 gematik GmbH
+ * 
+ * Licensed under the Apache License, Version 2.0 (the License);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an 'AS IS' BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package de.gematik.idp.sektoral.controller;
 
 import static de.gematik.idp.IdpConstants.SEKTORAL_IDP_AUTHORIZATION_ENDPOINT;
@@ -6,7 +22,6 @@ import de.gematik.idp.sektoral.data.TokenResponse;
 import de.gematik.idp.sektoral.services.SektoralIdpAuthenticator;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,14 +49,14 @@ public class SektoralIdpController {
      */
     @GetMapping(value = SEKTORAL_IDP_AUTHORIZATION_ENDPOINT)
     public void getTokenCode(
-        @RequestParam(name = "client_id") @NotEmpty(message = "1002") final String clientId,
-        @RequestParam(name = "state") @NotEmpty(message = "2002") @Pattern(regexp = ".+", message = "2006") final String idpState,
-        @RequestParam(name = "redirect_uri") @NotNull(message = "1004") final String redirectUri,
-        @RequestParam(name = "nonce", required = false) @Pattern(regexp = ".+", message = "2007") final String nonce,
-        @RequestParam(name = "response_type") @NotEmpty(message = "2004") @Pattern(regexp = "code", message = "2005") final String responseType,
-        @RequestParam(name = "scope") final String scope,
-        @RequestParam(name = "code_challenge") @NotEmpty(message = "2009") final String userAgentCodeChallenge,
-        @RequestParam(name = "code_challenge_method") @Pattern(regexp = "S256", message = "2008") final String userAgentCodeChallengeMethod,
+        @RequestParam(name = "client_id") @NotEmpty final String clientId,
+        @RequestParam(name = "state") @NotEmpty final String idpState,
+        @RequestParam(name = "redirect_uri") @NotEmpty final String redirectUri,
+        @RequestParam(name = "nonce") @NotEmpty final String nonce,
+        @RequestParam(name = "response_type") @NotEmpty @Pattern(regexp = "code") final String responseType,
+        @RequestParam(name = "scope") @NotEmpty final String scope,
+        @RequestParam(name = "code_challenge") @NotEmpty final String userAgentCodeChallenge,
+        @RequestParam(name = "code_challenge_method") @NotEmpty @Pattern(regexp = "S256") final String userAgentCodeChallengeMethod,
         final HttpServletResponse response) {
         log.info(
             "RequestParams (just used for Sonar: " + clientId + " " + idpState + " " + redirectUri + " " + nonce + " "
@@ -49,7 +64,8 @@ public class SektoralIdpController {
         setNoCacheHeader(response);
         response.setStatus(HttpStatus.FOUND.value());
 
-        final String tokenLocation = sektoralIdpAuthenticator.createLocationForAuthorizationResponse(redirectUri, idpState);
+        final String tokenLocation = sektoralIdpAuthenticator.createLocationForAuthorizationResponse(redirectUri,
+            idpState);
         response.setHeader(HttpHeaders.LOCATION, tokenLocation);
     }
 
@@ -59,11 +75,11 @@ public class SektoralIdpController {
      */
     @PostMapping(value = TOKEN_ENDPOINT, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public TokenResponse getTokensForCode(
-        @RequestParam(name = "client_id") @NotEmpty(message = "1002") final String clientId,
-        @RequestParam("code") @NotNull(message = "3005") final String authenticationToken,
-        @RequestParam("code_verifier") @NotNull final String code_verifier,
-        @RequestParam("grant_type") @NotEmpty(message = "3006") @Pattern(regexp = "authorization_code", message = "3014") final String grantType,
-        @RequestParam("redirect_uri") final String redirectUri,
+        @RequestParam(name = "client_id") @NotEmpty final String clientId,
+        @RequestParam("code") @NotEmpty final String authenticationToken,
+        @RequestParam("code_verifier") @NotEmpty final String code_verifier,
+        @RequestParam("grant_type") @NotEmpty @Pattern(regexp = "authorization_code") final String grantType,
+        @RequestParam("redirect_uri") @NotEmpty final String redirectUri,
         final HttpServletResponse response) {
         setNoCacheHeader(response);
         response.setStatus(HttpStatus.OK.value());

@@ -7,12 +7,12 @@
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>19.1.0</version>
+        <version>19.2.0</version>
     </parent>
 
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-crypto</artifactId>
-    <version>19.1.0</version>
+    <version>19.2.0</version>
 
     <dependencies>
         <dependency>
@@ -20,6 +20,16 @@
             <groupId>org.springframework.boot</groupId>
             <scope>test</scope>
             <version>${version.spring-boot}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-to-slf4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -37,11 +47,6 @@
             <groupId>commons-io</groupId>
             <scope>test</scope>
             <version>2.11.0</version>
-        </dependency>
-        <dependency>
-            <artifactId>jackson-annotations</artifactId>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <version>2.12.5</version>
         </dependency>
     </dependencies>
 </project>

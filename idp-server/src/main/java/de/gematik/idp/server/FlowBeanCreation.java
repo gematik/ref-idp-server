@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 gematik GmbH
+ * Copyright (c) 2022 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -32,12 +32,16 @@ import de.gematik.idp.token.IdTokenBuilder;
 import de.gematik.idp.token.SsoTokenBuilder;
 import de.gematik.pki.certificate.CertificateProfile;
 import de.gematik.pki.certificate.TucPki018Verifier;
+import de.gematik.pki.exception.GemPkiException;
+import de.gematik.pki.tsl.TslConverter;
 import de.gematik.pki.tsl.TslInformationProvider;
-import de.gematik.pki.tsl.TslReader;
 import de.gematik.pki.tsl.TspService;
+import eu.europa.esig.trustedlist.jaxb.tsl.TrustStatusListType;
+import java.io.IOException;
 import java.security.Key;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -111,18 +115,24 @@ public class FlowBeanCreation {
 
     @Bean
     public TucPki018Verifier certificateVerifier() {
-        final List<TspService> tspServiceTypeList = new TslInformationProvider(
-            new TslReader().getTrustServiceStatusList("TSL_default.xml")
-                .orElseThrow(() -> new IdpServerStartupException("Error while reading TSL")))
-            .getTspServices();
+        try {
+            final byte[] tslBytes = Objects.requireNonNull(FlowBeanCreation.class.getClassLoader().getResourceAsStream("TSL_default.xml"),
+                    "Resource unavailable.")
+                .readAllBytes();
+            final TrustStatusListType tsl = TslConverter.bytesToTsl(tslBytes).orElseThrow();
+            final List<TspService> tspServiceTypeList = new TslInformationProvider(tsl).getTspServices();
 
-        return TucPki018Verifier.builder()
-            .productType(idpConfiguration.getProductTypeDisplayString())
-            .tspServiceList(tspServiceTypeList)
-            .certificateProfiles(List.of(CertificateProfile.C_CH_AUT_RSA, CertificateProfile.C_CH_AUT_ECC,
-                CertificateProfile.C_HCI_AUT_RSA, CertificateProfile.C_HCI_AUT_ECC,
-                CertificateProfile.C_HP_AUT_RSA, CertificateProfile.C_HP_AUT_ECC))
-            .build();
+            return TucPki018Verifier.builder()
+                .productType(idpConfiguration.getProductTypeDisplayString())
+                .tspServiceList(tspServiceTypeList)
+                .certificateProfiles(List.of(CertificateProfile.C_CH_AUT_RSA, CertificateProfile.C_CH_AUT_ECC,
+                    CertificateProfile.C_HCI_AUT_RSA, CertificateProfile.C_HCI_AUT_ECC,
+                    CertificateProfile.C_HP_AUT_RSA, CertificateProfile.C_HP_AUT_ECC))
+                .withOcspCheck(false)
+                .build();
+        } catch (final GemPkiException | IOException e) {
+            throw new IdpServerStartupException("Error while reading TSL, " + e.getMessage());
+        }
     }
 
     @Bean

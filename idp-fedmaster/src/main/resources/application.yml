@@ -1,0 +1,27 @@
+fedmaster:
+    sigKeyConfig:
+        fileName: classpath:cert/fedmaster-sig.p12
+        keyId: puk_fed_sig
+        use: sig
+    fachdienstSigKeyConfig:
+        fileName: classpath:cert/other/fachdienst-sig.p12
+        keyId: puk_fd_sig
+        use: sig
+        issuer: IDP_FACHDIENST
+        type: fachdienst
+        url: unknown
+    idpSigKeyConfig:
+        fileName: classpath:cert/other/fedidp-sig.p12
+        keyId: puk_idp_sig
+        use: sig
+        issuer: IDP_SEKTORAL
+        type: idp
+        url: unknown
+logging:
+    level:
+        org.springframework.web.filter.CommonsRequestLoggingFilter: INFO
+        de.gematik: INFO
+    file:
+        name: logs/application-info.log
+server:
+    port: 8083

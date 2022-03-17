@@ -1,0 +1,13 @@
+fachdienst:
+    sigKeyConfig:
+        fileName: classpath:cert/fachdienst-sig.p12
+        keyId: puk_fachdienst_sig
+        use: sig
+logging:
+    level:
+        org.springframework.web.filter.CommonsRequestLoggingFilter: INFO
+        de.gematik: INFO
+    file:
+        name: logs/application-info.log
+server:
+    port: 8084

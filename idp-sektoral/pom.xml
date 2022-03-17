@@ -8,16 +8,15 @@
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>19.1.0</version>
+        <version>19.2.0</version>
     </parent>
 
     <artifactId>idp-sektoral</artifactId>
-    <version>19.1.0</version>
+    <version>19.2.0</version>
     <packaging>jar</packaging>
 
     <properties>
         <version.assertj>3.18.1</version.assertj>
-
     </properties>
 
     <dependencies>
@@ -30,6 +29,16 @@
         <dependency>
             <artifactId>spring-boot-starter-actuator</artifactId>
             <groupId>org.springframework.boot</groupId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-to-slf4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <artifactId>spring-boot-starter-jersey</artifactId>
@@ -45,6 +54,14 @@
                 <exclusion>
                     <artifactId>junit</artifactId>
                     <groupId>junit</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-to-slf4j</artifactId>
                 </exclusion>
             </exclusions>
             <groupId>org.springframework.boot</groupId>
@@ -73,20 +90,41 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
+            <version>5.3.15</version>
         </dependency>
 
         <dependency>
             <artifactId>unirest-java</artifactId>
             <groupId>com.konghq</groupId>
-            <version>3.13.0</version>
+            <version>3.13.6</version>
         </dependency>
 
     </dependencies>
 
     <build>
         <plugins>
+            <!-- Phase clean -->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>2.5</version>
+                <configuration>
+                    <filesets>
+                        <!-- delete logfiles -->
+                        <fileset>
+                            <directory>logs</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>2.3.4.RELEASE</version>
                 <configuration>
                     <jvmArguments>${argLine}</jvmArguments>
                     <jvmArguments>-Dfile.encoding=UTF-8</jvmArguments>
@@ -103,11 +141,10 @@
                         <id>repackage</id>
                     </execution>
                 </executions>
-                <groupId>org.springframework.boot</groupId>
-                <version>2.3.4.RELEASE</version>
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <configuration>
@@ -135,7 +172,6 @@
                         <phase>install</phase>
                     </execution>
                 </executions>
-                <version>3.1.0</version>
             </plugin>
             <plugin>
                 <artifactId>docker-maven-plugin</artifactId>

@@ -1,38 +1,27 @@
-# ![Logo](./doc/images/IDPLogo-64.png) IDP-Server
+# ![Logo](./doc/images/IDPLogo-64.png) IDP-Global
 
 <div>Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
 
-## Build
+## Übersicht
 
-### Docker Container über docker-compose bauen
+Das Projekt **IDP-Global** setzt sich aus verschiedenen Teilprojekten zusammen. Diese sind
 
-Dies ist vor allem für den Server relevant (konstante, saubere Umgebung). Im idp-global root-Verzeichnis bauen mit:
-
-```
-docker-compose build --build-args mode=[un]tested
-```
-
-### Docker Container über Maven bauen
-
-```
-mvn clean compile
-mvn install # builds docker image and runs integration test suite
-```
-
-Sollte **kein** Docker auf dem Buildrechner installiert sein, so kann über -Ddocker.skip dieser Teil deaktiviert werden.
-Naturgemäß wird aber dann auch kein Docker image gebaut.
+* **IDP-Server:** Referenzentwicklung des zentralen IDPs
+* **IDP-Client:** Client zur Beantragung von ACCESS_TOKEN mit SMC-B-Aut- oder HBA-Aut-Schlüsseln beim zentralen IDP
+* **IDP-Testsuite:** Zulassungstestsuite für einen zentralen IDP
+* **IDP-Sektoral:** PoC für einen sektoralen IDP im Kontext Fast Track/föderierte IDPs
+* **IDP-Fedmaster:** PoC für einen Föderationsmaster im Kontext föderierte IDPs
+* **IDP-Fachdienst:** PoC für den Auth Server eines Fachdienstes im Kontext föderierte IDPs
 
 ## Tests
 
 ### Unittests
 
-Unittests können mit dem property `-Dskip.unittests=true` disabled werden. In the idp-server submodule unit tests will
-temporarily also set up the server but this is based on Junit runners and should not be mixed up with the integration
-test server instance. Later runs in a separate fork.
+Unittests können mit `-Dskip.unittests=true` deaktiviert werden.
 
 ### Integrationstests
 
-Der Integrationstest kann entweder mit einer lokalen Instanz des IDP servers oder gegen einen remote verfügbaren Server
+Der Integrationstest kann entweder mit einer lokalen Instanz des IDP Servers oder gegen einen remote verfügbaren Server
 durchgeführt werden. Durch Setzen der Umgebungsvariable `IDP_SERVER` wird die test suite angewiesen gegen den in der
 Variable definierten Host/URL zu testen. Existiert diese Umgebungsvariable nicht, so wird eine lokale Instanz für die
 Integrationstests gestartet.
@@ -83,7 +72,7 @@ mvn XXXX -Dskip.inttests # skip integration tests
 cd idp-server && mvn docker:remove && cd ..
 
 docker-compose build # creates a docker image after running all tests
-docker-compose build --nuild-args mode=untested # creates a docker image without running any tests
+docker-compose build --build-args mode=untested # creates a docker image without running any tests
 ```
 
 ## Caveats

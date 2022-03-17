@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 gematik GmbH
+ * Copyright (c) 2022 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,10 @@ public interface ContextKey {
     String SIGEND_AUTHENTICATION_DATA = "SIGEND_AUTHENTICATION_DATA";
     String USER_AGENT = "USER_AGENT";
     String AUTH_URL_SEKTORAL_IDP = "AUTH_URL_SEKTORAL_IDP";
+    String FED_MASTER_URL = "FED_MASTER_URL";
+    String FACHDIENST_URL = "FACHDIENST_URL";
+    String ISS_IDP_SEKTORAL = "ISS_IDP_SEKTORAL";
+
 
     String CUCUMBER_REGEX = "(RESPONSE|CLAIMS|HEADER_CLAIMS"
         + "|DISC_DOC"

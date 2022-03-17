@@ -16,20 +16,33 @@
             <groupId>org.springframework.boot</groupId>
             <scope>test</scope>
             <version>${version.spring-boot}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-to-slf4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <artifactId>spring-boot-starter-jersey</artifactId>
             <groupId>org.springframework.boot</groupId>
+            <version>${version.spring-boot}</version>
         </dependency>
 
         <dependency>
             <artifactId>bcpkix-jdk15on</artifactId>
             <groupId>org.bouncycastle</groupId>
+            <version>1.69</version>
         </dependency>
 
         <dependency>
             <artifactId>lombok</artifactId>
             <groupId>org.projectlombok</groupId>
+            <version>1.18.22</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -42,19 +55,18 @@
         <dependency>
             <artifactId>unirest-java</artifactId>
             <groupId>com.konghq</groupId>
-            <version>3.13.0</version>
+            <version>3.13.6</version>
         </dependency>
 
         <dependency>
             <artifactId>jackson-annotations</artifactId>
             <groupId>com.fasterxml.jackson.core</groupId>
-            <version>2.12.5</version>
+            <version>2.13.1</version>
         </dependency>
 
         <dependency>
             <artifactId>commons-lang3</artifactId>
             <groupId>org.apache.commons</groupId>
-            <version>3.11</version>
         </dependency>
 
         <dependency>
@@ -80,9 +92,9 @@
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>19.1.0</version>
+        <version>19.2.0</version>
     </parent>
 
-    <version>19.1.0</version>
+    <version>19.2.0</version>
 
 </project>

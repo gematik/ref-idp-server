@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 gematik GmbH
+# Copyright (c) 2022 gematik GmbH
 # 
 # Licensed under the Apache License, Version 2.0 (the License);
 # you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 @Product:IDP-D
 @FastTrack
 @ThirdPartyToken
+@RefImplOnly
 Feature: Beantrage Token mit dem Auth Code des sektoralen IDPs
 
   Die eRezept-App holt sich - nach einer Authentisierung beim sektoralen IDP - beim zentralen IDP einen ACCESS_TOKEN für den eRezept-Fachdienst.

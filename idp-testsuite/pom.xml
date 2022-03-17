@@ -1,34 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns="http://maven.apache.org/POM/4.0.0"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <artifactId>idp-testsuite</artifactId>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
-    <version>19.1.0</version>
+    <version>19.2.0</version>
 
     <parent>
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>19.1.0</version>
+        <version>19.2.0</version>
     </parent>
 
     <properties>
-        <version.assertj>3.21.0</version.assertj>
         <version.cucumber>6.11.0</version.cucumber>
         <version.serenity.core>2.6.0</version.serenity.core>
+        <version.assertj>3.22.0</version.assertj>
         <version.serenity.cucumber.6>2.6.0</version.serenity.cucumber.6>
         <version.serenity.maven.plugin>2.4.34</version.serenity.maven.plugin>
 
         <idp-server.spring.profile>idp</idp-server.spring.profile>
         <sektoral-idp.spring.profile>sektoralIdp</sektoral-idp.spring.profile>
+        <fedmaster-idp.spring.profile>federationMaster</fedmaster-idp.spring.profile>
+        <fachdienst-idp.spring.profile>fachdienst</fachdienst-idp.spring.profile>
     </properties>
 
     <profiles>
         <profile>
-            <!-- Profile to reserve ports and start IDP-Server and Sektoral-IDP for Integration Tests-->
+            <!-- Profile to reserve ports and start IDP-Server, Sektoral-IDP, FederationMaster and Fachdienst for Integration Tests-->
             <activation>
                 <property>
                     <name>!env.IDP_SERVER</name>
@@ -71,6 +73,36 @@
                                     </destinationFile>
                                 </configuration>
                             </execution>
+                            <execution>
+                                <id>copy-fedmaster-config</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>copy</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceFile>
+                                        ${basedir}/../idp-fedmaster/src/main/resources/application.yml
+                                    </sourceFile>
+                                    <destinationFile>
+                                        target/test-classes/application-${fedmaster-idp.spring.profile}.yml
+                                    </destinationFile>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>copy-fachdienst-config</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>copy</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceFile>
+                                        ${basedir}/../idp-fachdienst/src/main/resources/application.yml
+                                    </sourceFile>
+                                    <destinationFile>
+                                        target/test-classes/application-${fachdienst-idp.spring.profile}.yml
+                                    </destinationFile>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                     <plugin>
@@ -81,6 +113,8 @@
                                     <portNames>
                                         <portName>idp-server.http.port</portName>
                                         <portName>idp-sektoral.http.port</portName>
+                                        <portName>idp-fedmaster.http.port</portName>
+                                        <portName>idp-fachdienst.http.port</portName>
                                     </portNames>
                                 </configuration>
                                 <goals>
@@ -112,26 +146,49 @@
                             <environmentVariables>
                                 <IDP_SERVER_PORT>${idp-server.http.port}</IDP_SERVER_PORT>
                                 <IDP_SEKTORAL_PORT>${idp-sektoral.http.port}</IDP_SEKTORAL_PORT>
-                                <IDP_SEKTORAL>http://127.0.0.1</IDP_SEKTORAL>
-                                <TIGER_TESTENV_SERVERS_IDP_EXTERNALJAROPTIONS_HEALTHCHECK>
+                                <IDP_FEDMASTER_PORT>${idp-fedmaster.http.port}</IDP_FEDMASTER_PORT>
+                                <IDP_FACHDIENST_PORT>${idp-fachdienst.http.port}</IDP_FACHDIENST_PORT>
+
+                                <TIGER_SERVERS_IDP_EXTERNALJAROPTIONS_HEALTHCHECK>
                                     http://127.0.0.1:${idp-server.http.port}
-                                </TIGER_TESTENV_SERVERS_IDP_EXTERNALJAROPTIONS_HEALTHCHECK>
-                                <TIGER_TESTENV_SERVERS_IDP_EXTERNALJAROPTIONS_ARGUMENTS_0>
+                                </TIGER_SERVERS_IDP_EXTERNALJAROPTIONS_HEALTHCHECK>
+                                <TIGER_SERVERS_IDP_EXTERNALJAROPTIONS_ARGUMENTS_0>
                                     --server.port=${idp-server.http.port}
-                                </TIGER_TESTENV_SERVERS_IDP_EXTERNALJAROPTIONS_ARGUMENTS_0>
-                                <TIGER_TESTENV_SERVERS_IDP_SOURCE_0>
+                                </TIGER_SERVERS_IDP_EXTERNALJAROPTIONS_ARGUMENTS_0>
+                                <TIGER_SERVERS_IDP_SOURCE_0>
                                     local://idp-server-${version}.jar
-                                </TIGER_TESTENV_SERVERS_IDP_SOURCE_0>
-                                <TIGER_TESTENV_SERVERS_IDPSEKTORAL_EXTERNALJAROPTIONS_HEALTHCHECK>
+                                </TIGER_SERVERS_IDP_SOURCE_0>
+
+                                <TIGER_SERVERS_IDPSEKTORAL_EXTERNALJAROPTIONS_HEALTHCHECK>
                                     http://127.0.0.1:${idp-sektoral.http.port}
-                                </TIGER_TESTENV_SERVERS_IDPSEKTORAL_EXTERNALJAROPTIONS_HEALTHCHECK>
-                                <TIGER_TESTENV_SERVERS_IDPSEKTORAL_EXTERNALJAROPTIONS_ARGUMENTS_0>
+                                </TIGER_SERVERS_IDPSEKTORAL_EXTERNALJAROPTIONS_HEALTHCHECK>
+                                <TIGER_SERVERS_IDPSEKTORAL_EXTERNALJAROPTIONS_ARGUMENTS_0>
                                     --server.port=${idp-sektoral.http.port}
-                                </TIGER_TESTENV_SERVERS_IDPSEKTORAL_EXTERNALJAROPTIONS_ARGUMENTS_0>
-                                <TIGER_TESTENV_SERVERS_IDPSEKTORAL_SOURCE_0>
+                                </TIGER_SERVERS_IDPSEKTORAL_EXTERNALJAROPTIONS_ARGUMENTS_0>
+                                <TIGER_SERVERS_IDPSEKTORAL_SOURCE_0>
                                     local://idp-sektoral-${version}.jar
-                                </TIGER_TESTENV_SERVERS_IDPSEKTORAL_SOURCE_0>
-                                <TIGER_ACTIVE>1</TIGER_ACTIVE>
+                                </TIGER_SERVERS_IDPSEKTORAL_SOURCE_0>
+
+                                <TIGER_SERVERS_IDPFEDMASTER_EXTERNALJAROPTIONS_HEALTHCHECK>
+                                    http://127.0.0.1:${idp-fedmaster.http.port}
+                                </TIGER_SERVERS_IDPFEDMASTER_EXTERNALJAROPTIONS_HEALTHCHECK>
+                                <TIGER_SERVERS_IDPFEDMASTER_EXTERNALJAROPTIONS_ARGUMENTS_0>
+                                    --server.port=${idp-fedmaster.http.port}
+                                </TIGER_SERVERS_IDPFEDMASTER_EXTERNALJAROPTIONS_ARGUMENTS_0>
+                                <TIGER_SERVERS_IDPFEDMASTER_SOURCE_0>
+                                    local://idp-fedmaster-${version}.jar
+                                </TIGER_SERVERS_IDPFEDMASTER_SOURCE_0>
+
+                                <TIGER_SERVERS_IDPFACHDIENST_EXTERNALJAROPTIONS_HEALTHCHECK>
+                                    http://127.0.0.1:${idp-fachdienst.http.port}
+                                </TIGER_SERVERS_IDPFACHDIENST_EXTERNALJAROPTIONS_HEALTHCHECK>
+                                <TIGER_SERVERS_IDPFACHDIENST_EXTERNALJAROPTIONS_ARGUMENTS_0>
+                                    --server.port=${idp-fachdienst.http.port}
+                                </TIGER_SERVERS_IDPFACHDIENST_EXTERNALJAROPTIONS_ARGUMENTS_0>
+                                <TIGER_SERVERS_IDPFACHDIENST_SOURCE_0>
+                                    local://idp-fachdienst-${version}.jar
+                                </TIGER_SERVERS_IDPFACHDIENST_SOURCE_0>
+
                             </environmentVariables>
                             <forkMode>once</forkMode>
                         </configuration>
@@ -173,7 +230,6 @@
                                 <!--suppress UnresolvedMavenProperty -->
                                 <cucumber.filter.tags>@Approval and not @OpenBug and not @WiP and not @LongRunning
                                 </cucumber.filter.tags>
-                                <TIGER_ACTIVE>1</TIGER_ACTIVE>
                             </systemPropertyVariables>
                             <forkMode>once</forkMode>
                         </configuration>
@@ -222,6 +278,16 @@
         <dependency>
             <artifactId>spring-boot-starter-test</artifactId>
             <groupId>org.springframework.boot</groupId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-to-slf4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
@@ -295,11 +361,6 @@
             <version>1.2.1</version>
         </dependency>
 
-        <dependency>
-            <groupId>de.gematik</groupId>
-            <artifactId>rbellogger</artifactId>
-        </dependency>
-
         <!-- https://mvnrepository.com/artifact/org.junit.vintage/junit-vintage-engine -->
         <dependency>
             <groupId>org.junit.vintage</groupId>
@@ -361,7 +422,7 @@
                             <target>
                                 <property environment="env"/>
                                 <condition property="gematik.testconfig" value="${env.GEMATIK_TESTCONFIG}"
-                                    else="default">
+                                           else="default">
                                     <isset property="env.GEMATIK_TESTCONFIG"/>
                                 </condition>
                                 <echo message="${gematik.testconfig}"/>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 gematik GmbH
+ * Copyright (c) 2022 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,17 @@ package de.gematik.idp.test.steps.model;
 import java.util.Arrays;
 
 public enum IdpEndpointType {
-    Sektoral_IDP, Smartcard_IDP;
+    Sektoral_IDP, Smartcard_IDP, Fachdienst;
 
-    public final static String CUCUMBER_REGEX = "(sektoral idp|smartcard idp)";
+    public final static String CUCUMBER_REGEX = "(sektoral idp|smartcard idp|fachdienst)";
 
     private final String value;
 
     public static IdpEndpointType fromString(final String value) {
         return Arrays.stream(IdpEndpointType.values())
-            .filter(e -> e.value.equals(value))
-            .findFirst()
-            .orElseThrow(() -> new AssertionError("Invalid IDP Endpoint Type '" + value + "'"));
+                .filter(e -> e.value.equals(value))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Invalid IDP Endpoint Type '" + value + "'"));
 
     }
 

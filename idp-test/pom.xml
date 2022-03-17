@@ -9,7 +9,7 @@
             <!--version depends on spring-boot-->
             <artifactId>junit-jupiter-engine</artifactId>
             <groupId>org.junit.jupiter</groupId>
-            <version>5.8.1</version>
+            <version>5.8.2</version>
         </dependency>
         <dependency>
             <artifactId>commons-io</artifactId>
@@ -22,12 +22,6 @@
             <scope>compile</scope>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <artifactId>jackson-databind</artifactId>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <scope>compile</scope>
-            <version>2.12.5</version>
-        </dependency>
     </dependencies>
 
     <modelVersion>4.0.0</modelVersion>
@@ -35,7 +29,7 @@
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>19.1.0</version>
+        <version>19.2.0</version>
     </parent>
-    <version>19.1.0</version>
+    <version>19.2.0</version>
 </project>

@@ -7,10 +7,14 @@ test-output/
 /idp-testsuite/logs/
 /idp-testsuite/testartefacts/20*
 /idp-operations/dependency-reduced-pom.xml
+idp-testsuite/test-reports/
+*.run.xml
 
 build.sh
 docker-compose.deploy.yml
 docker-compose_idpSektoral.deploy.yml
+docker-compose_idpFedMaster.deploy.yml
+docker-compose_idpFachdienst.deploy.yml
 Dockerfile
 DockerfileMySql
 Jenkinsfile

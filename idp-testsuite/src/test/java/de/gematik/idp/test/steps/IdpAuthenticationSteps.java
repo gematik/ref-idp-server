@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 gematik GmbH
+ * Copyright (c) 2022 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package de.gematik.idp.test.steps;
 
+import static de.gematik.idp.IdpConstants.FACHDIENST_AUTHORIZATION_ENDPOINT;
 import de.gematik.idp.test.steps.model.HttpMethods;
 import de.gematik.idp.test.steps.model.HttpStatus;
 import de.gematik.idp.test.steps.model.IdpEndpointType;
@@ -76,11 +77,17 @@ public class IdpAuthenticationSteps extends IdpStepsBase {
                 .getQueryParams().toSingleValueMap();
             mapParsedParams = getFillFromRedirect(mapParsedParams, parameters);
         }
-        
+
         final String url;
         switch (idpEndpointType) {
             case Sektoral_IDP:
                 url = Context.get().getString(ContextKey.AUTH_URL_SEKTORAL_IDP);
+                break;
+            case Fachdienst:
+                url = Context.get().getString(ContextKey.FACHDIENST_URL) + FACHDIENST_AUTHORIZATION_ENDPOINT;
+                if (!mapParsedParams.containsKey("idp_iss")) {
+                    mapParsedParams.put("idp_iss", Context.get().getString(ContextKey.ISS_IDP_SEKTORAL));
+                }
                 break;
             case Smartcard_IDP:
                 if (mapParsedParams.containsKey("client_id")) {

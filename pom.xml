@@ -6,12 +6,12 @@
     <parent>
         <artifactId>spring-boot-starter-parent</artifactId>
         <groupId>org.springframework.boot</groupId>
-        <version>2.5.3</version>
+        <version>2.6.3</version>
     </parent>
 
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>19.1.0</version>
+    <version>19.2.0</version>
     <packaging>pom</packaging>
 
 
@@ -24,6 +24,8 @@
         <module>idp-client</module>
         <module>idp-server</module>
         <module>idp-sektoral</module>
+        <module>idp-fedmaster</module>
+        <module>idp-fachdienst</module>
         <module>idp-testsuite</module>
         <module>idp-report</module>
     </modules>
@@ -43,7 +45,7 @@
             <dependency>
                 <groupId>de.gematik.pki</groupId>
                 <artifactId>gemLibPki</artifactId>
-                <version>0.4.1</version>
+                <version>0.5.2</version>
             </dependency>
             <dependency>
                 <artifactId>aforeporter</artifactId>
@@ -53,7 +55,17 @@
             <dependency>
                 <groupId>de.gematik</groupId>
                 <artifactId>rbellogger</artifactId>
-                <version>0.18.0-151</version>
+                <version>${version.rbellogger}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-core</artifactId>
+                <version>${version.logback}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${version.logback}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -61,25 +73,31 @@
     <properties>
         <docker.image.name.smartcard>gstopdr1.top.local/idp/idp-server</docker.image.name.smartcard>
         <docker.image.name.sektoralidp>gstopdr1.top.local/idp/idp-sektoral</docker.image.name.sektoralidp>
+        <docker.image.name.fedmaster>gstopdr1.top.local/idp/idp-fedmaster</docker.image.name.fedmaster>
+        <docker.image.name.fachdienst>gstopdr1.top.local/idp/idp-fachdienst</docker.image.name.fachdienst>
         <java.version>11</java.version>
         <mpir.skip>true</mpir.skip>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
         <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/../idp-report/target/site/jacoco-aggregate/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
         <sonar.language>java</sonar.language>
-        <version.bouncycastle.bcpkix>1.68</version.bouncycastle.bcpkix>
+
+        <version.bouncycastle.bcpkix>1.69</version.bouncycastle.bcpkix>
         <version.build-helper-maven-plugin>3.2.0</version.build-helper-maven-plugin>
-        <version.jsoniter>0.9.16</version.jsoniter>
+        <version.jsoniter>0.9.23</version.jsoniter>
         <version.lombok>1.18.16</version.lombok>
-        <version.tiger>0.16.1</version.tiger>
+        <version.tiger>0.19.4</version.tiger>
+        <version.rbellogger>0.23</version.rbellogger>
         <version.maven-clean-plugin>3.1.0</version.maven-clean-plugin>
         <version.maven-compiler-plugin>3.8.1</version.maven-compiler-plugin>
         <version.maven-jar-plugin>3.2.0</version.maven-jar-plugin>
         <version.maven-javadoc-plugin>3.0.1</version.maven-javadoc-plugin>
         <version.docker-maven-plugin>0.34.1</version.docker-maven-plugin>
+        <version.logback>1.2.9</version.logback>
 
         <!-- only needed for mvn site to avoid stack traces flooding the console -->
         <version.maven-resources-plugin>3.0.2</version.maven-resources-plugin>
@@ -87,12 +105,30 @@
         <!-- settings for upload to sonar server -->
         <version.maven-source-plugin>3.0.1</version.maven-source-plugin>
         <version.maven-surefire-plugin>2.22.2</version.maven-surefire-plugin>
-        <version.spring-boot>2.5.5</version.spring-boot>
+        <version.spring-boot>2.6.3</version.spring-boot>
         <version.test.regex>none</version.test.regex>
     </properties>
 
     <build>
         <plugins>
+            <!-- Phase clean -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>2.5</version>
+                <configuration>
+                    <filesets>
+                        <!-- delete logfiles -->
+                        <fileset>
+                            <directory>logs</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
             <!-- remove only needed for mvn site runs -->
             <plugin>
                 <artifactId>maven-site-plugin</artifactId>

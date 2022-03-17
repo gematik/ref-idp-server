@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 gematik GmbH
+ * Copyright (c) 2022 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,15 @@ public final class IdpConstants {
     public static final int JTI_LENGTH = 16;
     public static final String AMR_FAST_TRACK = "mfa";
 
+    public static final String FED_SIGNED_JWKS_ENDPOINT = "/jws.json";
     public static final String SEKTORAL_IDP_AUTHORIZATION_ENDPOINT = "/authorization";
+    public static final String ENTITY_STATEMENT_ENDPOINT = "/.well-known/openid-federation";
+    public static final String ENTITY_LISTING_ENDPOINT = "/.well-known/entity_listing";
+    public static final String FEDIDP_AUTH_ENDPOINT = "/Auth";
+    public static final String FEDIDP_TOKEN_ENDPOINT = "/Token";
+    public static final String FEDIDP_PAR_AUTH_ENDPOINT = "/PAR_Auth";
 
+    public static final String FEDMASTER_FEDERATION_API_ENDPOINT = "/federation_api_endpoint";
+    public static final String FACHDIENST_AUTHORIZATION_ENDPOINT = "/auth";
 
 }

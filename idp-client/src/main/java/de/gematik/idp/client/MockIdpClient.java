@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 gematik GmbH
+ * Copyright (c) 2022 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -41,14 +41,14 @@ import org.apache.commons.codec.digest.DigestUtils;
 @Builder(toBuilder = true)
 public class MockIdpClient implements IIdpClient {
 
+    private static final String SERVER_SUB_SALT = "someArbitrarySubSaltValue";
     private final PkiIdentity serverIdentity;
     private final String clientId;
     private final boolean produceTokensWithInvalidSignature;
     private final boolean produceOnlyExpiredTokens;
     @Builder.Default
     private final String uriIdpServer = IdpConstants.DEFAULT_SERVER_URL;
-    private final String serverSubSalt = "someArbitrarySubSaltValue";
-    private final Map<IdpScope, String> scopeToAudienceUrls = new HashMap<>();
+    private final EnumMap<IdpScope, String> scopeToAudienceUrls = new EnumMap<>(IdpScope.class);
     private AccessTokenBuilder accessTokenBuilder;
     private AuthenticationResponseBuilder authenticationResponseBuilder;
     private AuthenticationTokenBuilder authenticationTokenBuilder;
@@ -119,7 +119,7 @@ public class MockIdpClient implements IIdpClient {
         serverIdentity.setKeyId(Optional.of("puk_idp_sig"));
         serverIdentity.setUse(Optional.of("sig"));
         jwtProcessor = new IdpJwtProcessor(serverIdentity);
-        accessTokenBuilder = new AccessTokenBuilder(jwtProcessor, uriIdpServer, serverSubSalt,
+        accessTokenBuilder = new AccessTokenBuilder(jwtProcessor, uriIdpServer, SERVER_SUB_SALT,
             scopeToAudienceUrls);
         authenticationChallengeBuilder = AuthenticationChallengeBuilder.builder()
             .serverSigner(new IdpJwtProcessor(serverIdentity))

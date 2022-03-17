@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 gematik GmbH
+ * Copyright (c) 2022 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,22 @@
 
 package de.gematik.idp.field;
 
-import java.util.Optional;
-import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+
+import java.util.Optional;
+import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 @Getter
 public enum IdpScope {
-    OPENID("openid"), EREZEPT("e-rezept"), PAIRING("pairing");
+    OPENID("openid"), EREZEPT("e-rezept"), PAIRING("pairing"), EREZEPTDEV("e-rezept-dev");
 
     private final String jwtValue;
 
     public static Optional<IdpScope> fromJwtValue(final String jwtValue) {
         return Stream.of(IdpScope.values())
-            .filter(candidate -> candidate.getJwtValue().equals(jwtValue))
-            .findAny();
+                .filter(candidate -> candidate.getJwtValue().equals(jwtValue))
+                .findAny();
     }
 }

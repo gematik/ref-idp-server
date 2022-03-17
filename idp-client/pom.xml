@@ -42,10 +42,22 @@
         <dependency>
             <artifactId>spring-boot-starter-web</artifactId>
             <groupId>org.springframework.boot</groupId>
+            <version>2.6.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-to-slf4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <artifactId>spring-boot-starter-actuator</artifactId>
             <groupId>org.springframework.boot</groupId>
+            <version>2.6.3</version>
         </dependency>
 
         <dependency>
@@ -65,8 +77,13 @@
                     <artifactId>junit-vintage-engine</artifactId>
                     <groupId>org.junit.vintage</groupId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-api</artifactId>
+                </exclusion>
             </exclusions>
             <groupId>org.springframework.boot</groupId>
+            <version>2.6.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -79,18 +96,19 @@
         <dependency>
             <artifactId>lombok</artifactId>
             <groupId>org.projectlombok</groupId>
+            <version>1.18.22</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <artifactId>unirest-java</artifactId>
             <groupId>com.konghq</groupId>
-            <version>3.13.0</version>
+            <version>3.13.6</version>
         </dependency>
         <dependency>
             <artifactId>unirest-objectmapper-jackson</artifactId>
             <groupId>com.konghq</groupId>
-            <version>3.13.0</version>
+            <version>3.13.6</version>
         </dependency>
 
         <dependency>
@@ -113,8 +131,8 @@
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>19.1.0</version>
+        <version>19.2.0</version>
     </parent>
 
-    <version>19.1.0</version>
+    <version>19.2.0</version>
 </project>

@@ -206,7 +206,7 @@ caching:
     cacheControl: "max-age=300"
 logging:
   level:
-    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+    org.springframework.web.filter.CommonsRequestLoggingFilter: INFO
     de.gematik: INFO
 management:
   endpoints:

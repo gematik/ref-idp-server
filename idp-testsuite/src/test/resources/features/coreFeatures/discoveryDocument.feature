@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 gematik GmbH
+# Copyright (c) 2022 gematik GmbH
 # 
 # Licensed under the Apache License, Version 2.0 (the License);
 # you may not use this file except in compliance with the License.
@@ -81,6 +81,7 @@ Feature: Fordere Discovery Dokument an
         }
         """
 
+
   @TCID:IDP_REF_DISC_004 @PRIO:1
   @Afo:A_20698 @Afo:A_20591 @Afo:A_20439 @Afo:A_20458 @Afo:A_21429
   @Approval @Ready
@@ -95,36 +96,38 @@ Feature: Fordere Discovery Dokument an
   - der Claim code_challenge_methods_supported ist optional
 
 
-    Given IDP I request the discovery document
-
-    When IDP I extract the body claims
-    Then IDP the body claims should match in any order
+    Given TGR clear recorded messages
+    And IDP I request the discovery document
+    And TGR find request to path "/.well-known/openid-configuration"
+    Then TGR current response at "$.body.body" matches as JSON
         """
-          { acr_values_supported:                   '["gematik-ehealth-loa-high"]',
-            authorization_endpoint:                 "http.*",
-            sso_endpoint:                           "http.*",
-            auth_pair_endpoint:                     "http.*",
-            uri_pair:                               "http.*",
-            exp:                                    "[\\d]*",
-            grant_types_supported:                  '["authorization_code"]',
-            iat:                                    "[\\d]*",
-            id_token_signing_alg_values_supported:  '["BP256R1"]',
-            issuer:                                 "${TESTENV.issuer}",
-            jwks_uri:                               "http.*",
-            uri_puk_idp_sig:                        ".*",
-            uri_puk_idp_enc:                        ".*",
-            uri_disc:                               ".*",
-            response_modes_supported:               '["query"]',
-            response_types_supported:               '["code"]',
-            scopes_supported:                       '["openid","e-rezept","pairing"]',
-            subject_types_supported:                '["pairwise"]',
-            token_endpoint:                         "http.*",
-            token_endpoint_auth_methods_supported:  '["none"]',
-            kk_app_list_uri :                       "http.*",
-            third_party_authorization_endpoint:     "http.*",
-            ____code_challenge_methods_supported:   '["S256"]'
+          { acr_values_supported:                   ["gematik-ehealth-loa-high"],
+            authorization_endpoint:                 'http.*',
+            sso_endpoint:                           'http.*',
+            auth_pair_endpoint:                     'http.*',
+            uri_pair:                               'http.*',
+            exp:                                    "${json-unit.ignore}",
+            grant_types_supported:                  ["authorization_code"],
+            iat:                                    "${json-unit.ignore}",
+            id_token_signing_alg_values_supported:  ["BP256R1"],
+            issuer:                                 '.*',
+            jwks_uri:                               'http.*',
+            uri_puk_idp_sig:                        '.*',
+            uri_puk_idp_enc:                        '.*',
+            uri_disc:                               '.*',
+            response_modes_supported:               ["query"],
+            response_types_supported:               ["code"],
+            scopes_supported:                       "${json-unit.ignore}",
+            subject_types_supported:                ["pairwise"],
+            token_endpoint:                         'http.*',
+            token_endpoint_auth_methods_supported:  ["none"],
+            kk_app_list_uri :                       'http.*',
+            third_party_authorization_endpoint:     'http.*',
+            ____code_challenge_methods_supported:   ["S256"]
           }
         """
+    And TGR current response at "$.body.body.scopes_supported" matches ".*openid.*e-rezept.*pairing.*"
+
 
   @TCID:IDP_REF_DISC_005 @PRIO:2
   @Afo:A_20698
@@ -146,6 +149,7 @@ Feature: Fordere Discovery Dokument an
     # exp must be after now but within 24h
     And IDP the body claim 'exp' contains a date not before PT1S
     And IDP the body claim 'exp' contains a date not after P1DT1S
+
 
   @Afo:A_20691
   @manual
@@ -193,6 +197,7 @@ Feature: Fordere Discovery Dokument an
     And IDP URI in claim "uri_pair" exists with method POST and status 403
     # content type not supported
 
+
   @TCID:IDP_REF_DISC_007 @PRIO:1
   @Afo:A_20732 @Afo:A_20591
   @Approval @Ready @OutOfScope:KeyChecksOCSP
@@ -221,6 +226,7 @@ Feature: Fordere Discovery Dokument an
     And IDP the JSON response should be a valid certificate
     # The correct usage is then checked in the workflow scenarios
 
+
   @TCID:IDP_REF_DISC_008 @PRIO:1
   @Afo:A_20732
   @Approval @Ready @OutOfScope:KeyChecksOCSP
@@ -248,6 +254,7 @@ Feature: Fordere Discovery Dokument an
     And IDP the JSON response should be a valid public key
     # The correct usage is then checked in the workflow scenarios
 
+
   @TCID:IDP_REF_DISC_009 @PRIO:1
     @Approval @Ready @OutOfScope:KeyChecksOCSP
   Scenario Outline: Disc - Check JWKS URI
@@ -257,34 +264,35 @@ Feature: Fordere Discovery Dokument an
   Die Antwort des Servers auf die Anfrage auf diese URIs muss einen validen ECC BP256 Schlüsselset liefern.
 
 
-    Given IDP I request the discovery document
+    Given TGR clear recorded messages
+    And IDP I request the discovery document
     And IDP I extract the body claims
 
     When IDP I request the uri from claim "<claim>" with method GET and status 200
-    Then IDP the JSON response should match
-        """
-          {
-            keys: [
-              {
+    And TGR find request to path "/.well-known/openid-configuration"
+    And TGR find next request to path ".*"
+    Then TGR current response at "$.body.keys.[?($.kid.content == 'puk_idp_enc')]" matches as JSON
+    """
+    {
                 kid:  "puk_idp_enc",
                 use:  "enc",
                 kty:  "EC",
                 crv:  "BP-256",
-                x:    ".*",
-                y:    ".*"
-              },
-              {
-                x5c:  "${json-unit.ignore}",
+                x:    "${json-unit.ignore}",
+                y:    "${json-unit.ignore}"
+    }
+    """
+    And TGR current response at "$.body.keys.[?($.kid.content == 'puk_idp_sig')]" matches as JSON
+    """
+    {
                 kid:  "puk_idp_sig",
                 use:  "sig",
                 kty:  "EC",
                 crv:  "BP-256",
-                x:    ".*",
-                y:    ".*"
-              }
-            ]
-          }
-        """
+                x:    "${json-unit.ignore}",
+                y:    "${json-unit.ignore}"
+    }
+    """
 
     And IDP the JSON array 'keys' of response should contain valid certificates for 'idpSig'
     # The correct usage is then checked in the workflow scenarios

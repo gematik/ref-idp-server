@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 gematik GmbH
+ * Copyright (c) 2022 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package de.gematik.idp.server.controllers;
 
 
+import static de.gematik.idp.EnvHelper.getSystemProperty;
 import static de.gematik.idp.IdpConstants.*;
 import static de.gematik.idp.field.ClientUtilities.generateCodeChallenge;
 import static de.gematik.idp.field.ClientUtilities.generateCodeVerifier;
@@ -55,7 +56,6 @@ import net.dracoblue.spring.web.mvc.method.annotation.HttpResponseHeader;
 import net.dracoblue.spring.web.mvc.method.annotation.HttpResponseHeaders;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -181,6 +181,7 @@ public class IdpController {
         @RequestParam(name = "scope") @NotEmpty(message = "1002") final String userAgentScope,
         @RequestParam(name = "kk_app_id") @NotEmpty(message = "1002") final String sekIdpId,
         final HttpServletResponse response) {
+        
         final String idpState = new Nonce().getNonceAsHex(FASTTRACK_IDP_STATE_LENGTH);
         final String idpCodeChallengeMethod = "S256";
         final String idpNonce = new Nonce().getNonceAsHex(FASTTRACK_IDP_NONCE_LENGTH);
@@ -257,7 +258,7 @@ public class IdpController {
         final JsonWebToken idToken = new JsonWebToken(
             sektoralTokenResponse.getBody().getObject().getString("id_token"));
         final String authorizationCodeLocation = idpAuthenticator
-            .getAuthorizationCodeLocation(idToken, ftSession.getSesstionDataAsMap());
+            .getAuthorizationCodeLocation(idToken, ftSession.getSessionDataAsMap());
         response.setHeader(HttpHeaders.LOCATION, authorizationCodeLocation);
         setNoCacheHeader(response);
         response.setStatus(HttpStatus.FOUND.value());
@@ -272,9 +273,9 @@ public class IdpController {
     private String getSekIdpLocation(final String sekIdpIdentifier) {
         log.info("Get location of idp-sektoral from environment. Identifier \"{}\" is not used.", sekIdpIdentifier);
         return new StringBuilder()
-            .append(System.getenv("IDP_SEKTORAL"))
+            .append(getSystemProperty("IDP_SEKTORAL").orElse("http://127.0.0.1"))
             .append(":")
-            .append(System.getenv("IDP_SEKTORAL_PORT")).toString();
+            .append(getSystemProperty("IDP_SEKTORAL_PORT").orElseThrow()).toString();
     }
 
     private void setNoCacheHeader(final HttpServletResponse response) {

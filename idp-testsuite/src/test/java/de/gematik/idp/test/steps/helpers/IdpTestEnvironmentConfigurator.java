@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 gematik GmbH
+ * Copyright (c) 2022 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -16,32 +16,35 @@
 
 package de.gematik.idp.test.steps.helpers;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
 import de.gematik.idp.test.steps.model.CodeAuthType;
 import de.gematik.test.bdd.TestEnvironmentConfigurator;
-import java.net.MalformedURLException;
-import java.nio.file.Path;
-import java.security.Key;
-import javax.crypto.spec.SecretKeySpec;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tomcat.util.buf.HexUtils;
 import org.assertj.core.api.Assertions;
 
+import javax.crypto.spec.SecretKeySpec;
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.security.Key;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 @Slf4j
 public class IdpTestEnvironmentConfigurator extends TestEnvironmentConfigurator {
 
     private static final String IDP_LOCAL_DISCDOC = "IDP_LOCAL_DISCDOC";
     private static final String IDP_SERVER_PORT = "IDP_SERVER_PORT";
-    private static final String DISCOVERY_URL_TEMPLATE = "http://localhost:%d/auth/realms/idp/.well-known/openid-configuration";
+    private static final String DISCOVERY_URL_TEMPLATE = "http://localhost:%d/.well-known/openid-configuration";
     private static final String AUTHORIZATION_URL_SEKTORAL_IDP_TEMPLATE = "http://localhost:%d/authorization";
     public static final String IDP_SERVER = "IDP_SERVER";
     private static String DISCOVERY_URL = null;
     private static final String ENV_AUTHORIZATION_URL_SEKTORAL_IDP = "AUTHORIZATION_URL_SEKTORAL_IDP";
     private static String AUTHORIZATION_URL_SEKTORAL_IDP;
     private static final String IDP_SEKTORAL_PORT = "IDP_SEKTORAL_PORT";
+
 
     static {
         initializeIDPTestEnvironment();
@@ -69,17 +72,17 @@ public class IdpTestEnvironmentConfigurator extends TestEnvironmentConfigurator 
 
     public static synchronized Key getSymmetricEncryptionKey(final CodeAuthType flowType) {
         assertThat(flowType)
-            .isIn(CodeAuthType.SSO_TOKEN, CodeAuthType.SIGNED_CHALLENGE, CodeAuthType.ALTERNATIVE_AUTHENTICATION);
+                .isIn(CodeAuthType.SSO_TOKEN, CodeAuthType.SIGNED_CHALLENGE, CodeAuthType.ALTERNATIVE_AUTHENTICATION);
 
         final String propName = "encryption." +
-            flowType.toString().toLowerCase().replace(" ", "") +
-            ".symmetric.key";
+                flowType.toString().toLowerCase().replace(" ", "") +
+                ".symmetric.key";
         if (getTestEnvProperty(propName, null) != null) {
             return new SecretKeySpec(DigestUtils.sha256(getTestEnvProperty(propName, "")),
-                "AES");
+                    "AES");
         } else {
             return new SecretKeySpec(HexUtils.fromHexString(getTestEnvProperty(propName + ".hex", "")),
-                "AES");
+                    "AES");
         }
     }
 

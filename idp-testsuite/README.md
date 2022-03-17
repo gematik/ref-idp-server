@@ -1,12 +1,8 @@
 # ![Logo](doc/images/IDPLogo-64.png) Gematik IDP Zulassungstestsuite
 
-Die Gematik IDP Zulassungstestsuite dient zur Pr&uuml;fung externer IDP Dienst Drittanbieter. Sie ist derzeit in
-Entwicklung und noch **NICHT** fertiggestellt. Ziel der Suite ist es sowohl externe IDP Dienste, als auch die Gematik
-interne Referenzimplementierung bezüglich ihrer Eignung als IDP Dienst in der TI Umgebung zu testen.
+Die Gematik-IDP-Zulassungstestsuite dient zur Pr&uuml;fung des zentralen IDP Dienstes..
 
 ## Informationen zum IDP Dienst
-
-[Produkübersicht (intern)](https://confluence.int.gematik.de/display/DEV/IDP+-+Aufbau)
 
 Folgende Endpunkte sind von einem IDP Dienst zur Verfügung zu stellen:
 
@@ -16,12 +12,9 @@ Folgende Endpunkte sind von einem IDP Dienst zur Verfügung zu stellen:
     * "ID_TOKEN" [openid-connect-core 1.0 # IDToken],
     * "ACCESS_TOKEN" [RFC6749 # section-1.4 & RFC6749 # section-5],
     * "REFRESH_TOKEN/SSO_TOKEN" [RFC6749 # section-1.5 & RFC6749 # section-6]
+* Pairing-Endpunkt
 
 Weiterführende interne Dokumente
-
-* [gemSpec_IDP_Dienst](https://polarion.int.gematik.de/polarion/#/project/Mainline_OPB1/wiki/Spezifikation/gemSpec_IDP_Dienst)
-* [Testkonzept](https://confluence.int.gematik.de/display/DEV/IDP+Testkonzept?src=contextnavpagetreemode)
-* [Testspezifikation](https://confluence.int.gematik.de/display/DEV/IDP+Testspezifikation?src=contextnavpagetreemode)
 
 #### Relevante RFCs
 
@@ -47,11 +40,9 @@ mit dem aktuellen Release sind folgende Testszenarien abgedeckt:
 * Discovery Endpunkt
     * Tests über Erreichbarkeit des Endpunkts, Struktur der Antwort, Inhalte der Claims, Signaturen, zeitliche
       Gültigkeit, Token Verschlüsselung
-    * _In Arbeit: ungültige Zertifikate, Fehlermeldungen_
 * Authorization Endpunkt - Anforderung Challenge Token
     * Tests über Erreichbarkeit des Endpunkts, Eingangsparameter, Struktur der Antwort, Inhalte der Claims, Signaturen,
       Negativtests auf Parameter, Fehlermeldungen, zeitliche Gültigkeit, Token Verschlüsselung
-    * _In Arbeit: Fehlermeldungen, kartenspezifische Szenarien_
 * Authorization Endpunkt - Anforderung Tokencode
     * Tests über Erreichbarkeit des Endpunkts, Eingangsparameter, beide Flows (signed challenge, sso token), Signaturen,
       Negativtests auf Parameter, Fehlermeldungen, zeitliche Gültigkeit, ungültige Zertifikate, Token Verschlüsselung
@@ -65,17 +56,10 @@ mit dem aktuellen Release sind folgende Testszenarien abgedeckt:
     * _In Arbeit: Fehlermeldungen_
     * _Noch nicht realisiert: kartenspezifische Szenarien_
 * Alternative Authentisierung
-    * Erster Draft
-    * _Abzuklären: Validierungsschritte am Server_
-    * _Noch nicht realisiert: Vollständige Umsetzung der Testszenarien, Fehlermeldungen_
+    * Gut-/Schlechtfälle zur alternativen Authentisierung
+    * Testfälle zur Verwendung der Blocklist
 * Pairing Endpunkt - Registrierung / Deregistrierung / Liste
     * Positivfälle, Einige Negativtests
-    * _Abzuklären: Validierungsschritte am Server_
-    * _Noch nicht realisiert: Vollständige Umsetzung der Testszenarien, Fehlermeldungen_
-
-Noch nicht realisiert:
-
-* CR Biometrie / Szenarien für Block/Allow-List und deren Administration
 
 ## Installation der notwendigen Software
 
@@ -307,14 +291,6 @@ Der Anforderungsüberdeckungsbericht listet alle Anforderungen auf und die mit i
 
 Die Liste der Anforderungen entnimmt der Bericht aus der im idp-testsuite Verzeichnis abgelegten requirements.json
 Datei.
-
-## Anpassung der Testsuite an Drittanbieter (OBSOLET mit Version 13)
-
-### Lokales Discovery Dokument (OBSOLET mit Version 13)
-
-### Deaktivieren der Tokenverschlüsselung (OBSOLET mit Version 13)
-
-### Deaktivieren der Verschlüsselung der signierten Challenge (OBSOLET mit Version 13)
 
 ### Nutzung / Anpassung von Testumgebungsvariablen
 
