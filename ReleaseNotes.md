@@ -1,3 +1,7 @@
+# Release 19.3.0
+
+- hot fix: exclude non existent dependency
+
 # Release 19.2.0
 
 - Dependencies aktualisiert

@@ -11,7 +11,7 @@
 
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>19.2.0</version>
+    <version>19.3.0</version>
     <packaging>pom</packaging>
 
 
@@ -56,6 +56,12 @@
                 <groupId>de.gematik</groupId>
                 <artifactId>rbellogger</artifactId>
                 <version>${version.rbellogger}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>jnetpcap</groupId>
+                        <artifactId>jnetpcap</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>ch.qos.logback</groupId>
