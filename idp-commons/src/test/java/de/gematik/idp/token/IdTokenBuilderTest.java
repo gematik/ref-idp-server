@@ -18,7 +18,6 @@ package de.gematik.idp.token;
 
 import static de.gematik.idp.field.ClaimName.*;
 import static org.assertj.core.api.Assertions.assertThat;
-
 import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtBuilder;
@@ -27,7 +26,6 @@ import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.tests.Rfc;
-import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.util.Base64;
 import java.util.HashMap;
@@ -40,7 +38,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(PkiKeyResolver.class)
-public class IdTokenBuilderTest {
+class IdTokenBuilderTest {
 
     private static final String uriIdpServer = "https://idp.zentral.idp.splitdns.ti-dienste.de";
     private static final long maxIdTokenExpirationInSec = 86400;
@@ -79,7 +77,7 @@ public class IdTokenBuilderTest {
     @Afo("A_20313")
     @Afo("TODO A_20297/ML-110385?")
     @Test
-    public void checkIdTokenClaims() {
+    void checkIdTokenClaims() {
         final JsonWebToken idToken = idTokenBuilder
             .buildIdToken(TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, authenticationToken);
 
@@ -105,7 +103,7 @@ public class IdTokenBuilderTest {
     @Rfc("OpenID Connect Core 1.0 incorporating errata set 1 - 2 ID Token")
     @Afo("A_20462")
     @Test
-    public void checkIdTokenClaimTimestamps() {
+    void checkIdTokenClaimTimestamps() {
         final JsonWebToken idToken = idTokenBuilder
             .buildIdToken(TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, authenticationToken);
 
@@ -120,7 +118,7 @@ public class IdTokenBuilderTest {
 
     @Rfc("OpenID Connect Core 1.0 - 3.1.3.6.")
     @Test
-    public void checkIdTokenClaimAtHash() {
+    void checkIdTokenClaimAtHash() {
         final JsonWebToken idToken = idTokenBuilder
             .buildIdToken(TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, authenticationToken);
 
@@ -131,7 +129,7 @@ public class IdTokenBuilderTest {
     }
 
     @Test
-    public void checkIdTokenWithoutNotExistingUserConsentTokenFromAuthenticationToken(
+    void checkIdTokenWithoutNotExistingUserConsentTokenFromAuthenticationToken(
         @PkiKeyResolver.Filename("authz_rsa") final PkiIdentity clientIdentity) {
         final Map<String, Object> bodyClaims = new HashMap<>();
         bodyClaims.put(ID_NUMBER.getJoseName(), "id_number");
@@ -167,7 +165,7 @@ public class IdTokenBuilderTest {
     }
 
     @Test
-    public void verifyAudienceByScopeERezept() {
+    void verifyAudienceByScopeERezept() {
         final Map<String, Object> bodyClaims = new HashMap<>();
         bodyClaims.put(ID_NUMBER.getJoseName(), "id_number");
         bodyClaims.put(CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP);
@@ -181,7 +179,7 @@ public class IdTokenBuilderTest {
     }
 
     @Test
-    public void verifyAudienceByScopePairing() {
+    void verifyAudienceByScopePairing() {
         final Map<String, Object> bodyClaims = new HashMap<>();
         bodyClaims.put(ID_NUMBER.getJoseName(), "id_number");
         bodyClaims.put(CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP);

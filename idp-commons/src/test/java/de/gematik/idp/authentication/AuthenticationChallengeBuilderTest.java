@@ -18,7 +18,6 @@ package de.gematik.idp.authentication;
 
 import static de.gematik.idp.field.ClaimName.*;
 import static org.assertj.core.api.Assertions.assertThat;
-
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.data.UserConsentConfiguration;
 import de.gematik.idp.data.UserConsentDescriptionTexts;
@@ -40,7 +39,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(PkiKeyResolver.class)
-public class AuthenticationChallengeBuilderTest {
+class AuthenticationChallengeBuilderTest {
 
     private static final long CHALLENGE_TOKEN_VALIDITY_IN_MINUTES = 3;
     private static final String SERVER_KEY_IDENTITY = "serverKeyIdentity";
@@ -66,14 +65,14 @@ public class AuthenticationChallengeBuilderTest {
     }
 
     @Test
-    public void authenticationChallengeTest() {
+    void authenticationChallengeTest() {
         assertThat(authenticationChallengeBuilder
             .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue"))
             .isNotNull();
     }
 
     @Test
-    public void challengeAttributeIsJwtAndSignedByCertificate(
+    void challengeAttributeIsJwtAndSignedByCertificate(
         @PkiKeyResolver.Filename("rsa") final PkiIdentity serverIdentity) throws InvalidJwtException {
         final AuthenticationChallenge response = authenticationChallengeBuilder
             .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
@@ -89,7 +88,7 @@ public class AuthenticationChallengeBuilderTest {
     }
 
     @Test
-    public void challengeWithClaims() {
+    void challengeWithClaims() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
             .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
 
@@ -99,7 +98,7 @@ public class AuthenticationChallengeBuilderTest {
 
     @Test
     @Remark("Ticket IDP-93: typ == JWT")
-    public void challengeHeaderClaimItemTyp() {
+    void challengeHeaderClaimItemTyp() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
             .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
 
@@ -109,7 +108,7 @@ public class AuthenticationChallengeBuilderTest {
 
     @Test
     @Remark("Ticket IDP-93: typ == JWT")
-    public void challengeBodyTokenType() {
+    void challengeBodyTokenType() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
             .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
 
@@ -121,7 +120,7 @@ public class AuthenticationChallengeBuilderTest {
     @Test
     @Remark("Ticket IDP-93: exp == 5min")
     @Rfc("7519 4.1.4.  \"exp\" (Expiration Time) Claim")
-    public void challengeBodyClaimItemExp() {
+    void challengeBodyClaimItemExp() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
             .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
 
@@ -132,7 +131,7 @@ public class AuthenticationChallengeBuilderTest {
 
     @Test
     @Rfc("7519 4.1.6.  \"iat\" (Issued At) Claim")
-    public void challengeBodyClaimItemIat() {
+    void challengeBodyClaimItemIat() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
             .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
 
@@ -143,7 +142,7 @@ public class AuthenticationChallengeBuilderTest {
     @Test
     @Remark("Ticket IDP-93: \"jti\" string length: 8-64")
     @Rfc("7519 4.1.7.  \"jti\" (JWT ID) Claim")
-    public void challengeBodyClaimItemJti() {
+    void challengeBodyClaimItemJti() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
             .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
 
@@ -154,7 +153,7 @@ public class AuthenticationChallengeBuilderTest {
 
     @Test
     @Afo("A_20440")
-    public void challengeWithConsent() {
+    void challengeWithConsent() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
             .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
         assertThat(response.getUserConsent()).isNotNull();
@@ -162,7 +161,7 @@ public class AuthenticationChallengeBuilderTest {
     }
 
     @Test
-    public void verifyThatAuthenticationChallengeCarriesNeitherExpNorIatClaimInHeader() {
+    void verifyThatAuthenticationChallengeCarriesNeitherExpNorIatClaimInHeader() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
             .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
         assertThat(response.getChallenge().getHeaderClaims().keySet())
@@ -171,7 +170,7 @@ public class AuthenticationChallengeBuilderTest {
     }
 
     @Test
-    public void challengeToken_checkForKidInHeader() {
+    void challengeToken_checkForKidInHeader() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
             .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
         assertThat(response.getChallenge().getHeaderClaims())

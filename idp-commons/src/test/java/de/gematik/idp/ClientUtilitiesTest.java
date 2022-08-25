@@ -20,13 +20,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import de.gematik.idp.field.ClientUtilities;
 import org.junit.jupiter.api.Test;
 
-public class ClientUtilitiesTest {
+class ClientUtilitiesTest {
 
     private static final String BASE64_URL_REGEX = "^[0-9a-zA-Z\\-\\.~_]+$";
     private static final int SHA256_AS_B64_LENGTH = 43;
 
     @Test
-    public void generateCodeChallengeFromVerifier() {
+    void generateCodeChallengeFromVerifier() {
         final String codeVerifier = ClientUtilities.generateCodeVerifier();
 
         final String codeChallenge = ClientUtilities.generateCodeChallenge(codeVerifier);

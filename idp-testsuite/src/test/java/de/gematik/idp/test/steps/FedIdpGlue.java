@@ -17,6 +17,7 @@
 package de.gematik.idp.test.steps;
 
 import de.gematik.idp.test.steps.helpers.CucumberValuesConverter;
+import de.gematik.idp.test.steps.model.IdpEndpointType;
 import io.cucumber.java.de.Gegebensei;
 import io.cucumber.java.de.Wenn;
 import io.cucumber.java.en.Given;
@@ -61,4 +62,27 @@ public class FedIdpGlue {
         fedsteps.fetchFachdienstIdpList();
     }
 
+    /**
+     * fetch the fachdienst's IDP List
+     *
+     * @gematik.context.in USER_AGENT
+     * @gematik.context.out CLIENT_ID, RESPONSE, CHALLENGE, USER_CONSENT
+     * @see CucumberValuesConverter
+     */
+    @Wenn("IDP Ich rufe das EntityStatement vom {IdpEndpointType} ab")
+    @When("IDP I fetch {IdpEndpointType} EntityStatement")
+    @SneakyThrows
+    public void iFetchEntityStatenment(final IdpEndpointType idpEndpointType) {
+        fedsteps.fetchEntityStatement(idpEndpointType);
+    }
+
+    /**
+     * send a request to log into a web portal via a browser
+     */
+    @Wenn("IDP Ich logge mich im Browser auf dem Web Portal des Fachdienstes ein")
+    @When("IDP I log into the fachdienst's web portal in browser")
+    @SneakyThrows
+    public void iSendLoginRequest() {
+        fedsteps.sendLoginRequest();
+    }
 }

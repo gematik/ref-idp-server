@@ -35,12 +35,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class KeyRetrievalTest {
+class KeyRetrievalTest {
 
     @LocalServerPort
     private int localServerPort;
@@ -59,7 +59,7 @@ public class KeyRetrievalTest {
 
     @Afo("A_20458")
     @Test
-    public void retrieveIDPEncKey_ShouldBeAvailable() throws UnirestException, JoseException {
+    void retrieveIDPEncKey_ShouldBeAvailable() throws UnirestException, JoseException {
         final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
         final String pukUriToken = TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())
             .get("uri_puk_idp_enc").toString();
@@ -72,7 +72,7 @@ public class KeyRetrievalTest {
 
     @Afo("A_20458")
     @Test
-    public void retrieveIDPSigKey_ShouldBeAvailable() throws UnirestException, JoseException {
+    void retrieveIDPSigKey_ShouldBeAvailable() throws UnirestException, JoseException {
         final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
         final String pukUriAuth = TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())
             .get("uri_puk_idp_sig").toString();
@@ -85,7 +85,7 @@ public class KeyRetrievalTest {
 
     @Afo("A_20458")
     @Test
-    public void retrieveSigKey_noRsaFieldShouldBePresent() throws UnirestException {
+    void retrieveSigKey_noRsaFieldShouldBePresent() throws UnirestException {
         final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
         final String pukUriAuth = TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())
             .get("uri_puk_idp_sig").toString();
@@ -95,7 +95,7 @@ public class KeyRetrievalTest {
     }
 
     @Test
-    public void retrieveSigKey_useFieldShouldBePresent() throws UnirestException {
+    void retrieveSigKey_useFieldShouldBePresent() throws UnirestException {
         final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
         final String pukUriAuth = TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())
             .get("uri_puk_idp_sig").toString();
@@ -105,7 +105,7 @@ public class KeyRetrievalTest {
     }
 
     @Test
-    public void retrieveEndKey_useFieldShouldBePresent() throws UnirestException {
+    void retrieveEndKey_useFieldShouldBePresent() throws UnirestException {
         final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
         final String pukUriAuth = TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())
             .get("uri_puk_idp_enc").toString();
@@ -119,7 +119,7 @@ public class KeyRetrievalTest {
         "https://connect2id.com/products/server/docs/api/jwk-set",
         "RFC7517"})
     @Test
-    public void retrieveJwksKeyStore_ShouldBeAvailable() throws UnirestException, JoseException {
+    void retrieveJwksKeyStore_ShouldBeAvailable() throws UnirestException, JoseException {
         final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
         final String jwksUri = TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())
             .get("jwks_uri").toString();
@@ -138,7 +138,7 @@ public class KeyRetrievalTest {
     }
 
     @Test
-    public void retrieveJwksKeyStore_shouldContainUseClaims() throws UnirestException, JoseException {
+    void retrieveJwksKeyStore_shouldContainUseClaims() throws UnirestException, JoseException {
         final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
         final String jwksUri = TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())
             .get("jwks_uri").toString();
@@ -149,7 +149,7 @@ public class KeyRetrievalTest {
 
     @Afo("A_20458")
     @Test
-    public void keyIdsShouldMatchAcrossSources() throws UnirestException, JoseException {
+    void keyIdsShouldMatchAcrossSources() throws UnirestException, JoseException {
         final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
         final String pukUriAuth = TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())
             .get("uri_puk_idp_sig").toString();

@@ -18,7 +18,6 @@ package de.gematik.idp.server.services;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.when;
-
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.data.IdpClientConfiguration;
 import java.util.Map;
@@ -32,14 +31,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class ClientRegistrationServiceTest {
 
-    private IdpClientConfiguration clientConfiguration = IdpClientConfiguration.builder().redirectUri("eRezeptUrl").returnSsoToken(true).build();
+    private IdpClientConfiguration clientConfiguration = IdpClientConfiguration.builder().redirectUri("eRezeptUrl")
+        .returnSsoToken(true).build();
 
     @Mock
     private Map<String, IdpClientConfiguration> registeredClient;
     @Mock
     private IdpConfiguration configuration;
     @InjectMocks
-    private ClientRegistrationService clientRegistrationService ;
+    private ClientRegistrationService clientRegistrationService;
 
     @BeforeEach
     public void init() {
@@ -47,14 +47,14 @@ class ClientRegistrationServiceTest {
     }
 
     @Test
-    public void validateClientIdWithNullValue_ExpectCorrectError() {
+    void validateClientIdWithNullValue_ExpectCorrectError() {
         when(registeredClient.get(null)).thenReturn(null);
         assertThat(clientRegistrationService.getClientConfiguration(null))
             .isEmpty();
     }
 
     @Test
-    public void validateClientIdWithInvalidValue_ExpectCorrectError() {
+    void validateClientIdWithInvalidValue_ExpectCorrectError() {
         when(registeredClient.get("eRezeptApp")).thenReturn(clientConfiguration);
         assertThat(clientRegistrationService.getClientConfiguration("eRezeptApp"))
             .hasValue(clientConfiguration);

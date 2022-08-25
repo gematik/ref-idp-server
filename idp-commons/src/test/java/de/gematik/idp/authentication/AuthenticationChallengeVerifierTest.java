@@ -35,7 +35,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(PkiKeyResolver.class)
-public class AuthenticationChallengeVerifierTest {
+class AuthenticationChallengeVerifierTest {
 
     private AuthenticationChallenge authenticationChallenge;
     private AuthenticationChallengeBuilder authenticationChallengeBuilder;
@@ -75,13 +75,13 @@ public class AuthenticationChallengeVerifierTest {
     }
 
     @Test
-    public void verifyEmptyResponse_shouldGiveException() {
+    void verifyEmptyResponse_shouldGiveException() {
         assertThatThrownBy(() -> authenticationChallengeVerifier.verifyResponseAndThrowExceptionIfFail(null))
             .isInstanceOf(RuntimeException.class);
     }
 
     @Test
-    public void verifyCorrectResponse_shouldPass() {
+    void verifyCorrectResponse_shouldPass() {
         final AuthenticationResponse authenticationResponse =
             authenticationResponseBuilder.buildResponseForChallenge(authenticationChallenge,
                 clientIdentity);
@@ -90,15 +90,15 @@ public class AuthenticationChallengeVerifierTest {
     }
 
     @Test
-    public void extractClaims_shouldBePresent() {
+    void extractClaims_shouldBePresent() {
         final AuthenticationResponse authenticationResponse =
             authenticationResponseBuilder.buildResponseForChallenge(authenticationChallenge,
                 clientIdentity);
 
         Assertions.assertThat(authenticationResponse.getSignedChallenge().getStringBodyClaim(ClaimName.NESTED_JWT)
-            .map(Objects::toString)
-            .map(JsonWebToken::new)
-            .map(JsonWebToken::getBodyClaims).get())
+                .map(Objects::toString)
+                .map(JsonWebToken::new)
+                .map(JsonWebToken::getBodyClaims).get())
             .containsEntry("client_id", "goo")
             .containsEntry("state", "foo")
             .containsEntry("redirect_uri", "bar")
@@ -106,7 +106,7 @@ public class AuthenticationChallengeVerifierTest {
     }
 
     @Test
-    public void checkSignatureNjwt_certMismatch(
+    void checkSignatureNjwt_certMismatch(
         @PkiKeyResolver.Filename("833621999741600_c.hci.aut-apo-ecc.p12") final PkiIdentity otherServerIdentity) {
         authenticationChallengeBuilder = AuthenticationChallengeBuilder.builder()
             .serverSigner(new IdpJwtProcessor(otherServerIdentity))
@@ -135,7 +135,7 @@ public class AuthenticationChallengeVerifierTest {
     }
 
     @Test
-    public void checkSignatureNjwt_invalidChallenge() {
+    void checkSignatureNjwt_invalidChallenge() {
         final AuthenticationChallenge ch = AuthenticationChallenge.builder()
             .challenge(new JsonWebToken("SicherNichtDerRichtigeChallengeCode"))
             .build();
@@ -148,7 +148,7 @@ public class AuthenticationChallengeVerifierTest {
     }
 
     @Test
-    public void checkSignatureNjwt_challengeOutdated() {
+    void checkSignatureNjwt_challengeOutdated() {
         authenticationChallenge = authenticationChallengeBuilder
             .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", IdpScope.EREZEPT.getJwtValue(), "nonceValue");
         final JsonWebToken jsonWebToken = authenticationChallenge.getChallenge();

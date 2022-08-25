@@ -23,7 +23,9 @@ import de.gematik.test.bdd.Context;
 import de.gematik.test.bdd.ContextKey;
 import de.gematik.test.bdd.Variables;
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.*;
+import io.cucumber.java.Before;
+import io.cucumber.java.DataTableType;
+import io.cucumber.java.ParameterType;
 import io.cucumber.java.de.Gegebensei;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -436,10 +438,27 @@ public class StepsGlue {
      * @gematik.context.out CLIENT_ID, RESPONSE, CHALLENGE, USER_CONSENT
      * @see CucumberValuesConverter
      */
-    @When("IDP I send an authorization request to {IdpEndpointType} with")
+    @When("IDP Authenticator Module sends an authorization request to Fed_Sektoral_IDP_APP with")
     @SneakyThrows
-    public void iSendAuthorizationRequestWith(final IdpEndpointType idpEndpointType, final DataTable params) {
+    public void authenticatorModuleSendsAuthorizationRequestWith(
+        final DataTable params) {
+        auth.sendAuthorizationRequest(IdpEndpointType.Fed_Sektoral_IDP_APP,
+            cucumberValuesConverter.getMapFromDatatable(params),
+            HttpStatus.NOCHECK);
+    }
+
+
+    @When("IDP Frontend sends an authorization request to {IdpEndpointType} with")
+    @SneakyThrows
+    public void frontendSendsAuthorizationRequestWith(final IdpEndpointType idpEndpointType, final DataTable params) {
         auth.sendAuthorizationRequest(idpEndpointType, cucumberValuesConverter.getMapFromDatatable(params),
+            HttpStatus.NOCHECK);
+    }
+
+    @When("IDP I send an authorization code to fachdienst with")
+    @SneakyThrows
+    public void iSendAuthorizationCodeWith(final DataTable params) {
+        auth.sendAuthorizationCode(cucumberValuesConverter.getMapFromDatatable(params),
             HttpStatus.NOCHECK);
     }
 
@@ -884,7 +903,7 @@ public class StepsGlue {
      */
     @And("IDP I flip bit {int} on context with key {ContextKey}")
     public void iFlipBitOnContextWithKey(final int bitidx, final String key) {
-        Context.get().flipBit(bitidx, key);
+        Context.get().flipBitInContextValue(bitidx, key);
     }
 
     /**
@@ -1162,13 +1181,7 @@ public class StepsGlue {
     }
 
     @Before
-    public void initRbelLogger() {
-        disc.initializeRbelLogger();
+    public void initializeIDPTestEnvironment() {
+        IdpTestEnvironmentConfigurator.initializeIDPTestEnvironment();
     }
-
-    @After
-    public void exportHTMLAndShutdownRbelLogger(final Scenario scenario) {
-        disc.exportRbelLog(scenario);
-    }
-
 }

@@ -21,7 +21,6 @@ import static de.gematik.idp.field.ClaimName.X509_CERTIFICATE_CHAIN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.data.UserConsentConfiguration;
 import de.gematik.idp.data.UserConsentDescriptionTexts;
@@ -47,7 +46,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(PkiKeyResolver.class)
-public class AuthenticationResponseBuilderTest {
+class AuthenticationResponseBuilderTest {
 
     private AuthenticationResponseBuilder authenticationResponseBuilder;
     private AuthenticationChallengeVerifier authenticationChallengeVerifier;
@@ -95,7 +94,7 @@ public class AuthenticationResponseBuilderTest {
     }
 
     @Test
-    public void verifyClientCertificateIsInHeaderAttribute() throws CertificateEncodingException {
+    void verifyClientCertificateIsInHeaderAttribute() throws CertificateEncodingException {
         final AuthenticationResponse authenticationResponse =
             authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
 
@@ -105,7 +104,7 @@ public class AuthenticationResponseBuilderTest {
     }
 
     @Test
-    public void verifyResponseIsSignedByClientIdentity() throws InvalidJwtException {
+    void verifyResponseIsSignedByClientIdentity() throws InvalidJwtException {
         final AuthenticationResponse authenticationResponse =
             authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
         assertDoesNotThrow(() ->
@@ -114,7 +113,7 @@ public class AuthenticationResponseBuilderTest {
     }
 
     @Test
-    public void verifyResponseIsNotSignedByServerIdentity() {
+    void verifyResponseIsNotSignedByServerIdentity() {
         final AuthenticationResponse authenticationResponse =
             authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
 
@@ -124,7 +123,7 @@ public class AuthenticationResponseBuilderTest {
     }
 
     @Test
-    public void verifyNestedTokenIsEqualToChallenge() {
+    void verifyNestedTokenIsEqualToChallenge() {
         final AuthenticationResponse authenticationResponse =
             authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
 
@@ -134,7 +133,7 @@ public class AuthenticationResponseBuilderTest {
     }
 
     @Test
-    public void verifyChallengeResponseOnlyContainsNestedJwt() {
+    void verifyChallengeResponseOnlyContainsNestedJwt() {
         final AuthenticationResponse authenticationResponse =
             authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
 
@@ -146,14 +145,14 @@ public class AuthenticationResponseBuilderTest {
     }
 
     @Test
-    public void verifyChallengeResponseOnlyContainsExp() {
+    void verifyChallengeResponseOnlyContainsExp() {
         final AuthenticationResponse authenticationResponse =
             authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
 
         Assertions.assertThat(authenticationResponse.getSignedChallenge()
-            .getStringBodyClaim(ClaimName.NESTED_JWT)
-            .map(JsonWebToken::new)
-            .map(token -> token.getHeaderDateTimeClaim(ClaimName.EXPIRES_AT)))
+                .getStringBodyClaim(ClaimName.NESTED_JWT)
+                .map(JsonWebToken::new)
+                .map(token -> token.getHeaderDateTimeClaim(ClaimName.EXPIRES_AT)))
             .isPresent();
     }
 }

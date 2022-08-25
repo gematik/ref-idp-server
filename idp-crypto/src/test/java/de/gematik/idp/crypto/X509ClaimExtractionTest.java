@@ -25,7 +25,7 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 
-public class X509ClaimExtractionTest {
+class X509ClaimExtractionTest {
 
     private static final String EGK_FILE = "src/test/resources/109500969_X114428530_c.ch.aut-ecc.p12";
     private static final String HBA_CERT_FILE = "src/test/resources/hba_aut.pem";
@@ -35,7 +35,7 @@ public class X509ClaimExtractionTest {
     private static final String KRANKENHAUS_FILE = "src/test/resources/Krankenhaus_min_R2048_X509.pem";
 
     @Test
-    public void extractFromEgk() throws IOException, CertificateEncodingException {
+    void extractFromEgk() throws IOException, CertificateEncodingException {
         final Map<String, Object> claims = X509ClaimExtraction
             .extractClaimsFromCertificate(certificateDataFromP12(EGK_FILE));
         assertThat(claims)
@@ -47,7 +47,7 @@ public class X509ClaimExtractionTest {
     }
 
     @Test
-    public void extractFromSmcbApotheke() throws IOException, CertificateEncodingException {
+    void extractFromSmcbApotheke() throws IOException, CertificateEncodingException {
         final Map<String, Object> claims = X509ClaimExtraction
             .extractClaimsFromCertificate(certificateDataFromP12(SMCB_FILE));
         assertThat(claims)
@@ -59,7 +59,7 @@ public class X509ClaimExtractionTest {
     }
 
     @Test
-    public void extractFromSmcbArztpraxis() throws IOException, CertificateEncodingException {
+    void extractFromSmcbArztpraxis() throws IOException, CertificateEncodingException {
         final Map<String, Object> claims = X509ClaimExtraction
             .extractClaimsFromCertificate(certificateDataFrom(ARZTPRAXIS_FILE));
         assertThat(claims)
@@ -71,7 +71,7 @@ public class X509ClaimExtractionTest {
     }
 
     @Test
-    public void extractFromSmcbKrankenhaus() throws IOException, CertificateEncodingException {
+    void extractFromSmcbKrankenhaus() throws IOException, CertificateEncodingException {
         final Map<String, Object> claims = X509ClaimExtraction
             .extractClaimsFromCertificate(certificateDataFrom(KRANKENHAUS_FILE));
         assertThat(claims)
@@ -83,7 +83,7 @@ public class X509ClaimExtractionTest {
     }
 
     @Test
-    public void extractFromHbaArzt() throws IOException, CertificateEncodingException {
+    void extractFromHbaArzt() throws IOException, CertificateEncodingException {
         final Map<String, Object> claims = X509ClaimExtraction
             .extractClaimsFromCertificate(certificateDataFrom(HBA_CERT_FILE));
         assertThat(claims)
@@ -95,7 +95,7 @@ public class X509ClaimExtractionTest {
     }
 
     @Test
-    public void extractFromHbaPsychtherapeut() throws IOException, CertificateEncodingException {
+    void extractFromHbaPsychtherapeut() throws IOException, CertificateEncodingException {
         final Map<String, Object> claims = X509ClaimExtraction
             .extractClaimsFromCertificate(certificateDataFrom(PSYCHOTHERAPEUT_FILE));
         assertThat(claims)
@@ -107,7 +107,7 @@ public class X509ClaimExtractionTest {
     }
 
     @Test
-    public void givennameTooLong_shouldGiveError() {
+    void givennameTooLong_shouldGiveError() {
         assertThatThrownBy(() ->
             X509ClaimExtraction.extractClaimsFromCertificate(
                 certificateDataFromP12("src/test/resources/egk-idp-firstname-toolong-ecc.p12")))
@@ -115,7 +115,7 @@ public class X509ClaimExtractionTest {
     }
 
     @Test
-    public void familynameTooLong_shouldGiveError() {
+    void familynameTooLong_shouldGiveError() {
         assertThatThrownBy(() ->
             X509ClaimExtraction.extractClaimsFromCertificate(
                 certificateDataFromP12("src/test/resources/egk-idp-famname-toolong-ecc.p12")))
@@ -123,7 +123,7 @@ public class X509ClaimExtractionTest {
     }
 
     @Test
-    public void orgnameTooLong_shouldGiveError() {
+    void orgnameTooLong_shouldGiveError() {
         assertThatThrownBy(() ->
             X509ClaimExtraction.extractClaimsFromCertificate(
                 certificateDataFromP12("src/test/resources/egk-idp-orgname-toolong-ecc.p12")))
@@ -131,7 +131,7 @@ public class X509ClaimExtractionTest {
     }
 
     @Test
-    public void invalidKnvr_shouldGiveError() {
+    void invalidKnvr_shouldGiveError() {
         assertThatThrownBy(() ->
             X509ClaimExtraction.extractClaimsFromCertificate(
                 certificateDataFromP12("src/test/resources/egk-idp-idnum-invalididnum-ecc.p12")))
@@ -139,7 +139,7 @@ public class X509ClaimExtractionTest {
     }
 
     @Test
-    public void profidNull_shouldGiveError() {
+    void profidNull_shouldGiveError() {
         assertThatThrownBy(() ->
             X509ClaimExtraction.extractClaimsFromCertificate(
                 certificateDataFromP12("src/test/resources/egk-idp-profid-null-ecc.p12")))

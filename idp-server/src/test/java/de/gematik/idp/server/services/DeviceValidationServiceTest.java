@@ -17,7 +17,6 @@
 package de.gematik.idp.server.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 import de.gematik.idp.server.data.DeviceType;
 import de.gematik.idp.server.devicevalidation.DeviceValidationData;
 import de.gematik.idp.server.devicevalidation.DeviceValidationRepository;
@@ -38,7 +37,7 @@ class DeviceValidationServiceTest {
     private DeviceValidationRepository deviceValidationRepository;
 
     @Test
-    public void testAssessDeviceValidation() {
+    void testAssessDeviceValidation() {
         final DeviceValidationData deviceValidationData = createDeviceValidationData();
         final DeviceType deviceType = createDeviceType(deviceValidationData);
         assertThat(findDeviceValidationDataFromRepo(deviceValidationData)).isEmpty();
@@ -47,7 +46,7 @@ class DeviceValidationServiceTest {
     }
 
     @Test
-    public void testAssessWithExistingDeviceValidation() {
+    void testAssessWithExistingDeviceValidation() {
         final DeviceValidationData deviceValidationData = createDeviceValidationData();
         deviceValidationRepository.save(deviceValidationData);
         final DeviceType deviceType = createDeviceType(deviceValidationData);
@@ -57,7 +56,7 @@ class DeviceValidationServiceTest {
     }
 
     @Test
-    public void testValidationRepository() {
+    void testValidationRepository() {
         final DeviceValidationData expected = deviceValidationRepository.save(createDeviceValidationData());
         final DeviceValidationData validationData = deviceValidationRepository.getOne(expected.getId());
         assertThat(validationData)

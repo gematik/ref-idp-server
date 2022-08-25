@@ -18,7 +18,6 @@ package de.gematik.idp.token;
 
 import static de.gematik.idp.field.ClaimName.*;
 import static de.gematik.idp.token.TokenBuilderUtil.buildSubjectClaim;
-
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtBuilder;
@@ -39,7 +38,7 @@ import org.jose4j.jwt.NumericDate;
 public class IdTokenBuilder {
 
     private static final Set<String> requiredClaims = Stream.of(PROFESSION_OID, GIVEN_NAME, FAMILY_NAME,
-        ORGANIZATION_NAME, ID_NUMBER, AUTHENTICATION_CLASS_REFERENCE, CLIENT_ID, SCOPE, AUTH_TIME)
+            ORGANIZATION_NAME, ID_NUMBER, AUTHENTICATION_CLASS_REFERENCE, CLIENT_ID, SCOPE, AUTH_TIME)
         .map(ClaimName::getJoseName)
         .collect(Collectors.toSet());
     private static final List<ClaimName> CLAIMS_TO_TAKE_FROM_AUTHENTICATION_TOKEN = List
@@ -80,7 +79,7 @@ public class IdTokenBuilder {
                 authenticationToken.getStringBodyClaim(ID_NUMBER)
                     .orElseThrow(() -> new IdpJoseException("Missing '" + ID_NUMBER.getJoseName() + "' claim!")),
                 serverSubjectSalt));
-        claimsMap.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
+        claimsMap.put(JWT_ID.getJoseName(), Nonce.getNonceAsHex(IdpConstants.JTI_LENGTH));
         claimsMap.put(EXPIRES_AT.getJoseName(), NumericDate.fromSeconds(now.plusMinutes(5).toEpochSecond()).getValue());
 
         final Map<String, Object> headerClaims = new HashMap<>();

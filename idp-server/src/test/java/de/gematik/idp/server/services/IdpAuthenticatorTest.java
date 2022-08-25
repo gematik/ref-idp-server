@@ -43,14 +43,14 @@ class IdpAuthenticatorTest {
     private IdpConfiguration idpConfiguration;
 
     @Test
-    public void validateRedirectUriWithNullValue_ExpectCorrectError() {
+    void validateRedirectUriWithNullValue_ExpectCorrectError() {
         assertThatThrownBy(() -> idpAuthenticator.validateRedirectUri(TestConstants.CLIENT_ID_E_REZEPT_APP, null))
             .isInstanceOf(IdpServerException.class)
             .hasFieldOrPropertyWithValue("errorType", IdpErrorType.INVALID_REQUEST);
     }
 
     @Test
-    public void validateRedirectUriWithNonValidClientId_ExpectCorrectError() {
+    void validateRedirectUriWithNonValidClientId_ExpectCorrectError() {
         final IdpClientConfiguration idpClientConfiguration = idpConfiguration.getRegisteredClient()
             .get(TestConstants.CLIENT_ID_E_REZEPT_APP);
         assertThatThrownBy(() -> idpAuthenticator.validateRedirectUri("test", idpClientConfiguration.getRedirectUri()))
@@ -59,14 +59,14 @@ class IdpAuthenticatorTest {
     }
 
     @Test
-    public void validateRedirectUriWithInvalidValue_ExpectCorrectError() {
+    void validateRedirectUriWithInvalidValue_ExpectCorrectError() {
         assertThatThrownBy(() -> idpAuthenticator.validateRedirectUri(TestConstants.CLIENT_ID_E_REZEPT_APP, "test"))
             .isInstanceOf(IdpServerException.class)
             .hasFieldOrPropertyWithValue("errorType", IdpErrorType.INVALID_REQUEST);
     }
 
     @Test
-    public void validateRedirectUriIsEqualToConfigurationValue() {
+    void validateRedirectUriIsEqualToConfigurationValue() {
         final IdpClientConfiguration idpClientConfiguration = idpConfiguration.getRegisteredClient()
             .get(TestConstants.CLIENT_ID_E_REZEPT_APP);
         idpAuthenticator
@@ -74,19 +74,19 @@ class IdpAuthenticatorTest {
     }
 
     @Test
-    public void validateAuthorizationCodeLocation() {
+    void validateAuthorizationCodeLocation() {
         final Map<String, String> sessionMap = new HashMap<>();
         sessionMap.put(CODE_CHALLENGE.getJoseName(), "userAgentCodeChallenge");
         sessionMap.put(CODE_CHALLENGE_METHOD.getJoseName(), "userAgentCodeChallengeMethod");
         sessionMap.put(NONCE.getJoseName(), "userAgentNonce");
         sessionMap.put(STATE.getJoseName(), "userAgentState");
-        sessionMap.put(REDIRECT_URI.getJoseName(), "http://userAgentRedirektUri");
+        sessionMap.put(REDIRECT_URI.getJoseName(), "http://userAgentRedirectUri");
         sessionMap.put(CLIENT_ID.getJoseName(), "userAgentId");
         sessionMap.put(RESPONSE_TYPE.getJoseName(), "code");
         final JsonWebToken idToken = new JsonWebToken(
             "eyJhbGciOiJCUDI1NlIxIiwia2lkIjoicHVrX2lkcF9zaWciLCJ0eXAiOiJKV1QifQ.eyJhdXRoX3RpbWUiOjE2MjMwNTYxMzYsIm5vbmNlIjoiOTg3NjUiLCJnaXZlbl9uYW1lIjoiRGFyaXVzIE1pY2hhZWwgQnJpYW4gVWJibyIsImZhbWlseV9uYW1lIjoiQsO2ZGVmZWxkIiwib3JnYW5pemF0aW9uTmFtZSI6IlRlc3QgR0tWLVNWTk9ULVZBTElEIiwicHJvZmVzc2lvbk9JRCI6IjEuMi4yNzYuMC43Ni40LjQ5IiwiaWROdW1tZXIiOiJYMTEwNDExNjc1IiwiYXpwIjoiZVJlemVwdEFwcCIsImFjciI6ImdlbWF0aWstZWhlYWx0aC1sb2EtaGlnaCIsImFtciI6WyJtZmEiLCJzYyIsInBpbiJdLCJhdWQiOiJlUmV6ZXB0QXBwIiwic3ViIjoiOGMwN2UzNzYwZjM1NjE5YzJlNWNjY2JkMzQxMzU0NDcwYjgwMmU5ZGIyZTkyYTgzNjMwMzdlYjc5OTkwYjU2ZSIsImlzcyI6Imh0dHBzOi8vaWRwLXRlc3QuemVudHJhbC5pZHAuc3BsaXRkbnMudGktZGllbnN0ZS5kZSIsImlhdCI6MTYyMzA1NjEzNiwiZXhwIjoxNjIzMDk5MzM2LCJqdGkiOiJjNjRiZmU2YS1kNzUyLTRlNWYtODA5YS0zM2IzOGUwYzNlOGUiLCJhdF9oYXNoIjoicUc5QXU4ei1kNVE2MllJWXlBRV9rQSJ9.Z0mhWFS2TcUtZlj-KAX9ys9Az-MwEvQ6AxRMLh2mKSdG6PKfsxsXJQhldeIzD1s2zcTTe74QPd0xUG8OCz9VuQ");
         final String authorizationCodeLocation = idpAuthenticator.getAuthorizationCodeLocation(idToken, sessionMap);
-        assertThat(authorizationCodeLocation).startsWith("http://userAgentRedirektUri").contains("code=ey")
+        assertThat(authorizationCodeLocation).startsWith("http://userAgentRedirectUri").contains("code=ey")
             .contains("state=userAgentState");
     }
 

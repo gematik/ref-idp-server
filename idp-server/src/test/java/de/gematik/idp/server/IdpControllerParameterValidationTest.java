@@ -50,13 +50,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
 @ExtendWith(PkiKeyResolver.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class IdpControllerParameterValidationTest {
+class IdpControllerParameterValidationTest {
 
     private static final List<Pair<String, String>> getChallengeParameterMap = List.of(
         Pair.of("client_id", TestConstants.CLIENT_ID_E_REZEPT_APP),
@@ -105,131 +105,131 @@ public class IdpControllerParameterValidationTest {
     }
 
     @Test
-    public void getAuthenticationChallenge_invalidClientId_shouldGiveError() {
+    void getAuthenticationChallenge_invalidClientId_shouldGiveError() {
         assertErrorResponseMatches(buildGetChallengeRequest(
                 getInvalidationFunction("client_id", "invalid_client_id")),
             2012, INVALID_REQUEST, "client_id ist ungültig");
     }
 
     @Test
-    public void getAuthenticationChallenge_missingResponseType_shouldGiveError() {
+    void getAuthenticationChallenge_missingResponseType_shouldGiveError() {
         assertForwardErrorResponseMatches(buildGetChallengeRequest(getInvalidationFunction("response_type", null)),
             2004, INVALID_REQUEST, "response_type wurde nicht übermittelt");
     }
 
     @Test
-    public void getAuthenticationChallenge_invalidResponseType_shouldGiveError() {
+    void getAuthenticationChallenge_invalidResponseType_shouldGiveError() {
         assertForwardErrorResponseMatches(
             buildGetChallengeRequest(getInvalidationFunction("response_type", "something_else")),
             2005, UNSUPPORTED_RESPONSE_TYPE, "response_type wird nicht unterstützt");
     }
 
     @Test
-    public void getAuthenticationChallenge_invalidScope_shouldGiveError() {
+    void getAuthenticationChallenge_invalidScope_shouldGiveError() {
         assertForwardErrorResponseMatches(buildGetChallengeRequest(getInvalidationFunction("scope", "invalidScope")),
             1022, INVALID_SCOPE, "scope ist ungültig");
     }
 
     @Test
-    public void getAuthenticationChallenge_validPlusInvalidScope_shouldGiveError() {
+    void getAuthenticationChallenge_validPlusInvalidScope_shouldGiveError() {
         assertForwardErrorResponseMatches(
             buildGetChallengeRequest(getInvalidationFunction("scope", "openid e-rezept x")),
             1030, INVALID_SCOPE, "Fachdienst ist unbekannt");
     }
 
     @Test
-    public void getAuthenticationChallenge_onlyOpenidScope_shouldGiveError() {
+    void getAuthenticationChallenge_onlyOpenidScope_shouldGiveError() {
         assertForwardErrorResponseMatches(buildGetChallengeRequest(getInvalidationFunction("scope", "openid")),
             1022, INVALID_SCOPE, "scope ist ungültig");
     }
 
     @Test
-    public void getAuthenticationChallenge_onlyOpenidScope_should200() {
+    void getAuthenticationChallenge_onlyOpenidScope_should200() {
         assertThat(buildGetChallengeRequest(getInvalidationFunction("scope", "e-rezept openid"))
             .asString().getStatus())
             .isEqualTo(200);
     }
 
     @Test
-    public void getAuthenticationChallenge_missingRedirectUri_shouldGiveError() {
+    void getAuthenticationChallenge_missingRedirectUri_shouldGiveError() {
         assertErrorResponseMatches(buildGetChallengeRequest(getInvalidationFunction("redirect_uri", null)),
             1004, INVALID_REQUEST, "redirect_uri wurde nicht übermittelt");
     }
 
     @Test
-    public void getAuthenticationChallenge_missingState_shouldGiveError() {
+    void getAuthenticationChallenge_missingState_shouldGiveError() {
         assertForwardErrorResponseMatches(buildGetChallengeRequest(getInvalidationFunction("state", null)),
             2002, INVALID_REQUEST, "state wurde nicht übermittelt");
     }
 
     @Test
-    public void getAuthenticationChallenge_emptyState_shouldGiveError() {
+    void getAuthenticationChallenge_emptyState_shouldGiveError() {
         assertForwardErrorResponseMatches(buildGetChallengeRequest(getInvalidationFunction("state", "")),
             2002, INVALID_REQUEST, "state wurde nicht übermittelt");
     }
 
     @Test
-    public void getAuthenticationChallenge_emptyNonce_shouldGiveError() {
+    void getAuthenticationChallenge_emptyNonce_shouldGiveError() {
         assertErrorResponseMatches(buildGetChallengeRequest(getInvalidationFunction("nonce", "")),
             2007, INVALID_REQUEST, "nonce ist ungültig");
     }
 
     @Test
-    public void getAccessToken_missingCode_shouldGiveError() {
+    void getAccessToken_missingCode_shouldGiveError() {
         assertErrorResponseMatches(buildGetAccessTokenRequest(getInvalidationFunction("code", null)),
             3005, INVALID_REQUEST, "Authorization Code wurde nicht übermittelt");
     }
 
     @Test
-    public void getAccessToken_missingCodeVerifier_shouldGiveError() {
+    void getAccessToken_missingCodeVerifier_shouldGiveError() {
         assertErrorResponseMatches(buildGetAccessTokenRequest(getInvalidationFunction("key_verifier", null)),
             3004, INVALID_REQUEST, "key_verifier wurde nicht übermittelt");
     }
 
     @Test
-    public void getAccessToken_missingGrantType_shouldGiveError() {
+    void getAccessToken_missingGrantType_shouldGiveError() {
         assertErrorResponseMatches(buildGetAccessTokenRequest(getInvalidationFunction("grant_type", null)),
             3006, INVALID_REQUEST, "grant_type wurde nicht übermittelt");
     }
 
     @Test
-    public void getAccessToken_emptyGrantType_shouldGiveError() {
+    void getAccessToken_emptyGrantType_shouldGiveError() {
         assertErrorResponseMatches(buildGetAccessTokenRequest(getInvalidationFunction("grant_type", "")),
             3006, INVALID_REQUEST, "grant_type wurde nicht übermittelt");
     }
 
     @Test
-    public void getAccessToken_invalidGrantType_shouldGiveError() {
+    void getAccessToken_invalidGrantType_shouldGiveError() {
         assertErrorResponseMatches(buildGetAccessTokenRequest(getInvalidationFunction("grant_type", "falscher_wert")),
             3014, UNSUPPORTED_GRANT_TYPE, "grant_type wird nicht unterstützt");
     }
 
     @Test
-    public void getAccessToken_wrongClientId_shouldGiveError() {
+    void getAccessToken_wrongClientId_shouldGiveError() {
         assertErrorResponseMatches(buildGetAccessTokenRequest(getInvalidationFunction("client_id", "falscher_wert")),
             3007, INVALID_CLIENT, "client_id ist ungültig");
     }
 
     @Test
-    public void getAccessToken_codeVerifierWrong_shouldGiveError() {
+    void getAccessToken_codeVerifierWrong_shouldGiveError() {
         assertErrorResponseMatches(buildGetAccessTokenRequest(getInvalidationFunction("client_id", "falscher_wert")),
             3007, INVALID_CLIENT, "client_id ist ungültig");
     }
 
     @Test
-    public void getAccessToken_missingRedirectUri_shouldGiveError() {
+    void getAccessToken_missingRedirectUri_shouldGiveError() {
         assertErrorResponseMatches(buildGetAccessTokenRequest(getInvalidationFunction("redirect_uri", null)),
             1004, INVALID_REQUEST, "redirect_uri wurde nicht übermittelt");
     }
 
     @Test
-    public void getAccessToken_missingClientId_shouldGiveError() {
+    void getAccessToken_missingClientId_shouldGiveError() {
         assertErrorResponseMatches(buildGetAccessTokenRequest(getInvalidationFunction("client_id", null)),
             1002, INVALID_REQUEST, "client_id wurde nicht übermittelt");
     }
 
     @Test
-    public void getAccessToken_wrongCodeVerifier_shouldGiveError() {
+    void getAccessToken_wrongCodeVerifier_shouldGiveError() {
         final JwtClaims claims = new JwtClaims();
         claims.setStringClaim(TOKEN_KEY.getJoseName(), "Z0t6Y3AwVE1RN2xuTUVFcXpweDVGV0FzdTFucWt5aHI=");
         claims.setStringClaim(CODE_VERIFIER.getJoseName(),
@@ -245,7 +245,7 @@ public class IdpControllerParameterValidationTest {
     }
 
     @Test
-    public void getAccessToken_missingClaimsInAuthCode_shouldGiveError() {
+    void getAccessToken_missingClaimsInAuthCode_shouldGiveError() {
         final String alteredAuthToken = new JwtBuilder()
             .addBodyClaim(KEY_ID, "bar")
             .setSignerKey(idpSig.getIdentity().getPrivateKey())
@@ -257,14 +257,14 @@ public class IdpControllerParameterValidationTest {
     }
 
     @Test
-    public void getAccessToken_differentRedirectUri_shouldGiveError() {
+    void getAccessToken_differentRedirectUri_shouldGiveError() {
         assertErrorResponseMatches(
             buildGetAccessTokenRequest(getInvalidationFunction("redirect_uri", "foobar")),
             1020, INVALID_REQUEST, "redirect_uri ist ungültig");
     }
 
     @Test
-    public void getAccessToken_missingClaimsInKeyVerifier1_shouldGiveError() {
+    void getAccessToken_missingClaimsInKeyVerifier1_shouldGiveError() {
         final JwtClaims claims = new JwtClaims();
         claims.setStringClaim(TOKEN_KEY.getJoseName(), "Z0t6Y3AwVE1RN2xuTUVFcXpweDVGV0FzdTFucWt5aHI=");
 
@@ -278,14 +278,14 @@ public class IdpControllerParameterValidationTest {
     }
 
     @Test
-    public void getThirdPartyAuthorizationRequest_should302() {
+    void getThirdPartyAuthorizationRequest_should302() {
         assertThat(buildGetThirdPartyAuthorizationRequest(getInvalidationFunction("scope", "e-rezept openid"))
             .asString().getStatus())
             .isEqualTo(302);
     }
 
     @Test
-    public void getThirdPartyAuthorizationRequest_should400() {
+    void getThirdPartyAuthorizationRequest_should400() {
         assertThat(buildGetThirdPartyAuthorizationRequest(getInvalidationFunction("client_id", null))
             .asString().getStatus())
             .isEqualTo(400);

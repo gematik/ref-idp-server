@@ -57,7 +57,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -66,7 +66,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(PkiKeyResolver.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Transactional
-public class PairingControllerAccessTest {
+class PairingControllerAccessTest {
 
     private static final String TEST_KVNR_VALID = "X114428530";
     @Autowired
@@ -112,7 +112,7 @@ public class PairingControllerAccessTest {
     }
 
     @Test
-    public void listPairings_noHeaderGiven_expectAccessDenied() throws UnirestException {
+    void listPairings_noHeaderGiven_expectAccessDenied() throws UnirestException {
         assertThat(
             Unirest.get("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
                 .asString().getStatus())
@@ -120,7 +120,7 @@ public class PairingControllerAccessTest {
     }
 
     @Test
-    public void listPairings_placeholderToken_expectAccessDenied() throws UnirestException {
+    void listPairings_placeholderToken_expectAccessDenied() throws UnirestException {
         assertThat(
             Unirest.get("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer fdsafds.fdsafd.fdsafds")
@@ -130,7 +130,7 @@ public class PairingControllerAccessTest {
     }
 
     @Test
-    public void listPairings_tokenWithoutPairingScope_expectAccessDenied() throws UnirestException {
+    void listPairings_tokenWithoutPairingScope_expectAccessDenied() throws UnirestException {
         final String accessToken = idpClient.login(egkUserIdentity).getAccessToken().getRawString();
 
         assertThat(
@@ -142,7 +142,7 @@ public class PairingControllerAccessTest {
     }
 
     @Test
-    public void listPairings_correctToken_expect200() throws UnirestException {
+    void listPairings_correctToken_expect200() throws UnirestException {
         idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
         accessToken = idpClient.login(egkUserIdentity).getAccessToken();
 
@@ -155,7 +155,7 @@ public class PairingControllerAccessTest {
     }
 
     @Test
-    public void insertPairing_correctToken_expect200() throws UnirestException, CertificateEncodingException {
+    void insertPairing_correctToken_expect200() throws UnirestException, CertificateEncodingException {
         idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
         accessToken = idpClient.login(egkUserIdentity).getAccessToken();
         assertThat(Unirest.post("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
@@ -176,7 +176,7 @@ public class PairingControllerAccessTest {
     }
 
     @Test
-    public void insertPairing_AlreadyInDb_expect409Conflict() throws UnirestException, CertificateEncodingException {
+    void insertPairing_AlreadyInDb_expect409Conflict() throws UnirestException, CertificateEncodingException {
         idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
         accessToken = idpClient.login(egkUserIdentity).getAccessToken();
 
@@ -202,7 +202,7 @@ public class PairingControllerAccessTest {
     }
 
     @Test
-    public void insertPairing_missingData_expect4xxAndValidIdpError()
+    void insertPairing_missingData_expect4xxAndValidIdpError()
         throws UnirestException, CertificateEncodingException {
         idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
         accessToken = idpClient.login(egkUserIdentity).getAccessToken();
@@ -224,7 +224,7 @@ public class PairingControllerAccessTest {
     }
 
     @Test
-    public void insertPairing_missmatchKvnr_expect400() throws UnirestException, CertificateEncodingException {
+    void insertPairing_missmatchKvnr_expect400() throws UnirestException, CertificateEncodingException {
         idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
         accessToken = idpClient.login(rsaUserIdentity).getAccessToken();
 
@@ -240,7 +240,7 @@ public class PairingControllerAccessTest {
     }
 
     @Test
-    public void deletePairing_valid_expect400() throws UnirestException, CertificateEncodingException {
+    void deletePairing_valid_expect400() throws UnirestException, CertificateEncodingException {
         idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
         accessToken = idpClient.login(egkUserIdentity).getAccessToken();
 

@@ -21,7 +21,6 @@ import static de.gematik.idp.crypto.KeyAnalysis.isEcKey;
 import static de.gematik.idp.field.ClaimName.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.crypto.X509ClaimExtraction;
@@ -52,7 +51,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 @ExtendWith(PkiKeyResolver.class)
 @Transactional
-public class ChallengeTokenValidationServiceTest {
+class ChallengeTokenValidationServiceTest {
 
     @Autowired
     private ChallengeTokenValidationService challengeTokenValidationService;
@@ -77,7 +76,7 @@ public class ChallengeTokenValidationServiceTest {
     }
 
     @Test
-    public void validateValidPairingChallenge()
+    void validateValidPairingChallenge()
         throws CertificateEncodingException {
         createPairingDataEntry();
         challengeTokenValidationService
@@ -87,7 +86,7 @@ public class ChallengeTokenValidationServiceTest {
     }
 
     @Test
-    public void validateInvalidPairingChallenge(
+    void validateInvalidPairingChallenge(
         @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity,
         @PkiKeyResolver.Filename("833621999741600_c.hci.aut-apo-ecc") final PkiIdentity authModuleIdentity) {
         assertThatThrownBy(
@@ -99,7 +98,7 @@ public class ChallengeTokenValidationServiceTest {
     }
 
     @Test
-    public void validateInvalidCertChallenge(
+    void validateInvalidCertChallenge(
         @PkiKeyResolver.Filename("833621999741600_c.hci.aut-apo-ecc") final PkiIdentity authModuleIdentity) {
         assertThatThrownBy(
             () -> challengeTokenValidationService

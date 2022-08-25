@@ -43,12 +43,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class DiscoveryDocumentTest {
+class DiscoveryDocumentTest {
 
     private static final String CONFIGURED_SERVER_URL = "foobarschmar";
     private static final String CONFIGURED_ISSUER_URL = "issuerUrl";
@@ -70,14 +70,14 @@ public class DiscoveryDocumentTest {
     }
 
     @Test
-    public void testLogin() throws UnirestException {
+    void testLogin() throws UnirestException {
         final HttpResponse httpResponse = retrieveDiscoveryDocument();
 
         assertThat(httpResponse.isSuccess()).isTrue();
     }
 
     @Test
-    public void testHttpCacheHeader() throws UnirestException {
+    void testHttpCacheHeader() throws UnirestException {
         final HttpResponse httpResponse = retrieveDiscoveryDocument();
         assertThat(httpResponse.getHeaders().get("Cache-Control")).isEqualTo(Arrays.asList("max-age=300"));
     }
@@ -86,7 +86,7 @@ public class DiscoveryDocumentTest {
     @Remark("Die Afo gibt keine vollstaendige Liste der zu verwendenden Attribute. Das ergibt sich mit dem Rfc und anderen Abschnitten der Spec")
     @Rfc("https://openid.net/specs/openid-connect-discovery-1_0.html")
     @Test
-    public void testContainsMandatoryAttributes() throws UnirestException {
+    void testContainsMandatoryAttributes() throws UnirestException {
         final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
 
         assertThat(extractClaimMapFromResponse(httpResponse))
@@ -118,7 +118,7 @@ public class DiscoveryDocumentTest {
     @Remark("Ruecksprache mit Tommy in IDP-123, wir verwenden pairwise")
     @Rfc("https://openid.net/specs/openid-connect-discovery-1_0.html")
     @Test
-    public void testValueForSubjectTypesSupported() throws UnirestException {
+    void testValueForSubjectTypesSupported() throws UnirestException {
         final List<String> subjectTypesSupported = (List) extractClaimMapFromResponse(retrieveDiscoveryDocument())
             .get("subject_types_supported");
         assertThat(subjectTypesSupported)
@@ -128,7 +128,7 @@ public class DiscoveryDocumentTest {
     @Test
     @Rfc("rfc 6749 section 3.1.1 and https://openid.net/specs/openid-connect-discovery-1_0.html")
     @Remark("wir machen den authorizationCodeFlow, daher hier der Wert code")
-    public void testValueForResponseTypesSupported() throws UnirestException {
+    void testValueForResponseTypesSupported() throws UnirestException {
         final List<String> responseTypesSupported = (List) extractClaimMapFromResponse(retrieveDiscoveryDocument())
             .get("response_types_supported");
         assertThat(responseTypesSupported).containsExactlyInAnyOrder("code");
@@ -137,15 +137,15 @@ public class DiscoveryDocumentTest {
     @Test
     @Rfc("https://openid.net/specs/openid-connect-discovery-1_0.html")
     @Remark("OIDC verlangt den scope openid, e-rezept ergibt sich aus Beispielen in der Spec")
-    public void testValueForScopesSupported() throws UnirestException {
+    void testValueForScopesSupported() throws UnirestException {
         final List<String> scopesSupported = (List) extractClaimMapFromResponse(retrieveDiscoveryDocument())
             .get("scopes_supported");
-        assertThat(scopesSupported).containsExactlyInAnyOrder("openid", "e-rezept", "pairing");
+        assertThat(scopesSupported).containsExactlyInAnyOrder("openid", "e-rezept", "pairing", "authenticator-dev");
     }
 
     @Test
     @Remark("Ruecksprache mit der Spec hat zu BP256R1 gefuehrt, weil es zuvor keinen Bezeichner fuer ECDSA mit brainpool256r1 bei JWS gab")
-    public void testValueForIdTokenSigningAlgValuesSupported() throws UnirestException {
+    void testValueForIdTokenSigningAlgValuesSupported() throws UnirestException {
         final List<String> responseTypesSupported = (List) extractClaimMapFromResponse(retrieveDiscoveryDocument())
             .get("id_token_signing_alg_values_supported");
         assertThat(responseTypesSupported).containsExactlyInAnyOrder("BP256R1");
@@ -154,7 +154,7 @@ public class DiscoveryDocumentTest {
     @Test
     @Rfc("https://openid.net/specs/openid-connect-discovery-1_0.html")
     @Remark("wir haben nur den authorization_code grant type")
-    public void testValueForGrantTypesSupported() throws UnirestException {
+    void testValueForGrantTypesSupported() throws UnirestException {
         final List<String> grantTypesSupported = (List) extractClaimMapFromResponse(retrieveDiscoveryDocument())
             .get("grant_types_supported");
         assertThat(grantTypesSupported).containsExactlyInAnyOrder("authorization_code");
@@ -162,7 +162,7 @@ public class DiscoveryDocumentTest {
 
     @Test
     @Rfc("https://openid.net/specs/oauth-v2-multiple-response-types-1_0.html")
-    public void testValueForResponseModesSupported() throws UnirestException {
+    void testValueForResponseModesSupported() throws UnirestException {
         final List<String> responseModesSupported = (List) extractClaimMapFromResponse(retrieveDiscoveryDocument())
             .get("response_modes_supported");
 
@@ -171,7 +171,7 @@ public class DiscoveryDocumentTest {
 
     @Test
     @Remark("Ruecksprache mit Tommy in IDP-123, keine Ahnung, woher man das sonst wissen kann")
-    public void testValueForAcrValuesSupported() throws UnirestException {
+    void testValueForAcrValuesSupported() throws UnirestException {
         final List<String> acrValuesSupported = (List<String>) retrieveAndParseDiscoveryDocument()
             .getBodyClaim(ClaimName.ACR_VALUES_SUPPORTED).get();
 
@@ -181,7 +181,7 @@ public class DiscoveryDocumentTest {
     @Test
     @Rfc("https://openid.net/specs/openid-connect-discovery-1_0.html")
     @Remark("bei uns findet keine Auth am Token Endpoint statt, daher none, Parameter vorhanden weil Defaultwert HTTP-Basic-Auth wäre")
-    public void testValueForTokenEndpointAuthMethodsValuesSupported() throws UnirestException {
+    void testValueForTokenEndpointAuthMethodsValuesSupported() throws UnirestException {
         final List<String> tokenEndpointAuthMethodsSupported = (List) extractClaimMapFromResponse(
             retrieveDiscoveryDocument())
             .get("token_endpoint_auth_methods_supported");
@@ -191,7 +191,7 @@ public class DiscoveryDocumentTest {
     @Test
     @Afo("A_20458")
     @Rfc("rfc8414 section 2")
-    public void testValueForIssuer() throws UnirestException {
+    void testValueForIssuer() throws UnirestException {
         final String issuer = (String) extractClaimMapFromResponse(retrieveDiscoveryDocument())
             .get("issuer");
         assertThat(issuer).isEqualTo(CONFIGURED_ISSUER_URL);
@@ -200,7 +200,7 @@ public class DiscoveryDocumentTest {
     @Test
     @Afo("A_20458")
     @Remark("nach ruecksprache mit Tommy wird nicht die Bezeichnung aus der afo, sondern die von oidc vorgesehene verwendet")
-    public void testValueForAuthorizationEndpoint() throws UnirestException {
+    void testValueForAuthorizationEndpoint() throws UnirestException {
         final String authorizationEndpointValue = extractClaimMapFromResponse(retrieveDiscoveryDocument())
             .get("authorization_endpoint").toString();
         assertThat(authorizationEndpointValue)
@@ -210,7 +210,7 @@ public class DiscoveryDocumentTest {
     @Test
     @Afo("A_20458")
     @Remark("nach ruecksprache mit Tommy wird nicht die Bezeichnung aus der afo, sondern die von oidc vorgesehene verwendet")
-    public void testValueForTokenEndpoint() throws UnirestException {
+    void testValueForTokenEndpoint() throws UnirestException {
         final String tokenEndpointValue = extractClaimMapFromResponse(retrieveDiscoveryDocument())
             .get("token_endpoint").toString();
         assertThat(tokenEndpointValue)
@@ -219,7 +219,7 @@ public class DiscoveryDocumentTest {
 
     @Test
     @Afo("A_20458")
-    public void testValueForJwksUri() throws UnirestException {
+    void testValueForJwksUri() throws UnirestException {
         assertThat(retrieveAndParseDiscoveryDocument()
             .getStringBodyClaim(ClaimName.JWKS_URI)
             .get())
@@ -229,21 +229,21 @@ public class DiscoveryDocumentTest {
     @Test
     @Afo("A_20591")
     @Remark("Laut Aussage von Gerriet muss das DiscoveryDocument als JWS signiert werden.")
-    public void testDiscoveryDocumentSignature() throws UnirestException {
+    void testDiscoveryDocumentSignature() throws UnirestException {
         retrieveAndParseDiscoveryDocument()
             .verify(discSig.getIdentity().getCertificate().getPublicKey());
     }
 
     @Test
     @Afo("A_20691")
-    public void testValueExpiration() throws UnirestException {
+    void testValueExpiration() throws UnirestException {
         assertThat(retrieveAndParseDiscoveryDocument().getExpiresAtBody())
             .isBetween(ZonedDateTime.now().minusMinutes(1).plusHours(24),
                 ZonedDateTime.now().plusHours(24));
     }
 
     @Test
-    public void testValueIssuedAt() throws UnirestException {
+    void testValueIssuedAt() throws UnirestException {
         assertThat(retrieveAndParseDiscoveryDocument().getIssuedAt())
             .isBetween(ZonedDateTime.now().minusMinutes(1), ZonedDateTime.now());
     }
@@ -251,7 +251,7 @@ public class DiscoveryDocumentTest {
     @Remark("Nach RFC 8414, wir verwenden S256, Section 2")
     @Rfc("https://tools.ietf.org/html/rfc8414")
     @Test
-    public void testValueForCodeChallengeMethodsSupported() throws UnirestException {
+    void testValueForCodeChallengeMethodsSupported() throws UnirestException {
         final List<String> codeChallengeMethodsSupported = (List) extractClaimMapFromResponse(
             retrieveDiscoveryDocument())
             .get("code_challenge_methods_supported");
@@ -261,13 +261,13 @@ public class DiscoveryDocumentTest {
 
     @Test
     @Afo("A_20591")
-    public void testDiscoveryDocumentSigningCertificateReference() throws UnirestException {
+    void testDiscoveryDocumentSigningCertificateReference() throws UnirestException {
         assertThat(retrieveAndParseDiscoveryDocument()
             .getHeaderClaim(ClaimName.X509_CERTIFICATE_CHAIN)).isPresent();
     }
 
     @Test
-    public void postShouldGive405() throws UnirestException {
+    void postShouldGive405() throws UnirestException {
         assertThat(Unirest.post(testHostUrl + DISCOVERY_DOCUMENT_ENDPOINT)
             .asString().getStatus())
             .isEqualTo(HttpStatus.SC_METHOD_NOT_ALLOWED);

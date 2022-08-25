@@ -17,6 +17,7 @@
 package de.gematik.idp.test.steps;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.test.steps.helpers.CucumberValuesConverter;
 import de.gematik.idp.test.steps.helpers.IdpTestEnvironmentConfigurator;
 import de.gematik.idp.test.steps.model.CodeAuthType;
@@ -26,6 +27,7 @@ import de.gematik.idp.test.steps.model.HttpStatus;
 import de.gematik.rbellogger.key.RbelKey;
 import de.gematik.test.bdd.Context;
 import de.gematik.test.bdd.ContextKey;
+import de.gematik.test.tiger.lib.TigerDirector;
 import io.cucumber.datatable.DataTable;
 import io.restassured.response.Response;
 import java.security.PublicKey;
@@ -37,7 +39,6 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jose4j.jwt.JwtClaims;
 import org.json.JSONObject;
@@ -102,10 +103,10 @@ public class IdpAccessTokenSteps extends IdpStepsBase {
         params.put("code", params.remove("token_code"));
 
         // create/encrypt key_verifier
-        final byte[] tokenKeyBytes = RandomStringUtils.randomAlphanumeric(256 / 8).getBytes();
+        final byte[] tokenKeyBytes = Nonce.randomAlphanumeric(256 / 8).getBytes();
         final SecretKey tokenKey = new SecretKeySpec(tokenKeyBytes, "AES");
         if (IdpTestEnvironmentConfigurator.isRbelLoggerActive()) {
-            threadIdToRestAssuredCaptureMap.get(getThreadId()).getRbel().getRbelKeyManager()
+            TigerDirector.getTigerTestEnvMgr().getLocalTigerProxy().getRbelLogger().getRbelKeyManager()
                 .addKey("token_key", tokenKey, RbelKey.PRECEDENCE_KEY_FOLDER);
         }
         log.info(

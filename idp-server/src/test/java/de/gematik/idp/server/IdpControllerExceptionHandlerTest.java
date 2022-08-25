@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.UriUtils;
@@ -37,7 +36,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -46,7 +45,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @ExtendWith(PkiKeyResolver.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class IdpControllerExceptionHandlerTest {
+class IdpControllerExceptionHandlerTest {
 
     private final static String EXCEPTION_TEXT = "exception text";
 
@@ -62,7 +61,7 @@ public class IdpControllerExceptionHandlerTest {
     }
 
     @Test
-    public void testIdpServerInvalidRequestException() {
+    void testIdpServerInvalidRequestException() {
         doThrow(new IdpServerException(IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST))
             .when(idpAuthenticator).validateRedirectUri(any(), any());
         final HttpResponse<JsonNode> response = Unirest.get(serverUrl + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
@@ -87,7 +86,7 @@ public class IdpControllerExceptionHandlerTest {
     }
 
     @Test
-    public void authentication_idpServerException_expectRedirect() {
+    void authentication_idpServerException_expectRedirect() {
         when(idpAuthenticator.getBasicFlowTokenLocation(any()))
             .thenThrow(new IdpServerException(EXCEPTION_TEXT, IdpErrorType.INVALID_REQUEST, HttpStatus.FOUND));
         final HttpResponse response = Unirest.post(serverUrl + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
@@ -105,7 +104,7 @@ public class IdpControllerExceptionHandlerTest {
     }
 
     @Test
-    public void authentication_genericError_expectRedirect() {
+    void authentication_genericError_expectRedirect() {
         when(idpAuthenticator.getBasicFlowTokenLocation(any()))
             .thenThrow(new IdpServerException(EXCEPTION_TEXT, IdpErrorType.SERVER_ERROR, HttpStatus.FOUND));
         final HttpResponse response = Unirest

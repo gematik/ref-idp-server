@@ -21,7 +21,6 @@ import static de.gematik.idp.field.ClaimName.ISSUED_AT;
 import static de.gematik.idp.field.ClaimName.TYPE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers;
@@ -45,7 +44,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(PkiKeyResolver.class)
-public class SsoTokenValidatorTest {
+class SsoTokenValidatorTest {
 
     private SsoTokenValidator ssoTokenValidator;
     private PkiIdentity rsaUserIdentity;
@@ -70,36 +69,36 @@ public class SsoTokenValidatorTest {
     }
 
     @Test
-    public void validateValidSsoToken() {
+    void validateValidSsoToken() {
         assertDoesNotThrow(() -> ssoTokenValidator.decryptAndValidateSsoToken(generateValidSsoToken()));
     }
 
     @Test
-    public void validateSsoTokenExpired() {
+    void validateSsoTokenExpired() {
         assertThatThrownBy(() -> ssoTokenValidator.decryptAndValidateSsoToken(generateExpiredSsoToken()))
             .isInstanceOf(IdpServerException.class);
     }
 
     @Test
-    public void validateSsoTokenInvalidCert() {
+    void validateSsoTokenInvalidCert() {
         assertThatThrownBy(() -> ssoTokenValidator.decryptAndValidateSsoToken(generateInvalidSsoToken()))
             .isInstanceOf(IdpJoseException.class);
     }
 
     private IdpJwe generateExpiredSsoToken() {
         return serverTokenProzessor.buildJwt(new JwtBuilder()
-            .addAllHeaderClaims(generateHeaderClaims())
-            .addAllBodyClaims(generateBodyClaims())
-            .expiresAt(ZonedDateTime.now().minusMinutes(1)))
+                .addAllHeaderClaims(generateHeaderClaims())
+                .addAllBodyClaims(generateBodyClaims())
+                .expiresAt(ZonedDateTime.now().minusMinutes(1)))
             .encrypt(tokenEncryptionKey);
     }
 
     private IdpJwe generateInvalidSsoToken() {
         final IdpJwtProcessor invalidProcessor = new IdpJwtProcessor(rsaUserIdentity);
         return invalidProcessor.buildJwt(new JwtBuilder()
-            .addAllHeaderClaims(generateHeaderClaims())
-            .addAllBodyClaims(generateBodyClaims())
-            .expiresAt(ZonedDateTime.now().plusMinutes(5)))
+                .addAllHeaderClaims(generateHeaderClaims())
+                .addAllBodyClaims(generateBodyClaims())
+                .expiresAt(ZonedDateTime.now().plusMinutes(5)))
             .encrypt(tokenEncryptionKey);
     }
 

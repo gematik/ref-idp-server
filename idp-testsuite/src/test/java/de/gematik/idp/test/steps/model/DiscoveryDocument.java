@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.KeyStore;
@@ -47,6 +48,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
@@ -55,6 +57,7 @@ import org.jose4j.keys.X509Util;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Getter
 @Slf4j
@@ -78,14 +81,17 @@ public class DiscoveryDocument {
     private final String thirdPartyEndpoint;
     private final String kkAppListUri;
 
+    public static String adaptUrlToSymbolicIdpHost(String url) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
+        return builder.host(IdpTestEnvironmentConfigurator.getFqdnInternet()).port(null).scheme("http").toUriString();
+    }
     public DiscoveryDocument(final JSONObject jsoBody, final JSONObject jsoHeader)
         throws JSONException {
         if (!IdpTestEnvironmentConfigurator.getFqdnInternet().isEmpty()) {
             jsoBody.keySet().stream()
                 .filter(key -> jsoBody.get(key) instanceof String)
-                .forEach(key -> jsoBody.put(key, jsoBody.getString(key)
-                    .replace(IdpTestEnvironmentConfigurator.getFqdnDiscoveryDocument(),
-                        IdpTestEnvironmentConfigurator.getFqdnInternet())));
+                .filter(key -> UrlValidator.getInstance().isValid(jsoBody.getString(key)))
+                .forEach(key -> jsoBody.put(key, adaptUrlToSymbolicIdpHost(jsoBody.getString(key))));
         }
         jsonBody = jsoBody;
         jsonHeader = jsoHeader;

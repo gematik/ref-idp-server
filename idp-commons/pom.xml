@@ -3,6 +3,15 @@
     xmlns="http://maven.apache.org/POM/4.0.0"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <artifactId>idp-commons</artifactId>
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>idp-global</artifactId>
+        <groupId>de.gematik.idp</groupId>
+        <relativePath>../pom.xml</relativePath>
+        <version>20.0.9</version>
+    </parent>
+
+    <version>20.0.9</version>
 
     <dependencies>
         <dependency>
@@ -15,7 +24,6 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <groupId>org.springframework.boot</groupId>
             <scope>test</scope>
-            <version>${version.spring-boot}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.logging.log4j</groupId>
@@ -30,38 +38,27 @@
         <dependency>
             <artifactId>spring-boot-starter-jersey</artifactId>
             <groupId>org.springframework.boot</groupId>
-            <version>${version.spring-boot}</version>
         </dependency>
 
         <dependency>
             <artifactId>bcpkix-jdk15on</artifactId>
             <groupId>org.bouncycastle</groupId>
-            <version>1.69</version>
         </dependency>
 
         <dependency>
             <artifactId>lombok</artifactId>
             <groupId>org.projectlombok</groupId>
-            <version>1.18.22</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <artifactId>commons-io</artifactId>
-            <groupId>commons-io</groupId>
-            <scope>test</scope>
-            <version>2.11.0</version>
         </dependency>
 
         <dependency>
             <artifactId>unirest-java</artifactId>
             <groupId>com.konghq</groupId>
-            <version>3.13.6</version>
         </dependency>
 
         <dependency>
             <artifactId>jackson-annotations</artifactId>
             <groupId>com.fasterxml.jackson.core</groupId>
-            <version>2.13.1</version>
         </dependency>
 
         <dependency>
@@ -70,31 +67,21 @@
         </dependency>
 
         <dependency>
-            <artifactId>idp-test</artifactId>
             <groupId>de.gematik.idp</groupId>
+            <artifactId>idp-test</artifactId>
             <scope>test</scope>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <artifactId>idp-crypto</artifactId>
             <groupId>de.gematik.idp</groupId>
+            <artifactId>idp-crypto</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <artifactId>jose4j</artifactId>
             <groupId>org.bitbucket.b_c</groupId>
-            <version>0.7.9</version>
+            <artifactId>jose4j</artifactId>
+            <version>0.7.12</version>
         </dependency>
     </dependencies>
-
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <artifactId>idp-global</artifactId>
-        <groupId>de.gematik.idp</groupId>
-        <relativePath>../pom.xml</relativePath>
-        <version>19.3.0</version>
-    </parent>
-
-    <version>19.3.0</version>
 
 </project>

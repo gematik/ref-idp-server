@@ -17,7 +17,6 @@
 package de.gematik.idp.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.tests.Afo;
@@ -31,7 +30,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
@@ -51,7 +50,7 @@ public class ClientSystemValidationTest {
     @Test
     @Afo("A_20588")
     @Disabled("Breaks the server build, even though it shouldn't")
-    public void retrieveWithoutUserAgent_shouldYield403() {
+    void retrieveWithoutUserAgent_shouldYield403() {
         final String defaultUserAgent = Unirest.config().getDefaultHeaders().getFirst(HttpHeaders.USER_AGENT);
         try {
             Unirest.config().setDefaultHeader(HttpHeaders.USER_AGENT, "");
@@ -71,7 +70,7 @@ public class ClientSystemValidationTest {
 
     @Test
     @Afo("A_20589")
-    public void retrieveWithBlockeUserAgent_shouldYield403() {
+    void retrieveWithBlockeUserAgent_shouldYield403() {
         final HttpResponse<String> response = Unirest
             .get("http://localhost:" + port + IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT)
             .header(HttpHeaders.USER_AGENT, idpConfiguration.getBlockedClientSystems().get(0))

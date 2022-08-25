@@ -46,10 +46,10 @@ Feature: Beantrage Token mit dem Auth Code des sektoralen IDPs
   enthalten.
 
     Given IDP I choose code verifier '${TESTENV.code_verifier01}'
-    And IDP I send an authorization request to smartcard idp with
+    And IDP Frontend sends an authorization request to smartcard idp with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce     | response_type | kk_app_id  |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | code          | kkAppId001 |
-    And IDP I send an authorization request to sektoral idp with
+    And IDP Frontend sends an authorization request to fasttrack sektoral idp with
       | client_id           | scope               | code_challenge      | code_challenge_method | redirect_uri                     | state               | nonce               | response_type       |
       | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT   | https://kk.dev.gematik.solutions | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT |
     And IDP I request a code token with third party authorization code
@@ -84,10 +84,10 @@ Feature: Beantrage Token mit dem Auth Code des sektoralen IDPs
   enthalten.
 
     Given IDP I choose code verifier '${TESTENV.code_verifier01}'
-    And IDP I send an authorization request to smartcard idp with
+    And IDP Frontend sends an authorization request to smartcard idp with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | response_type | kk_app_id  |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | code          | kkAppId001 |
-    And IDP I send an authorization request to sektoral idp with
+    And IDP Frontend sends an authorization request to fasttrack sektoral idp with
       | client_id           | scope               | code_challenge      | code_challenge_method | redirect_uri                     | state               | nonce               | response_type       |
       | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT   | https://kk.dev.gematik.solutions | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT |
     And IDP I request a code token with third party authorization code
@@ -116,10 +116,10 @@ Feature: Beantrage Token mit dem Auth Code des sektoralen IDPs
   - Token Typ Bearer
 
     Given IDP I choose code verifier '${TESTENV.code_verifier01}'
-    And IDP I send an authorization request to smartcard idp with
+    And IDP Frontend sends an authorization request to smartcard idp with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce     | response_type | kk_app_id  |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | code          | kkAppId001 |
-    And IDP I send an authorization request to sektoral idp with
+    And IDP Frontend sends an authorization request to fasttrack sektoral idp with
       | client_id           | scope               | code_challenge      | code_challenge_method | redirect_uri                     | state               | nonce               | response_type       |
       | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT   | https://kk.dev.gematik.solutions | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT |
     And IDP I request a code token with third party authorization code

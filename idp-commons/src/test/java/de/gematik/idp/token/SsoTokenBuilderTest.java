@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(PkiKeyResolver.class)
-public class SsoTokenBuilderTest {
+class SsoTokenBuilderTest {
 
     private static final String uriIdpServer = "https://idp.zentral.idp.splitdns.ti-dienste.de";
     private PkiIdentity serverIdentity;
@@ -52,7 +52,7 @@ public class SsoTokenBuilderTest {
     }
 
     @Test
-    public void ssoTokenShouldContainCnf() {
+    void ssoTokenShouldContainCnf() {
         final JsonWebToken ssoToken = ssoTokenBuilder
             .buildSsoToken(clientIdentity.getCertificate(), ZonedDateTime.now(), List.of(""))
             .decryptNestedJwt(encryptionKey);
@@ -62,7 +62,7 @@ public class SsoTokenBuilderTest {
     }
 
     @Test
-    public void ssoTokenShouldContainValidClaims() {
+    void ssoTokenShouldContainValidClaims() {
         final JsonWebToken ssoToken = ssoTokenBuilder
             .buildSsoToken(clientIdentity.getCertificate(), ZonedDateTime.now(), List.of(""))
             .decryptNestedJwt(encryptionKey);
@@ -85,7 +85,7 @@ public class SsoTokenBuilderTest {
     }
 
     @Test
-    public void ssoTokenForIdTokenShouldContainValidClaims() {
+    void ssoTokenForIdTokenShouldContainValidClaims() {
         final JsonWebToken idToken = new JsonWebToken(
             "eyJhbGciOiJCUDI1NlIxIiwia2lkIjoicHVrX2lkcF9zaWciLCJ0eXAiOiJKV1QifQ.eyJhdXRoX3RpbWUiOjE2MjMwNTYxMzYsIm5vbmNlIjoiOTg3NjUiLCJnaXZlbl9uYW1lIjoiRGFyaXVzIE1pY2hhZWwgQnJpYW4gVWJibyIsImZhbWlseV9uYW1lIjoiQsO2ZGVmZWxkIiwib3JnYW5pemF0aW9uTmFtZSI6IlRlc3QgR0tWLVNWTk9ULVZBTElEIiwicHJvZmVzc2lvbk9JRCI6IjEuMi4yNzYuMC43Ni40LjQ5IiwiaWROdW1tZXIiOiJYMTEwNDExNjc1IiwiYXpwIjoiZVJlemVwdEFwcCIsImFjciI6ImdlbWF0aWstZWhlYWx0aC1sb2EtaGlnaCIsImFtciI6WyJtZmEiLCJzYyIsInBpbiJdLCJhdWQiOiJlUmV6ZXB0QXBwIiwic3ViIjoiOGMwN2UzNzYwZjM1NjE5YzJlNWNjY2JkMzQxMzU0NDcwYjgwMmU5ZGIyZTkyYTgzNjMwMzdlYjc5OTkwYjU2ZSIsImlzcyI6Imh0dHBzOi8vaWRwLXRlc3QuemVudHJhbC5pZHAuc3BsaXRkbnMudGktZGllbnN0ZS5kZSIsImlhdCI6MTYyMzA1NjEzNiwiZXhwIjoxNjIzMDk5MzM2LCJqdGkiOiJjNjRiZmU2YS1kNzUyLTRlNWYtODA5YS0zM2IzOGUwYzNlOGUiLCJhdF9oYXNoIjoicUc5QXU4ei1kNVE2MllJWXlBRV9rQSJ9.Z0mhWFS2TcUtZlj-KAX9ys9Az-MwEvQ6AxRMLh2mKSdG6PKfsxsXJQhldeIzD1s2zcTTe74QPd0xUG8OCz9VuQ");
         final JsonWebToken ssoToken = ssoTokenBuilder
@@ -111,7 +111,7 @@ public class SsoTokenBuilderTest {
 
     @Afo("A_20731")
     @Test
-    public void verifyAuthTime() {
+    void verifyAuthTime() {
         final JsonWebToken ssoToken = ssoTokenBuilder
             .buildSsoToken(clientIdentity.getCertificate(), ZonedDateTime.now(), List.of(""))
             .decryptNestedJwt(encryptionKey);
@@ -121,7 +121,7 @@ public class SsoTokenBuilderTest {
     }
 
     @Test
-    public void verifyExpClaim() {
+    void verifyExpClaim() {
         final JsonWebToken ssoToken = ssoTokenBuilder
             .buildSsoToken(clientIdentity.getCertificate(), ZonedDateTime.now(), List.of(""))
             .decryptNestedJwt(encryptionKey);
@@ -131,7 +131,7 @@ public class SsoTokenBuilderTest {
     }
 
     @Test
-    public void verifyCnfDoesNotContainNullValues() {
+    void verifyCnfDoesNotContainNullValues() {
         final JsonWebToken ssoToken = ssoTokenBuilder
             .buildSsoToken(clientIdentity.getCertificate(), ZonedDateTime.now(), List.of(""))
             .decryptNestedJwt(encryptionKey);

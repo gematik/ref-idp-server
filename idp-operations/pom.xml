@@ -19,12 +19,6 @@
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-
-        <version.assertj>3.18.1</version.assertj>
-        <version.cucumber>6.6.0</version.cucumber>
-        <version.serenity.core>2.3.4</version.serenity.core>
-        <version.serenity.cucumber.6>2.3.4</version.serenity.cucumber.6>
-        <version.serenity.maven.plugin>2.3.4</version.serenity.maven.plugin>
     </properties>
 
     <dependencies>

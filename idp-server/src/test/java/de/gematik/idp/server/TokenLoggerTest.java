@@ -34,19 +34,6 @@ import de.gematik.rbellogger.data.RbelElement;
 import de.gematik.rbellogger.key.RbelKey;
 import de.gematik.rbellogger.key.RbelKeyManager;
 import de.gematik.rbellogger.renderer.RbelHtmlRenderer;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.util.ReflectionTestUtils;
-
-import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -58,12 +45,24 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.crypto.spec.SecretKeySpec;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(SpringExtension.class)
 @ExtendWith(PkiKeyResolver.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Slf4j
-public class TokenLoggerTest {
+class TokenLoggerTest {
 
     private final static Map<String, String> MASKING_FUNCTIONS = new HashMap<>();
     private final static Map<String, String> JEXL_NOTE_FUNCTIONS = new HashMap<>();
@@ -263,21 +262,21 @@ public class TokenLoggerTest {
     }
 
     private void addParameterNotesRequest(final String httpVerb, final String url,
-                                          final Map<String, String> parameterNotes) {
+        final Map<String, String> parameterNotes) {
         for (final Entry<String, String> entry : parameterNotes.entrySet()) {
             JEXL_NOTE_FUNCTIONS.put("key == '" + entry.getKey() + "'", entry.getValue());
         }
     }
 
     private void addParameterNotesResponse(final String httpVerb, final String url,
-                                           final Map<String, String> parameterNotes) {
+        final Map<String, String> parameterNotes) {
         for (final Entry<String, String> entry : parameterNotes.entrySet()) {
             JEXL_NOTE_FUNCTIONS.put("key == '" + entry.getKey() + "'", entry.getValue());
         }
     }
 
     private void addRequestResponseNotes(final String verb, final String url, final String requestNote,
-                                         final String responseNote) {
+        final String responseNote) {
         JEXL_NOTE_FUNCTIONS.put("message.url =^ '" + url + "' "
             + "&& message.method=='" + verb + "' && type == 'RbelHttpRequest'", requestNote);
         JEXL_NOTE_FUNCTIONS.put("request.url =^ '" + url + "' && request.method=='" + verb + "' "
@@ -307,9 +306,9 @@ public class TokenLoggerTest {
                     } else if (element.getRawStringContent().contains("localhost:" + localServerPort)) {
                         return element.toBuilder()
                             .rawContent(
-                            element.getRawStringContent()
-                                .replace("localhost:" + localServerPort, "url.des.idp")
-                                .getBytes())
+                                element.getRawStringContent()
+                                    .replace("localhost:" + localServerPort, "url.des.idp")
+                                    .getBytes())
                             .build();
                     } else {
                         return element;
@@ -352,7 +351,7 @@ public class TokenLoggerTest {
     }
 
     @Test
-    public void writeAllTokensToFile() throws IOException {
+    void writeAllTokensToFile() throws IOException {
         performAndWriteFlow(() -> {
             patchIdpUrls(idpClient);
             idpClient.initialize();

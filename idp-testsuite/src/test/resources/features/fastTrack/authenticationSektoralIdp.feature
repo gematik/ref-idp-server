@@ -37,7 +37,7 @@ Feature: Authentifiziere User am Sektoral-IDP
 
   - den Code 302
 
-    Given IDP I send an authorization request to sektoral idp with
+    Given IDP Frontend sends an authorization request to fasttrack sektoral idp with
       | client_id    | scope  | redirect_uri                          | state       | nonce     | response_type | code_challenge                              | code_challenge_method |
       | smardcardIdp | openid | https://redirect.smartcard.de/erezept | yyystateyyy | 987654321 | code          | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  |
     Then the response status is 302

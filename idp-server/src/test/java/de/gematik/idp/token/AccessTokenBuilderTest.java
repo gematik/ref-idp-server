@@ -21,7 +21,6 @@ import static de.gematik.idp.field.ClaimName.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
-
 import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
@@ -44,7 +43,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(PkiKeyResolver.class)
-public class AccessTokenBuilderTest {
+class AccessTokenBuilderTest {
 
     private final static String URI_IDP_SERVER = "https://idp.zentral.idp.splitdns.ti-dienste.de";
     private static final String KEY_ID = "my_key_id";
@@ -91,7 +90,7 @@ public class AccessTokenBuilderTest {
 
     @Afo("A_20524")
     @Test
-    public void requiredFieldMissingFromAuthenticationToken_ShouldThrowRequiredClaimException() {
+    void requiredFieldMissingFromAuthenticationToken_ShouldThrowRequiredClaimException() {
         assertThatThrownBy(
             () -> accessTokenBuilder.buildAccessToken(serverTokenProcessor.buildJwt(new JwtBuilder()
                 .addAllBodyClaims(Map.of(PROFESSION_OID.getJoseName(), "foo",
@@ -102,7 +101,7 @@ public class AccessTokenBuilderTest {
 
     @Afo("A_20524")
     @Test
-    public void verifyThatAllRequiredClaimsAreInBody() {
+    void verifyThatAllRequiredClaimsAreInBody() {
         final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);
 
         assertThat(accessToken.getBodyClaims())
@@ -118,21 +117,21 @@ public class AccessTokenBuilderTest {
     }
 
     @Test
-    public void verifyThatAllRequiredClaimsAreInHeader() {
+    void verifyThatAllRequiredClaimsAreInHeader() {
         final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);
         assertThat(accessToken.getHeaderClaims())
             .containsEntry(ClaimName.KEY_ID.getJoseName(), KEY_ID);
     }
 
     @Test
-    public void verifyExpiresAtIsPresentAndInNearFuture() {
+    void verifyExpiresAtIsPresentAndInNearFuture() {
         final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);
         assertThat(accessToken.getExpiresAtBody())
             .isBefore(ZonedDateTime.now().plusMinutes(5));
     }
 
     @Test
-    public void verifyEncryptionAlgorithmIsCorrect() {
+    void verifyEncryptionAlgorithmIsCorrect() {
         final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);
 
         assertThat(accessToken.getHeaderClaims())
@@ -141,7 +140,7 @@ public class AccessTokenBuilderTest {
 
     @Afo("A_20731")
     @Test
-    public void verifyAuthTimeClaimIsPresentAndIsRecent() {
+    void verifyAuthTimeClaimIsPresentAndIsRecent() {
         final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);
         assertThat(accessToken.getBodyClaims())
             .extractingByKey(AUTH_TIME.getJoseName())
@@ -151,7 +150,7 @@ public class AccessTokenBuilderTest {
     }
 
     @Test
-    public void verifyAudienceByScopeERezept() {
+    void verifyAudienceByScopeERezept() {
         createAuthenticationTokenByBodyClaims(Map.of(CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP,
             SCOPE.getJoseName(), IdpScope.OPENID.getJwtValue() + " " + IdpScope.EREZEPT.getJwtValue()));
         final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);
@@ -160,7 +159,7 @@ public class AccessTokenBuilderTest {
     }
 
     @Test
-    public void verifyAudienceByScopePairing() {
+    void verifyAudienceByScopePairing() {
         createAuthenticationTokenByBodyClaims(Map.of(CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP,
             SCOPE.getJoseName(), IdpScope.OPENID.getJwtValue() + " " + IdpScope.PAIRING.getJwtValue()));
         final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);

@@ -18,7 +18,6 @@ package de.gematik.idp.crypto;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import de.gematik.idp.crypto.model.PkiIdentity;
 import java.io.File;
 import java.io.IOException;
@@ -26,10 +25,10 @@ import java.security.cert.X509Certificate;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 
-public class CryptoLoaderTest {
+class CryptoLoaderTest {
 
     @Test
-    public void loadRsaCertificateFromP12() throws IOException {
+    void loadRsaCertificateFromP12() throws IOException {
         final byte[] p12FileContent = FileUtils
             .readFileToByteArray(new File("src/test/resources/833621999741600_c.hci.aut-apo-rsa.p12"));
         final X509Certificate certificate = CryptoLoader.getCertificateFromP12(p12FileContent, "00");
@@ -39,7 +38,7 @@ public class CryptoLoaderTest {
     }
 
     @Test
-    public void loadEccCertificateFromP12() throws IOException {
+    void loadEccCertificateFromP12() throws IOException {
         final byte[] p12FileContent = FileUtils
             .readFileToByteArray(new File("src/test/resources/authenticatorModule_idpServer.p12"));
         final X509Certificate certificate = CryptoLoader.getCertificateFromP12(p12FileContent, "00");
@@ -49,13 +48,13 @@ public class CryptoLoaderTest {
     }
 
     @Test
-    public void loadNonCertificateFile() {
+    void loadNonCertificateFile() {
         assertThatThrownBy(() -> CryptoLoader.getCertificateFromP12(
             FileUtils.readFileToByteArray(new File("pom.xml")), "00")).isInstanceOf(RuntimeException.class);
     }
 
     @Test
-    public void loadIdentityFromP12() throws IOException {
+    void loadIdentityFromP12() throws IOException {
         final byte[] p12FileContent = FileUtils
             .readFileToByteArray(new File("src/test/resources/authenticatorModule_idpServer.p12"));
         final PkiIdentity identity = CryptoLoader.getIdentityFromP12(p12FileContent, "00");

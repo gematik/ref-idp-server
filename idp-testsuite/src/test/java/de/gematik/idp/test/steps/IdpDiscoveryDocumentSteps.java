@@ -40,15 +40,14 @@ public class IdpDiscoveryDocumentSteps extends IdpStepsBase {
     public void initializeFromDiscoveryDocument() {
         log.info("DiscoveryURL is " + IdpTestEnvironmentConfigurator.getDiscoveryDocumentURL());
         SerenityRest.setDefaultConfig(SerenityRest.config()
-                .sslConfig(new SSLConfig().relaxedHTTPSValidation()));
-        SerenityRest.proxy(TigerDirector.getProxySettings());
+            .sslConfig(new SSLConfig().relaxedHTTPSValidation()));
         final Response r = IdpStepsBase.simpleGet(IdpTestEnvironmentConfigurator.getDiscoveryDocumentURL());
         final String discoveryDocumentBodyAsString = r.getBody().asString();
 
         Context.get()
-                .put(ContextKey.DISC_DOC, new DiscoveryDocument(
-                        claimsStepHelper.getClaims(discoveryDocumentBodyAsString),
-                        claimsStepHelper.extractHeaderClaimsFromJWSString(r.getBody().asString())));
+            .put(ContextKey.DISC_DOC, new DiscoveryDocument(
+                claimsStepHelper.getClaims(discoveryDocumentBodyAsString),
+                claimsStepHelper.extractHeaderClaimsFromJWSString(r.getBody().asString())));
     }
 
 
@@ -56,12 +55,11 @@ public class IdpDiscoveryDocumentSteps extends IdpStepsBase {
     @SneakyThrows
     public void iRequestTheInternalDiscoveryDocument(final HttpStatus desiredStatus) {
         SerenityRest.setDefaultConfig(SerenityRest.config()
-                .sslConfig(new SSLConfig().relaxedHTTPSValidation()));
-        SerenityRest.proxy(TigerDirector.getProxySettings());
+            .sslConfig(new SSLConfig().relaxedHTTPSValidation()));
         Context.get().put(ContextKey.RESPONSE,
-                requestResponseAndAssertStatus(IdpTestEnvironmentConfigurator.getDiscoveryDocumentURL(), null,
-                        HttpMethods.GET,
-                        null,
-                        null, desiredStatus));
+            requestResponseAndAssertStatus(IdpTestEnvironmentConfigurator.getDiscoveryDocumentURL(), null,
+                HttpMethods.GET,
+                null,
+                null, desiredStatus));
     }
 }

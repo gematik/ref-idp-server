@@ -33,7 +33,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
-@SpringBootApplication(scanBasePackages = {"de.gematik", "net.dracoblue"})
+@SpringBootApplication(scanBasePackages = {"de.gematik.idp", "net.dracoblue"})
 @RequiredArgsConstructor
 public class IdpServer implements WebMvcConfigurer {
 

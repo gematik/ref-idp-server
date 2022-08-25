@@ -28,61 +28,69 @@ import org.junit.jupiter.api.Test;
 class NonceTest {
 
     @Test
-    public void checkInvalidLowerLimit() {
-        assertThatThrownBy(() -> new Nonce().getNonceAsBase64UrlEncodedString(0)).
+    void checkInvalidLowerLimit() {
+        assertThatThrownBy(() -> Nonce.getNonceAsBase64UrlEncodedString(0)).
             isInstanceOf(IdpCryptoException.class).
             hasMessageContaining("Amount of random bytes");
 
-        assertThatThrownBy(() -> new Nonce().getNonceAsHex(1)).
+        assertThatThrownBy(() -> Nonce.getNonceAsHex(1)).
             isInstanceOf(IdpCryptoException.class).
             hasMessageContaining("string length");
     }
 
     @Test
-    public void checkInvalidUpperLimit() {
-        assertThatThrownBy(() -> new Nonce().getNonceAsBase64UrlEncodedString(513)).
+    void checkInvalidUpperLimit() {
+        assertThatThrownBy(() -> Nonce.getNonceAsBase64UrlEncodedString(513)).
             isInstanceOf(IdpCryptoException.class).
             hasMessageContaining("Amount of random bytes");
 
-        assertThatThrownBy(() -> new Nonce().getNonceAsHex(513)).
+        assertThatThrownBy(() -> Nonce.getNonceAsHex(513)).
             isInstanceOf(IdpCryptoException.class).
             hasMessageContaining("string length is expected to be between");
     }
 
     @Test
-    public void checkExactNonceLength() {
+    void checkExactNonceLength() {
         final int BYTE_AMOUNT = 256;
-        final String nonce = new Nonce().getNonceAsBase64UrlEncodedString(BYTE_AMOUNT);
+        final String nonce = Nonce.getNonceAsBase64UrlEncodedString(BYTE_AMOUNT);
         assertThat(Base64.getUrlDecoder().decode(nonce).length).isEqualTo(BYTE_AMOUNT);
 
         final int HEXSTR_LEN = 10;
-        final String hexStr = new Nonce().getNonceAsHex(HEXSTR_LEN);
+        final String hexStr = Nonce.getNonceAsHex(HEXSTR_LEN);
         assertThat(hexStr).hasSize(HEXSTR_LEN);
     }
 
     @Test
-    public void checkNonceUnique() {
+    void checkNonceUnique() {
         final int NONCES_REQUEST_AMOUNT = 1000;
-        final Nonce nonce = new Nonce();
         final Set<String> nonces = new HashSet<>();
         for (int i = 0; i < NONCES_REQUEST_AMOUNT; i++) {
-            nonces.add(nonce.getNonceAsBase64UrlEncodedString(32));
-            nonces.add(nonce.getNonceAsHex(8));
+            nonces.add(Nonce.getNonceAsBase64UrlEncodedString(32));
+            nonces.add(Nonce.getNonceAsHex(8));
         }
-        assertThat(nonces.size()).isEqualTo(NONCES_REQUEST_AMOUNT * 2);
+        assertThat(nonces).hasSize(NONCES_REQUEST_AMOUNT * 2);
     }
 
     @Test
-    public void checkIsHexStr() {
-        final String hexStr = new Nonce().getNonceAsHex(42);
+    void checkIsHexStr() {
+        final String hexStr = Nonce.getNonceAsHex(42);
         assertThat(Hex.decode(hexStr)).isNotEmpty();
     }
 
     @Test
-    public void checkHexRequestedStrLenIsEven() {
-        assertThatThrownBy(() -> new Nonce().getNonceAsHex(13)).
+    void checkHexRequestedStrLenIsEven() {
+        assertThatThrownBy(() -> Nonce.getNonceAsHex(13)).
             isInstanceOf(IdpCryptoException.class).
             hasMessageContaining("string length is expected to be even");
+    }
+
+    @Test
+    void checkAlphaNum() {
+        final int nonceLen = 62;
+        final String alphaNumStr = Nonce.randomAlphanumeric(nonceLen);
+        assertThat(alphaNumStr)
+            .hasSize(nonceLen)
+            .matches("[A-Za-z0-9]*");
     }
 
 }

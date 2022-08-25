@@ -20,7 +20,6 @@ import static de.gematik.idp.client.AuthenticatorClient.getAllFieldElementsAsMap
 import static de.gematik.idp.client.AuthenticatorClient.getAllHeaderElementsAsMap;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-
 import de.gematik.idp.TestConstants;
 import de.gematik.idp.client.IdpClient;
 import de.gematik.idp.client.IdpClientRuntimeException;
@@ -46,13 +45,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
 @ExtendWith(PkiKeyResolver.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class PkceServerTest {
+class PkceServerTest {
 
     private final PkceChecker pkceChecker = new PkceChecker();
     @Autowired
@@ -84,7 +83,7 @@ public class PkceServerTest {
     }
 
     @Test
-    public void testPkcePositiv() throws UnirestException {
+    void testPkcePositiv() throws UnirestException {
         idpClient
             .setBeforeAuthorizationCallback(
                 request -> assertThat(request.getUrl()).contains("code_challenge=")
@@ -96,7 +95,7 @@ public class PkceServerTest {
     @Test
     @Remark("Client sendet code_challenge_method=plain statt S256, Server muss Error senden")
     @Rfc("rfc7636, section 4.4.1")
-    public void pkceNegativPlainInAuthorization() throws UnirestException {
+    void pkceNegativPlainInAuthorization() throws UnirestException {
         idpClient.setCodeChallengeMethod(CodeChallengeMethod.PLAIN);
 
         idpClient.setAfterAuthorizationCallback(r -> assertThat(r.getStatus()).isEqualTo(302));
@@ -110,7 +109,7 @@ public class PkceServerTest {
     @Test
     @Remark("Client sendet kein code_challenge, Server muss Error senden")
     @Rfc("rfc7636, section 4.4.1")
-    public void pkceNegativNoCodeChallengeInAuthorization() throws UnirestException {
+    void pkceNegativNoCodeChallengeInAuthorization() throws UnirestException {
         idpClient.setBeforeAuthorizationMapper(request -> Unirest
             .get(request.getUrl()
                 .replaceFirst("&code_challenge=[\\w-_.~]*&code_challenge_method=S256", ""))
@@ -127,14 +126,14 @@ public class PkceServerTest {
     @Test
     @Remark("Client sendet falschen code_verifier, Server muss Error senden")
     @Rfc("rfc7636, section 4.4.1")
-    public void pkceNegativInvalidCodeVerifier() throws UnirestException {
+    void pkceNegativInvalidCodeVerifier() throws UnirestException {
         idpClient.setAuthenticationResponseMapper(authenticationResponse ->
             AuthenticationResponse.builder()
                 .ssoToken(authenticationResponse.getSsoToken())
                 .location(authenticationResponse.getLocation())
                 .code(
                     new IdpJwe(authenticationResponse.getCode()).decryptNestedJwt(
-                        symmetricEncryptionKey)
+                            symmetricEncryptionKey)
                         .toJwtDescription().addBodyClaim(ClaimName.CODE_CHALLENGE, "wrongCodeChallengeValue")
                         .setSignerKey(idpSig.getIdentity().getPrivateKey())
                         .buildJwt().encrypt(symmetricEncryptionKey).getRawString()).build());
@@ -150,7 +149,7 @@ public class PkceServerTest {
     @Test
     @Remark("Client sendet keinen code_verifier, Server muss Error senden")
     @Rfc("rfc7636, section 4.4.1")
-    public void pkceNegativMissingCodeVerifier()
+    void pkceNegativMissingCodeVerifier()
         throws UnirestException {
         idpClient.setBeforeTokenMapper(request -> {
             final Map<String, Object> newFields = getAllFieldElementsAsMap(request);
@@ -170,7 +169,7 @@ public class PkceServerTest {
     @Test
     @Rfc("rfc7636 Appendix B")
     @Remark("This example is in rfc7636 Appendix B")
-    public void checkVerifyCodeVerifier() {
+    void checkVerifyCodeVerifier() {
         final String validCodeVerifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
         final String validCodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
         pkceChecker.checkCodeVerifier(validCodeVerifier, validCodeChallenge);
@@ -179,7 +178,7 @@ public class PkceServerTest {
     @Test
     @Rfc("rfc7636 Appendix B")
     @Remark("code verifier and code challenge dont match")
-    public void codeVerifierInvalid() {
+    void codeVerifierInvalid() {
         final String invalidCodeVerifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk" + "_";
         final String validCodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
         assertThatThrownBy(
@@ -191,7 +190,7 @@ public class PkceServerTest {
     @Test
     @Rfc("rfc7636 Appendix B")
     @Remark("code verifier is too short")
-    public void codeVerifierTooShort() {
+    void codeVerifierTooShort() {
         final String shortCodeVerifier = "too_short_too_short_too_short_too_short_to";
         final String shortCodeChallenge = "9VHAvw0tiyfbpsis_ClQrXjEm0gJgivDIacuuj5kjOY";
         assertThatThrownBy(
@@ -202,7 +201,7 @@ public class PkceServerTest {
     @Test
     @Rfc("rfc7636 Appendix B")
     @Remark("code verifier is too long")
-    public void codeVerifierTooLong() {
+    void codeVerifierTooLong() {
         final String longCodeVerifier = "too_long_too_long_too_long_too_long_too_long_too_long_too_long_too_long_too_long_too_long_too_long_too_long_too_long_too_long_too";
         final String longCodeChallenge = "CkXOaKyJw8vCDOWgnvqgQDSVbll0xJRaq_DzY8f5Zr0";
         assertThatThrownBy(() -> pkceChecker
@@ -213,7 +212,7 @@ public class PkceServerTest {
     @Test
     @Rfc("rfc7636 Appendix B")
     @Remark("code verifier is empty")
-    public void emptyCodeVerifier() {
+    void emptyCodeVerifier() {
         final String validCodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
         assertThatThrownBy(() -> pkceChecker.checkCodeVerifier("", validCodeChallenge))
             .isInstanceOf(IdpServerException.class);

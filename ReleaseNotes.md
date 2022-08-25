@@ -1,3 +1,12 @@
+# Release 20.0.9
+
+- use SecureRandom
+- publish docker compose file for Idp-Server
+- use Tiger test framework
+- add IDP Federation Proof of Concept
+- update dependencies
+- clean code smells
+
 # Release 19.3.0
 
 - hot fix: exclude non existent dependency

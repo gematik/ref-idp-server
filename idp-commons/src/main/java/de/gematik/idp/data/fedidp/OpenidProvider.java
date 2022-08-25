@@ -46,7 +46,8 @@ public class OpenidProvider {
     private boolean requirePushedAuthorizationRequests;
     private String[] tokenEndpointAuthMethodsSupported;
     private String[] tokenEndpointAuthSigningAlgValuesSupported;
-    private String requestAuthenticationMethodsSupported;
+    private RequestAuthenticationMethodsSupported requestAuthenticationMethodsSupported;
+    private String[] requestObjectSigningAlgValuesSupported;
     private String[] idTokenSigningAlgValuesSupported;
     private String[] idTokenEncryptionAlgValuesSupported;
     private String[] idTokenEncryptionEncValuesSupported;

@@ -36,7 +36,6 @@ import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import org.apache.commons.lang3.RandomStringUtils;
 
 @Data
 @AllArgsConstructor
@@ -68,8 +67,8 @@ public class AuthenticationTokenBuilder {
         claimsMap.put(ISSUED_AT.getJoseName(), issueingTime.toEpochSecond());
         claimsMap.put(TOKEN_TYPE.getJoseName(), "code");
         claimsMap.put(AUTH_TIME.getJoseName(), issueingTime.toEpochSecond());
-        claimsMap.put(SERVER_NONCE.getJoseName(), RandomStringUtils.randomAlphanumeric(20));
-        claimsMap.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
+        claimsMap.put(SERVER_NONCE.getJoseName(), Nonce.randomAlphanumeric(20));
+        claimsMap.put(JWT_ID.getJoseName(), Nonce.getNonceAsHex(IdpConstants.JTI_LENGTH));
         claimsMap.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(),
             serverChallengeClaims.getOrDefault(AUTHENTICATION_METHODS_REFERENCE.getJoseName(),
                 List.of("mfa", "sc", "pin")));
@@ -123,9 +122,9 @@ public class AuthenticationTokenBuilder {
         claimsMap.put(RESPONSE_TYPE.getJoseName(), extractClaimFromChallengeToken(challengeToken, RESPONSE_TYPE));
         claimsMap.put(TOKEN_TYPE.getJoseName(), "code");
         claimsMap.put(AUTH_TIME.getJoseName(), ZonedDateTime.now().toEpochSecond());
-        claimsMap.put(SERVER_NONCE.getJoseName(), RandomStringUtils.randomAlphanumeric(20));
+        claimsMap.put(SERVER_NONCE.getJoseName(), Nonce.randomAlphanumeric(20));
         claimsMap.put(ISSUER.getJoseName(), extractClaimFromChallengeToken(challengeToken, ISSUER));
-        claimsMap.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
+        claimsMap.put(JWT_ID.getJoseName(), Nonce.getNonceAsHex(IdpConstants.JTI_LENGTH));
 
         final Map<String, Object> headerClaims = new HashMap<>(ssoToken.getHeaderClaims());
         headerClaims.put(TYPE.getJoseName(), "JWT");
@@ -160,9 +159,9 @@ public class AuthenticationTokenBuilder {
         claimsMap.put(RESPONSE_TYPE.getJoseName(), sessionData.get(RESPONSE_TYPE.getJoseName()));
         claimsMap.put(TOKEN_TYPE.getJoseName(), "code");
         claimsMap.put(AUTH_TIME.getJoseName(), ZonedDateTime.now().toEpochSecond());
-        claimsMap.put(SERVER_NONCE.getJoseName(), RandomStringUtils.randomAlphanumeric(20));
+        claimsMap.put(SERVER_NONCE.getJoseName(), Nonce.randomAlphanumeric(20));
         claimsMap.put(ISSUER.getJoseName(), issuerUrl);
-        claimsMap.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
+        claimsMap.put(JWT_ID.getJoseName(), Nonce.getNonceAsHex(IdpConstants.JTI_LENGTH));
         claimsMap.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), List.of(AMR_FAST_TRACK));
 
         final Map<String, Object> headerMap = new HashMap<>();

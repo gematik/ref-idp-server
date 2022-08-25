@@ -181,10 +181,10 @@ public class IdpController {
         @RequestParam(name = "scope") @NotEmpty(message = "1002") final String userAgentScope,
         @RequestParam(name = "kk_app_id") @NotEmpty(message = "1002") final String sekIdpId,
         final HttpServletResponse response) {
-        
-        final String idpState = new Nonce().getNonceAsHex(FASTTRACK_IDP_STATE_LENGTH);
+
+        final String idpState = Nonce.getNonceAsHex(FASTTRACK_IDP_STATE_LENGTH);
         final String idpCodeChallengeMethod = "S256";
-        final String idpNonce = new Nonce().getNonceAsHex(FASTTRACK_IDP_NONCE_LENGTH);
+        final String idpNonce = Nonce.getNonceAsHex(FASTTRACK_IDP_NONCE_LENGTH);
         final String idpCodeVerifier = generateCodeVerifier(); // top secret
 
         log.info("Amount of stored fasttrackSessions: {}", fasttrackSessions.size());
@@ -196,7 +196,7 @@ public class IdpController {
             .userAgentId(userAgentClientId)
             .userAgentSekIdp(sekIdpId)
             .userAgentState(userAgentState)
-            .userAgentRedirektUri(userAgentRedirectUri)
+            .userAgentRedirectUri(userAgentRedirectUri)
             .userResponseType(responseType)
             .idpCodeVerifier(idpCodeVerifier)
             .build()

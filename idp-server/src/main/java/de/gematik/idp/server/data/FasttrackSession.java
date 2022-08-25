@@ -33,7 +33,7 @@ public class FasttrackSession {
     private final String userAgentState;
     private final String userAgentId;
     private final String userAgentSekIdp;
-    private final String userAgentRedirektUri;
+    private final String userAgentRedirectUri;
     private final String userResponseType;
 
 
@@ -46,7 +46,7 @@ public class FasttrackSession {
         sessionMap.put(CODE_CHALLENGE_METHOD.getJoseName(), userAgentCodeChallengeMethod);
         sessionMap.put(NONCE.getJoseName(), userAgentNonce);
         sessionMap.put(STATE.getJoseName(), userAgentState);
-        sessionMap.put(REDIRECT_URI.getJoseName(), userAgentRedirektUri);
+        sessionMap.put(REDIRECT_URI.getJoseName(), userAgentRedirectUri);
         sessionMap.put(CLIENT_ID.getJoseName(), userAgentId);
         sessionMap.put(RESPONSE_TYPE.getJoseName(), userResponseType);
 

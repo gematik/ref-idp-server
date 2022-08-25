@@ -25,7 +25,8 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 @Getter
 public enum IdpScope {
-    OPENID("openid"), EREZEPT("e-rezept"), PAIRING("pairing"), EREZEPTDEV("e-rezept-dev");
+    OPENID("openid"), EREZEPT("e-rezept"), PAIRING("pairing"), EREZEPTDEV("e-rezept-dev"),
+    AUTHENTICATORDEV("authenticator-dev");
 
     private final String jwtValue;
 

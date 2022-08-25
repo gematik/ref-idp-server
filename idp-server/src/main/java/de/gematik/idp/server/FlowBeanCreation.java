@@ -32,7 +32,6 @@ import de.gematik.idp.token.IdTokenBuilder;
 import de.gematik.idp.token.SsoTokenBuilder;
 import de.gematik.pki.certificate.CertificateProfile;
 import de.gematik.pki.certificate.TucPki018Verifier;
-import de.gematik.pki.exception.GemPkiException;
 import de.gematik.pki.tsl.TslConverter;
 import de.gematik.pki.tsl.TslInformationProvider;
 import de.gematik.pki.tsl.TspService;
@@ -116,7 +115,8 @@ public class FlowBeanCreation {
     @Bean
     public TucPki018Verifier certificateVerifier() {
         try {
-            final byte[] tslBytes = Objects.requireNonNull(FlowBeanCreation.class.getClassLoader().getResourceAsStream("TSL_default.xml"),
+            final byte[] tslBytes = Objects.requireNonNull(
+                    FlowBeanCreation.class.getClassLoader().getResourceAsStream("TSL_default.xml"),
                     "Resource unavailable.")
                 .readAllBytes();
             final TrustStatusListType tsl = TslConverter.bytesToTsl(tslBytes).orElseThrow();
@@ -130,7 +130,7 @@ public class FlowBeanCreation {
                     CertificateProfile.C_HP_AUT_RSA, CertificateProfile.C_HP_AUT_ECC))
                 .withOcspCheck(false)
                 .build();
-        } catch (final GemPkiException | IOException e) {
+        } catch (final IOException e) {
             throw new IdpServerStartupException("Error while reading TSL, " + e.getMessage());
         }
     }

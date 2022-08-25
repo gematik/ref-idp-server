@@ -21,7 +21,6 @@ import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifie
 import static de.gematik.idp.client.AuthenticatorClient.getAllHeaderElementsAsMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.authentication.IdpJwtProcessor;
@@ -55,7 +54,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
 import kong.unirest.MultipartBody;
 import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
@@ -69,14 +67,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
 @ExtendWith(PkiKeyResolver.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class TokenRetrievalTest {
+class TokenRetrievalTest {
 
     private static final String SHA256_AS_BASE64_REGEX = "^[_\\-a-zA-Z0-9]{42,44}[=]{0,2}$";
 
@@ -110,7 +108,7 @@ public class TokenRetrievalTest {
     @Afo("A_20463")
     @Remark("ACCESS_TOKEN ist nur 300 s lang gültig, also auch die Response.")
     @Test
-    public void verifyExpiresInTokenResponse() throws UnirestException {
+    void verifyExpiresInTokenResponse() throws UnirestException {
         final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
 
         assertThat(tokenResponse.getExpiresIn())
@@ -119,7 +117,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void issuerShouldBePresentInAccessAndIdToken() throws UnirestException {
+    void issuerShouldBePresentInAccessAndIdToken() throws UnirestException {
         final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
 
         assertThat(tokenResponse.getIdToken().getBodyClaim(ClaimName.ISSUER).get().toString())
@@ -131,7 +129,7 @@ public class TokenRetrievalTest {
     @Rfc({"OpenID Connect Core 1.0 incorporating errata set 1 - 3.1.3.3.  Successful Token Response",
         "RFC6750 October 2012 - 4.  Example Access Token Response"})
     @Test
-    public void verifyTokenType() throws UnirestException {
+    void verifyTokenType() throws UnirestException {
         final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
 
         assertThat(tokenResponse.getTokenType())
@@ -140,7 +138,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void getAccessTokenWithRsa(
+    void getAccessTokenWithRsa(
         @Filename("833621999741600_c.hci.aut-apo-rsa") final PkiIdentity rsaEgkIdentity) throws UnirestException {
         final IdpTokenResult tokenResponse = idpClient.login(rsaEgkIdentity);
 
@@ -150,7 +148,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void getAccessTokenWithRsaWithExternalAuthenticate(
+    void getAccessTokenWithRsaWithExternalAuthenticate(
         @Filename("833621999741600_c.hci.aut-apo-rsa") final PkiIdentity rsaEgkIdentity) throws UnirestException {
         final IdpTokenResult tokenResponse = idpClient.login(rsaEgkIdentity.getCertificate(),
             tbsData -> {
@@ -170,7 +168,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void authenticationForwardShouldContainSsoToken() throws UnirestException {
+    void authenticationForwardShouldContainSsoToken() throws UnirestException {
         idpClient.setAfterAuthenticationCallback(response ->
             assertThat(response.getHeaders().getFirst("Location"))
                 .contains("ssotoken="));
@@ -180,7 +178,7 @@ public class TokenRetrievalTest {
 
     @Rfc("OpenID Connect Core 1.0 incorporating errata set 1 - 3.1.3.3.  Successful Token Response")
     @Test
-    public void authenticationHttpHeaderShouldContainCacheControl() throws UnirestException {
+    void authenticationHttpHeaderShouldContainCacheControl() throws UnirestException {
         idpClient.setAfterAuthenticationCallback(response ->
             assertThat(response.getHeaders().getFirst("Cache-Control"))
                 .contains("no-store"));
@@ -190,7 +188,7 @@ public class TokenRetrievalTest {
 
     @Rfc("OpenID Connect Core 1.0 incorporating errata set 1 - 3.1.3.3.  Successful Token Response")
     @Test
-    public void authenticationHttpHeaderShouldContainPragma() throws UnirestException {
+    void authenticationHttpHeaderShouldContainPragma() throws UnirestException {
         idpClient.setAfterAuthenticationCallback(response ->
             assertThat(response.getHeaders().getFirst("Pragma"))
                 .contains("no-cache"));
@@ -200,7 +198,7 @@ public class TokenRetrievalTest {
 
     @Rfc("OpenID Connect Core 1.0 incorporating errata set 1 - 3.1.3.3.  Successful Token Response")
     @Test
-    public void authorizationHttpHeaderShouldContainCacheControl() throws UnirestException {
+    void authorizationHttpHeaderShouldContainCacheControl() throws UnirestException {
         idpClient.setAfterAuthorizationCallback(response ->
             assertThat(response.getHeaders().getFirst("Cache-Control"))
                 .contains("no-store"));
@@ -210,7 +208,7 @@ public class TokenRetrievalTest {
 
     @Rfc("OpenID Connect Core 1.0 incorporating errata set 1 - 3.1.3.3.  Successful Token Response")
     @Test
-    public void authorizationHttpHeaderShouldContainPragma() throws UnirestException {
+    void authorizationHttpHeaderShouldContainPragma() throws UnirestException {
         idpClient.setAfterAuthorizationCallback(response ->
             assertThat(response.getHeaders().getFirst("Pragma"))
                 .contains("no-cache"));
@@ -220,7 +218,7 @@ public class TokenRetrievalTest {
 
     @Rfc("OpenID Connect Core 1.0 incorporating errata set 1 - 3.1.3.3.  Successful Token Response")
     @Test
-    public void tokenResponseHttpHeaderShouldContainCacheControl() throws UnirestException {
+    void tokenResponseHttpHeaderShouldContainCacheControl() throws UnirestException {
         idpClient.setAfterTokenCallback(response ->
             assertThat(response.getHeaders().getFirst("Cache-Control"))
                 .contains("no-store"));
@@ -230,7 +228,7 @@ public class TokenRetrievalTest {
 
     @Rfc("OpenID Connect Core 1.0 incorporating errata set 1 - 3.1.3.3.  Successful Token Response")
     @Test
-    public void tokenResponseHttpHeaderShouldContainPragma() throws UnirestException {
+    void tokenResponseHttpHeaderShouldContainPragma() throws UnirestException {
         idpClient.setAfterTokenCallback(response ->
             assertThat(response.getHeaders().getFirst("Pragma"))
                 .contains("no-cache"));
@@ -239,7 +237,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void ssoTokenAuthorizationShouldReturnCode() throws UnirestException {
+    void ssoTokenAuthorizationShouldReturnCode() throws UnirestException {
         final AtomicReference<String> code = new AtomicReference();
         idpClient.setAfterAuthenticationCallback(response ->
             Optional.of(UriUtils.extractParameterValue(response.getHeaders().getFirst("Location"), "code"))
@@ -251,11 +249,11 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void getNewAuthenticationCodeViaSsoToken_ResponseURLShouldNotContainSsoToken() throws UnirestException {
+    void getNewAuthenticationCodeViaSsoToken_ResponseURLShouldNotContainSsoToken() throws UnirestException {
         final AtomicReference<String> ssoToken = new AtomicReference();
         idpClient.setAfterAuthenticationCallback(response ->
             Optional.ofNullable(
-                UriUtils.extractParameterValue(response.getHeaders().getFirst("Location"), "ssotoken"))
+                    UriUtils.extractParameterValue(response.getHeaders().getFirst("Location"), "ssotoken"))
                 .ifPresent(token -> ssoToken.set(token)));
 
         assertThatThrownBy(() -> idpClient.loginWithSsoToken(idpClient.login(egkUserIdentity).getSsoToken()))
@@ -264,7 +262,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void getNewAccessTokenViaSsoToken_NewAccessTokenShouldHaveLongerValidity() throws UnirestException {
+    void getNewAccessTokenViaSsoToken_NewAccessTokenShouldHaveLongerValidity() throws UnirestException {
         final IdpTokenResult oldLoginResult = idpClient.login(egkUserIdentity);
         final JsonWebToken newLoginResult = idpClient.loginWithSsoToken(oldLoginResult.getSsoToken()).getAccessToken();
 
@@ -273,7 +271,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void loginWithoutAndThenWithSsoToken_codeChallengeShouldDiffer() throws UnirestException {
+    void loginWithoutAndThenWithSsoToken_codeChallengeShouldDiffer() throws UnirestException {
         final AtomicReference<JsonWebToken> oldCodeChallenge = new AtomicReference();
         final AtomicReference<JsonWebToken> newCodeChallenge = new AtomicReference();
 
@@ -292,7 +290,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void ssoShouldBeEncrypted() throws UnirestException {
+    void ssoShouldBeEncrypted() throws UnirestException {
         final IdpTokenResult tokenResult = idpClient.login(egkUserIdentity);
 
         assertThatThrownBy(() -> tokenResult.getSsoToken().getBodyClaims())
@@ -300,7 +298,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void ssoTokenCnfClaimShouldBeJsonObject() throws UnirestException {
+    void ssoTokenCnfClaimShouldBeJsonObject() throws UnirestException {
         final IdpTokenResult tokenResult = idpClient.login(egkUserIdentity);
 
         assertThat(tokenResult.getSsoToken().decryptNestedJwt(symmetricEncryptionKey)
@@ -309,7 +307,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void ssoTokenShouldNotContainNjwtClaim() throws UnirestException {
+    void ssoTokenShouldNotContainNjwtClaim() throws UnirestException {
         final IdpTokenResult tokenResult = idpClient.login(egkUserIdentity);
         assertThat(tokenResult.getSsoToken().decryptNestedJwt(symmetricEncryptionKey)
             .getBodyClaims())
@@ -317,7 +315,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void verifyTokenAlgorithm() throws UnirestException {
+    void verifyTokenAlgorithm() throws UnirestException {
         final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
 
         assertThat(tokenResponse.getAccessToken().getHeaderClaim(ClaimName.ALGORITHM))
@@ -326,7 +324,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void verifyTokenContainsAcr() throws UnirestException {
+    void verifyTokenContainsAcr() throws UnirestException {
         final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
 
         assertThat(tokenResponse.getAccessToken().getBodyClaim(ClaimName.AUTHENTICATION_CLASS_REFERENCE))
@@ -335,7 +333,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void verifyTokenContainsGematikClaims() throws UnirestException {
+    void verifyTokenContainsGematikClaims() throws UnirestException {
         final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
 
         assertThat(tokenResponse.getAccessToken().getBodyClaim(ClaimName.PROFESSION_OID))
@@ -343,7 +341,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void verifyTokenContainsCorrectSubClaim() throws UnirestException {
+    void verifyTokenContainsCorrectSubClaim() throws UnirestException {
         final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
 
         assertThat(tokenResponse.getAccessToken().getStringBodyClaim(ClaimName.SUBJECT))
@@ -352,7 +350,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void verifySubClaimMatchesInIdTokenAndAccessToken() throws UnirestException {
+    void verifySubClaimMatchesInIdTokenAndAccessToken() throws UnirestException {
         final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
 
         assertThat(tokenResponse.getAccessToken().getStringBodyClaim(ClaimName.SUBJECT))
@@ -361,7 +359,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void verifyNonceClaimCorrectInIdToken() throws UnirestException {
+    void verifyNonceClaimCorrectInIdToken() throws UnirestException {
         final AtomicReference<String> nonceValue = new AtomicReference<>();
         idpClient.setBeforeAuthorizationCallback(request ->
             nonceValue.set(UriUtils.extractParameterValue(request.getUrl(), "nonce")));
@@ -374,14 +372,14 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void assertThatTokenIsValid() throws UnirestException {
+    void assertThatTokenIsValid() throws UnirestException {
         final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
 
         idpClient.verifyAuthTokenToken(tokenResponse);
     }
 
     @Test
-    public void testSmcbLogin(@Filename("c.hci.aut-apo-ecc") final PkiIdentity smcbEccIdentity)
+    void testSmcbLogin(@Filename("c.hci.aut-apo-ecc") final PkiIdentity smcbEccIdentity)
         throws UnirestException {
         final PkiIdentity smcbIdentity = PkiIdentity.builder()
             .certificate(smcbEccIdentity.getCertificate())
@@ -394,7 +392,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void testLoginHba(@Filename("80276883110000129084-C_HP_AUT_E256") final PkiIdentity failIdentity)
+    void testLoginHba(@Filename("80276883110000129084-C_HP_AUT_E256") final PkiIdentity failIdentity)
         throws UnirestException {
         final PkiIdentity smcbIdentity = PkiIdentity.builder()
             .certificate(failIdentity.getCertificate())
@@ -408,7 +406,7 @@ public class TokenRetrievalTest {
 
     @Afo("A_20376")
     @Test
-    public void stateParameterNotGivenInInitialRequest_ServerShouldGiveError()
+    void stateParameterNotGivenInInitialRequest_ServerShouldGiveError()
         throws UnirestException {
         idpClient.setBeforeAuthorizationMapper(request -> Unirest
             .get(request.getUrl().replaceFirst("&state=[\\w-_.~]*", ""))
@@ -421,7 +419,7 @@ public class TokenRetrievalTest {
 
     @Afo("A_20377")
     @Test
-    public void stateParameterShouldBeEqualInFirstAndLastRequest() throws UnirestException {
+    void stateParameterShouldBeEqualInFirstAndLastRequest() throws UnirestException {
         idpClient.setBeforeAuthorizationMapper(request -> Unirest
             .get(request.getUrl()
                 .replaceFirst("&state=[\\w-_.~]*", "&state=foobar"))
@@ -438,7 +436,7 @@ public class TokenRetrievalTest {
 
     @Afo("A_20376")
     @Test
-    public void stateParameterGiven_shouldBePresentInRedirect() throws UnirestException {
+    void stateParameterGiven_shouldBePresentInRedirect() throws UnirestException {
         idpClient.setAfterAuthenticationCallback(
             request -> assertThat(Optional.ofNullable(request.getHeaders().getFirst("Location"))
                 .map(location -> UriUtils.extractParameterValue(location, "state"))
@@ -450,7 +448,7 @@ public class TokenRetrievalTest {
 
     @Rfc("RFC6749, 4.1.3")
     @Test
-    public void missmatchedRedirectUri_shouldGiveErrorOnTokenRetrieval() throws UnirestException {
+    void missmatchedRedirectUri_shouldGiveErrorOnTokenRetrieval() throws UnirestException {
         idpClient.setBeforeTokenCallback(body -> body.field("redirect_uri", "wrongValue"));
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
@@ -459,7 +457,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void scopeWithoutErezept_shouldGiveServerError() throws UnirestException {
+    void scopeWithoutErezept_shouldGiveServerError() throws UnirestException {
         idpClient.setScopes(Set.of(IdpScope.OPENID));
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
@@ -468,7 +466,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void resignedChallengeTokenWithDifferentIdentity_ShouldGiveServerError(
+    void resignedChallengeTokenWithDifferentIdentity_ShouldGiveServerError(
         @Filename("80276883110000129084-C_HP_AUT_E256.p12") final PkiIdentity notTheServerIdentity)
         throws UnirestException {
         final IdpJwtProcessor differentSigner = new IdpJwtProcessor(notTheServerIdentity);
@@ -489,7 +487,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void resignedAuthenticationTokenWithDifferentIdentity_ShouldGiveServerError(
+    void resignedAuthenticationTokenWithDifferentIdentity_ShouldGiveServerError(
         @Filename("80276883110000129084-C_HP_AUT_E256") final PkiIdentity notTheServerIdentity)
         throws UnirestException {
         final IdpJwtProcessor differentSigner = new IdpJwtProcessor(notTheServerIdentity);
@@ -510,7 +508,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void scopeWithoutOpenid_shouldGiveException() throws UnirestException {
+    void scopeWithoutOpenid_shouldGiveException() throws UnirestException {
         idpClient.setScopes(Set.of(IdpScope.EREZEPT));
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
@@ -519,7 +517,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void requestChallenge_testServerChallengeClaims() throws UnirestException {
+    void requestChallenge_testServerChallengeClaims() throws UnirestException {
         idpClient.setAfterAuthorizationCallback(response ->
             assertThat(response.getBody().getChallenge().getBodyClaims())
                 .containsEntry(ClaimName.TOKEN_TYPE.getJoseName(), "challenge"));
@@ -528,7 +526,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void getAuthorizationToken_testBodyClaims() throws UnirestException {
+    void getAuthorizationToken_testBodyClaims() throws UnirestException {
         idpClient.setAuthenticationResponseMapper(response -> {
             assertThat(new IdpJwe(response.getCode()).decryptNestedJwt(symmetricEncryptionKey).getBodyClaims())
                 .containsEntry(ClaimName.CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP)
@@ -545,7 +543,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void requestChallenge_shouldContainOriginalNonce() throws UnirestException {
+    void requestChallenge_shouldContainOriginalNonce() throws UnirestException {
         final AtomicReference<String> nonceValue = new AtomicReference();
         idpClient.setBeforeAuthorizationCallback(
             getRequest -> nonceValue.set(UriUtils.extractParameterValue(getRequest.getUrl(), "nonce")));
@@ -558,7 +556,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void scopeOpenIdAndPairing_shouldGiveAccessToken() throws UnirestException {
+    void scopeOpenIdAndPairing_shouldGiveAccessToken() throws UnirestException {
         idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
         final IdpTokenResult loginResult = idpClient.login(egkUserIdentity);
 
@@ -567,7 +565,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void authentication_expiredChallenge_shouldGiveFoundAndCorrectState() throws UnirestException {
+    void authentication_expiredChallenge_shouldGiveFoundAndCorrectState() throws UnirestException {
         final AtomicReference<String> stateReference = new AtomicReference<>();
 
         idpClient.setAuthorizationResponseMapper(response -> {
@@ -590,7 +588,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void ssoFlow_expiredChallenge_shouldGiveFoundAndCorrectState() throws UnirestException {
+    void ssoFlow_expiredChallenge_shouldGiveFoundAndCorrectState() throws UnirestException {
         final IdpJwe ssoToken = idpClient.login(egkUserIdentity).getSsoToken();
 
         idpClient.setAuthorizationResponseMapper(response -> AuthorizationResponse.builder()
@@ -609,7 +607,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void authenticationWithSso_missingParameter_shouldGiveError() throws UnirestException {
+    void authenticationWithSso_missingParameter_shouldGiveError() throws UnirestException {
         final IdpJwe ssoToken = idpClient.login(egkUserIdentity).getSsoToken();
         idpClient.setBeforeAuthenticationMapper(request -> Unirest.post(request.getUrl())
             .multiPartContent().field("ssotoken", request.multiParts().stream()
@@ -623,7 +621,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void illegalCertificateType_shouldGiveServerError(
+    void illegalCertificateType_shouldGiveServerError(
         @Filename("smcb-idp-expired") final PkiIdentity illegalIdentity) throws UnirestException {
         assertThatThrownBy(() -> idpClient.login(illegalIdentity))
             .isInstanceOf(IdpClientRuntimeException.class)
@@ -631,7 +629,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void expiredAuthenticationToken_shouldGiveValidationError() throws UnirestException {
+    void expiredAuthenticationToken_shouldGiveValidationError() throws UnirestException {
         idpClient.setAuthenticationResponseMapper(authResponse -> {
             final IdpJoseObject expiredAuthToken = new IdpJwe(authResponse.getCode())
                 .decryptNestedJwt(symmetricEncryptionKey)
@@ -655,7 +653,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void expiredSsoToken_shouldGiveValidationError() throws UnirestException {
+    void expiredSsoToken_shouldGiveValidationError() throws UnirestException {
         final IdpTokenResult tokenResult = idpClient.login(egkUserIdentity);
 
         final IdpJwe expiredSsoToken = tokenResult.getSsoToken()
@@ -672,7 +670,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void expiredServerChallenge_shouldGiveValidationError() throws UnirestException {
+    void expiredServerChallenge_shouldGiveValidationError() throws UnirestException {
         idpClient.setAuthorizationResponseMapper(authResponse -> {
             final JsonWebToken expiredChallenge = authResponse.getAuthenticationChallenge().getChallenge()
                 .toJwtDescription()
@@ -693,7 +691,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void verifyUserConsent() throws UnirestException {
+    void verifyUserConsent() throws UnirestException {
         idpClient.setAfterAuthorizationCallback(
             response -> {
                 assertThat(response.getBody().getUserConsent().getRequestedScopes())
@@ -715,7 +713,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void locationFrom_AuthenticationResponseHeader_should_startsWith_RedirectUri() throws UnirestException {
+    void locationFrom_AuthenticationResponseHeader_should_startsWith_RedirectUri() throws UnirestException {
         idpClient.setAfterAuthenticationCallback(response -> {
             assertThat(response.getStatus())
                 .isEqualTo(302);
@@ -728,7 +726,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void patchedDdUrlWithScheme_shouldWork() throws UnirestException {
+    void patchedDdUrlWithScheme_shouldWork() throws UnirestException {
         try {
             idpConfiguration.setServerUrl("http://falsche.url.des.servers");
 
@@ -741,7 +739,7 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void patchedDdUrlsWithoutScheme_shouldWork() throws UnirestException {
+    void patchedDdUrlsWithoutScheme_shouldWork() throws UnirestException {
         try {
             idpConfiguration.setServerUrl("http://falsche.url.des.servers");
 
@@ -754,67 +752,68 @@ public class TokenRetrievalTest {
     }
 
     @Test
-    public void wrongCtyInSignedChallenge_serverShouldRefuse() throws UnirestException {
+    void wrongCtyInSignedChallenge_serverShouldRefuse() throws UnirestException {
         idpClient.initialize();
 
         idpClient.setBeforeAuthenticationMapper(patchJweHeader(
-                jsonObject -> {
-                    try {
-                        jsonObject.put("cty", "fdsjakfld");
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
-                    }
+            jsonObject -> {
+                try {
+                    jsonObject.put("cty", "fdsjakfld");
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
                 }
+            }
         ));
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
-                .isInstanceOf(IdpClientRuntimeException.class)
-                .hasFieldOrPropertyWithValue("gematikErrorCode", Optional.of("2030"))
-                .hasFieldOrPropertyWithValue("idpErrorType", Optional.of(IdpErrorType.INVALID_REQUEST))
-                .hasMessageContaining("CTY fehlerhaft");
+            .isInstanceOf(IdpClientRuntimeException.class)
+            .hasFieldOrPropertyWithValue("gematikErrorCode", Optional.of("2030"))
+            .hasFieldOrPropertyWithValue("idpErrorType", Optional.of(IdpErrorType.INVALID_REQUEST))
+            .hasMessageContaining("CTY fehlerhaft");
     }
 
     @Test
-    public void wrongPublicKeyTypeInSignedChallenge_serverShouldRefuse() throws UnirestException {
+    void wrongPublicKeyTypeInSignedChallenge_serverShouldRefuse() throws UnirestException {
         idpClient.initialize();
 
         idpClient.setBeforeAuthenticationMapper(patchJweHeader(
-                jsonObject -> {
-                    try {
-                        jsonObject.put("epk", new JSONObject()
-                                .put("kty", "EC")
-                                .put("x", "azaX-pGFbJaHmnOWF-aeBpOnFYG7SkqZc9FmN5aLQDc")
-                                .put("y", "dQy03va33Kps2u3fVKXAgOcqkN-8zwHgYOMbtp2iA-0")
-                                .put("crv", "P-256"));
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
-                    }
+            jsonObject -> {
+                try {
+                    jsonObject.put("epk", new JSONObject()
+                        .put("kty", "EC")
+                        .put("x", "azaX-pGFbJaHmnOWF-aeBpOnFYG7SkqZc9FmN5aLQDc")
+                        .put("y", "dQy03va33Kps2u3fVKXAgOcqkN-8zwHgYOMbtp2iA-0")
+                        .put("crv", "P-256"));
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
                 }
+            }
         ));
 
         assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
-                .isInstanceOf(IdpClientRuntimeException.class)
-                .hasFieldOrPropertyWithValue("gematikErrorCode", Optional.of("2030"))
-                .hasFieldOrPropertyWithValue("idpErrorType", Optional.of(IdpErrorType.INVALID_REQUEST))
-                .hasMessageContaining("EPK-Typ fehlerhaft");
+            .isInstanceOf(IdpClientRuntimeException.class)
+            .hasFieldOrPropertyWithValue("gematikErrorCode", Optional.of("2030"))
+            .hasFieldOrPropertyWithValue("idpErrorType", Optional.of(IdpErrorType.INVALID_REQUEST))
+            .hasMessageContaining("EPK-Typ fehlerhaft");
     }
 
     private Function<MultipartBody, MultipartBody> patchJweHeader(Consumer<JSONObject> patcher) {
         return body -> {
             try {
                 String[] jwe = body.multiParts().stream()
-                        .filter(part -> part.getName().equals("signed_challenge"))
-                        .findAny().get().getValue().toString().split("\\.");
-                final JSONObject jsonObject = new JSONObject(new JSONTokener(new String(Base64.getDecoder().decode(jwe[0]))));
+                    .filter(part -> part.getName().equals("signed_challenge"))
+                    .findAny().get().getValue().toString().split("\\.");
+                final JSONObject jsonObject = new JSONObject(
+                    new JSONTokener(new String(Base64.getDecoder().decode(jwe[0]))));
                 patcher.accept(jsonObject);
 
                 String newJwe = Base64.getUrlEncoder().withoutPadding().encodeToString(jsonObject.toString().getBytes())
-                        + ".." + jwe[2] + "." + jwe[3] + "." + jwe[4];
+                    + ".." + jwe[2] + "." + jwe[3] + "." + jwe[4];
                 return Unirest
-                        .post(body.getUrl())
-                        .field("signed_challenge", newJwe)
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                        .header(javax.ws.rs.core.HttpHeaders.USER_AGENT, "fds");
+                    .post(body.getUrl())
+                    .field("signed_challenge", newJwe)
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                    .header(javax.ws.rs.core.HttpHeaders.USER_AGENT, "fds");
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

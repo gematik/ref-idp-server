@@ -42,7 +42,7 @@ Feature: Authentifiziere User am Third Party Endpoint
 
   enthalten.
 
-    Given IDP I send an authorization request to smartcard idp with
+    Given IDP Frontend sends an authorization request to smartcard idp with
       | client_id            | scope                      | code_challenge                              | code_challenge_method | redirect_uri            | state       | nonce     | response_type | kk_app_id  |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | code          | kkAppId001 |
     Then the response status is 302
@@ -73,11 +73,11 @@ Feature: Authentifiziere User am Third Party Endpoint
 
   enthalten.
 
-    Given IDP I send an authorization request to smartcard idp with
+    Given IDP Frontend sends an authorization request to smartcard idp with
       | client_id            | scope                      | code_challenge                              | code_challenge_method | redirect_uri            | state       | nonce     | response_type | kk_app_id  |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | code          | kkAppId001 |
     Then the response status is 302
-    And IDP I send an authorization request to sektoral idp with
+    And IDP Frontend sends an authorization request to fasttrack sektoral idp with
       | client_id           | scope               | code_challenge      | code_challenge_method | redirect_uri                     | state               | nonce               | response_type       |
       | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT   | https://kk.dev.gematik.solutions | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT |
     Then the response status is 302
@@ -102,11 +102,11 @@ Feature: Authentifiziere User am Third Party Endpoint
 
   enthalten.
 
-    Given IDP I send an authorization request to smartcard idp with
+    Given IDP Frontend sends an authorization request to smartcard idp with
       | client_id            | scope                      | code_challenge                              | code_challenge_method | redirect_uri            | state       | nonce     | response_type | kk_app_id  |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | code          | kkAppId001 |
     Then the response status is 302
-    And IDP I send an authorization request to sektoral idp with
+    And IDP Frontend sends an authorization request to fasttrack sektoral idp with
       | client_id           | scope               | code_challenge      | code_challenge_method | redirect_uri                     | state               | nonce               | response_type       |
       | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT   | https://kk.dev.gematik.solutions | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT | $FILL_FROM_REDIRECT |
     Then the response status is 302

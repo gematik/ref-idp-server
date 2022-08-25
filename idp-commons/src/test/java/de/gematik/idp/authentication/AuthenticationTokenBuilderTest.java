@@ -19,7 +19,6 @@ package de.gematik.idp.authentication;
 import static de.gematik.idp.field.ClaimName.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
@@ -56,12 +55,12 @@ public class AuthenticationTokenBuilderTest {
     }
 
     @Test
-    public void extractClaimsFromClientCertificateTest() {
+    void extractClaimsFromClientCertificateTest() {
         Assertions.assertThat(authenticationTokenBuilder
-            .buildAuthenticationToken(clientIdentity.getCertificate(), Collections.emptyMap(),
-                ZonedDateTime.now())
-            .decryptNestedJwt(encryptionKey)
-            .getBodyClaims())
+                .buildAuthenticationToken(clientIdentity.getCertificate(), Collections.emptyMap(),
+                    ZonedDateTime.now())
+                .decryptNestedJwt(encryptionKey)
+                .getBodyClaims())
             .containsEntry(PROFESSION_OID.getJoseName(), "1.2.276.0.76.4.49")
             .containsEntry(GIVEN_NAME.getJoseName(), "Juna")
             .containsEntry(FAMILY_NAME.getJoseName(), "Fuchs");
@@ -69,7 +68,7 @@ public class AuthenticationTokenBuilderTest {
 
     @Afo("A_20526")
     @Test
-    public void testAuthenticationTokenHeaderHasType() {
+    void testAuthenticationTokenHeaderHasType() {
         final JsonWebToken authenticationToken = authenticationTokenBuilder
             .buildAuthenticationToken(clientIdentity.getCertificate(), Collections.emptyMap(), ZonedDateTime.now())
             .decryptNestedJwt(encryptionKey);
@@ -80,7 +79,7 @@ public class AuthenticationTokenBuilderTest {
 
     @Afo("A_20731")
     @Test
-    public void testAuthenticationTokenHasAuthTime() {
+    void testAuthenticationTokenHasAuthTime() {
         final ZonedDateTime now = ZonedDateTime.now();
         final JsonWebToken authenticationToken = authenticationTokenBuilder
             .buildAuthenticationToken(clientIdentity.getCertificate(), Collections.emptyMap(), now)
@@ -93,7 +92,7 @@ public class AuthenticationTokenBuilderTest {
     }
 
     @Test
-    public void verifyThatAuthenticationTokenCarriesIatClaimOnlyInBody() {
+    void verifyThatAuthenticationTokenCarriesIatClaimOnlyInBody() {
         final ZonedDateTime now = ZonedDateTime.now();
         final JsonWebToken authenticationToken = authenticationTokenBuilder
             .buildAuthenticationToken(clientIdentity.getCertificate(), Collections.emptyMap(), now)
@@ -108,7 +107,7 @@ public class AuthenticationTokenBuilderTest {
     }
 
     @Test
-    public void verifyThatAuthenticationTokenCarriesExpClaimInBodyAndHeader() {
+    void verifyThatAuthenticationTokenCarriesExpClaimInBodyAndHeader() {
         final ZonedDateTime now = ZonedDateTime.now();
         final JsonWebToken authenticationToken = authenticationTokenBuilder
             .buildAuthenticationToken(clientIdentity.getCertificate(), Collections.emptyMap(), now)
@@ -123,7 +122,7 @@ public class AuthenticationTokenBuilderTest {
     }
 
     @Test
-    public void authenticationTokenShouldBeValidForOneMinute() {
+    void authenticationTokenShouldBeValidForOneMinute() {
         final ZonedDateTime now = ZonedDateTime.now();
         final JsonWebToken authenticationToken = authenticationTokenBuilder
             .buildAuthenticationToken(clientIdentity.getCertificate(), Collections.emptyMap(), now)

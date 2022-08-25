@@ -44,5 +44,6 @@ public class OpenidRelyingParty {
     private String idTokenSignedResponseAlg;
     private String idTokenEncryptedResponseAlg;
     private String idTokenEncryptedResponseEnc;
-    
+    private String scope;
+
 }

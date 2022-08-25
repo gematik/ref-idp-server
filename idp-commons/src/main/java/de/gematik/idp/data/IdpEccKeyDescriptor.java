@@ -18,6 +18,7 @@ package de.gematik.idp.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
+import java.security.cert.X509Certificate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,8 +27,6 @@ import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
 import org.jose4j.keys.BigEndianBigInteger;
-
-import java.security.cert.X509Certificate;
 
 @Data
 @AllArgsConstructor
@@ -43,8 +42,8 @@ public class IdpEccKeyDescriptor extends IdpKeyDescriptor {
 
     @Builder
     public IdpEccKeyDescriptor(final String[] x5c, final String publicKeyUse, final String keyId,
-                               final String keyType,
-                               final String eccCurveName, final String eccPointXValue, final String eccPointYValue) {
+        final String keyType,
+        final String eccCurveName, final String eccPointXValue, final String eccPointYValue) {
         super(x5c, publicKeyUse, keyId, keyType);
         this.eccCurveName = eccCurveName;
         this.eccPointXValue = eccPointXValue;
@@ -52,11 +51,11 @@ public class IdpEccKeyDescriptor extends IdpKeyDescriptor {
     }
 
     public static IdpKeyDescriptor constructFromX509Certificate(final X509Certificate certificate, final String keyId,
-                                                                final boolean addX5C) {
+        final boolean addX5C) {
         try {
             final IdpEccKeyDescriptor.IdpEccKeyDescriptorBuilder descriptorBuilder = IdpEccKeyDescriptor.builder()
-                    .keyId(keyId)
-                    .keyType(getKeyType(certificate));
+                .keyId(keyId)
+                .keyType(getKeyType(certificate));
             if (addX5C) {
                 descriptorBuilder.x5c(getCertArray(certificate));
             }
@@ -66,18 +65,18 @@ public class IdpEccKeyDescriptor extends IdpKeyDescriptor {
             if (((ECNamedCurveParameterSpec) bcecPublicKey.getParameters()).getName().equals("brainpoolP256r1")) {
                 eccCurveName = "BP-256";
             } else if (((ECNamedCurveParameterSpec) bcecPublicKey.getParameters()).getName().equals("prime256v1")) {
-                eccCurveName = "ES256";
+                eccCurveName = "P-256";
             } else {
                 throw new IdpCryptoException(
-                        "Unknown Key-Format encountered: '" + ((ECNamedCurveParameterSpec) bcecPublicKey.getParameters())
-                                .getName() + "'!");
+                    "Unknown Key-Format encountered: '" + ((ECNamedCurveParameterSpec) bcecPublicKey.getParameters())
+                        .getName() + "'!");
             }
 
             final ECPoint generator = bcecPublicKey.getQ();
             descriptorBuilder
-                    .eccCurveName(eccCurveName)
-                    .eccPointXValue(BigEndianBigInteger.toBase64Url(generator.getAffineXCoord().toBigInteger()))
-                    .eccPointYValue(BigEndianBigInteger.toBase64Url(generator.getAffineYCoord().toBigInteger()));
+                .eccCurveName(eccCurveName)
+                .eccPointXValue(BigEndianBigInteger.toBase64Url(generator.getAffineXCoord().toBigInteger()))
+                .eccPointYValue(BigEndianBigInteger.toBase64Url(generator.getAffineYCoord().toBigInteger()));
 
             return descriptorBuilder.build();
         } catch (final ClassCastException e) {

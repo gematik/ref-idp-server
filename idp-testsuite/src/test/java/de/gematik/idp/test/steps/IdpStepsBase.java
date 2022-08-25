@@ -20,23 +20,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import de.gematik.idp.test.steps.helpers.IdpTestEnvironmentConfigurator;
 import de.gematik.idp.test.steps.helpers.KeyAndCertificateStepsHelper;
-import de.gematik.idp.test.steps.model.CodeAuthType;
 import de.gematik.idp.test.steps.model.DiscoveryDocument;
 import de.gematik.idp.test.steps.model.HttpMethods;
 import de.gematik.idp.test.steps.model.HttpStatus;
-import de.gematik.idp.test.steps.utils.RestAssuredCapture;
 import de.gematik.idp.test.steps.utils.SerenityReportUtils;
-import de.gematik.rbellogger.RbelLogger;
-import de.gematik.rbellogger.configuration.RbelConfiguration;
-import de.gematik.rbellogger.converter.RbelConverterPlugin;
-import de.gematik.rbellogger.converter.initializers.RbelKeyFolderInitializer;
-import de.gematik.rbellogger.data.facet.RbelJsonFacet;
-import de.gematik.rbellogger.key.RbelKey;
-import de.gematik.rbellogger.key.RbelKeyManager;
-import de.gematik.rbellogger.renderer.RbelHtmlRenderer;
 import de.gematik.test.bdd.Context;
 import de.gematik.test.bdd.ContextKey;
-import io.cucumber.java.Scenario;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.http.ContentType;
@@ -44,32 +33,22 @@ import io.restassured.http.Header;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import net.serenitybdd.core.Serenity;
 import net.serenitybdd.rest.SerenityRest;
 import net.thucydides.core.annotations.Step;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.Assertions;
-import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.util.MultiValueMap;
@@ -78,10 +57,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Slf4j
 public class IdpStepsBase {
 
-    protected final static Map<String, RestAssuredCapture> threadIdToRestAssuredCaptureMap = new HashMap<>();
-    private static final Map<String, List<Scenario>> processedScenarios = new HashMap<>();
-    private static int scPassed = 0;
-    private static int scFailed = 0;
     protected final KeyAndCertificateStepsHelper keyAndCertificateStepsHelper = new KeyAndCertificateStepsHelper();
 
     // =================================================================================================================
@@ -90,37 +65,9 @@ public class IdpStepsBase {
     //
     // =================================================================================================================
 
-    private static void logRequestToRbelLogger(final String uri, final Map<String, String> headers,
-        final Map<String, String> params,
-        final String body, final String s) {
-        final RestAssuredCapture capture = threadIdToRestAssuredCaptureMap.get(getThreadId());
-        if (capture != null) {
-            capture.logRequest(s, uri, headers, body, params);
-        }
-    }
-
-    private static void logResponseToRbelLogger(final Response r) {
-        final RestAssuredCapture capture = threadIdToRestAssuredCaptureMap.get(getThreadId());
-        if (capture != null) {
-            capture.logResponse(r);
-        }
-    }
-
-    @NotNull
-    protected static String getThreadId() {
-        return String.valueOf(Thread.currentThread().getId());
-    }
-
     public static Response simpleGet(final String url) {
-        if (IdpTestEnvironmentConfigurator.isRbelLoggerActive()) {
-            logRequestToRbelLogger(url, null, null, "", "GET");
-        }
-        final Response r = SerenityRest.with().header("X-Auth", "MTRqU2cwPXx+Pit4aCVUT2pNVVN2VDllPj1cUUUqCg==")
+        return SerenityRest.with()//.header("X-Auth", "MTRqU2cwPXx+Pit4aCVUT2pNVVN2VDllPj1cUUUqCg==")
             .get(url);
-        if (IdpTestEnvironmentConfigurator.isRbelLoggerActive()) {
-            logResponseToRbelLogger(r);
-        }
-        return r;
     }
 
     @Step
@@ -128,8 +75,7 @@ public class IdpStepsBase {
         throws JSONException {
         String urlFromClaim = Context.getCurrentClaims().getString(claim);
         if (!IdpTestEnvironmentConfigurator.getFqdnInternet().isEmpty()) {
-            urlFromClaim = urlFromClaim.replace(IdpTestEnvironmentConfigurator.getFqdnDiscoveryDocument(),
-                IdpTestEnvironmentConfigurator.getFqdnInternet());
+            urlFromClaim = DiscoveryDocument.adaptUrlToSymbolicIdpHost(urlFromClaim);
         }
         Context.get().put(ContextKey.RESPONSE,
             requestResponseAndAssertStatus(urlFromClaim, null, method, null,
@@ -145,8 +91,7 @@ public class IdpStepsBase {
             .isTrue();
         String urlFromClaim = Context.getCurrentClaims().getString(claim);
         if (!IdpTestEnvironmentConfigurator.getFqdnInternet().isEmpty()) {
-            urlFromClaim = urlFromClaim.replace(IdpTestEnvironmentConfigurator.getFqdnDiscoveryDocument(),
-                IdpTestEnvironmentConfigurator.getFqdnInternet());
+            urlFromClaim = DiscoveryDocument.adaptUrlToSymbolicIdpHost(urlFromClaim);
         }
         Context.get().put(ContextKey.RESPONSE,
             requestResponseAndAssertStatus(urlFromClaim, null, method, null, null,
@@ -205,17 +150,12 @@ public class IdpStepsBase {
         headers.putIfAbsent("X-Auth", "MTRqU2cwPXx+Pit4aCVUT2pNVVN2VDllPj1cUUUqCg==");
         reqSpec.headers(headers);
 
-        if (IdpTestEnvironmentConfigurator.isRbelLoggerActive()) {
-            logRequestToRbelLogger(uri, headers, params, body, method.toString());
-        }
         final ByteArrayOutputStream reqDetails = new ByteArrayOutputStream();
         reqSpec.filter(
             new RequestLoggingFilter(
                 LogDetail.ALL, true, new PrintStream(reqDetails), true));
         final Response r = reqSpec.request(method.toString(), uri).thenReturn();
-        if (IdpTestEnvironmentConfigurator.isRbelLoggerActive()) {
-            logResponseToRbelLogger(r);
-        }
+
         log.info("RESTASSURED REQUEST details:\n" + reqDetails.toString(StandardCharsets.UTF_8));
         log.info("RESTASSURED RESPONSE details:");
         log.info("  Status:   {}", r.getStatusCode() + "/" + r.getStatusLine());
@@ -321,7 +261,7 @@ public class IdpStepsBase {
         final MultiValueMap<String, String> parameters = UriComponentsBuilder.fromUriString(location).build()
             .getQueryParams();
         assertThat(parameters).containsKey(parameter);
-        assertThat(parameters.get(parameter)).contains(value);
+        assertThat(parameters.getFirst(parameter)).matches(value);
     }
 
     protected String getLocationHeader(final Response r) {
@@ -333,119 +273,4 @@ public class IdpStepsBase {
         return loc;
     }
 
-    public void initializeRbelLogger() {
-        if (!IdpTestEnvironmentConfigurator.isRbelLoggerActive()) {
-            return;
-        }
-
-        final RbelConverterPlugin RBEL_IDP_PUK_ENC_LISTENER = (element, converter) ->
-            Optional.ofNullable(element)
-                .filter(el -> el.hasFacet(RbelJsonFacet.class))
-                .map(rbeljson -> new JSONObject(rbeljson.getRawStringContent()))
-                .filter(json -> json.has("kid") && json.getString("kid").equals("puk_idp_enc") && json.has("kty"))
-                .ifPresent(
-                    json -> converter.getRbelKeyManager().addKey(json.getString("kid"),
-                        DiscoveryDocument.getPublicKeyFromJWK(json), RbelKey.PRECEDENCE_KEY_FOLDER + 100));
-
-        final RbelConverterPlugin RBELBODY_IDP_CERT_SIG_LISTENER = (element, converter) ->
-            Optional.ofNullable(element)
-                .filter(el -> el.hasFacet(RbelJsonFacet.class))
-                .map(rbeljson -> new JSONObject(rbeljson.getRawStringContent()))
-                .filter(
-                    json -> json.has("kid") && json.getString("kid").equals("puk_idp_sig")
-                        && json.has("kty") && json.has("x5c"))
-                .ifPresent(
-                    json -> {
-                        try {
-                            converter.getRbelKeyManager().addKey(json.getString("kid"),
-                                DiscoveryDocument.getCertificateFromJWK(json).getPublicKey(),
-                                RbelKey.PRECEDENCE_KEY_FOLDER + 100);
-                        } catch (final CertificateException e) {
-                            e.printStackTrace();
-                        }
-                    });
-
-        final RbelConverterPlugin RBELHEADER_IDP_CERT_SIG_LISTENER = (element, converter) ->
-            Optional.ofNullable(element)
-                .filter(el -> el.hasFacet(RbelJsonFacet.class))
-                .map(rbeljson -> new JSONObject(rbeljson.getRawStringContent()))
-                .filter(json -> json.has("kid") && json.getString("kid").equals("puk_idp_sig") && json.has("kty"))
-                .ifPresent(
-                    json -> converter.getRbelKeyManager().addKey(json.getString("kid"),
-                        DiscoveryDocument.getPublicKeyFromJWK(json), RbelKey.PRECEDENCE_KEY_FOLDER + 100));
-
-        final RbelLogger rbel = RbelLogger.build(new RbelConfiguration()
-            .addKey("IDP symmetricEncryptionKey signed_challenge",
-                IdpTestEnvironmentConfigurator.getSymmetricEncryptionKey(CodeAuthType.SIGNED_CHALLENGE),
-                RbelKey.PRECEDENCE_KEY_FOLDER)
-            .addKey("IDP symmetricEncryptionKey sso_token",
-                IdpTestEnvironmentConfigurator.getSymmetricEncryptionKey(CodeAuthType.SSO_TOKEN),
-                RbelKey.PRECEDENCE_KEY_FOLDER)
-            .addInitializer(new RbelKeyFolderInitializer("src/test/resources/rbel-ref"))
-            .addPostConversionListener(RbelKeyManager.RBEL_IDP_TOKEN_KEY_LISTENER)
-            .addPostConversionListener(RBEL_IDP_PUK_ENC_LISTENER)
-            .addPostConversionListener(RBELHEADER_IDP_CERT_SIG_LISTENER)
-            .addPostConversionListener(RBELBODY_IDP_CERT_SIG_LISTENER));
-        final RestAssuredCapture capture = new RestAssuredCapture();
-        capture.initialize(rbel);
-        threadIdToRestAssuredCaptureMap.put(getThreadId(), capture);
-    }
-
-    public void exportRbelLog(final Scenario scenario) {
-
-        switch (scenario.getStatus()) {
-            case PASSED:
-                scPassed++;
-                break;
-            case FAILED:
-                scFailed++;
-                break;
-        }
-        if (scFailed > 0) {
-            log.error("------------ STATUS: {} passed  {} failed", scPassed, scFailed);
-        } else {
-            log.info("------------ STATUS: {} passed", scPassed);
-        }
-
-        if (!IdpTestEnvironmentConfigurator.isRbelLoggerActive()) {
-            return;
-        }
-        final File folder = Paths.get("target", "rbel-rise").toFile();
-        if (!folder.exists()) {
-            if (!folder.mkdirs()) {
-                assertThat(folder).exists();
-            }
-        }
-        final String scenarioId = scenario.getUri().toString() + ":" + scenario.getName();
-        processedScenarios.computeIfAbsent(scenarioId, uri -> new ArrayList<>());
-        final int dataVariantIdx = processedScenarios.get(scenarioId).size();
-        processedScenarios.get(scenarioId).add(scenario);
-
-        try {
-            final RbelHtmlRenderer renderer = new RbelHtmlRenderer();
-            renderer.setSubTitle(
-                "<p><b>" + scenario.getName() + "</b>&nbsp&nbsp;<u>" + (dataVariantIdx + 1) + "</u></p>"
-                    + "<p><i>" + scenario.getUri() + "</i></p>");
-            final String html = renderer.doRender(
-                threadIdToRestAssuredCaptureMap.get(getThreadId()).getRbel().getMessageHistory());
-            String name = scenario.getName();
-            final String map = "äaÄAöoÖOüuÜUßs _(_)_[_]_{_}_<_>_|_$_%_&_/_\\_?_:_*_\"_";
-            for (int i = 0; i < map.length(); i += 2) {
-                name = name.replace(map.charAt(i), map.charAt(i + 1));
-            }
-            if (name.length() > 100) { // Serenity can not deal with longer filenames
-                name = name.substring(0, 60) + UUID.nameUUIDFromBytes(name.getBytes(StandardCharsets.UTF_8));
-            }
-            if (dataVariantIdx > 0) {
-                name = name + "_" + (dataVariantIdx + 1);
-            }
-            final File logFile = Paths.get("target", "rbel", name + ".html").toFile();
-            FileUtils.writeStringToFile(logFile, html, StandardCharsets.UTF_8);
-            (Serenity.recordReportData().asEvidence().withTitle("RBellog " + (dataVariantIdx + 1))).downloadable()
-                .fromFile(logFile.toPath());
-            log.info("Saved HTML report to " + logFile.getAbsolutePath());
-        } catch (final Exception e) {
-            log.error("Unable to save rbel log for scenario {}", scenario.getName(), e);
-        }
-    }
 }

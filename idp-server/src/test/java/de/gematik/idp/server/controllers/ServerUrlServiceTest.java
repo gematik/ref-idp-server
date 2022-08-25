@@ -19,7 +19,6 @@ package de.gematik.idp.server.controllers;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-
 import de.gematik.idp.server.ServerUrlService;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import javax.servlet.http.HttpServletRequest;
@@ -30,7 +29,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class ServerUrlServiceTest {
+class ServerUrlServiceTest {
 
     @InjectMocks
     private ServerUrlService serverUrlService;
@@ -38,7 +37,7 @@ public class ServerUrlServiceTest {
     private IdpConfiguration idpConfiguration;
 
     @Test
-    public void serverUrlSetInYaml_shouldReturnValueForHttpRequestRetrieval() {
+    void serverUrlSetInYaml_shouldReturnValueForHttpRequestRetrieval() {
         doReturn("FooBar")
             .when(idpConfiguration).getServerUrl();
 
@@ -47,7 +46,7 @@ public class ServerUrlServiceTest {
     }
 
     @Test
-    public void serverUrlNotSetInYaml_shouldReturnRequestValueForHttpRequestRetrieval() {
+    void serverUrlNotSetInYaml_shouldReturnRequestValueForHttpRequestRetrieval() {
         doReturn(null)
             .when(idpConfiguration).getServerUrl();
 
@@ -59,7 +58,7 @@ public class ServerUrlServiceTest {
     }
 
     @Test
-    public void serverUrlSetInYaml_shouldReturnValueForNoParameterRetrieval() {
+    void serverUrlSetInYaml_shouldReturnValueForNoParameterRetrieval() {
         doReturn("FooBar")
             .when(idpConfiguration).getServerUrl();
 
@@ -68,7 +67,7 @@ public class ServerUrlServiceTest {
     }
 
     @Test
-    public void serverUrlNotSetInYaml_shouldReturnPlaceholderForNoParameterRetrieval() {
+    void serverUrlNotSetInYaml_shouldReturnPlaceholderForNoParameterRetrieval() {
         doReturn(null)
             .when(idpConfiguration).getServerUrl();
 

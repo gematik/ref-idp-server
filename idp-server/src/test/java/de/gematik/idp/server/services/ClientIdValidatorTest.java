@@ -17,7 +17,6 @@
 package de.gematik.idp.server.services;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.data.IdpClientConfiguration;
 import de.gematik.idp.server.validation.parameterConstraints.ClientIdValidator;
@@ -41,19 +40,19 @@ class ClientIdValidatorTest {
     }
 
     @Test
-    public void validateClientIdWithNullValue_ExpectCorrectError() {
+    void validateClientIdWithNullValue_ExpectCorrectError() {
         assertThat(clientIdValidator.isValid(null, null))
             .isFalse();
     }
 
     @Test
-    public void validateClientIdWithInvalidValue_ExpectCorrectError() {
+    void validateClientIdWithInvalidValue_ExpectCorrectError() {
         assertThat(clientIdValidator.isValid("invalidClientId", null))
             .isFalse();
     }
 
     @Test
-    public void validateClientIdIsERezeptApp() {
+    void validateClientIdIsERezeptApp() {
         assertThat(clientIdValidator.isValid(CLIENT_ID, null))
             .isTrue();
     }

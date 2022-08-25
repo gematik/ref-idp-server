@@ -1,6 +1,15 @@
 # ![Logo](doc/images/IDPLogo-64.png) Gematik IDP Zulassungstestsuite
 
-Die Gematik-IDP-Zulassungstestsuite dient zur Pr&uuml;fung des zentralen IDP Dienstes..
+<div>Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> and Ubuntu Gnome icon set</div>
+
+Die Gematik-IDP-Zulassungstestsuite dient zur Pr&uuml;fung des zentralen IDP Dienstes (IDP Server).
+Zusätzlich enthät die Testsuite Tests für den Fast Track und die Föderierten IDPs.
+Alle Zulassungstests sind - im Sinne von maven - "Integrationstests". Diese Tests befinden sich in *.feature Dateien.
+
+Ein Integrationstest kann entweder gegen eine lokale Instanz eines IDP Servers, oder gegen einen remote verfügbaren
+Server durchgeführt werden. Durch Setzen der Umgebungsvariable `IDP_SERVER` wird die Testsuite angewiesen, gegen den in
+der Variable definierten Host/URL zu testen. Existiert diese Umgebungsvariable nicht, so wird von der Testsuite eine
+lokale Instanz des IDP Servers für die Integrationstests verwendet.
 
 ## Informationen zum IDP Dienst
 
@@ -13,8 +22,6 @@ Folgende Endpunkte sind von einem IDP Dienst zur Verfügung zu stellen:
     * "ACCESS_TOKEN" [RFC6749 # section-1.4 & RFC6749 # section-5],
     * "REFRESH_TOKEN/SSO_TOKEN" [RFC6749 # section-1.5 & RFC6749 # section-6]
 * Pairing-Endpunkt
-
-Weiterführende interne Dokumente
 
 #### Relevante RFCs
 
@@ -63,174 +70,124 @@ mit dem aktuellen Release sind folgende Testszenarien abgedeckt:
 
 ## Installation der notwendigen Software
 
-* OpenJDK 11 (latest, 11.0.9)
-* Maven (latest, 3.6.3)
-* Jetbrains Intellij (optional, Latest, 2020.3)
-* Git für Windows (optional, latest, 2.30.0)
-
-## Konfiguration der Entwicklungsumgebung (IntelliJ)
-
-### Cucumber Run Template anpassen
-
-Die Default CucumberJava Debug/Run Umgebung anpassen:
-
-Auf Add Configuration klicken
-
-![Config01](doc/images/IntellijConfig001.png)
-
-Im sich öffnenden Dialog auf den Schraubenschlüssel
-
-![Config02](doc/images/IntellijConfig002.png)
-
-Cucumber Java auswählen
-
-![Config03](doc/images/IntellijConfig003.png)
-
-und folgende Werte in die entsprechenden Felder rechts eintragen:
-
-```
-Main class           :  net.serenitybdd.cucumber.cli.Main
-
-Glue                 : de.gematik.idp.test.steps
-
-Environment variables: IDP_SERVER=http://localhost:8080/auth/realms/idp/.well-known/openid-configuration
-```
-
-![Anmerkung](doc/images/emblem-generic.png) Bei den Environment Variablen muss **ab Version 13** auch ein Wert für
-GEMATIK_TESTCONFIG gesetzt werden. Standardwert ist hier 'default'.
-
-```
-Environment variables: IDP_SERVER=https://idp-ref.zentral.idp.splitdns.ti-dienste.de/.well-known/openid-configuration;GEMATIK_TESTCONFIG=default
-```
+* OpenJDK 11
+* Maven
+* Jetbrains Intellij (optional)
 
 ## Idp Server lokal starten
+
+### via Maven
+
+im Projekt root:
+
+```console
+$ cd idp-server 
+$ mvn spring-boot:run
+```
+
+Es startet eine Instanz auf localhost:8080.
+
+### via java
+
+```console
+$ mvn clean package -pl idp-server -am
+$ java -jar ./idp-server/target/idp-server*.jar
+```
+
+Es startet eine Instanz auf localhost:8080.
+
+### via Intellij
 
 * Projekt in Intellij öffnen
 
 ![Anmerkung](doc/images/emblem-generic.png) Beim ersten Mal kann es einige Zeit dauern, bis alle Projektabhängigkeiten
 von Internet/Gematik Nexus Repos gezogen wurden.
 
+* Compile: ![](doc/images/IntellijBuild.PNG)
 * Den Verzeichnisbaum idp-server → src → main → java → de.gematik.idp.server aufklappen
 * Rechte Maus auf die Datei IdpServer
-* 'Run IdpServer' auswählen
+* `Run IdpServer` auswählen <br>
 
-![Config04](doc/images/IntellijConfig004.png)
+![IntellijRunIdp](doc/images/IntellijRunIdp.PNG)
 
+Es startet eine Instanz auf localhost:8080.<br>
 Im Run Fenster sind die Logs des gestarteten Servers sichtbar:
 
-![Config05](doc/images/IntellijConfig005.png)
+![IntellijServerLogs](doc/images/IntellijServerLogs.PNG)
 
 Der IdpServer kann für Analysetätigkeiten statt Run auch mit Debug gestartet werden. Dadurch können im IdpServer code
 breakpoints gesetzt und Code schrittweise ausgeführt werden.
 
-![Anmerkung](doc/images/emblem-generic.png) Sollte es zu Fehlermeldungen beim Start des Servers kommen evt. mvn clean
-install im idp-global ausführen und anschließend den Start nochmals probieren
+Ein Beispiel für den Abruf des Discovery Documents an der lokalen Instanz wäre:
+
+```console
+$ curl http://localhost:8080/auth/realms/idp/.well-known/openid-configuration
+eyJhbGciOiJCUDI1NlIxIiwidHlwIjoiSldUIiwia2lkIjoicHVrX2Rpc2Nfc2lnIiwieDVjIjpbIk1JSUNzVENDQWxpZ0F3SUJBZ0lIQWJzc3FRaHFPekFLQmdncWhrak9QUVFEQWpDQmhERUxNQWtHQTFVRUJoTUNSRVV4SHpBZEJnTlZCQW9NRm1kbGJXRjBhV3NnUjIxaVNDQk9UMVF0VmtGTVNVUXhNakF3QmdOVkJBc01LVXR2YlhCdmJtVnVkR1Z1TFVOQklHUmxjaUJVWld4bGJXRjBhV3RwYm1aeVlYTjBjblZyZEhWeU1TQXdIZ1lEVlFRRERCZEhSVTB1UzA5TlVDMURRVEV3SUZSRlUxUXRUMDVNV1RBZUZ3MHlNVEF4TVRVd01EQXdNREJhRncweU5qQXhNVFV5TXpVNU5UbGFNRWt4Q3pBSkJnTlZCQVlUQWtSRk1TWXdKQVlEVlFRS0RCMW5aVzFoZEdscklGUkZVMVF0VDA1TVdTQXRJRTVQVkMxV1FVeEpSREVTTUJBR0ExVUVBd3dKU1VSUUlGTnBaeUF6TUZvd0ZBWUhLb1pJemowQ0FRWUpLeVFEQXdJSUFRRUhBMElBQklZWm53aUdBbjVRWU94NDNaOE13YVpMRDNyL2J6NkJUY1FPNXBiZXVtNnFRellENWREQ2NyaXcvVk5QUFpDUXpYUVBnNFN0V3l5NU9PcTlUb2dCRW1PamdlMHdnZW93RGdZRFZSMFBBUUgvQkFRREFnZUFNQzBHQlNza0NBTURCQ1F3SWpBZ01CNHdIREFhTUF3TUNrbEVVQzFFYVdWdWMzUXdDZ1lJS29JVUFFd0VnZ1F3SVFZRFZSMGdCQm93R0RBS0JnZ3FnaFFBVEFTQlN6QUtCZ2dxZ2hRQVRBU0JJekFmQmdOVkhTTUVHREFXZ0JRbzhQam1xY2gzekVORjI1cXUxenFEckE0UHFEQTRCZ2dyQmdFRkJRY0JBUVFzTUNvd0tBWUlLd1lCQlFVSE1BR0dIR2gwZEhBNkx5OWxhR05oTG1kbGJXRjBhV3N1WkdVdmIyTnpjQzh3SFFZRFZSME9CQllFRkM5NE05TGdXNDRsTmdvQWJrUGFvbW5MalM4L01Bd0dBMVVkRXdFQi93UUNNQUF3Q2dZSUtvWkl6ajBFQXdJRFJ3QXdSQUlnQ2c0eVpEV215QmlyZ3h6YXd6L1M4REpuUkZLdFlVL1lHTmxSYzcra0JIY0NJQnV6YmEzR3NwcVNtb1AxVndNZU5OS05hTHNnVjh2TWJESmIzMGFxYWlYMSJdfQ.eyJhdXRob3JpemF0aW9uX2VuZHBvaW50IjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3NpZ25fcmVzcG9uc2UiLCJhdXRoX3BhaXJfZW5kcG9pbnQiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYWx0X3Jlc3BvbnNlIiwic3NvX2VuZHBvaW50IjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3Nzb19yZXNwb25zZSIsInVyaV9wYWlyIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3BhaXJpbmdzIiwidG9rZW5fZW5kcG9pbnQiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvdG9rZW4iLCJ0aGlyZF9wYXJ0eV9hdXRob3JpemF0aW9uX2VuZHBvaW50IjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL2V4dGF1dGgiLCJ1cmlfZGlzYyI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODA4MC8ud2VsbC1rbm93bi9vcGVuaWQtY29uZmlndXJhdGlvbiIsImlzc3VlciI6Imh0dHBzOi8vaWRwLnplbnRyYWwuaWRwLnNwbGl0ZG5zLnRpLWRpZW5zdGUuZGUiLCJqd2tzX3VyaSI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODA4MC9qd2tzIiwiZXhwIjoxNjYwMjIxMDEwLCJpYXQiOjE2NjAxMzQ2MTAsInVyaV9wdWtfaWRwX2VuYyI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODA4MC9pZHBFbmMvandrLmpzb24iLCJ1cmlfcHVrX2lkcF9zaWciOiJodHRwOi8vbG9jYWxob3N0OjgwODAvaWRwU2lnL2p3ay5qc29uIiwic3ViamVjdF90eXBlc19zdXBwb3J0ZWQiOlsicGFpcndpc2UiXSwiaWRfdG9rZW5fc2lnbmluZ19hbGdfdmFsdWVzX3N1cHBvcnRlZCI6WyJCUDI1NlIxIl0sInJlc3BvbnNlX3R5cGVzX3N1cHBvcnRlZCI6WyJjb2RlIl0sInNjb3Blc19zdXBwb3J0ZWQiOlsib3BlbmlkIiwiZS1yZXplcHQiLCJwYWlyaW5nIl0sInJlc3BvbnNlX21vZGVzX3N1cHBvcnRlZCI6WyJxdWVyeSJdLCJncmFudF90eXBlc19zdXBwb3J0ZWQiOlsiYXV0aG9yaXphdGlvbl9jb2RlIl0sImFjcl92YWx1ZXNfc3VwcG9ydGVkIjpbImdlbWF0aWstZWhlYWx0aC1sb2EtaGlnaCJdLCJ0b2tlbl9lbmRwb2ludF9hdXRoX21ldGhvZHNfc3VwcG9ydGVkIjpbIm5vbmUiXSwiY29kZV9jaGFsbGVuZ2VfbWV0aG9kc19zdXBwb3J0ZWQiOlsiUzI1NiJdLCJra19hcHBfbGlzdF91cmkiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvZGlyZWN0b3J5L2trX2FwcHMifQ.esVMUkfx6KhEu9SsTRjExXNLgx2Fwct0GFn3Mq9lzHFr1aPdqlp7jKkLnGjM_XHZmQoRgUPYHxfSWhvWPwK3Kg
+```
 
 ## Testszenarien / Testsuite ausführen
 
-### Gesamte Testsuite in der IDE ausführen
-
-* Rechte Maus auf das Verzeichnis idp-testsuite
-* Run → All Features in: idp-testsuite
-
-![Config06](doc/images/IntellijConfig006.png)
-
-Voila, im Run Fenster tauchen nun die Testfälle/Szenarien auf:
-
-![Config07](doc/images/IntellijConfig007.png)
-
-### Einzelne Testsuite Szenarien debuggen
-
-Um einzelne Szenarien zu debuggen,
-
-* die entsprechende feature Datei im Verzeichnis idp-testsuite → src → test → resources → features die entsprechende
-  feature Datei öffnen
-* in der "Scenario" Zeile mit der rechten Maus aus dem Kontextmenü "Debug 'Scenario: ......'" auswählen.
-* oder links neben der Zeilennummer auf den grünen Pfeil klicken
-
-![Config08](doc/images/IntellijConfig008.png)
-
-![Anmerkung](doc/images/emblem-generic.png) Breakpoints im Glue code werden zwar respektiert, allerdings ist ein
-einfaches reinsteppen in die aufrufenden Methoden so nicht möglich, da der Glue Code instrumentiert wird. Daher am
-Besten in der aufzurufenden Methode auch einen Breakpoint setzen und den Test weiterlaufen lassen.
-
 ### Gesamte Testsuite via Maven in Git Bash ausführen
 
-Um einen Idp Server zu testen muss die Umgebungsvariable IDP_SERVER entsprechend gesetzt sein und dort auch laufen.
+Die Integrationstests umfassen alle 3 Teilprojekte. Die feature Dateien sind dementsprechend gruppiert. "biometrics"
+und "coreFeatures" testen den Idp-Server.
 
-* In der Git Bash ins IdeaProjects/idp-global Verzeichnis wechseln
-* Die Environment Variable setzen
-* Maven ausführen
-
+```console
+|-idp-testsuite
+   ...
+   |-----test
+   |---------...
+   |-------resources
+   |---------...
+   |---------features
+   |-----------biometrics
+   |-----------coreFeatures
+   |-----------fastTrack
+   |-----------federation
 ```
-cd ......./idp-global
-export IDP_SERVER=http://localhost:8080/auth/realms/idp/.well-known/openid-configuration
-export GEMATIK_TESTCONFIG=default
-mvn clean verify -Dskip.unittests=true
+
+Bei der Testausführung wird es meistens sinnvoll sein, zu filtern.
+Einen bestimmten Integrationstest ausführen:
+
+```console
+$ mvn clean verify -Dskip.unittests=true -Dcucumber.filter.tags="@TCID:FEDIDP_ENTITY_STATEMENT_003"
 ```
 
-Beim obigen Aufruf ohne cucumber options werden nur freigegebene Tests ausgeführt. Szenarien, welche bereits bekannte
-Fehler (@OpenBug) enthalten bzw. noch in Arbeit (@WiP) oder nicht freigegeben sind, werden dabei NICHT ausgeführt. Um
-alle derzeit in der Testsuite vorhandenen und teilweise noch in Entwicklung befindlichen Testfälle auszuführen dient
-folgender mvn Aufruf:
+Alle (in allen Teilprojekten) Zulassungstests ausführen, die u.a. nicht auf "work in progress" stehen.
 
-````
-mvn clean verify -Dcucumber.filter.tags="" -Dskip.unittests=true
-````
+```console
+$ mvn clean verify -Dskip.unittests=true -Dcucumber.filter.tags="@Approval and not @OpenBug and not @WiP and not @LongRunning"  
+```     
 
-![Anmerkung](doc/images/emblem-generic.png) Im Gegensatz zur IDE Methode, laufen die Tests via Maven parallel ab.
+Integrationstests können mit `-Dskip.inttests` disabled werden.
+
+![Anmerkung](doc/images/emblem-generic.png) Die Testsuite startet mehrere Server um alle Testfälle der Teilprojekte
+testen zu können. Das Verhalten kann in der tiger.yaml konfiguriert werden.
+
+Einen bestimmten Integrationstest gegen einen existierenden Idp-Server ausführen:
+
+```console
+$ export IDP_SERVER=http://localhost:8080/auth/realms/idp/.well-known/openid-configuration
+$ export GEMATIK_TESTCONFIG=default
+$ mvn clean verify -Dskip.unittests=true -Dcucumber.filter.tags="@TCID:IDP_REF_DISC_001"
+```
+
+### Testfall der Testsuite in Intellij ausführen/debuggen
+
+* bauen: ```mvn clean package```
+* Testfall identifizieren, rechte Maustatste auf "Run Test"
+  ![DebugTestcase1](doc/images/DebugTestcase1.PNG)
+* Klick "Modify Run Configuration"
+  ![DebugTestcase2](doc/images/DebugTestcase2.PNG)
+* Main Class setzen auf: ```de.gematik.test.tiger.TigerCucumberRunner```
+* Glue setzen auf: ```de.gematik.test.tiger.glue net.serenitybdd.cucumber.actors de.gematik.idp.test.steps```
+  ![DebugTestcase3](doc/images/DebugTestcase3.PNG)
+* Test Result
+  ![DebugTestcase4](doc/images/DebugTestcase4.PNG)
+* Testbericht bei Ausführung mit maven: ```./idp-testsuite/target/site/serenity/index.html```
+* Testbericht bei Ausführung in Intellij: ```./idp-testsuite/target/site/serenity/downloadable/...html```
 
 ## Serenity Testbericht
-
-### Testbericht erstellen
-
-Der Testbericht ist aus der Git Bash im idp-global Verzeichnis mit folgendem Kommando einsehbar:
-
-```
-start chrome ./idp-testsuite/target/site/serenity/index.html
-```
-
-![Anmerkung](doc/images/emblem-generic.png) Der Testbericht wird nur über den maven Aufruf automatisch
-miterstellt/aktualisiert. Beim Aufruf der Testsuite über die IDE wird KEIN Bericht erstellt. Dieser muss manuell
-getriggert werden.
-
-![Serenity01](doc/images/SerenityReport001.png)
-
-Zum Erstellen des Berichts aus der IDE kann das unten verfügbare Skript als showReport.bat im idp-testsuite Ordner
-abgespeichert und genutzt werden (Startet defaultmäßig Chrome):
-
-```
-  @REM showReport.bat:
-  @REM helper script to show serenity report from IDE
-
-  @echo off
-  call mvn serenity:aggregate
-  start chrome %cd%\target\site\serenity\index.html
-```
-
-Hierzu in der Dropdownbox rechts oben "Edit Configuration..." auswählen
-
-![Serenity02](doc/images/SerenityReport002.png)
-
-Im erscheinenden Dialog dann auf das "+" links oben klicken und "Shell Script" auswählen
-
-![Serenity03](doc/images/SerenityReport003.png)
-
-Und rechts folgende Werte eintragen
-
-![Serenity04](doc/images/SerenityReport004.png)
-
-```
-Name             : Create Serenity report
-Script path      : C:\Users\$USER\IdeaProjects\idp-global\idp-testsuite\showReport.bat 
-Working directory: C:\Users\$USER\IdeaProjects\idp-global\idp-testsuite
-```
-
-![Anmerkung](doc/images/emblem-generic.png) Der Pfad zum Skript ist evt. anzupassen, wenn die bat nicht in das
-idp-testsuite Verzeichnis gespeichert wurde
-
-Ab nun kann mit der IDE der Serenity report erstellt/aktualisiert werden und wird am Ende automatisch im Chrome
-dargestellt.
 
 ### Testbericht analysieren
 
@@ -271,27 +228,6 @@ Für Stacktrace Informationen gibt es rechts in den Details auch den **"More Det
 
 ![Serenity07](doc/images/SerenityReport007.png)
 
-### Anforderungsüberdeckungsbericht
-
-Durch Wechseln in des Verzeichnis idp-testsuite und dem Ausführen des folgenden maven Kommandos kann der
-Anforderungsüberdeckungsbericht erstellt werden:
-
-```
-mvn exec:java@aforeporter
-```
-
-Auf der Übersichtsseite des Serenity Reports wird dadurch ein zusätzlicher Tab eingefügt. Der eigentliche Bericht liegt
-im target/site/serenity Verzeichnis als aforeport.html Datei.
-
-![AfoReportLink](doc/images/AfoReportLink.png)
-
-Der Anforderungsüberdeckungsbericht listet alle Anforderungen auf und die mit ihnen verlinkten Testszenarien.
-
-![AfoReportExample](doc/images/AfoReportExample.png)
-
-Die Liste der Anforderungen entnimmt der Bericht aus der im idp-testsuite Verzeichnis abgelegten requirements.json
-Datei.
-
 ### Nutzung / Anpassung von Testumgebungsvariablen
 
 In der durch die Umgebungsvariable GEMATIK_TESTCONFIG definierten testsuite_config.${env.GEMATIK_TESTCONFIG}.properties
@@ -306,7 +242,3 @@ encryption.signedchallenge.symmetric.key=geheimerSchluesselDerNochGehashtWird
 encryption.ssotoken.symmetric.key=geheimerSchluesselDerNochGehashtWird
 encryption.alternativeauthentication.symmetric.key=geheimerSchluesselDerNochGehashtWird
 ```
-
-## Remarks
-
-* Die verwendeten Icons stammen von Freepik(www.flaticon.com) und vom Ubuntu Gnome icon set

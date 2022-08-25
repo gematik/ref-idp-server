@@ -18,7 +18,6 @@ package de.gematik.idp.token;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.jose4j.jws.AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256;
-
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.crypto.model.PkiIdentity;
@@ -31,7 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(PkiKeyResolver.class)
-public class TokenClaimExtractionTest {
+class TokenClaimExtractionTest {
 
     // exp: Wednesday, 14-Feb-29 00:00:00 UTC, Token soll eigentlich nur 43.200 s alt sein (A_20503)
     // nbf=iat: Monday, 21-Sep-20 08:34:52 UTC
@@ -50,7 +49,7 @@ public class TokenClaimExtractionTest {
             "9g";
 
     @Test
-    public void verifyAccessTokenExtraction() {
+    void verifyAccessTokenExtraction() {
         final Map<String, Object> claims = TokenClaimExtraction.extractClaimsFromJwtBody(ACCESS_TOKEN);
 
         assertThat(claims)
@@ -65,7 +64,7 @@ public class TokenClaimExtractionTest {
     }
 
     @Test
-    public void verifyGetClaimAsDateTime() {
+    void verifyGetClaimAsDateTime() {
         final Map<String, Object> claims = TokenClaimExtraction.extractClaimsFromJwtBody(ACCESS_TOKEN);
         final String DATE = "2020-09-21T08:32:59";
         assertThat(
@@ -78,7 +77,7 @@ public class TokenClaimExtractionTest {
     }
 
     @Test
-    public void verifyExtractHeaderClaimsFromToken() {
+    void verifyExtractHeaderClaimsFromToken() {
         final Map<String, Object> headerClaims = TokenClaimExtraction.extractClaimsFromJwtHeader(ACCESS_TOKEN);
         assertThat(headerClaims)
             .hasSize(2)
@@ -90,7 +89,7 @@ public class TokenClaimExtractionTest {
     }
 
     @Test
-    public void extractClientCertificate_shouldMatch(@PkiKeyResolver.Filename("ecc") final PkiIdentity identity) {
+    void extractClientCertificate_shouldMatch(@PkiKeyResolver.Filename("ecc") final PkiIdentity identity) {
         final JsonWebToken token = new IdpJwtProcessor(identity).buildJwt(
             new JwtBuilder()
                 .expiresAt(ZonedDateTime.now())

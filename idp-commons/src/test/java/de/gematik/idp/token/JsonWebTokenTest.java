@@ -18,9 +18,9 @@ package de.gematik.idp.token;
 
 import static de.gematik.idp.field.ClaimName.*;
 import static org.assertj.core.api.Assertions.assertThat;
-
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtBuilder;
+import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.tests.PkiKeyResolver.Filename;
@@ -29,14 +29,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.crypto.spec.SecretKeySpec;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(PkiKeyResolver.class)
-public class JsonWebTokenTest {
+class JsonWebTokenTest {
 
     private IdpJwtProcessor idpJwtProcessor;
     private SecretKeySpec aesKey;
@@ -45,12 +44,12 @@ public class JsonWebTokenTest {
     @BeforeEach
     public void setup(@PkiKeyResolver.Filename("ecc") final PkiIdentity identity) {
         idpJwtProcessor = new IdpJwtProcessor(identity);
-        aesKey = new SecretKeySpec(RandomStringUtils.randomAlphanumeric(256 / 8).getBytes(), "AES");
+        aesKey = new SecretKeySpec(Nonce.randomAlphanumeric(256 / 8).getBytes(), "AES");
         this.identity = identity;
     }
 
     @Test
-    public void getTokenExp_ShouldBeCorrect() {
+    void getTokenExp_ShouldBeCorrect() {
         final JsonWebToken jsonWebToken = idpJwtProcessor.buildJwt(new JwtBuilder()
             .expiresAt(ZonedDateTime.now().plusMinutes(5)));
 
@@ -60,7 +59,7 @@ public class JsonWebTokenTest {
     }
 
     @Test
-    public void getBodyClaims_shouldMatch() {
+    void getBodyClaims_shouldMatch() {
         final JsonWebToken jsonWebToken = idpJwtProcessor.buildJwt(new JwtBuilder()
             .addAllBodyClaims(Map.of("foo", "bar"))
             .expiresAt(ZonedDateTime.now().plusMinutes(5)));
@@ -70,7 +69,7 @@ public class JsonWebTokenTest {
     }
 
     @Test
-    public void getHeaderClaims_shouldMatch() {
+    void getHeaderClaims_shouldMatch() {
         final JsonWebToken jsonWebToken = idpJwtProcessor.buildJwt(new JwtBuilder()
             .addAllHeaderClaims(new HashMap<>(Map.of("foo", "bar")))
             .expiresAt(ZonedDateTime.now().plusMinutes(5)));
@@ -81,7 +80,7 @@ public class JsonWebTokenTest {
     }
 
     @Test
-    public void getStringBodyClaims_shouldMatch() {
+    void getStringBodyClaims_shouldMatch() {
         final JsonWebToken jsonWebToken = idpJwtProcessor.buildJwt(new JwtBuilder()
             .addAllBodyClaims(Map.of("foo", "bar")));
 
@@ -90,7 +89,7 @@ public class JsonWebTokenTest {
     }
 
     @Test
-    public void getDateTimeBodyClaims_shouldMatch() {
+    void getDateTimeBodyClaims_shouldMatch() {
         final ZonedDateTime now = ZonedDateTime.now();
         final JsonWebToken jsonWebToken = idpJwtProcessor.buildJwt(new JwtBuilder()
             .addAllBodyClaims(Map.of(CONFIRMATION.getJoseName(), now.toEpochSecond())));
@@ -101,7 +100,7 @@ public class JsonWebTokenTest {
     }
 
     @Test
-    public void encryptJwtWithEcc_shouldBeJweStructure(
+    void encryptJwtWithEcc_shouldBeJweStructure(
         @Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity id) {
         final JsonWebToken jsonWebToken = idpJwtProcessor
             .buildJwt(new JwtBuilder().addAllBodyClaims(Map.of(CONFIRMATION.getJoseName(), "foobarschmar")));
@@ -114,7 +113,7 @@ public class JsonWebTokenTest {
     }
 
     @Test
-    public void encryptJwtWithAes_shouldBeJweStructure() {
+    void encryptJwtWithAes_shouldBeJweStructure() {
         final JsonWebToken jsonWebToken = idpJwtProcessor
             .buildJwt(new JwtBuilder().addAllBodyClaims(Map.of(CONFIRMATION.getJoseName(), ZonedDateTime.now())));
 
@@ -123,7 +122,7 @@ public class JsonWebTokenTest {
     }
 
     @Test
-    public void encryptJwtWithAes_algorithmShouldBeAes256Gcm() {
+    void encryptJwtWithAes_algorithmShouldBeAes256Gcm() {
         final JsonWebToken jsonWebToken = idpJwtProcessor
             .buildJwt(new JwtBuilder().addAllBodyClaims(Map.of(CONFIRMATION.getJoseName(), ZonedDateTime.now())));
 
@@ -133,7 +132,7 @@ public class JsonWebTokenTest {
     }
 
     @Test
-    public void encryptJwtWithAes_ctyShouldBeNJWT() {
+    void encryptJwtWithAes_ctyShouldBeNJWT() {
         final JsonWebToken jsonWebToken = idpJwtProcessor
             .buildJwt(new JwtBuilder().addAllBodyClaims(Map.of(CONFIRMATION.getJoseName(), ZonedDateTime.now())));
 
@@ -143,7 +142,7 @@ public class JsonWebTokenTest {
     }
 
     @Test
-    public void decryptJweWithAes_shouldMatchSourceJwt() {
+    void decryptJweWithAes_shouldMatchSourceJwt() {
         final JsonWebToken jsonWebToken = idpJwtProcessor
             .buildJwt(new JwtBuilder().addAllBodyClaims(Map.of(CONFIRMATION.getJoseName(), "foobarschmar")));
 
@@ -155,9 +154,9 @@ public class JsonWebTokenTest {
     }
 
     @Test
-    public void encryptJwt_shouldHaveNjwtClaim() {
+    void encryptJwt_shouldHaveNjwtClaim() {
         final Map<String, Object> bodyClaims = idpJwtProcessor.buildJwt(new JwtBuilder()
-            .addAllBodyClaims(Map.of("foo", "bar")))
+                .addAllBodyClaims(Map.of("foo", "bar")))
             .encrypt(aesKey)
             .setDecryptionKey(aesKey)
             .extractBodyClaims();
@@ -167,10 +166,10 @@ public class JsonWebTokenTest {
     }
 
     @Test
-    public void encryptJwt_shouldHaveExpClaimForNestedJwt() {
+    void encryptJwt_shouldHaveExpClaimForNestedJwt() {
         final long expValue = 1234567l;
         final Optional<Object> expHeaderClaim = idpJwtProcessor.buildJwt(new JwtBuilder()
-            .addAllBodyClaims(Map.of(EXPIRES_AT.getJoseName(), expValue)))
+                .addAllBodyClaims(Map.of(EXPIRES_AT.getJoseName(), expValue)))
             .encrypt(aesKey)
             .getHeaderClaim(EXPIRES_AT);
 
@@ -181,12 +180,12 @@ public class JsonWebTokenTest {
     }
 
     @Test
-    public void encryptJwt_shouldHaveExpClaimForNestedNestedJwt() {
+    void encryptJwt_shouldHaveExpClaimForNestedNestedJwt() {
         final long expValue = 1234567l;
         final JsonWebToken innerJwt = idpJwtProcessor.buildJwt(new JwtBuilder()
             .addAllBodyClaims(Map.of(EXPIRES_AT.getJoseName(), expValue)));
         final Optional<Object> expHeaderClaim = idpJwtProcessor.buildJwt(new JwtBuilder()
-            .addAllBodyClaims(Map.of(NESTED_JWT.getJoseName(), innerJwt.getRawString())))
+                .addAllBodyClaims(Map.of(NESTED_JWT.getJoseName(), innerJwt.getRawString())))
             .encrypt(aesKey)
             .getHeaderClaim(EXPIRES_AT);
 

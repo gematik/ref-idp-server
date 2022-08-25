@@ -35,13 +35,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
 @ExtendWith(PkiKeyResolver.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class MockIdpClientTokenSynchronTest {
+class MockIdpClientTokenSynchronTest {
 
     private static final String URI_MOCK_IDP_SERVER = "https://idp.zentral.idp.splitdns.ti-dienste.de";
     private static final Set<String> VOLATILE_CLAIMS = Set.of(ClaimName.EXPIRES_AT.getJoseName(),
@@ -85,7 +85,7 @@ public class MockIdpClientTokenSynchronTest {
     }
 
     @Test
-    public void accesstoken_fromMockIdpClient_shouldHaveSameClaims_As_fromIdpClient_byLogin() {
+    void accesstoken_fromMockIdpClient_shouldHaveSameClaims_As_fromIdpClient_byLogin() {
         final JsonWebToken accessTokenMockIdpClient = mockIdpClient.login(clientIdentity).getAccessToken();
 
         final JsonWebToken accessTokenIdpClient = idpClient.login(egkUserIdentity).getAccessToken();
@@ -95,7 +95,7 @@ public class MockIdpClientTokenSynchronTest {
     }
 
     @Test
-    public void accesstoken_fromMockIdpClient_shouldHaveSameClaims_As_fromIdpClient_bySetTokenExpired() {
+    void accesstoken_fromMockIdpClient_shouldHaveSameClaims_As_fromIdpClient_bySetTokenExpired() {
         final JsonWebToken accessTokenMockIdpClient = MockIdpClient.builder()
             .serverIdentity(serverIdentity)
             .produceOnlyExpiredTokens(true)
@@ -112,7 +112,7 @@ public class MockIdpClientTokenSynchronTest {
     }
 
     @Test
-    public void accesstoken_fromMockIdpClient_shouldHaveSameClaims_As_fromIdpClient_bySetTokenInvalidSignature() {
+    void accesstoken_fromMockIdpClient_shouldHaveSameClaims_As_fromIdpClient_bySetTokenInvalidSignature() {
         final JsonWebToken accessTokenMockIdpClient = MockIdpClient.builder()
             .serverIdentity(serverIdentity)
             .produceTokensWithInvalidSignature(true)
@@ -129,7 +129,7 @@ public class MockIdpClientTokenSynchronTest {
     }
 
     @Test
-    public void accesstoken_fromMockIdpClient_shouldHaveSameClaims_As_fromIdpClient_byResign() {
+    void accesstoken_fromMockIdpClient_shouldHaveSameClaims_As_fromIdpClient_byResign() {
         final JsonWebToken jwt = mockIdpClient.login(clientIdentity).getAccessToken();
         final Map<String, Object> bodyClaims = jwt.getBodyClaims();
         final Map<String, Object> bodyClaimsCloned = new HashMap<>() {

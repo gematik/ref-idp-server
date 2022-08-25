@@ -16,24 +16,7 @@
 
 package de.gematik.idp.token;
 
-import static de.gematik.idp.field.ClaimName.AUDIENCE;
-import static de.gematik.idp.field.ClaimName.AUTHENTICATION_CLASS_REFERENCE;
-import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
-import static de.gematik.idp.field.ClaimName.AUTHORIZED_PARTY;
-import static de.gematik.idp.field.ClaimName.AUTH_TIME;
-import static de.gematik.idp.field.ClaimName.CLIENT_ID;
-import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
-import static de.gematik.idp.field.ClaimName.FAMILY_NAME;
-import static de.gematik.idp.field.ClaimName.GIVEN_NAME;
-import static de.gematik.idp.field.ClaimName.ID_NUMBER;
-import static de.gematik.idp.field.ClaimName.ISSUED_AT;
-import static de.gematik.idp.field.ClaimName.ISSUER;
-import static de.gematik.idp.field.ClaimName.JWT_ID;
-import static de.gematik.idp.field.ClaimName.ORGANIZATION_NAME;
-import static de.gematik.idp.field.ClaimName.PROFESSION_OID;
-import static de.gematik.idp.field.ClaimName.SCOPE;
-import static de.gematik.idp.field.ClaimName.SUBJECT;
-import static de.gematik.idp.field.ClaimName.TYPE;
+import static de.gematik.idp.field.ClaimName.*;
 import static de.gematik.idp.token.TokenBuilderUtil.buildSubjectClaim;
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.IdpJwtProcessor;
@@ -44,11 +27,7 @@ import de.gematik.idp.exceptions.RequiredClaimException;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.field.IdpScope;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.SneakyThrows;
@@ -94,7 +73,7 @@ public class AccessTokenBuilder {
                     .orElseThrow(() -> new RequiredClaimException("Missing '" + ID_NUMBER.getJoseName() + "' claim!")),
                 serverSubjectSalt));
         claimsMap.put(AUTHORIZED_PARTY.getJoseName(), clientId);
-        claimsMap.put(JWT_ID.getJoseName(), new Nonce().getNonceAsHex(IdpConstants.JTI_LENGTH));
+        claimsMap.put(JWT_ID.getJoseName(), Nonce.getNonceAsHex(IdpConstants.JTI_LENGTH));
         claimsMap.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(),
             authenticationToken.getBodyClaim(AUTHENTICATION_METHODS_REFERENCE)
                 .orElse(getAmrString()));

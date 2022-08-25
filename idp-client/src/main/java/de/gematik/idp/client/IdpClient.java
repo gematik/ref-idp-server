@@ -27,6 +27,7 @@ import de.gematik.idp.authentication.UriUtils;
 import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
 import de.gematik.idp.client.data.*;
 import de.gematik.idp.crypto.EcSignerUtility;
+import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.field.ClaimName;
@@ -49,7 +50,6 @@ import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.MultipartBody;
 import lombok.*;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jose4j.jws.JsonWebSignature;
@@ -168,10 +168,10 @@ public class IdpClient implements IIdpClient {
         assertThatClientIsInitialized();
 
         final String codeVerifier = ClientUtilities.generateCodeVerifier();
-        final String nonce = RandomStringUtils.randomAlphanumeric(20);
+        final String nonce = Nonce.randomAlphanumeric(20);
 
         // Authorization
-        final String state = RandomStringUtils.randomAlphanumeric(20);
+        final String state = Nonce.randomAlphanumeric(20);
         LOGGER.debug("Performing Authorization with remote-URL '{}'",
             discoveryDocumentResponse.getAuthorizationEndpoint());
         final AuthorizationResponse authorizationResponse = authorizationResponseMapper.apply(
@@ -231,10 +231,10 @@ public class IdpClient implements IIdpClient {
         assertThatClientIsInitialized();
 
         final String codeVerifier = ClientUtilities.generateCodeVerifier();
-        final String nonce = RandomStringUtils.randomAlphanumeric(20);
+        final String nonce = Nonce.randomAlphanumeric(20);
 
         // Authorization
-        final String state = RandomStringUtils.randomAlphanumeric(20);
+        final String state = Nonce.randomAlphanumeric(20);
         LOGGER.debug("Performing Authorization with remote-URL '{}'",
             discoveryDocumentResponse.getAuthorizationEndpoint());
         final AuthorizationResponse authorizationResponse = authorizationResponseMapper.apply(
@@ -291,10 +291,10 @@ public class IdpClient implements IIdpClient {
         assertThatClientIsInitialized();
 
         final String codeVerifier = ClientUtilities.generateCodeVerifier();
-        final String nonce = RandomStringUtils.randomAlphanumeric(20);
+        final String nonce = Nonce.randomAlphanumeric(20);
 
         // Authorization
-        final String state = RandomStringUtils.randomAlphanumeric(20);
+        final String state = Nonce.randomAlphanumeric(20);
         LOGGER.debug("Performing Authorization with remote-URL '{}'",
             discoveryDocumentResponse.getAuthorizationEndpoint());
         final AuthorizationResponse authorizationResponse = authorizationResponseMapper.apply(

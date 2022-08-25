@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class JwtHelper {
@@ -36,7 +37,8 @@ public final class JwtHelper {
         try {
             return jwtProcessor
                 .buildJws(
-                    objectMapper.writeValueAsString(object), Map.ofEntries(
+                    objectMapper.writeValueAsString(object),
+                    Map.ofEntries(
                         Map.entry("typ", "JWT")
                     ),
                     false)
@@ -55,7 +57,7 @@ public final class JwtHelper {
                     final IdpKeyDescriptor keyDesc = IdpKeyDescriptor
                         .constructFromX509Certificate(identity.getCertificate(),
                             identity.getKeyId(),
-                            true);
+                            false);
                     keyDesc.setPublicKeyUse(identity.getUse().orElse(null));
                     return keyDesc;
                 })
@@ -64,7 +66,7 @@ public final class JwtHelper {
     }
 
     // TODO: IDP-740
-    public static IdpJwksDocument getJwks(final FederationPubKey federationPubKey) {
+    public static IdpJwksDocument getJwks(@NonNull final FederationPubKey federationPubKey) {
         final List<PkiIdentity> identities = new ArrayList<>();
         identities.add(federationPubKey.getIdentity());
         return IdpJwksDocument.builder()

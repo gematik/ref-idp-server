@@ -23,6 +23,7 @@ import static de.gematik.idp.field.ClaimName.*;
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
 import de.gematik.idp.client.data.*;
+import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.data.IdpErrorResponse;
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.field.IdpScope;
@@ -50,7 +51,6 @@ import kong.unirest.*;
 import kong.unirest.jackson.JacksonObjectMapper;
 import kong.unirest.json.JSONObject;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.jose4j.jwt.JwtClaims;
 import org.springframework.http.MediaType;
 
@@ -222,7 +222,7 @@ public class AuthenticatorClient {
         final TokenRequest tokenRequest,
         final Function<MultipartBody, MultipartBody> beforeTokenCallback,
         final Consumer<HttpResponse<JsonNode>> afterTokenCallback) {
-        final byte[] tokenKeyBytes = RandomStringUtils.randomAlphanumeric(256 / 8).getBytes();
+        final byte[] tokenKeyBytes = Nonce.randomAlphanumeric(256 / 8).getBytes();
         final SecretKey tokenKey = new SecretKeySpec(tokenKeyBytes, "AES");
         final IdpJwe keyVerifierToken = buildKeyVerifierToken(tokenKeyBytes, tokenRequest.getCodeVerifier(),
             tokenRequest.getIdpEnc());

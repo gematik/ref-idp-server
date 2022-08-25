@@ -41,7 +41,7 @@ public class DiscoveryDocumentBuilder {
             .thirdPartyAuthorizationEndpoint(serverUrl + THIRD_PARTY_ENDPOINT)
             .grantTypesSupported(new String[]{"authorization_code"})
             .idTokenSigningAlgValuesSupported(new String[]{"BP256R1"})
-            .scopesSupported(new String[]{"openid", "e-rezept", "pairing"})
+            .scopesSupported(new String[]{"openid", "e-rezept", "pairing", "authenticator-dev"})
             .responseTypesSupported(new String[]{"code"})
             .subjectTypesSupported(new String[]{"pairwise"})
             .tokenEndpointAuthMethodsSupported(new String[]{"none"})

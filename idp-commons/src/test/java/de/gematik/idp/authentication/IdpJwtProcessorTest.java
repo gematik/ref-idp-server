@@ -20,7 +20,6 @@ import static de.gematik.idp.field.ClaimName.*;
 import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.PkiKeyResolver;
@@ -36,7 +35,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(PkiKeyResolver.class)
-public class IdpJwtProcessorTest {
+class IdpJwtProcessorTest {
 
     static final long TOKEN_VALIDITY_MINUTES = 10;
     JwtBuilder jwtBuilder = new JwtBuilder()
@@ -68,19 +67,19 @@ public class IdpJwtProcessorTest {
     }
 
     @Test
-    public void build_rsa(final PkiIdentity rsa) {
+    void build_rsa(final PkiIdentity rsa) {
         final JsonWebToken jwt = createJwt(rsa);
         jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
     }
 
     @Test
-    public void build_ecc(final PkiIdentity ecc) {
+    void build_ecc(final PkiIdentity ecc) {
         final JsonWebToken jwt = createJwt(ecc);
         jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
     }
 
     @Test
-    public void verifyInvalidHeader_ecc(final PkiIdentity ecc) {
+    void verifyInvalidHeader_ecc(final PkiIdentity ecc) {
         final JsonWebToken jwt = createJwt(ecc);
         jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
         // delete first character
@@ -90,7 +89,7 @@ public class IdpJwtProcessorTest {
     }
 
     @Test
-    public void verifyInvalidSignature_ecc(final PkiIdentity ecc) {
+    void verifyInvalidSignature_ecc(final PkiIdentity ecc) {
         final JsonWebToken jwt = createJwt(ecc);
         // delete last character
         final String jwtJasonInvalid = jwt.getRawString().substring(0, jwt.getRawString().length() - 1);
@@ -99,7 +98,7 @@ public class IdpJwtProcessorTest {
     }
 
     @Test
-    public void verifySignAlgo_ecc(final PkiIdentity ecc) {
+    void verifySignAlgo_ecc(final PkiIdentity ecc) {
         final JsonWebToken jwt = createJwt(ecc);
         jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
         assertThat(jwtProcessor.getHeaderDecoded(jwt))
@@ -108,7 +107,7 @@ public class IdpJwtProcessorTest {
     }
 
     @Test
-    public void verifyHeaderElementsComplete_ecc(final PkiIdentity ecc) {
+    void verifyHeaderElementsComplete_ecc(final PkiIdentity ecc) {
         final JsonWebToken jwt = createJwt(ecc);
         jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
         assertThat(jwtProcessor.getHeaderDecoded(jwt))
@@ -116,7 +115,7 @@ public class IdpJwtProcessorTest {
     }
 
     @Test
-    public void verifyPayloadElementsComplete_ecc(final PkiIdentity ecc) {
+    void verifyPayloadElementsComplete_ecc(final PkiIdentity ecc) {
         final JsonWebToken jwt = createJwt(ecc);
         jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
         final String payloadAsString = jwtProcessor.getPayloadDecoded(jwt);
@@ -132,7 +131,7 @@ public class IdpJwtProcessorTest {
     }
 
     @Test
-    public void verifyPayloadMeetsJwtDescription_ecc(final PkiIdentity ecc) {
+    void verifyPayloadMeetsJwtDescription_ecc(final PkiIdentity ecc) {
         final JsonWebToken jwtAsBase64 = createJwt(ecc);
         jwtProcessor.verifyAndThrowExceptionIfFail(jwtAsBase64);
         final String payloadAsString = jwtProcessor.getPayloadDecoded(jwtAsBase64);

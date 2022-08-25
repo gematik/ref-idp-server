@@ -17,7 +17,6 @@
 package de.gematik.idp.crypto;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import java.io.File;
@@ -44,7 +43,7 @@ public class EcSignerUtilityTest {
     }
 
     @Test
-    public void createSignatureAndVerifyWithSameKey() {
+    void createSignatureAndVerifyWithSameKey() {
         final byte[] ecSignature = EcSignerUtility.createEcSignature("foobar".getBytes(), identity.getPrivateKey());
         EcSignerUtility.verifyEcSignatureAndThrowExceptionWhenFail("foobar".getBytes(),
             identity.getCertificate().getPublicKey(),
@@ -52,7 +51,7 @@ public class EcSignerUtilityTest {
     }
 
     @Test
-    public void createSignatureAndVerifyWithOtherKey_shouldFail() {
+    void createSignatureAndVerifyWithOtherKey_shouldFail() {
         final byte[] ecSignature = EcSignerUtility.createEcSignature("foobar".getBytes(), identity.getPrivateKey());
         assertThatThrownBy(() -> EcSignerUtility.verifyEcSignatureAndThrowExceptionWhenFail("foobar".getBytes(),
             otherIdentity.getCertificate().getPublicKey(), ecSignature))
@@ -60,7 +59,7 @@ public class EcSignerUtilityTest {
     }
 
     @Test
-    public void createSignatureAndVerifyWithDifferentContent_shouldFail() {
+    void createSignatureAndVerifyWithDifferentContent_shouldFail() {
         final byte[] ecSignature = EcSignerUtility.createEcSignature("foobar".getBytes(), identity.getPrivateKey());
         assertThatThrownBy(() -> EcSignerUtility.verifyEcSignatureAndThrowExceptionWhenFail("barfoo".getBytes(),
             identity.getCertificate().getPublicKey(), ecSignature))

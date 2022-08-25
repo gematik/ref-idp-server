@@ -17,13 +17,15 @@
 package de.gematik.test.bdd;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import java.nio.charset.StandardCharsets;
+import de.gematik.idp.test.steps.helpers.StringModifier;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ThreadedContextProvider {
 
     private final Map<String, Map<String, Object>> threadedContexts = new HashMap<>();
@@ -58,9 +60,9 @@ public class ThreadedContextProvider {
 
     public void assertRegexMatches(final String key, final String regex) {
         final Map<String, Object> ctxt = getMapForCurrentThread();
-        if (regex == null || "$NULL" .equals(regex)) {
+        if (regex == null || "$NULL".equals(regex)) {
             assertThat(ctxt).containsEntry(key, null);
-        } else if ("$DOESNOTEXIST" .equals(regex)) {
+        } else if ("$DOESNOTEXIST".equals(regex)) {
             assertThat(ctxt).doesNotContainKey(key);
         } else {
             assertThat(ctxt).containsKey(key);
@@ -84,24 +86,12 @@ public class ThreadedContextProvider {
         ctxt.putAll(ctxt2);
     }
 
-
-    public void flipBit(final int bitidx, final String key) {
+    public void flipBitInContextValue(final int bitidx, final String key) {
         assertThat(getMapForCurrentThread()).containsKey(key);
         assertThat(getMapForCurrentThread().get(key)).withFailMessage("No " + key + " in context!").isNotNull();
         final String value = getMapForCurrentThread().get(key).toString();
-        final byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
-        final int idx;
-        final int shift;
-        if (bitidx < 0) {
-            idx = bytes.length - 1 + bitidx / 8;
-            shift = -bitidx % 8;
-        } else {
-            idx = bitidx / 8;
-            shift = 8 - (bitidx % 8);
-        }
-        bytes[idx] ^= (byte) (0b00000001 << shift);
-        final String flippedValue = new String(bytes);
-        assertThat(flippedValue).isNotEqualTo(value);
+        final String flippedValue = StringModifier.flipBit(bitidx, value);
+        log.info("flipBitInContextValue, old and new:\n {} \n {}  ", value, flippedValue);
         getMapForCurrentThread().put(key, flippedValue);
     }
 

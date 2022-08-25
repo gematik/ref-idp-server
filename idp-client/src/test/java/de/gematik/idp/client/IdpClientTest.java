@@ -22,7 +22,6 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-
 import de.gematik.idp.client.data.DiscoveryDocumentResponse;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.PkiKeyResolver;
@@ -33,7 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(PkiKeyResolver.class)
-public class IdpClientTest {
+class IdpClientTest {
 
     private IdpClient idpClient;
     private AuthenticatorClient authenticatorClient;
@@ -62,7 +61,7 @@ public class IdpClientTest {
     }
 
     @Test
-    public void testBeforeCallback(final PkiIdentity ecc) {
+    void testBeforeCallback(final PkiIdentity ecc) {
         final AtomicInteger callCounter = new AtomicInteger(0);
         idpClient.setBeforeAuthorizationCallback(r -> callCounter.incrementAndGet());
 
@@ -77,7 +76,7 @@ public class IdpClientTest {
     }
 
     @Test
-    public void testBeforeFunction(final PkiIdentity ecc) {
+    void testBeforeFunction(final PkiIdentity ecc) {
         final AtomicInteger callCounter = new AtomicInteger(0);
         idpClient.setBeforeAuthorizationMapper(r -> {
             callCounter.incrementAndGet();

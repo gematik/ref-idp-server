@@ -18,7 +18,6 @@ package de.gematik.idp.server.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-
 import de.gematik.idp.server.pairing.PairingData;
 import de.gematik.idp.tests.PkiKeyResolver;
 import java.time.ZonedDateTime;
@@ -36,7 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 @TestPropertySource(properties = {
     "spring.jpa.hibernate.ddl-auto=validate"
 })
-public class PairingServiceTest {
+class PairingServiceTest {
 
     private static final String testIdNumber = "X114428530";
     private static final String testDeviceName = "Peters Fon";
@@ -50,13 +49,13 @@ public class PairingServiceTest {
     }
 
     @Test
-    public void insertPairingAndFindEntrySuccessfully() {
+    void insertPairingAndFindEntrySuccessfully() {
         pairingService.insertPairing(createPairingDto("123"));
         assertThat(pairingService.getPairingList(testIdNumber)).isNotEmpty();
     }
 
     @Test
-    public void insertPairingAndDeleteEntrySuccessfully() {
+    void insertPairingAndDeleteEntrySuccessfully() {
         pairingService.insertPairing(createPairingDto("456"));
         assertDoesNotThrow(() -> pairingService.deleteAllPairing(testIdNumber));
         assertThat(pairingService.getPairingList(testIdNumber)).isEmpty();

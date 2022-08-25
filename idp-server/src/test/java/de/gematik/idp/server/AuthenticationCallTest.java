@@ -21,7 +21,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-
 import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
 import de.gematik.idp.authentication.UriUtils;
@@ -40,7 +39,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -48,7 +47,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 @ExtendWith(SpringExtension.class)
 @ExtendWith(PkiKeyResolver.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class AuthenticationCallTest {
+class AuthenticationCallTest {
 
     private IdpClient idpClient;
     private PkiIdentity egkUserIdentity;
@@ -86,7 +85,7 @@ public class AuthenticationCallTest {
     }
 
     @Test
-    public void verifyTokenAlgorithm() throws UnirestException {
+    void verifyTokenAlgorithm() throws UnirestException {
         idpClient.login(egkUserIdentity);
         verify(authenticationChallengeBuilderSpy)
             .buildAuthenticationChallenge(eq(TestConstants.CLIENT_ID_E_REZEPT_APP), anyString(),
@@ -95,28 +94,28 @@ public class AuthenticationCallTest {
     }
 
     @Test
-    public void verifyResponseStatusCode() {
+    void verifyResponseStatusCode() {
         idpClient.setBeforeAuthenticationCallback(request ->
             assertThat(request.asJson().getStatus()).isEqualTo(HttpStatus.FOUND.value()));
         idpClient.login(egkUserIdentity);
     }
 
     @Test
-    public void verifyResponseAttribute_code() {
+    void verifyResponseAttribute_code() {
         idpClient.setAfterAuthenticationCallback(response -> assertThat(UriUtils.extractParameterValue(
             response.getHeaders().get("Location").get(0), "code")).isNotEmpty());
         idpClient.login(egkUserIdentity);
     }
 
     @Test
-    public void verifyResponseAttribute_sso_token() {
+    void verifyResponseAttribute_sso_token() {
         idpClient.setAfterAuthenticationCallback(response -> assertThat(UriUtils.extractParameterValue(
             response.getHeaders().get("Location").get(0), "ssotoken")).isNotEmpty());
         idpClient.login(egkUserIdentity);
     }
 
     @Test
-    public void verifyResponseAttribute_sso_token_forPsNotExists() {
+    void verifyResponseAttribute_sso_token_forPsNotExists() {
 //        idpConfiguration.getRegisteredClient().put(
 //            TestConstants.CLIENT_ID_GEAMTIK_TEST_PS,
 //            IdpClientConfiguration.builder().redirectUri(TestConstants.REDIRECT_URI_GEAMTIK_TEST_PS)
@@ -139,14 +138,14 @@ public class AuthenticationCallTest {
 
 
     @Test
-    public void verifyAttribute_content_type() {
+    void verifyAttribute_content_type() {
         idpClient.setBeforeAuthenticationCallback(
             request -> assertThat(request.getHeaders().containsKey("Content-Type")).isTrue());
         idpClient.login(egkUserIdentity);
     }
 
     @Test
-    public void verifyAttribute_signed_challenge() {
+    void verifyAttribute_signed_challenge() {
         idpClient.setBeforeAuthenticationCallback(request -> assertThat(
             request.getBody().get().multiParts().stream().findFirst().get().getName())
             .isEqualTo("signed_challenge"));
@@ -154,7 +153,7 @@ public class AuthenticationCallTest {
     }
 
     @Test
-    public void verifySignedChallengeBodyAttribute_njwt() {
+    void verifySignedChallengeBodyAttribute_njwt() {
         idpClient.setBeforeAuthenticationCallback(request -> assertThat(new IdpJwe(getTokenOfRequest(request))
             .decryptNestedJwt(idpEnc.getIdentity().getPrivateKey())
             .getBodyClaims()).containsKey("njwt"));

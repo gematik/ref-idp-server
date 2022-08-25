@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class EntityListEntry {
 
-    private final String name;
+    private final String organizationName;
     private final String iss;
     private final String logoUri;
     private final String userTypeSupported;

@@ -19,18 +19,17 @@ package de.gematik.idp.test.steps.model;
 import java.util.Arrays;
 
 public enum IdpEndpointType {
-    Sektoral_IDP, Smartcard_IDP, Fachdienst;
+    Fasttrack_Sektoral_IDP, Fed_Sektoral_IDP, Fed_Sektoral_IDP_APP, Smartcard_IDP, Fachdienst, Fedmaster;
 
-    public final static String CUCUMBER_REGEX = "(sektoral idp|smartcard idp|fachdienst)";
+    public final static String CUCUMBER_REGEX = "(fasttrack sektoral idp|fed sektoral idp|fed sektoral idp app|smartcard idp|fachdienst|fedmaster)";
 
     private final String value;
 
     public static IdpEndpointType fromString(final String value) {
         return Arrays.stream(IdpEndpointType.values())
-                .filter(e -> e.value.equals(value))
-                .findFirst()
-                .orElseThrow(() -> new AssertionError("Invalid IDP Endpoint Type '" + value + "'"));
-
+            .filter(e -> e.value.equals(value))
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("Invalid IDP Endpoint Type '" + value + "'"));
     }
 
     IdpEndpointType() {

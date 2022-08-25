@@ -7,7 +7,9 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${version.maven-failsafe-plugin}</version>
                 <configuration>
                     <groups>IdpServerRequired</groups>
                     <includes>
@@ -22,9 +24,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <groupId>org.apache.maven.plugins</groupId>
-
-                <version>3.0.0-M3</version>
             </plugin>
 
             <plugin>
@@ -42,7 +41,6 @@
         <dependency>
             <artifactId>spring-boot-starter-web</artifactId>
             <groupId>org.springframework.boot</groupId>
-            <version>2.6.3</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.logging.log4j</groupId>
@@ -57,7 +55,6 @@
         <dependency>
             <artifactId>spring-boot-starter-actuator</artifactId>
             <groupId>org.springframework.boot</groupId>
-            <version>2.6.3</version>
         </dependency>
 
         <dependency>
@@ -83,32 +80,28 @@
                 </exclusion>
             </exclusions>
             <groupId>org.springframework.boot</groupId>
-            <version>2.6.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <artifactId>commons-io</artifactId>
             <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${version.commons-io}</version>
             <scope>test</scope>
-            <version>2.11.0</version>
         </dependency>
 
         <dependency>
             <artifactId>lombok</artifactId>
             <groupId>org.projectlombok</groupId>
-            <version>1.18.22</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <artifactId>unirest-java</artifactId>
             <groupId>com.konghq</groupId>
-            <version>3.13.6</version>
         </dependency>
         <dependency>
             <artifactId>unirest-objectmapper-jackson</artifactId>
             <groupId>com.konghq</groupId>
-            <version>3.13.6</version>
         </dependency>
 
         <dependency>
@@ -131,8 +124,8 @@
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>19.3.0</version>
+        <version>20.0.9</version>
     </parent>
 
-    <version>19.3.0</version>
+    <version>20.0.9</version>
 </project>

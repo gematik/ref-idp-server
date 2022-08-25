@@ -1,27 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <artifactId>idp-testsuite</artifactId>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
-    <version>19.3.0</version>
+    <version>20.0.9</version>
 
     <parent>
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>19.3.0</version>
+        <version>20.0.9</version>
     </parent>
 
     <properties>
-        <version.cucumber>6.11.0</version.cucumber>
-        <version.serenity.core>2.6.0</version.serenity.core>
-        <version.assertj>3.22.0</version.assertj>
-        <version.serenity.cucumber.6>2.6.0</version.serenity.cucumber.6>
-        <version.serenity.maven.plugin>2.4.34</version.serenity.maven.plugin>
-
         <idp-server.spring.profile>idp</idp-server.spring.profile>
         <sektoral-idp.spring.profile>sektoralIdp</sektoral-idp.spring.profile>
         <fedmaster-idp.spring.profile>federationMaster</fedmaster-idp.spring.profile>
@@ -41,7 +35,7 @@
                     <plugin>
                         <groupId>com.coderplus.maven.plugins</groupId>
                         <artifactId>copy-rename-maven-plugin</artifactId>
-                        <version>1.0.1</version>
+                        <version>${version.copy-rename-maven-plugin}</version>
                         <executions>
                             <execution>
                                 <id>copy-idp-server-config</id>
@@ -105,33 +99,14 @@
                             </execution>
                         </executions>
                     </plugin>
+
                     <plugin>
-                        <artifactId>build-helper-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <configuration>
-                                    <portNames>
-                                        <portName>idp-server.http.port</portName>
-                                        <portName>idp-sektoral.http.port</portName>
-                                        <portName>idp-fedmaster.http.port</portName>
-                                        <portName>idp-fachdienst.http.port</portName>
-                                    </portNames>
-                                </configuration>
-                                <goals>
-                                    <goal>reserve-network-port</goal>
-                                </goals>
-                                <id>reserve-tomcat-port</id>
-                                <phase>process-resources</phase>
-                            </execution>
-                        </executions>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <version>${version.build-helper-maven-plugin}</version>
-                    </plugin>
-                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
+                        <version>${version.maven-failsafe-plugin}</version>
                         <configuration>
                             <includes>
-                                <include>**/Parallel*IT.java</include>
+                                <include>**/Driver*.java</include>
                             </includes>
                             <parallel>classes</parallel>
                             <perCoreThreadCount>true</perCoreThreadCount>
@@ -144,56 +119,10 @@
                                 </cucumber.filter.tags>
                             </systemPropertyVariables>
                             <environmentVariables>
-                                <IDP_SERVER_PORT>${idp-server.http.port}</IDP_SERVER_PORT>
-                                <IDP_SEKTORAL_PORT>${idp-sektoral.http.port}</IDP_SEKTORAL_PORT>
-                                <IDP_FEDMASTER_PORT>${idp-fedmaster.http.port}</IDP_FEDMASTER_PORT>
-                                <IDP_FACHDIENST_PORT>${idp-fachdienst.http.port}</IDP_FACHDIENST_PORT>
-
-                                <TIGER_SERVERS_IDP_EXTERNALJAROPTIONS_HEALTHCHECK>
-                                    http://127.0.0.1:${idp-server.http.port}
-                                </TIGER_SERVERS_IDP_EXTERNALJAROPTIONS_HEALTHCHECK>
-                                <TIGER_SERVERS_IDP_EXTERNALJAROPTIONS_ARGUMENTS_0>
-                                    --server.port=${idp-server.http.port}
-                                </TIGER_SERVERS_IDP_EXTERNALJAROPTIONS_ARGUMENTS_0>
-                                <TIGER_SERVERS_IDP_SOURCE_0>
-                                    local://idp-server-${version}.jar
-                                </TIGER_SERVERS_IDP_SOURCE_0>
-
-                                <TIGER_SERVERS_IDPSEKTORAL_EXTERNALJAROPTIONS_HEALTHCHECK>
-                                    http://127.0.0.1:${idp-sektoral.http.port}
-                                </TIGER_SERVERS_IDPSEKTORAL_EXTERNALJAROPTIONS_HEALTHCHECK>
-                                <TIGER_SERVERS_IDPSEKTORAL_EXTERNALJAROPTIONS_ARGUMENTS_0>
-                                    --server.port=${idp-sektoral.http.port}
-                                </TIGER_SERVERS_IDPSEKTORAL_EXTERNALJAROPTIONS_ARGUMENTS_0>
-                                <TIGER_SERVERS_IDPSEKTORAL_SOURCE_0>
-                                    local://idp-sektoral-${version}.jar
-                                </TIGER_SERVERS_IDPSEKTORAL_SOURCE_0>
-
-                                <TIGER_SERVERS_IDPFEDMASTER_EXTERNALJAROPTIONS_HEALTHCHECK>
-                                    http://127.0.0.1:${idp-fedmaster.http.port}
-                                </TIGER_SERVERS_IDPFEDMASTER_EXTERNALJAROPTIONS_HEALTHCHECK>
-                                <TIGER_SERVERS_IDPFEDMASTER_EXTERNALJAROPTIONS_ARGUMENTS_0>
-                                    --server.port=${idp-fedmaster.http.port}
-                                </TIGER_SERVERS_IDPFEDMASTER_EXTERNALJAROPTIONS_ARGUMENTS_0>
-                                <TIGER_SERVERS_IDPFEDMASTER_SOURCE_0>
-                                    local://idp-fedmaster-${version}.jar
-                                </TIGER_SERVERS_IDPFEDMASTER_SOURCE_0>
-
-                                <TIGER_SERVERS_IDPFACHDIENST_EXTERNALJAROPTIONS_HEALTHCHECK>
-                                    http://127.0.0.1:${idp-fachdienst.http.port}
-                                </TIGER_SERVERS_IDPFACHDIENST_EXTERNALJAROPTIONS_HEALTHCHECK>
-                                <TIGER_SERVERS_IDPFACHDIENST_EXTERNALJAROPTIONS_ARGUMENTS_0>
-                                    --server.port=${idp-fachdienst.http.port}
-                                </TIGER_SERVERS_IDPFACHDIENST_EXTERNALJAROPTIONS_ARGUMENTS_0>
-                                <TIGER_SERVERS_IDPFACHDIENST_SOURCE_0>
-                                    local://idp-fachdienst-${version}.jar
-                                </TIGER_SERVERS_IDPFACHDIENST_SOURCE_0>
-
+                                <tiger.idp.version>${project.version}</tiger.idp.version>
                             </environmentVariables>
                             <forkMode>once</forkMode>
                         </configuration>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <version>3.0.0-M5</version>
                     </plugin>
                 </plugins>
             </build>
@@ -216,10 +145,12 @@
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
+                        <version>${version.maven-failsafe-plugin}</version>
                         <configuration>
                             <includes>
-                                <include>**/Parallel*IT.java</include>
+                                <include>**/Driver*.java</include>
                             </includes>
                             <parallel>classes</parallel>
                             <perCoreThreadCount>true</perCoreThreadCount>
@@ -233,8 +164,6 @@
                             </systemPropertyVariables>
                             <forkMode>once</forkMode>
                         </configuration>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <version>3.0.0-M5</version>
                     </plugin>
                 </plugins>
             </build>
@@ -244,40 +173,32 @@
     <dependencies>
         <!-- Needed for correct working of idp spring boot instance in test run -->
         <dependency>
-            <artifactId>commons-codec</artifactId>
             <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
             <version>1.15</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.json/json -->
         <dependency>
-            <artifactId>json</artifactId>
             <groupId>org.json</groupId>
-            <version>20210307</version>
+            <artifactId>json</artifactId>
         </dependency>
 
-
-        <!-- Idp server -->
         <dependency>
-            <artifactId>idp-server</artifactId>
             <groupId>de.gematik.idp</groupId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <artifactId>idp-crypto</artifactId>
-            <groupId>de.gematik.idp</groupId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <artifactId>idp-commons</artifactId>
             <groupId>de.gematik.idp</groupId>
+            <artifactId>idp-commons</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <!-- Spring boot -->
         <dependency>
-            <artifactId>spring-boot-starter-test</artifactId>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.logging.log4j</groupId>
@@ -290,110 +211,98 @@
             </exclusions>
         </dependency>
         <dependency>
-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
             <groupId>org.springframework.boot</groupId>
-        </dependency>
-
-        <!-- BDD / REST -->
-        <dependency>
-            <artifactId>serenity-core</artifactId>
-            <groupId>net.serenity-bdd</groupId>
-            <scope>test</scope>
-            <version>${version.serenity.core}</version>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
         <dependency>
-            <artifactId>serenity-rest-assured</artifactId>
-            <groupId>net.serenity-bdd</groupId>
-            <scope>test</scope>
-            <version>${version.serenity.core}</version>
-        </dependency>
-        <dependency>
-            <artifactId>serenity-cucumber6</artifactId>
-            <groupId>net.serenity-bdd</groupId>
-            <scope>test</scope>
-            <version>${version.serenity.cucumber.6}</version>
-        </dependency>
-        <dependency><!-- needed for type registry -->
-            <artifactId>cucumber-core</artifactId>
             <groupId>io.cucumber</groupId>
-            <scope>test</scope>
-            <version>${version.cucumber}</version>
-        </dependency>
-        <dependency>
             <artifactId>datatable</artifactId>
-            <groupId>io.cucumber</groupId>
-            <scope>test</scope>
             <version>4.1.0</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>io.cucumber</groupId>
             <artifactId>datatable-matchers</artifactId>
-            <groupId>io.cucumber</groupId>
-            <scope>test</scope>
             <version>4.1.0</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <artifactId>lombok</artifactId>
             <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <artifactId>assertj-core</artifactId>
             <groupId>org.assertj</groupId>
-            <scope>test</scope>
+            <artifactId>assertj-core</artifactId>
             <version>${version.assertj}</version>
-        </dependency>
-
-        <dependency>
-            <artifactId>json-unit-spring</artifactId>
-            <groupId>net.javacrumbs.json-unit</groupId>
             <scope>test</scope>
-            <version>2.28.0</version>
         </dependency>
         <dependency>
             <groupId>org.skyscreamer</groupId>
             <artifactId>jsonassert</artifactId>
             <version>1.5.0</version>
         </dependency>
-
         <dependency>
-            <artifactId>aforeporter</artifactId>
             <groupId>de.gematik.idp.aforeporter</groupId>
-            <version>1.2.1</version>
+            <artifactId>aforeporter</artifactId>
+            <version>${version.aforeporter}</version>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.junit.vintage/junit-vintage-engine -->
-        <dependency>
-            <groupId>org.junit.vintage</groupId>
-            <artifactId>junit-vintage-engine</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/com.coderplus.maven.plugins/copy-rename-maven-plugin -->
         <dependency>
             <groupId>com.coderplus.maven.plugins</groupId>
             <artifactId>copy-rename-maven-plugin</artifactId>
-            <version>1.0.1</version>
+            <version>${version.copy-rename-maven-plugin}</version>
         </dependency>
         <dependency>
             <groupId>de.gematik.test</groupId>
             <artifactId>tiger-test-lib</artifactId>
             <version>${version.tiger}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>de.gematik.test</groupId>
-            <artifactId>tiger-test-lib</artifactId>
-            <type>test-jar</type>
-            <version>${version.tiger}</version>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <version>${version.rest-assured}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-xml</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-json</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>${version.maven-clean-plugin}</version>
+                <configuration>
+                    <filesets>
+                        <!-- delete tiger config file -->
+                        <fileset>
+                            <directory>.</directory>
+                            <includes>
+                                <include>tiger.yaml</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
             <!-- =================== INITIALIZE PROPERTIES -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>${version.build-helper-maven-plugin}</version>
                 <executions>
                     <execution>
                         <id>init-build-properties</id>
@@ -422,7 +331,7 @@
                             <target>
                                 <property environment="env"/>
                                 <condition property="gematik.testconfig" value="${env.GEMATIK_TESTCONFIG}"
-                                           else="default">
+                                    else="default">
                                     <isset property="env.GEMATIK_TESTCONFIG"/>
                                 </condition>
                                 <echo message="${gematik.testconfig}"/>
@@ -466,9 +375,9 @@
                 </executions>
             </plugin>
             <plugin>
-                <artifactId>maven-jar-plugin</artifactId>
                 <groupId>org.apache.maven.plugins</groupId>
-                <version>3.2.0</version>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${version.maven-jar-plugin}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -479,12 +388,12 @@
             </plugin>
 
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <version>${version.maven-surefire-plugin}</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
-                <groupId>org.apache.maven.plugins</groupId>
-                <version>3.0.0-M5</version>
             </plugin>
 
             <!-- ===================  INTEGRATION TEST -->
@@ -492,80 +401,40 @@
                  for multiple parallel batches run simultaneously
             -->
             <plugin>
-                <groupId>com.github.temyers</groupId>
-                <artifactId>cucumber-jvm-parallel-plugin</artifactId>
-                <version>4.2.0</version>
+                <groupId>de.gematik.test</groupId>
+                <artifactId>tiger-maven-plugin</artifactId>
+                <version>${version.tiger}</version>
                 <executions>
                     <execution>
                         <configuration>
-                            <customVmTemplate>src/test/resources/cucumber-serenity-runner.vm</customVmTemplate>
-                            <glue>
+                            <glues>
                                 <package>de.gematik.idp.test.steps</package>
-                                <package>de.gematik.test.tiger.hooks</package>
-                                <package>de.gematik.test.tiger.glue</package>
-                            </glue>
-                            <parallelScheme>FEATURE</parallelScheme>
-                            <!-- deactivated as jenkins xunit plugin is not very flexible and does not work well with serenity junit xml exports
-                            see https://issues.apache.org/jira/browse/SUREFIRE-1533
-                            <plugins>
-                              <plugin>
-                                <name>junit</name>
-                                <extension>xml</extension>
-                              </plugin>
-                            </plugins>-->
+                            </glues>
+                            <skip>false</skip>
                         </configuration>
-                        <goals>
-                            <goal>generateRunners</goal>
-                        </goals>
-                        <id>generateRunners</id>
                         <phase>generate-test-sources</phase>
+                        <id>generate-tiger-drivers</id>
+                        <goals>
+                            <goal>generate-drivers</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>generate-tiger-report</id>
+                        <goals>
+                            <goal>
+                                generate-serenity-reports
+                            </goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
 
-            <plugin>
-                <artifactId>serenity-maven-plugin</artifactId>
-                <dependencies>
-                    <dependency>
-                        <artifactId>serenity-core</artifactId>
-                        <groupId>net.serenity-bdd</groupId>
-                        <version>${version.serenity.core}</version>
-                    </dependency>
-                    <dependency>
-                        <artifactId>serenity-single-page-report</artifactId>
-                        <groupId>net.serenity-bdd</groupId>
-                        <version>2.3.33</version>
-                    </dependency>
-                </dependencies>
-                <executions>
-                    <execution>
-                        <configuration>
-                            <reports>single-page-html</reports>
-                            <systemPropertyVariables>
-                                <report.customfields.Server>${report.server.host}</report.customfields.Server>
-                                <!--suppress UnresolvedMavenProperty -->
-                                <report.customfields.Testsuite>Release V${current.target.version}
-                                </report.customfields.Testsuite>
-                                <report.customfields.User>${user.name}</report.customfields.User>
-                                <!--suppress UnresolvedMavenProperty -->
-                                <report.customfields.Client>${testclient}</report.customfields.Client>
-                            </systemPropertyVariables>
-                        </configuration>
-                        <goals>
-                            <goal>aggregate</goal>
-                            <goal>reports</goal>
-                        </goals>
-                        <id>serenity-reports</id>
-                        <phase>post-integration-test</phase>
-                    </execution>
-                </executions>
-                <groupId>net.serenity-bdd.maven.plugins</groupId>
-                <version>${version.serenity.maven.plugin}</version>
-            </plugin>
             <!-- workaround for bug in single-page-report of serenity
             for large failure details to expand table to right of screen -->
             <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
                 <artifactId>replacer</artifactId>
+                <version>1.5.3</version>
                 <configuration>
                     <file>idp-testsuite/target/site/serenity/serenity-summary.html</file>
                     <replacements>
@@ -594,30 +463,26 @@
                         <phase>post-integration-test</phase>
                     </execution>
                 </executions>
-                <groupId>com.google.code.maven-replacer-plugin</groupId>
-                <version>1.5.3</version>
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.2.0</version>
                 <executions>
                     <execution>
-                        <id>copy-resources</id>
-                        <phase>post-integration-test</phase>
+                        <id>default-resources</id>
+                        <phase>generate-test-sources</phase>
                         <goals>
-                            <goal>copy-resources</goal>
+                            <goal>testResources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>target/site/serenity</outputDirectory>
+                            <outputDirectory>${basedir}</outputDirectory>
+                            <useDefaultDelimiters>true</useDefaultDelimiters>
                             <resources>
                                 <resource>
-                                    <directory>.</directory>
+                                    <directory>src/test/resources</directory>
                                     <includes>
-                                        <include>serenity.properties</include>
-                                        <include>testsuite_config.properties</include>
-                                        <include>requirements.json</include>
+                                        <include>tiger.yaml</include>
                                     </includes>
-                                    <filtering>false</filtering>
+                                    <filtering>true</filtering>
                                 </resource>
                             </resources>
                         </configuration>

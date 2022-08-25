@@ -24,6 +24,7 @@ idp:
         OPENID: "Zugriff auf den ID-Token."
         EREZEPT: "Zugriff auf die E-Rezept-Funktionalität."
         PAIRING: "Zugriff auf die Daten für die biometrischer Authentisierung."
+        AUTHENTICATORDEV: "Zugriff auf Mock-RP für Authenticator Entwicklung"
       claims:
         GIVEN_NAME: "Zustimmung zur Verarbeitung des Vornamens"
         PROFESSION_OID: "Zustimmung zur Verarbeitung der Rolle"
@@ -33,10 +34,12 @@ idp:
     claimsToBeIncluded:
       EREZEPT: [ GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER ]
       PAIRING: [ ID_NUMBER ]
+      AUTHENTICATORDEV: [ GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER ]
   productTypeDisplayString: "IDP"
   scopeAudienceUrls:
     e-rezept: "https://erp-test.zentral.erp.splitdns.ti-dienste.de/"
     pairing: "https://idp-pairing-test.zentral.idp.splitdns.ti-dienste.de"
+    authenticator-dev: "https://authenticator-dev.ti-dienste.de"
   registeredClient:
     eRezeptApp:
       redirectUri: http://redirect.gematik.de/erezept
@@ -44,6 +47,12 @@ idp:
     gematikTestPs:
       redirectUri: http://test-ps.gematik.de/erezept
       returnSsoToken: false
+    AuthenticatorDevLocal:
+      redirectUri: http://localhost:8090/callback
+      returnSsoToken: true
+    AuthenticatorDevRemote:
+      redirectUri: toBeReplaced>
+      returnSsoToken: true
   errors:
     genericErrorMap:
       client_id:
@@ -208,13 +217,24 @@ logging:
   level:
     org.springframework.web.filter.CommonsRequestLoggingFilter: INFO
     de.gematik: INFO
+  file:
+    name: logs/idp-server-application.log
+server:
+  port: ${SERVER_PORT:8080}
 management:
+  server:
+    port: ${MANAGEMENT_PORT:8180}
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: "health"
+    enabled-by-default: false
   endpoint:
-    httptrace:
+    health:
+      enabled: true
+    metrics:
+      enabled: true
+    logfile:
       enabled: true
 spring:
   liquibase:

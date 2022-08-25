@@ -20,7 +20,6 @@ import static de.gematik.idp.field.ClaimName.ALGORITHM;
 import static de.gematik.idp.field.ClaimName.ISSUER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.Afo;
@@ -35,7 +34,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(PkiKeyResolver.class)
-public class MockIdpClientTest {
+class MockIdpClientTest {
 
     private static final String URI_IDP_SERVER = "https://idp.zentral.idp.splitdns.ti-dienste.de";
     private static final String CLIENT_ID_E_REZEPT_APP = "eRezeptApp";
@@ -60,7 +59,7 @@ public class MockIdpClientTest {
     }
 
     @Test
-    public void testLogin() {
+    void testLogin() {
         Assertions.assertDoesNotThrow(() -> mockIdpClient.login(rsaClientIdentity)
             .getAccessToken()
             .verify(mockIdpClient.getServerIdentity()
@@ -69,13 +68,13 @@ public class MockIdpClientTest {
     }
 
     @Test
-    public void verifyToken() {
+    void verifyToken() {
         final IdpTokenResult authToken = mockIdpClient.login(rsaClientIdentity);
         authToken.getAccessToken().verify(mockIdpClient.getServerIdentity().getCertificate().getPublicKey());
     }
 
     @Test
-    public void invalidSignatureTokens_verifyShouldFail() {
+    void invalidSignatureTokens_verifyShouldFail() {
         final IdpTokenResult authToken = MockIdpClient.builder()
             .serverIdentity(serverIdentity)
             .produceTokensWithInvalidSignature(true)
@@ -90,7 +89,7 @@ public class MockIdpClientTest {
     }
 
     @Test
-    public void loginWithoutInitialize_shouldGiveInitializationError() {
+    void loginWithoutInitialize_shouldGiveInitializationError() {
         final MockIdpClient idpClient = MockIdpClient.builder()
             .serverIdentity(serverIdentity)
             .build();
@@ -101,7 +100,7 @@ public class MockIdpClientTest {
     }
 
     @Test
-    public void expiredTokens_verifyShouldFail() {
+    void expiredTokens_verifyShouldFail() {
         final IdpTokenResult authToken = MockIdpClient.builder()
             .serverIdentity(serverIdentity)
             .produceOnlyExpiredTokens(true)
@@ -116,7 +115,7 @@ public class MockIdpClientTest {
     }
 
     @Test
-    public void verifyTokenWithEcClientCertificate(
+    void verifyTokenWithEcClientCertificate(
         @PkiKeyResolver.Filename("833621999741600_c.hci.aut-apo-ecc.p12") final PkiIdentity eccClientIdentity) {
         Assertions.assertDoesNotThrow(() -> mockIdpClient.login(eccClientIdentity)
             .getAccessToken()
@@ -126,7 +125,7 @@ public class MockIdpClientTest {
     }
 
     @Test
-    public void verifyServerSignatureEcc() {
+    void verifyServerSignatureEcc() {
         assertThat(mockIdpClient.login(rsaClientIdentity)
             .getAccessToken()
             .getHeaderClaims())
@@ -134,7 +133,7 @@ public class MockIdpClientTest {
     }
 
     @Test
-    public void verifyServerSignatureRsa(@PkiKeyResolver.Filename("rsa") final PkiIdentity rsaIdentity) {
+    void verifyServerSignatureRsa(@PkiKeyResolver.Filename("rsa") final PkiIdentity rsaIdentity) {
         mockIdpClient = MockIdpClient.builder()
             .serverIdentity(rsaIdentity)
             .uriIdpServer(URI_IDP_SERVER)
@@ -149,7 +148,7 @@ public class MockIdpClientTest {
     }
 
     @Test
-    public void resignTokenWithNewBodyClaim_ShouldContainNewClaim() {
+    void resignTokenWithNewBodyClaim_ShouldContainNewClaim() {
         final JsonWebToken jwt = mockIdpClient.login(rsaClientIdentity)
             .getAccessToken();
 
@@ -166,7 +165,7 @@ public class MockIdpClientTest {
     }
 
     @Test
-    public void resignTokenWithNewHeaderClaim_ShouldContainNewHeaderClaim() {
+    void resignTokenWithNewHeaderClaim_ShouldContainNewHeaderClaim() {
         final JsonWebToken jwt = mockIdpClient.login(rsaClientIdentity)
             .getAccessToken();
 
@@ -186,7 +185,7 @@ public class MockIdpClientTest {
 
     @Test
     @Afo("A_20297-01")
-    public void verifyAccessTokenIssClaim() {
+    void verifyAccessTokenIssClaim() {
         final JsonWebToken jwt = mockIdpClient.login(rsaClientIdentity).getAccessToken();
         final Map<String, Object> bodyClaims = jwt.getBodyClaims();
         assertThat(bodyClaims.get(ISSUER.getJoseName()))

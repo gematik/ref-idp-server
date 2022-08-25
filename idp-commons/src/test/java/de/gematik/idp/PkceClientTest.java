@@ -22,25 +22,25 @@ import de.gematik.idp.tests.Remark;
 import de.gematik.idp.tests.Rfc;
 import org.junit.jupiter.api.Test;
 
-public class PkceClientTest {
+class PkceClientTest {
 
     @Test
     @Rfc("https://tools.ietf.org/html/rfc7636#section-4.1")
-    public void checkAlphabetforCodeVerifier() {
+    void checkAlphabetforCodeVerifier() {
         final String codeVerifier = ClientUtilities.generateCodeVerifier();
         assertThat(codeVerifier).matches("[\\w-_.~]*");
     }
 
     @Test
     @Rfc("https://tools.ietf.org/html/rfc7636#section-4.1")
-    public void checkLengthOfCodeVerifier() {
+    void checkLengthOfCodeVerifier() {
         final String codeVerifier = ClientUtilities.generateCodeVerifier();
         assertThat(codeVerifier.length()).isGreaterThanOrEqualTo(43).isLessThanOrEqualTo(128);
     }
 
     @Test
     @Rfc("https://tools.ietf.org/html/rfc7636#section-4.1")
-    public void checkEachCodeVerifierIsDifferent() {
+    void checkEachCodeVerifierIsDifferent() {
         final String firstCodeVerifier = ClientUtilities.generateCodeVerifier();
         final String seccondCodeVerifier = ClientUtilities.generateCodeVerifier();
         assertThat(firstCodeVerifier).isNotEqualTo(seccondCodeVerifier);
@@ -49,7 +49,7 @@ public class PkceClientTest {
     @Test
     @Rfc("rfc7636 Appendix B")
     @Remark("This example is in rfc7636 Appendix B")
-    public void checkTransformationS256() {
+    void checkTransformationS256() {
         assertThat(ClientUtilities.generateCodeChallenge("dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"))
             .isEqualTo("E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM");
     }
@@ -57,7 +57,7 @@ public class PkceClientTest {
     @Test
     @Remark("base64urlencode auf output von sha256 gibt laenger 43 oder 44")
     @Rfc("rfc7636")
-    public void checkLengthOfCodeChellange() {
+    void checkLengthOfCodeChellange() {
         final String codeChellange = ClientUtilities.generateCodeChallenge(ClientUtilities.generateCodeVerifier());
         assertThat(codeChellange.length()).isEqualTo(43);
     }

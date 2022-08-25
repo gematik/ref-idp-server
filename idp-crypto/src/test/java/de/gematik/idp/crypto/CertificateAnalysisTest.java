@@ -18,7 +18,6 @@ package de.gematik.idp.crypto;
 
 import static de.gematik.idp.crypto.CertificateAnalysis.doesCertificateContainPolicyExtensionOid;
 import static org.assertj.core.api.Assertions.assertThat;
-
 import java.io.File;
 import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
@@ -27,13 +26,13 @@ import org.apache.commons.io.FileUtils;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.junit.jupiter.api.Test;
 
-public class CertificateAnalysisTest {
+class CertificateAnalysisTest {
 
     private static final String EGK_FILE =
         "src/test/resources/109500969_X114428530_c.ch.aut-ecc.p12";
 
     @Test
-    public void testPolicyExtensionForEgk() throws IOException, CertificateEncodingException {
+    void testPolicyExtensionForEgk() throws IOException, CertificateEncodingException {
         final X509Certificate certificate = certificateDataFrom(EGK_FILE);
         assertThat(doesCertificateContainPolicyExtensionOid(certificate, new ASN1ObjectIdentifier("1.2.276.0.76.4.75")))
             .isFalse();

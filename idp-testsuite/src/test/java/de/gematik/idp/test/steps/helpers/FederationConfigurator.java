@@ -19,6 +19,7 @@ package de.gematik.idp.test.steps.helpers;
 import static de.gematik.idp.EnvHelper.getSystemProperty;
 import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
 import de.gematik.test.bdd.TestEnvironmentConfigurator;
+import de.gematik.test.tiger.common.config.TigerGlobalConfiguration;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -26,6 +27,7 @@ public class FederationConfigurator extends TestEnvironmentConfigurator {
 
     private static String FEDMASTER_URL = "IDP_FEDMASTER";
     private static String IDP_FACHDIENST_URL = "IDP_FACHDIENST";
+    private static String IDP_SEKTORAL = "IDP_SEKTORAL";
 
     static {
         initializeFederation();
@@ -39,6 +41,10 @@ public class FederationConfigurator extends TestEnvironmentConfigurator {
         return IDP_FACHDIENST_URL;
     }
 
+    public static synchronized String getIdpSektoralURL() {
+        return IDP_SEKTORAL;
+    }
+
     public static synchronized boolean isRbelLoggerActive() {
         return getTestEnvProperty("logging.rbel.active", "0").equals("1");
     }
@@ -50,11 +56,17 @@ public class FederationConfigurator extends TestEnvironmentConfigurator {
 
         log.info("  initializing IDP Federation...");
 
-        FEDMASTER_URL = getServerUrl(FEDMASTER_URL, "8083");
-        IDP_FACHDIENST_URL = getServerUrl(IDP_FACHDIENST_URL, "8084");
+        IDP_SEKTORAL = getServerUrl(IDP_SEKTORAL, getTigerPort("tiger.ports.idpsektoral"));
+        FEDMASTER_URL = getServerUrl(FEDMASTER_URL, getTigerPort("tiger.ports.idpfedmaster"));
+        IDP_FACHDIENST_URL = getServerUrl(IDP_FACHDIENST_URL, getTigerPort("tiger.ports.idpfachdienst"));
 
         log.info("FEDMASTER_URL         : {}", FEDMASTER_URL);
         log.info("FACHDIENST_URL         : {}", IDP_FACHDIENST_URL);
+        log.info("IDP_SEKTORAL_URL         : {}", IDP_SEKTORAL);
+    }
+
+    private static String getTigerPort(final String cfgPort) {
+        return TigerGlobalConfiguration.resolvePlaceholders(TigerGlobalConfiguration.readString(cfgPort));
     }
 
     private static String getServerUrl(final String serverEnvName, final String fallbackPort) {
