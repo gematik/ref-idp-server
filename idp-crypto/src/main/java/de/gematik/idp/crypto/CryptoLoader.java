@@ -79,7 +79,7 @@ public class CryptoLoader {
                 return new PkiIdentity(certificate, privateKey, Optional.empty(), null);
             }
         } catch (final IOException | KeyStoreException | NoSuchAlgorithmException
-            | UnrecoverableKeyException | CertificateException e) {
+                       | UnrecoverableKeyException | CertificateException e) {
             throw new IdpCryptoException(e);
         }
         throw new IdpCryptoException("Could not find certificate in P12-File");

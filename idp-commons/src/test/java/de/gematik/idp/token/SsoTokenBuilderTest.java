@@ -23,10 +23,12 @@ import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
+import java.security.Security;
 import java.time.ZonedDateTime;
 import java.util.List;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,6 +41,11 @@ class SsoTokenBuilderTest {
     private PkiIdentity clientIdentity;
     private SsoTokenBuilder ssoTokenBuilder;
     private SecretKeySpec encryptionKey;
+
+    static {
+        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+        Security.insertProviderAt(new BouncyCastleProvider(), 1);
+    }
 
     @BeforeEach
     public void init(final PkiIdentity ecc,

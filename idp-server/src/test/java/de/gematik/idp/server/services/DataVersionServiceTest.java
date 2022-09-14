@@ -27,6 +27,8 @@ import de.gematik.idp.server.data.DeviceInformation;
 import de.gematik.idp.server.exceptions.IdpServerException;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.JsonWebToken;
+import java.security.Security;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -35,6 +37,11 @@ class DataVersionServiceTest {
 
     private final DataVersionService dataVersionService = new DataVersionService();
     private final String ALLOWED_VERSION = "1.0";
+
+    static {
+        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+        Security.insertProviderAt(new BouncyCastleProvider(), 1);
+    }
 
     @Test
     void testDeviceInformationVersionIsAllowed() {

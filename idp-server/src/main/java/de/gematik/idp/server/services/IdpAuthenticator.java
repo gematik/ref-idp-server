@@ -66,9 +66,10 @@ public class IdpAuthenticator {
     public String getBasicFlowTokenLocation(final IdpJwe signedChallenge) {
         try {
             verifyJweHeaderClaims(signedChallenge);
-            final JsonWebToken decryptChallenge = decryptChallenge(signedChallenge);
+            final JsonWebToken decryptedChallenge = decryptChallenge(signedChallenge);
             verifyExpInChallenge(signedChallenge);
-            return buildBasicFlowTokenLocation(decryptChallenge).build().toString();
+            verifyExpInChallengeEqualsExpInSignedChallenge(signedChallenge, decryptedChallenge);
+            return buildBasicFlowTokenLocation(decryptedChallenge).build().toString();
         } catch (final URISyntaxException e) {
             throw new IdpServerLocationBuildException(e);
         }
@@ -76,7 +77,7 @@ public class IdpAuthenticator {
 
     private void verifyJweHeaderClaims(final IdpJwe signedChallenge) {
         if (signedChallenge.getHeaderClaim(CONTENT_TYPE)
-            .filter(cty -> "NJWT".equals(cty))
+            .filter("NJWT"::equals)
             .isEmpty()) {
             log.error(signedChallenge.getHeaderDecoded());
             throw new IdpServerException(2030, INVALID_REQUEST, "CTY fehlerhaft");
@@ -120,12 +121,27 @@ public class IdpAuthenticator {
         if (signedChallenge.getHeaderClaim(EXPIRES_AT)
             .filter(Long.class::isInstance)
             .map(Long.class::cast)
-            .map(expTimestamp -> Instant.ofEpochSecond(expTimestamp))
+            .map(Instant::ofEpochSecond)
             .map(expInstant -> Instant.now().isAfter(expInstant))
             .orElse(true)) {
             throw new IdpServerException(2032, INVALID_REQUEST, "Challenge ist abgelaufen");
         }
     }
+
+
+    public void verifyExpInChallengeEqualsExpInSignedChallenge(final IdpJwe signedChallenge,
+        final JsonWebToken decryptedChallenge) {
+        Long expInEncHeader = (Long) signedChallenge.getHeaderClaim(EXPIRES_AT).orElseThrow();
+        Long expInChallenge = (Long) decryptedChallenge.getStringBodyClaim(NESTED_JWT).map(JsonWebToken::new)
+            .orElseThrow()
+            .getBodyClaim(EXPIRES_AT).orElseThrow();
+
+        if (!expInChallenge.equals(expInEncHeader)) {
+            throw new IdpServerException(2032, INVALID_REQUEST,
+                "Exp in Challenge und signierter Challenge nicht gleich");
+        }
+    }
+
 
     public String getSsoTokenLocation(final IdpJwe ssoToken, final JsonWebToken challengeToken) {
         try {

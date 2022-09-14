@@ -16,20 +16,28 @@
 
 package de.gematik.idp.authentication;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.jose4j.jws.AlgorithmIdentifiers.RSA_USING_SHA256;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.data.UserConsentConfiguration;
 import de.gematik.idp.data.UserConsentDescriptionTexts;
+import de.gematik.idp.exceptions.ChallengeSignatureInvalidException;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.JsonWebToken;
+import java.security.Security;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.assertj.core.api.Assertions;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.jwt.JwtClaims;
+import org.jose4j.lang.JoseException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,15 +50,23 @@ class AuthenticationChallengeVerifierTest {
     private AuthenticationResponseBuilder authenticationResponseBuilder;
     private AuthenticationChallengeVerifier authenticationChallengeVerifier;
     private PkiIdentity clientIdentity;
+    private PkiIdentity rsaClientIdentity;
     private PkiIdentity serverIdentity;
     private Map<String, Map<String, String>> userConsentConfiguration;
+
+    static {
+        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+        Security.insertProviderAt(new BouncyCastleProvider(), 1);
+    }
 
     @BeforeEach
     public void init(
         @PkiKeyResolver.Filename("1_C.SGD-HSM.AUT_oid_sgd1_hsm_ecc.p12") final PkiIdentity serverIdentity,
-        @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc.p12") final PkiIdentity clientIdentity) {
+        @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc.p12") final PkiIdentity clientIdentity,
+        @PkiKeyResolver.Filename("833621999741600_c.hci.aut-apo-rsa.p12") final PkiIdentity rsaClientIdentity) {
         this.clientIdentity = clientIdentity;
         this.serverIdentity = serverIdentity;
+        this.rsaClientIdentity = rsaClientIdentity;
         authenticationChallengeBuilder = AuthenticationChallengeBuilder.builder()
             .serverSigner(new IdpJwtProcessor(serverIdentity))
             .userConsentConfiguration(UserConsentConfiguration.builder()
@@ -129,8 +145,10 @@ class AuthenticationChallengeVerifierTest {
             authenticationResponseBuilder.buildResponseForChallenge(authenticationChallenge,
                 clientIdentity);
 
+        JsonWebToken signedChallenge = authenticationResponse.getSignedChallenge();
+        assertThat(signedChallenge).isNotNull();
         assertThatThrownBy(() -> authenticationChallengeVerifier
-            .verifyResponseAndThrowExceptionIfFail(authenticationResponse.getSignedChallenge()))
+            .verifyResponseAndThrowExceptionIfFail(signedChallenge))
             .isInstanceOf(RuntimeException.class);
     }
 
@@ -142,8 +160,11 @@ class AuthenticationChallengeVerifierTest {
         final AuthenticationResponse authenticationResponse =
             authenticationResponseBuilder.buildResponseForChallenge(ch,
                 clientIdentity);
+
+        JsonWebToken signedChallenge = authenticationResponse.getSignedChallenge();
+        assertThat(signedChallenge).isNotNull();
         assertThatThrownBy(() -> authenticationChallengeVerifier
-            .verifyResponseAndThrowExceptionIfFail(authenticationResponse.getSignedChallenge()))
+            .verifyResponseAndThrowExceptionIfFail(signedChallenge))
             .isInstanceOf(RuntimeException.class);
     }
 
@@ -160,9 +181,52 @@ class AuthenticationChallengeVerifierTest {
         final AuthenticationResponse authenticationResponse =
             authenticationResponseBuilder.buildResponseForChallenge(authenticationChallenge,
                 clientIdentity);
+        JsonWebToken signedChallenge = authenticationResponse.getSignedChallenge();
+        assertThat(signedChallenge).isNotNull();
 
         assertThatThrownBy(() -> authenticationChallengeVerifier
-            .verifyResponseAndThrowExceptionIfFail(authenticationResponse.getSignedChallenge()))
+            .verifyResponseAndThrowExceptionIfFail(signedChallenge))
             .isInstanceOf(RuntimeException.class);
     }
+
+    @Test
+    void checkSignedChallenge_invalidAlgoInJws() {
+        final AuthenticationResponse authenticationResponse =
+            buildInvalidResponseForChallenge(authenticationChallenge,
+                rsaClientIdentity);
+        JsonWebToken signedChallenge = authenticationResponse.getSignedChallenge();
+        assertThat(signedChallenge).isNotNull();
+        
+        assertThatThrownBy(() ->
+            authenticationChallengeVerifier
+                .verifyResponseAndThrowExceptionIfFail(signedChallenge)).isInstanceOf(
+            ChallengeSignatureInvalidException.class);
+    }
+
+    private AuthenticationResponse buildInvalidResponseForChallenge(
+        final AuthenticationChallenge authenticationChallenge,
+        final PkiIdentity clientIdentity) {
+        final JwtClaims claims = new JwtClaims();
+        claims.setClaim(ClaimName.NESTED_JWT.getJoseName(), authenticationChallenge.getChallenge().getRawString());
+
+        final JsonWebSignature jsonWebSignature = new JsonWebSignature();
+        jsonWebSignature.setPayload(claims.toJson());
+
+        jsonWebSignature.setAlgorithmHeaderValue(RSA_USING_SHA256);
+        jsonWebSignature.setKey(clientIdentity.getPrivateKey());
+
+        jsonWebSignature.setHeader("typ", "JWT");
+        jsonWebSignature.setHeader("cty", "NJWT");
+        jsonWebSignature.setCertificateChainHeaderValue(clientIdentity.getCertificate());
+
+        try {
+            final String compactSerialization = jsonWebSignature.getCompactSerialization();
+            return AuthenticationResponse.builder()
+                .signedChallenge(new JsonWebToken(compactSerialization))
+                .build();
+        } catch (final JoseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

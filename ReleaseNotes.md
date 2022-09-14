@@ -1,3 +1,11 @@
+# Release 21.0.0
+
+- Java version 17 mandatory
+
+# Release 20.1.0
+
+- IDP Federation Proof of Concept improvements
+
 # Release 20.0.9
 
 - use SecureRandom

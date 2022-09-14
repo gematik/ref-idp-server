@@ -18,6 +18,7 @@ package de.gematik.idp.test.steps;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.awaitility.Awaitility.await;
 import de.gematik.idp.test.steps.helpers.IdpTestEnvironmentConfigurator;
 import de.gematik.idp.test.steps.helpers.KeyAndCertificateStepsHelper;
 import de.gematik.idp.test.steps.model.DiscoveryDocument;
@@ -42,6 +43,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -116,8 +118,8 @@ public class IdpStepsBase {
             if (System.currentTimeMillis() + sleepms > end) {
                 sleepms = end - System.currentTimeMillis();
             }
-            //noinspection BusyWait
-            Thread.sleep(sleepms);
+
+            await().atLeast(sleepms, TimeUnit.MILLISECONDS);
         }
     }
 

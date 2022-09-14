@@ -35,11 +35,14 @@ public class IdpStepsBaseTest {
         final byte[] data = IOUtils
             .toByteArray(getClass().getResourceAsStream("/certs/invalid/smcb-idp-selfsigned.p12"));
         final X509Certificate cert = CryptoLoader.getCertificateFromP12(data, "00");
+        assertThat(cert).isNotNull();
         final IdpKeyDescriptor desc = IdpKeyDescriptor.constructFromX509Certificate(cert);
+        JSONObject jsonObject = new JSONObject(desc.toJSONString());
+        IdpStepsBase idpStepsBase = new IdpStepsBase();
 
         assertThatThrownBy(() ->
-            new IdpStepsBase().keyAndCertificateStepsHelper
-                .jsonObjectShouldBeValidCertificate(new JSONObject(desc.toJSONString())))
+            idpStepsBase.keyAndCertificateStepsHelper
+                .jsonObjectShouldBeValidCertificate(jsonObject))
             .isInstanceOf(AssertionError.class);
     }
 
@@ -49,11 +52,13 @@ public class IdpStepsBaseTest {
         final byte[] data = IOUtils
             .toByteArray(getClass().getResourceAsStream("/certs/invalid/smcb-idp-expired-ecc.p12"));
         final X509Certificate cert = CryptoLoader.getCertificateFromP12(data, "00");
+        assertThat(cert).isNotNull();
         final IdpKeyDescriptor desc = IdpKeyDescriptor.constructFromX509Certificate(cert);
+        JSONObject jsonObject = new JSONObject(desc.toJSONString());
 
         assertThatThrownBy(() ->
             new IdpStepsBase().keyAndCertificateStepsHelper
-                .jsonObjectShouldBeValidCertificate(new JSONObject(desc.toJSONString())))
+                .jsonObjectShouldBeValidCertificate(jsonObject))
             .isInstanceOf(CertificateExpiredException.class);
     }
 
@@ -65,7 +70,9 @@ public class IdpStepsBaseTest {
         final X509Certificate cert = CryptoLoader.getCertificateFromP12(data, "00");
         assertThat(cert).isNotNull();
         final IdpKeyDescriptor desc = IdpKeyDescriptor.constructFromX509Certificate(cert);
+        JSONObject jsonObject = new JSONObject(desc.toJSONString());
+
         new IdpStepsBase().keyAndCertificateStepsHelper
-            .jsonObjectShouldBeValidCertificate(new JSONObject(desc.toJSONString()));
+            .jsonObjectShouldBeValidCertificate(jsonObject);
     }
 }

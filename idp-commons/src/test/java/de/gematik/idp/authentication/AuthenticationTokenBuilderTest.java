@@ -24,21 +24,28 @@ import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.tests.PkiKeyResolver.Filename;
 import de.gematik.idp.token.JsonWebToken;
+import java.security.Security;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.assertj.core.api.Assertions;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(PkiKeyResolver.class)
-public class AuthenticationTokenBuilderTest {
+class AuthenticationTokenBuilderTest {
 
     private AuthenticationTokenBuilder authenticationTokenBuilder;
     private PkiIdentity clientIdentity;
     private SecretKeySpec encryptionKey;
+
+    static {
+        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+        Security.insertProviderAt(new BouncyCastleProvider(), 1);
+    }
 
     @BeforeEach
     public void init(final PkiIdentity ecc,

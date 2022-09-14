@@ -8,10 +8,10 @@
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>20.0.9</version>
+        <version>21.0.0</version>
     </parent>
 
-    <version>20.0.9</version>
+    <version>21.0.0</version>
 
     <dependencies>
         <dependency>
@@ -41,7 +41,7 @@
         </dependency>
 
         <dependency>
-            <artifactId>bcpkix-jdk15on</artifactId>
+            <artifactId>bcpkix-jdk18on</artifactId>
             <groupId>org.bouncycastle</groupId>
         </dependency>
 
@@ -80,7 +80,7 @@
         <dependency>
             <groupId>org.bitbucket.b_c</groupId>
             <artifactId>jose4j</artifactId>
-            <version>0.7.12</version>
+            <version>0.8.0</version>
         </dependency>
     </dependencies>
 

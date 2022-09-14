@@ -31,8 +31,9 @@ import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 import kong.unirest.json.JSONObject;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -42,9 +43,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+
 @ExtendWith(SpringExtension.class)
 @ExtendWith(PkiKeyResolver.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class IdpControllerExceptionHandlerTest {
 
     private final static String EXCEPTION_TEXT = "exception text";
@@ -55,10 +58,13 @@ class IdpControllerExceptionHandlerTest {
     private IdpAuthenticator idpAuthenticator;
     private String serverUrl;
 
-    @BeforeEach
-    public void init() {
+    @BeforeAll
+    void init() {
         serverUrl = "http://localhost:" + port;
+        Unirest.config().reset();
+        Unirest.config().followRedirects(false);
     }
+
 
     @Test
     void testIdpServerInvalidRequestException() {
@@ -83,6 +89,61 @@ class IdpControllerExceptionHandlerTest {
         assertThat(errorObject.getString("error")).isEqualTo("invalid_request");
         assertThat(errorObject.get("gematik_uuid")).isNotNull();
         assertThat(errorObject.get("gematik_timestamp")).isNotNull();
+    }
+
+
+    @Test
+    void testIdpServerInvalidLengthNonceException() {
+
+        doThrow(new IdpServerException(IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST))
+            .when(idpAuthenticator).validateRedirectUri(any(), any());
+        String nonceToLong = "fdsalkfdksalfdsawertzuiopasdfghdd";
+        final HttpResponse<JsonNode> response = Unirest.get(serverUrl + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
+            .queryString("signed_challenge", "signed_challenge")
+            .queryString("client_id", TestConstants.CLIENT_ID_E_REZEPT_APP)
+            .queryString("state", "state")
+            .queryString("redirect_uri", TestConstants.REDIRECT_URI_E_REZEPT_APP)
+            .queryString("nonce", nonceToLong)
+            .queryString("response_type", "code")
+            .queryString("code_challenge", "P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk")
+            .queryString("code_challenge_method", "S256")
+            .queryString("scope", "openid e-rezept")
+            .accept(MediaType.APPLICATION_JSON.toString())
+            .asJson();
+
+        final JSONObject errorObject = response.getBody().getObject();
+
+        assertThat(response.getStatus()).isEqualTo(400);
+        assertThat(errorObject.getString("error")).isEqualTo("invalid_request");
+        assertThat(errorObject.get("gematik_uuid")).isNotNull();
+        assertThat(errorObject.get("gematik_timestamp")).isNotNull();
+        assertThat(errorObject.get("gematik_error_text")).isEqualTo("nonce ist ungültig");
+    }
+
+    @Test
+    void testIdpServerInvalidLengthStateException() {
+
+        doThrow(new IdpServerException(IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST))
+            .when(idpAuthenticator).validateRedirectUri(any(), any());
+        String nonceCorrectLength = "dsalkfdksalfdsawertzuiopasdfghdd";
+        String stateToLong = "fdsalkfdksalfdsawertzuiopasdfghdd";
+        final HttpResponse<JsonNode> response = Unirest.get(serverUrl + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
+            .queryString("signed_challenge", "signed_challenge")
+            .queryString("client_id", TestConstants.CLIENT_ID_E_REZEPT_APP)
+            .queryString("state", stateToLong)
+            .queryString("redirect_uri", TestConstants.REDIRECT_URI_E_REZEPT_APP)
+            .queryString("nonce", nonceCorrectLength)
+            .queryString("response_type", "code")
+            .queryString("code_challenge", "P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk")
+            .queryString("code_challenge_method", "S256")
+            .queryString("scope", "openid e-rezept")
+            .accept(MediaType.APPLICATION_JSON.toString())
+            .asJson();
+
+        final JSONObject errorObject = response.getBody().getObject();
+
+        assertThat(response.getStatus()).isEqualTo(302);
+        assertThat(response.getHeaders().get("Location").get(0)).contains("state%20ist%20ung%C3%BCltig");
     }
 
     @Test

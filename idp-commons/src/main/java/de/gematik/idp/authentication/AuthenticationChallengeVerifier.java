@@ -16,6 +16,7 @@
 
 package de.gematik.idp.authentication;
 
+import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.ChallengeExpiredException;
 import de.gematik.idp.exceptions.ChallengeSignatureInvalidException;
@@ -31,6 +32,9 @@ import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import org.jose4j.jwa.AlgorithmConstraints;
+import org.jose4j.jwa.AlgorithmConstraints.ConstraintType;
+import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
@@ -66,6 +70,9 @@ public class AuthenticationChallengeVerifier {
         final JwtConsumer serverJwtConsumer = new JwtConsumerBuilder()
             .setVerificationKey(clientCertificate.getPublicKey())
             .setSkipDefaultAudienceValidation()
+            .setJwsAlgorithmConstraints(
+                (new AlgorithmConstraints(ConstraintType.PERMIT, AlgorithmIdentifiers.RSA_PSS_USING_SHA256,
+                    BRAINPOOL256_USING_SHA256)))
             .build();
         try {
             serverJwtConsumer.process(authResponse);

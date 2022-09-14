@@ -28,7 +28,7 @@ import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
 import de.gematik.idp.client.data.*;
 import de.gematik.idp.crypto.EcSignerUtility;
 import de.gematik.idp.crypto.Nonce;
-import de.gematik.idp.crypto.exceptions.IdpCryptoException;
+import de.gematik.idp.crypto.RsaSignerUtility;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.field.ClientUtilities;
@@ -38,13 +38,14 @@ import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.*;
+import java.security.PrivateKey;
+import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import kong.unirest.GetRequest;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
@@ -63,7 +64,10 @@ import org.slf4j.LoggerFactory;
 @Builder(toBuilder = true)
 public class IdpClient implements IIdpClient {
 
+
     static {
+        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+        Security.insertProviderAt(new BouncyCastleProvider(), 1);
         BrainpoolCurves.init();
     }
 
@@ -78,15 +82,15 @@ public class IdpClient implements IIdpClient {
     @Builder.Default
     private Set<IdpScope> scopes = Set.of(IdpScope.OPENID, IdpScope.EREZEPT);
     @Builder.Default
-    private Function<GetRequest, GetRequest> beforeAuthorizationMapper = Function.identity();
+    private UnaryOperator<GetRequest> beforeAuthorizationMapper = UnaryOperator.identity();
     @Builder.Default
     private Consumer<HttpResponse<AuthenticationChallenge>> afterAuthorizationCallback = NOOP_CONSUMER;
     @Builder.Default
-    private Function<MultipartBody, MultipartBody> beforeAuthenticationMapper = Function.identity();
+    private UnaryOperator<MultipartBody> beforeAuthenticationMapper = UnaryOperator.identity();
     @Builder.Default
     private Consumer<HttpResponse<String>> afterAuthenticationCallback = NOOP_CONSUMER;
     @Builder.Default
-    private Function<MultipartBody, MultipartBody> beforeTokenMapper = Function.identity();
+    private UnaryOperator<MultipartBody> beforeTokenMapper = UnaryOperator.identity();
     @Builder.Default
     private Consumer<HttpResponse<JsonNode>> afterTokenCallback = NOOP_CONSUMER;
     @Builder.Default
@@ -94,15 +98,15 @@ public class IdpClient implements IIdpClient {
     @Builder.Default
     private CodeChallengeMethod codeChallengeMethod = CodeChallengeMethod.S256;
     @Builder.Default
-    private Function<AuthorizationResponse, AuthorizationResponse> authorizationResponseMapper = Function.identity();
+    private UnaryOperator<AuthorizationResponse> authorizationResponseMapper = UnaryOperator.identity();
     @Builder.Default
-    private Function<AuthenticationResponse, AuthenticationResponse> authenticationResponseMapper = Function.identity();
+    private UnaryOperator<AuthenticationResponse> authenticationResponseMapper = UnaryOperator.identity();
     private String fixedIdpHost;
     private DiscoveryDocumentResponse discoveryDocumentResponse;
 
     @SneakyThrows
     private String signServerChallenge(final String challengeToSign, final X509Certificate certificate,
-        final Function<byte[], byte[]> contentSigner) {
+        final UnaryOperator<byte[]> contentSigner) {
         final JwtClaims claims = new JwtClaims();
         claims.setClaim(ClaimName.NESTED_JWT.getJoseName(), challengeToSign);
         final JsonWebSignature jsonWebSignature = new JsonWebSignature();
@@ -125,7 +129,7 @@ public class IdpClient implements IIdpClient {
                     try {
                         return convertDerToConcatenated(sigData, 64);
                     } catch (final IOException e) {
-                        throw new RuntimeException(e);
+                        throw new IdpClientRuntimeException(e);
                     }
                 }
             }));
@@ -134,8 +138,8 @@ public class IdpClient implements IIdpClient {
             .getRawString();
     }
 
-    private byte[] getSignatureBytes(final Function<byte[], byte[]> contentSigner,
-        final JsonWebSignature jsonWebSignature, final Function<byte[], byte[]> signatureStripper) {
+    private byte[] getSignatureBytes(final UnaryOperator<byte[]> contentSigner,
+        final JsonWebSignature jsonWebSignature, final UnaryOperator<byte[]> signatureStripper) {
         return signatureStripper.apply(contentSigner.apply((jsonWebSignature.getHeaders().getEncodedHeader() + "."
             + jsonWebSignature.getEncodedPayload()).getBytes(StandardCharsets.UTF_8)));
     }
@@ -146,25 +150,15 @@ public class IdpClient implements IIdpClient {
         return login(idpIdentity.getCertificate(),
             tbsData -> {
                 if (idpIdentity.getPrivateKey() instanceof RSAPrivateKey) {
-                    return createRsaSignature(tbsData, idpIdentity.getPrivateKey());
+                    return RsaSignerUtility.createRsaSignature(tbsData, idpIdentity.getPrivateKey());
                 } else {
                     return EcSignerUtility.createEcSignature(tbsData, idpIdentity.getPrivateKey());
                 }
             });
     }
 
-    private byte[] createRsaSignature(final byte[] toBeSignedData, final PrivateKey privateKey) {
-        try {
-            final Signature signer = Signature.getInstance("SHA256withRSAAndMGF1", new BouncyCastleProvider());
-            signer.initSign(privateKey);
-            signer.update(toBeSignedData);
-            return signer.sign();
-        } catch (final NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
-            throw new IdpCryptoException(e);
-        }
-    }
 
-    public IdpTokenResult login(final X509Certificate certificate, final Function<byte[], byte[]> contentSigner) {
+    public IdpTokenResult login(final X509Certificate certificate, final UnaryOperator<byte[]> contentSigner) {
         assertThatClientIsInitialized();
 
         final String codeVerifier = ClientUtilities.generateCodeVerifier();
@@ -417,7 +411,7 @@ public class IdpClient implements IIdpClient {
         beforeTokenMapper = toNoopIdentity(callback);
     }
 
-    public <T> Function<T, T> toNoopIdentity(final Consumer<T> callback) {
+    public <T> UnaryOperator<T> toNoopIdentity(final Consumer<T> callback) {
         return t -> {
             callback.accept(t);
             return t;

@@ -6,12 +6,12 @@
     <parent>
         <artifactId>spring-boot-starter-parent</artifactId>
         <groupId>org.springframework.boot</groupId>
-        <version>2.7.0</version>
+        <version>2.7.3</version>
     </parent>
 
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>20.0.9</version>
+    <version>21.0.0</version>
     <packaging>pom</packaging>
 
     <description>IDP</description>
@@ -38,7 +38,7 @@
         <dependencies>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
-                <artifactId>bcpkix-jdk15on</artifactId>
+                <artifactId>bcpkix-jdk18on</artifactId>
                 <version>${version.bouncycastle.bcpkix}</version>
             </dependency>
             <dependency>
@@ -96,20 +96,22 @@
         <docker.image.name.sektoralidp>${docker.registry.gematik}/idp/idp-sektoral</docker.image.name.sektoralidp>
         <docker.image.name.fedmaster>${docker.registry.gematik}/idp/idp-fedmaster</docker.image.name.fedmaster>
         <docker.image.name.fachdienst>${docker.registry.gematik}/idp/idp-fachdienst</docker.image.name.fachdienst>
-        <java.version>11</java.version>
+        <version.java>17</version.java>
         <mpir.skip>true</mpir.skip>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/../idp-report/target/site/jacoco-aggregate/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.dependencyCheck.htmlReportPath>${project.basedir}/target/dependency-check-report.html
+        </sonar.dependencyCheck.htmlReportPath>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
         <sonar.language>java</sonar.language>
 
         <version.aforeporter>1.2.1</version.aforeporter>
         <version.assertj>3.23.1</version.assertj>
-        <version.bouncycastle.bcpkix>1.70</version.bouncycastle.bcpkix>
+        <version.bouncycastle.bcpkix>1.71.1</version.bouncycastle.bcpkix>
         <version.commons-io>2.11.0</version.commons-io>
         <version.gemLibPki>0.7.1</version.gemLibPki>
         <version.h2>2.1.212</version.h2>
@@ -119,20 +121,23 @@
         <version.liquibase>4.7.1</version.liquibase>
         <version.logback>1.2.9</version.logback>
         <version.lombok>1.18.16</version.lombok>
-        <version.rest-assured>5.0.1</version.rest-assured>
+        <version.plexus-utils>3.4.2</version.plexus-utils>
+        <version.rest-assured>5.2.0</version.rest-assured>
         <version.serenity.core>3.2.4</version.serenity.core>
-        <version.tiger>0.23.2</version.tiger>
-        <version.unirest>3.13.10</version.unirest>
+        <version.tiger>0.24.0</version.tiger>
+        <version.unirest>3.13.11</version.unirest>
 
         <version.build-helper-maven-plugin>3.2.0</version.build-helper-maven-plugin>
         <version.docker-maven-plugin>0.34.1</version.docker-maven-plugin>
         <version.copy-rename-maven-plugin>1.0.1</version.copy-rename-maven-plugin>
-        <version.jacoco-maven-plugin>0.8.5</version.jacoco-maven-plugin>
+        <version.jacoco-maven-plugin>0.8.8</version.jacoco-maven-plugin>
+        <version.maven>3.8.6</version.maven>
         <version.maven-clean-plugin>3.1.0</version.maven-clean-plugin>
-        <version.maven-compiler-plugin>3.8.1</version.maven-compiler-plugin>
+        <version.maven-compiler-plugin>3.10.1</version.maven-compiler-plugin>
+        <version.maven-enforcer-plugin>3.1.0</version.maven-enforcer-plugin>
         <version.maven-failsafe-plugin>3.0.0-M5</version.maven-failsafe-plugin>
         <version.maven-jar-plugin>3.2.0</version.maven-jar-plugin>
-        <version.maven-javadoc-plugin>3.0.1</version.maven-javadoc-plugin>
+        <version.maven-javadoc-plugin>3.4.1</version.maven-javadoc-plugin>
         <version.maven-project-info-reports-plugin>3.1.1</version.maven-project-info-reports-plugin>
         <!-- only needed for mvn site to avoid stack traces flooding the console -->
         <version.maven-resources-plugin>3.2.0</version.maven-resources-plugin>
@@ -141,7 +146,7 @@
         <version.maven-source-plugin>3.0.1</version.maven-source-plugin>
         <version.maven-surefire-plugin>3.0.0-M3</version.maven-surefire-plugin>
         <version.sonar-maven-plugin>3.7.0.1746</version.sonar-maven-plugin>
-        <version.spring-boot-maven-plugin>2.3.4.RELEASE</version.spring-boot-maven-plugin>
+        <version.spring-boot-maven-plugin>2.7.3</version.spring-boot-maven-plugin>
     </properties>
 
     <build>
@@ -157,14 +162,39 @@
                     <version>${version.maven-compiler-plugin}</version>
                     <configuration>
                         <encoding>${project.build.sourceEncoding}</encoding>
-                        <source>${java.version}</source>
-                        <target>${java.version}</target>
+                        <source>${version.java}</source>
+                        <target>${version.java}</target>
                         <debug>true</debug>
                     </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>${version.maven-enforcer-plugin}</version>
+                <executions>
+                    <execution>
+                        <id>enforce-versions</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <message>Maven version should be ${version.maven} at least.</message>
+                                    <version>${version.maven}</version>
+                                </requireMavenVersion>
+                                <requireJavaVersion>
+                                    <message>Java version should be ${version.java}.</message>
+                                    <version>${version.java}</version>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- Phase clean -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -210,18 +240,18 @@
                 <version>${version.jacoco-maven-plugin}</version>
                 <executions>
                     <execution>
+                        <id>default-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
                         <configuration>
+                            <propertyName>surefireArgLine</propertyName>
                             <append>true</append>
                             <destFile>${project.basedir}/target/jacoco.exec</destFile>
                             <excludes>
                                 <exclude>de.gematik.idp.tests.*</exclude>
                             </excludes>
-                            <propertyName>surefireArgLine</propertyName>
                         </configuration>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                        <id>default-prepare-agent</id>
                     </execution>
                 </executions>
             </plugin>

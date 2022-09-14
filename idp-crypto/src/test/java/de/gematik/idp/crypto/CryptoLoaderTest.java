@@ -22,6 +22,7 @@ import de.gematik.idp.crypto.model.PkiIdentity;
 import java.io.File;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
+import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 
@@ -33,7 +34,7 @@ class CryptoLoaderTest {
             .readFileToByteArray(new File("src/test/resources/833621999741600_c.hci.aut-apo-rsa.p12"));
         final X509Certificate certificate = CryptoLoader.getCertificateFromP12(p12FileContent, "00");
 
-        assertThat(certificate.getSubjectDN().toString())
+        assertThat(certificate.getSubjectX500Principal().toString())
             .containsIgnoringCase("CN=");
     }
 
@@ -43,14 +44,17 @@ class CryptoLoaderTest {
             .readFileToByteArray(new File("src/test/resources/authenticatorModule_idpServer.p12"));
         final X509Certificate certificate = CryptoLoader.getCertificateFromP12(p12FileContent, "00");
 
-        assertThat(certificate.getSubjectDN().toString())
+        assertThat(certificate.getSubjectX500Principal().toString())
             .containsIgnoringCase("CN=");
     }
 
+    @SneakyThrows
     @Test
     void loadNonCertificateFile() {
+        final byte[] thisFileIsNoCertificate = FileUtils.readFileToByteArray(new File("pom.xml"));
+        assertThat(thisFileIsNoCertificate).hasSizeGreaterThan(0);
         assertThatThrownBy(() -> CryptoLoader.getCertificateFromP12(
-            FileUtils.readFileToByteArray(new File("pom.xml")), "00")).isInstanceOf(RuntimeException.class);
+            thisFileIsNoCertificate, "00")).isInstanceOf(RuntimeException.class);
     }
 
     @Test
@@ -59,7 +63,7 @@ class CryptoLoaderTest {
             .readFileToByteArray(new File("src/test/resources/authenticatorModule_idpServer.p12"));
         final PkiIdentity identity = CryptoLoader.getIdentityFromP12(p12FileContent, "00");
 
-        assertThat(identity.getCertificate().getSubjectDN().toString())
+        assertThat(identity.getCertificate().getSubjectX500Principal().toString())
             .containsIgnoringCase("CN=");
     }
 }

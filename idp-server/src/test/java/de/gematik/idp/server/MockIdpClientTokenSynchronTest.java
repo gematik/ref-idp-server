@@ -149,8 +149,8 @@ class MockIdpClientTokenSynchronTest {
 
         compareClaimMaps(resignedAccessToken.getHeaderClaims(), accessTokenIdpClient.getHeaderClaims());
         compareClaimMaps(bodyClaimsCloned, accessTokenIdpClient.getBodyClaims());
-        assertThat(resignedAccessToken.getBodyClaims().size())
-            .isEqualTo(accessTokenIdpClient.getBodyClaims().size() + 1);
+        assertThat(resignedAccessToken.getBodyClaims())
+            .hasSize(accessTokenIdpClient.getBodyClaims().size() + 1);
     }
 
     private Map<String, Object> filterVolatileClaims(final Map<String, Object> claimsMap) {

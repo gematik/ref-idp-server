@@ -59,6 +59,6 @@ class PkceClientTest {
     @Rfc("rfc7636")
     void checkLengthOfCodeChellange() {
         final String codeChellange = ClientUtilities.generateCodeChallenge(ClientUtilities.generateCodeVerifier());
-        assertThat(codeChellange.length()).isEqualTo(43);
+        assertThat(codeChellange).hasSize(43);
     }
 }

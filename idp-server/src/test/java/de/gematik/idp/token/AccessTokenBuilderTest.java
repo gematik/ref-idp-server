@@ -32,16 +32,21 @@ import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
+import java.security.Security;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.assertj.core.api.InstanceOfAssertFactories;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(PkiKeyResolver.class)
 class AccessTokenBuilderTest {
 
@@ -57,10 +62,16 @@ class AccessTokenBuilderTest {
     private PkiIdentity pkiIdentity;
     private AuthenticationTokenBuilder authenticationTokenBuilder;
 
-    @BeforeEach
-    public void init(
+    static {
+        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+        Security.insertProviderAt(new BouncyCastleProvider(), 1);
+    }
+
+    @BeforeAll
+    void setup(
         @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity clientIdentity,
         @PkiKeyResolver.Filename("ecc") final PkiIdentity serverIdentity) {
+
         serverIdentity.setKeyId(Optional.of(KEY_ID));
         serverTokenProcessor = new IdpJwtProcessor(serverIdentity);
         accessTokenBuilder = new AccessTokenBuilder(serverTokenProcessor, URI_IDP_SERVER, "saltValue",
@@ -68,11 +79,16 @@ class AccessTokenBuilderTest {
                 IdpScope.PAIRING, PAIRING_AUDIENCE));
         encryptionKey = new SecretKeySpec(DigestUtils.sha256("fdsa"), "AES");
         pkiIdentity = clientIdentity;
+
         authenticationTokenBuilder = AuthenticationTokenBuilder.builder()
             .jwtProcessor(serverTokenProcessor)
             .authenticationChallengeVerifier(mock(AuthenticationChallengeVerifier.class))
             .encryptionKey(encryptionKey)
             .build();
+    }
+
+    @BeforeEach
+    public void init() {
         createAuthenticationTokenByBodyClaims(
             Map.of(
                 "acr", "foobar",
@@ -91,11 +107,19 @@ class AccessTokenBuilderTest {
     @Afo("A_20524")
     @Test
     void requiredFieldMissingFromAuthenticationToken_ShouldThrowRequiredClaimException() {
+        JsonWebToken jsonWebToken = serverTokenProcessor.buildJwt(
+            new JwtBuilder()
+                .addAllBodyClaims(Map.of(
+                    PROFESSION_OID.getJoseName(),
+                    "foo",
+                    SCOPE.getJoseName(),
+                    IdpScope.EREZEPT.getJwtValue())
+                )
+                .expiresAt(ZonedDateTime.now().plusMinutes(100)));
+        assertThat(jsonWebToken).isNotNull();
+        
         assertThatThrownBy(
-            () -> accessTokenBuilder.buildAccessToken(serverTokenProcessor.buildJwt(new JwtBuilder()
-                .addAllBodyClaims(Map.of(PROFESSION_OID.getJoseName(), "foo",
-                    SCOPE.getJoseName(), IdpScope.EREZEPT.getJwtValue()))
-                .expiresAt(ZonedDateTime.now().plusMinutes(100)))))
+            () -> accessTokenBuilder.buildAccessToken(jsonWebToken))
             .isInstanceOf(RequiredClaimException.class);
     }
 

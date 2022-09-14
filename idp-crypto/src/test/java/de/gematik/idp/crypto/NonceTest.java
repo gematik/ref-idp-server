@@ -53,7 +53,7 @@ class NonceTest {
     void checkExactNonceLength() {
         final int BYTE_AMOUNT = 256;
         final String nonce = Nonce.getNonceAsBase64UrlEncodedString(BYTE_AMOUNT);
-        assertThat(Base64.getUrlDecoder().decode(nonce).length).isEqualTo(BYTE_AMOUNT);
+        assertThat(Base64.getUrlDecoder().decode(nonce)).hasSize(BYTE_AMOUNT);
 
         final int HEXSTR_LEN = 10;
         final String hexStr = Nonce.getNonceAsHex(HEXSTR_LEN);

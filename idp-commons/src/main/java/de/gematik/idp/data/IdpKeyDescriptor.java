@@ -22,7 +22,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import de.gematik.idp.exceptions.IdpJoseException;
 import java.security.cert.CertificateEncodingException;
@@ -50,10 +49,6 @@ public class IdpKeyDescriptor implements JSONAware {
     private String keyId;
     @JsonProperty("kty")
     private String keyType;
-
-    {
-        BrainpoolCurves.init();
-    }
 
     public static String[] getCertArray(final X509Certificate certificate) {
         try {

@@ -17,13 +17,17 @@
 package de.gematik.idp.crypto;
 
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
-import java.security.AlgorithmParameters;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
+import java.math.BigInteger;
+import java.security.*;
+import java.security.interfaces.ECPublicKey;
 import java.security.spec.*;
+import java.util.Base64;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
+import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class EcKeyUtility {
@@ -38,6 +42,27 @@ public class EcKeyUtility {
         } catch (final NoSuchAlgorithmException | InvalidParameterSpecException | InvalidKeySpecException e) {
             throw new IdpCryptoException("Generation of PublicKey failed.", e);
         }
+    }
+
+    public static ECPublicKey genECPublicKey(String curve, String pXbase64, String pYbase64)
+        throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
+        BigInteger pX = new BigInteger(Base64.getUrlDecoder().decode(pXbase64));
+        BigInteger pY = new BigInteger(Base64.getUrlDecoder().decode(pYbase64));
+        return genECPublicKey(curve, pX, pY);
+    }
+
+    public static ECPublicKey genECPublicKey(String curve, BigInteger pX, BigInteger pY)
+        throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+
+        byte[] x = pX.toByteArray();
+        byte[] y = pY.toByteArray();
+
+        KeyFactory keyFactory = KeyFactory.getInstance("EC", BouncyCastleProvider.PROVIDER_NAME);
+        ECPoint point = new ECPoint(new BigInteger(1, x), new BigInteger(1, y));
+        ECNamedCurveParameterSpec parameterSpec = ECNamedCurveTable.getParameterSpec(curve);
+        ECParameterSpec spec = new ECNamedCurveSpec(curve, parameterSpec.getCurve(), parameterSpec.getG(),
+            parameterSpec.getN(), parameterSpec.getH(), parameterSpec.getSeed());
+        return (ECPublicKey) keyFactory.generatePublic(new ECPublicKeySpec(point, spec));
     }
 
     private static String getStdName(final String algorithm) {

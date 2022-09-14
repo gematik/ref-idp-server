@@ -18,6 +18,7 @@ package de.gematik.idp.client;
 
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.*;
+import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.data.UserConsentConfiguration;
 import de.gematik.idp.data.UserConsentDescriptionTexts;
@@ -26,6 +27,7 @@ import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.token.AccessTokenBuilder;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
+import java.security.Security;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -33,6 +35,7 @@ import java.util.stream.Collectors;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.*;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 @Getter
 @EqualsAndHashCode
@@ -40,6 +43,12 @@ import org.apache.commons.codec.digest.DigestUtils;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class MockIdpClient implements IIdpClient {
+
+    static {
+        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+        Security.insertProviderAt(new BouncyCastleProvider(), 1);
+        BrainpoolCurves.init();
+    }
 
     private static final String SERVER_SUB_SALT = "someArbitrarySubSaltValue";
     private final PkiIdentity serverIdentity;

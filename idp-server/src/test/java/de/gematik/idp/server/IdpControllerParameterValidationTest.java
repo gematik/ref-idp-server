@@ -40,7 +40,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import kong.unirest.*;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.tuple.Pair;
@@ -318,16 +318,13 @@ class IdpControllerParameterValidationTest {
         final Map<String, String> locationUrlParameterMap =
             UriUtils.extractParameterMap(response.getHeaders().getFirst("Location"));
 
-        assertThat(locationUrlParameterMap.get("error"))
-            .isEqualTo(errorType.getSerializationValue());
-        assertThat(locationUrlParameterMap.get("gematik_code"))
-            .isEqualTo(Integer.toString(errorCode));
-        assertThat(locationUrlParameterMap.get("gematik_error_text"))
-            .isEqualTo(errorText);
+        assertThat(locationUrlParameterMap).containsEntry("error", errorType.getSerializationValue());
+        assertThat(locationUrlParameterMap).containsEntry("gematik_code", Integer.toString(errorCode));
+        assertThat(locationUrlParameterMap).containsEntry("gematik_error_text", errorText);
     }
 
     private GetRequest buildGetChallengeRequest(
-        final Function<Entry<String, String>, Entry<String, String>> entryStringFunction) {
+        final UnaryOperator<Entry<String, String>> entryStringFunction) {
         final GetRequest getRequest = Unirest
             .get("http://localhost:" + port + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT);
 
@@ -340,7 +337,7 @@ class IdpControllerParameterValidationTest {
     }
 
     private GetRequest buildGetThirdPartyAuthorizationRequest(
-        final Function<Entry<String, String>, Entry<String, String>> entryStringFunction) {
+        final UnaryOperator<Entry<String, String>> entryStringFunction) {
         final GetRequest getRequest = Unirest
             .get("http://localhost:" + port + IdpConstants.THIRD_PARTY_ENDPOINT);
 
@@ -353,7 +350,7 @@ class IdpControllerParameterValidationTest {
     }
 
     private MultipartBody buildGetAccessTokenRequest(
-        final Function<Entry<String, String>, Entry<String, String>> entryStringFunction) {
+        final UnaryOperator<Entry<String, String>> entryStringFunction) {
         final AtomicReference<MultipartBody> resultPtr = new AtomicReference<>();
         idpClient.setBeforeTokenMapper(request -> {
             final MultipartBody post = Unirest.post(request.getUrl())
@@ -371,7 +368,7 @@ class IdpControllerParameterValidationTest {
         return resultPtr.get();
     }
 
-    private Function<Entry<String, String>, Entry<String, String>> getInvalidationFunction(final String parameterName,
+    private UnaryOperator<Entry<String, String>> getInvalidationFunction(final String parameterName,
         final String newParameterValue) {
         return entry -> {
             if (entry.getKey().equals(parameterName)) {

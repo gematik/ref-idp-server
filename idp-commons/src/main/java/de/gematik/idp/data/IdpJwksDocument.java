@@ -16,7 +16,6 @@
 
 package de.gematik.idp.data;
 
-import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,10 +32,6 @@ import lombok.NoArgsConstructor;
 public class IdpJwksDocument {
 
     private List<IdpKeyDescriptor> keys;
-
-    {
-        BrainpoolCurves.init();
-    }
 
     public static IdpJwksDocument constructFromX509Certificate(final PkiIdentity... identities) {
         return IdpJwksDocument.builder()

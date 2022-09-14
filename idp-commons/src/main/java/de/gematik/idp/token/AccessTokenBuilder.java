@@ -90,8 +90,8 @@ public class AccessTokenBuilder {
     private String determineAudienceBasedOnScope(final Set<IdpScope> scopesBodyClaim) {
         final List<String> audienceUrls = scopesBodyClaim.stream()
             .filter(scope -> scope != IdpScope.OPENID)
-            .filter(scope -> scopeToAudienceUrl.containsKey(scope))
-            .map(scope -> scopeToAudienceUrl.get(scope))
+            .filter(scopeToAudienceUrl::containsKey)
+            .map(scopeToAudienceUrl::get)
             .collect(Collectors.toList());
         if (audienceUrls.size() == 1) {
             return audienceUrls.get(0);

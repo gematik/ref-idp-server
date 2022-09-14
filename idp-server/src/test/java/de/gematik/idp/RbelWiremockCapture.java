@@ -16,6 +16,7 @@
 
 package de.gematik.idp;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.common.ProxySettings;
@@ -26,13 +27,11 @@ import com.github.tomakehurst.wiremock.http.Response;
 import de.gematik.rbellogger.captures.RbelCapturer;
 import de.gematik.rbellogger.converter.RbelConverter;
 import de.gematik.rbellogger.data.RbelHostname;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.Arrays;
-
-import java.util.stream.Collectors;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 
 @Slf4j
 public class RbelWiremockCapture extends RbelCapturer {
@@ -45,7 +44,7 @@ public class RbelWiremockCapture extends RbelCapturer {
 
     @Builder
     public RbelWiremockCapture(final RbelConverter rbelConverter,
-                               final String proxyFor, final ProxySettings proxySettings, final WireMockConfiguration wireMockConfiguration) {
+        final String proxyFor, final ProxySettings proxySettings, final WireMockConfiguration wireMockConfiguration) {
         super(rbelConverter);
         this.proxyFor = proxyFor;
         this.proxySettings = proxySettings;
@@ -68,10 +67,10 @@ public class RbelWiremockCapture extends RbelCapturer {
         wireMockServer.addMockServiceRequestListener((request, response) -> {
             getRbelConverter().parseMessage(requestToRbelMessage(request),
                 new RbelHostname(request.getClientIp(), -1),
-                new RbelHostname(request.getHost(), request.getPort()));
+                new RbelHostname(request.getHost(), request.getPort()), Optional.empty());
             getRbelConverter().parseMessage(responseToRbelMessage(response),
                 new RbelHostname(request.getClientIp(), -1),
-                new RbelHostname(request.getHost(), request.getPort()));
+                new RbelHostname(request.getHost(), request.getPort()), Optional.empty());
         });
 
         log.info("Started Wiremock-Server at '{}'.", wireMockServer.baseUrl());

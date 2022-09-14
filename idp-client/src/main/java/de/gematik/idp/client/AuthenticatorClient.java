@@ -21,28 +21,26 @@ import static de.gematik.idp.authentication.UriUtils.extractParameterValueOption
 import static de.gematik.idp.crypto.CryptoLoader.getCertificateFromPem;
 import static de.gematik.idp.field.ClaimName.*;
 import de.gematik.idp.authentication.AuthenticationChallenge;
-import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
 import de.gematik.idp.client.data.*;
+import de.gematik.idp.crypto.EcKeyUtility;
 import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.data.IdpErrorResponse;
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
-import java.math.BigInteger;
 import java.net.URI;
-import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
-import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -77,7 +75,7 @@ public class AuthenticatorClient {
 
     public AuthorizationResponse doAuthorizationRequest(
         final AuthorizationRequest authorizationRequest,
-        final Function<GetRequest, GetRequest> beforeCallback,
+        final UnaryOperator<GetRequest> beforeCallback,
         final Consumer<HttpResponse<AuthenticationChallenge>> afterCallback
     ) {
         final String scope = authorizationRequest.getScopes().stream()
@@ -110,7 +108,7 @@ public class AuthenticatorClient {
 
     public AuthenticationResponse performAuthentication(
         final AuthenticationRequest authenticationRequest,
-        final Function<MultipartBody, MultipartBody> beforeAuthenticationCallback,
+        final UnaryOperator<MultipartBody> beforeAuthenticationCallback,
         final Consumer<HttpResponse<String>> afterAuthenticationCallback) {
 
         final MultipartBody request = Unirest
@@ -173,7 +171,7 @@ public class AuthenticatorClient {
 
     public AuthenticationResponse performAuthenticationWithSsoToken(
         final AuthenticationRequest authenticationRequest,
-        final Function<MultipartBody, MultipartBody> beforeAuthenticationCallback,
+        final UnaryOperator<MultipartBody> beforeAuthenticationCallback,
         final Consumer<HttpResponse<String>> afterAuthenticationCallback) {
         final MultipartBody request = Unirest.post(authenticationRequest.getAuthenticationEndpointUrl()
             )
@@ -193,7 +191,7 @@ public class AuthenticatorClient {
     }
 
     public AuthenticationResponse performAuthenticationWithAltAuth(final AuthenticationRequest authenticationRequest,
-        final Function<MultipartBody, MultipartBody> beforeAuthenticationMapper,
+        final UnaryOperator<MultipartBody> beforeAuthenticationMapper,
         final Consumer<HttpResponse<String>> afterAuthenticationCallback) {
         final MultipartBody request = Unirest.post(authenticationRequest.getAuthenticationEndpointUrl())
             .field("encrypted_signed_authentication_data",
@@ -220,7 +218,7 @@ public class AuthenticatorClient {
 
     public IdpTokenResult retrieveAccessToken(
         final TokenRequest tokenRequest,
-        final Function<MultipartBody, MultipartBody> beforeTokenCallback,
+        final UnaryOperator<MultipartBody> beforeTokenCallback,
         final Consumer<HttpResponse<JsonNode>> afterTokenCallback) {
         final byte[] tokenKeyBytes = Nonce.randomAlphanumeric(256 / 8).getBytes();
         final SecretKey tokenKey = new SecretKeySpec(tokenKeyBytes, "AES");
@@ -304,7 +302,6 @@ public class AuthenticatorClient {
                 .orElseThrow(exceptionSupplier), fixedIdpHost)))
             .idpEnc(retrieveServerPuKFromLocation(patchIdpHost(discoveryDocument.getStringBodyClaim(URI_PUK_IDP_ENC)
                 .orElseThrow(exceptionSupplier), fixedIdpHost)))
-
             .build();
     }
 
@@ -347,21 +344,23 @@ public class AuthenticatorClient {
     }
 
     private PublicKey retrieveServerPuKFromLocation(final String uri) {
-
         final HttpResponse<JsonNode> pukAuthResponse = Unirest
             .get(uri)
             .header(HttpHeaders.USER_AGENT, USER_AGENT)
             .asJson();
         final JSONObject keyObject = pukAuthResponse.getBody().getObject();
-        final java.security.spec.ECPoint ecPoint = new java.security.spec.ECPoint(
-            new BigInteger(Base64.getUrlDecoder().decode(keyObject.getString("x"))),
-            new BigInteger(Base64.getUrlDecoder().decode(keyObject.getString("y"))));
-        final ECPublicKeySpec keySpec = new ECPublicKeySpec(ecPoint, BrainpoolCurves.BP256);
         try {
-            return KeyFactory.getInstance("EC").generatePublic(keySpec);
-        } catch (final InvalidKeySpecException | NoSuchAlgorithmException e) {
+            return getPublicKey(keyObject);
+        } catch (final InvalidKeySpecException | NoSuchAlgorithmException | NoSuchProviderException e) {
             throw new IdpClientRuntimeException(
                 "Unable to construct public key from given uri '" + uri + "', got " + e.getMessage());
         }
+    }
+
+    private static PublicKey getPublicKey(JSONObject keyObject)
+        throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
+        return EcKeyUtility.genECPublicKey("brainpoolP256r1",
+            keyObject.getString("x"),
+            keyObject.getString("y"));
     }
 }

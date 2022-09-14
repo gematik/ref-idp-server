@@ -42,6 +42,7 @@ class IdpAuthenticatorTest {
     @Autowired
     private IdpConfiguration idpConfiguration;
 
+
     @Test
     void validateRedirectUriWithNullValue_ExpectCorrectError() {
         assertThatThrownBy(() -> idpAuthenticator.validateRedirectUri(TestConstants.CLIENT_ID_E_REZEPT_APP, null))

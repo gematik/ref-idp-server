@@ -111,8 +111,7 @@ class IdTokenBuilderTest {
         final long expBody = idToken.getExpiresAtBody().toEpochSecond();
         final long iat = idToken.getIssuedAt().toEpochSecond();
 
-        assertThat(now).isGreaterThanOrEqualTo(iat);
-        assertThat(now).isLessThan(expBody);
+        assertThat(now).isGreaterThanOrEqualTo(iat).isLessThan(expBody);
         assertThat(expBody - now).isLessThan(maxIdTokenExpirationInSec);
     }
 

@@ -22,21 +22,12 @@ import de.gematik.idp.test.steps.IdpStepsBase;
 import de.gematik.idp.test.steps.helpers.IdpTestEnvironmentConfigurator;
 import de.gematik.test.bdd.Context;
 import de.gematik.test.bdd.ContextKey;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyFactory;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -85,6 +76,7 @@ public class DiscoveryDocument {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
         return builder.host(IdpTestEnvironmentConfigurator.getFqdnInternet()).port(null).scheme("http").toUriString();
     }
+
     public DiscoveryDocument(final JSONObject jsoBody, final JSONObject jsoHeader)
         throws JSONException {
         if (!IdpTestEnvironmentConfigurator.getFqdnInternet().isEmpty()) {
@@ -201,8 +193,9 @@ public class DiscoveryDocument {
             assertThat(jwk.getString("kty")).isEqualTo("EC");
             assertThat(jwk.getString("crv")).isEqualTo("BP-256");
             final java.security.spec.ECPoint ecPoint = new java.security.spec.ECPoint(
-                new BigInteger(Base64.getUrlDecoder().decode(jwk.getString("x"))),
-                new BigInteger(Base64.getUrlDecoder().decode(jwk.getString("y"))));
+                new BigInteger(1, Base64.getUrlDecoder().decode(jwk.getString("x"))),
+                new BigInteger(1, Base64.getUrlDecoder().decode(jwk.getString("y"))));
+
             final ECPublicKeySpec keySpec = new ECPublicKeySpec(ecPoint, BrainpoolCurves.BP256);
             return KeyFactory.getInstance("EC").generatePublic(keySpec);
         } else {

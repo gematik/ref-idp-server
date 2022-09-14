@@ -96,9 +96,9 @@ public class IdpController {
     @ValidateClientSystem
     public AuthenticationChallenge getAuthenticationChallenge(
         @RequestParam(name = "client_id") @NotEmpty(message = "1002") @CheckClientId final String clientId,
-        @RequestParam(name = "state") @NotEmpty(message = "2002") @Pattern(regexp = ".+", message = "2006") final String state,
+        @RequestParam(name = "state") @NotEmpty(message = "2002") @Pattern(regexp = "^[_\\-a-zA-Z0-9]{1,32}$", message = "2006") final String state,
         @RequestParam(name = "redirect_uri") @NotNull(message = "1004") final String redirectUri,
-        @RequestParam(name = "nonce", required = false) @Pattern(regexp = ".+", message = "2007") final String nonce,
+        @RequestParam(name = "nonce", required = false) @Pattern(regexp = "^[_\\-a-zA-Z0-9]{1,32}$", message = "2007") final String nonce,
         @RequestParam(name = "response_type") @NotEmpty(message = "2004") @Pattern(regexp = "code", message = "2005") final String responseType,
         @RequestParam(name = "code_challenge") @NotEmpty(message = "2009") @Pattern(regexp = SHA256_AS_BASE64_REGEX, message = "2010") final String codeChallenge,
         @RequestParam(name = "code_challenge_method") @Pattern(regexp = "S256", message = "2008") final String codeChallengeMethod,

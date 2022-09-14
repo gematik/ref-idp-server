@@ -188,8 +188,7 @@ class MockIdpClientTest {
     void verifyAccessTokenIssClaim() {
         final JsonWebToken jwt = mockIdpClient.login(rsaClientIdentity).getAccessToken();
         final Map<String, Object> bodyClaims = jwt.getBodyClaims();
-        assertThat(bodyClaims.get(ISSUER.getJoseName()))
-            .as("AccessToken ISS claim")
-            .isEqualTo(URI_IDP_SERVER);
+        assertThat(bodyClaims).as("AccessToken ISS claim").containsEntry(ISSUER.getJoseName(), URI_IDP_SERVER);
+
     }
 }

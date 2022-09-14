@@ -53,7 +53,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import kong.unirest.MultipartBody;
 import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
@@ -62,6 +62,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -256,7 +257,8 @@ class TokenRetrievalTest {
                     UriUtils.extractParameterValue(response.getHeaders().getFirst("Location"), "ssotoken"))
                 .ifPresent(token -> ssoToken.set(token)));
 
-        assertThatThrownBy(() -> idpClient.loginWithSsoToken(idpClient.login(egkUserIdentity).getSsoToken()))
+        final IdpJwe ssoTokenLogin = idpClient.login(egkUserIdentity).getSsoToken();
+        assertThatThrownBy(() -> idpClient.loginWithSsoToken(ssoTokenLogin))
             .isInstanceOf(RuntimeException.class)
             .hasMessageContaining("ssotoken");
     }
@@ -272,8 +274,8 @@ class TokenRetrievalTest {
 
     @Test
     void loginWithoutAndThenWithSsoToken_codeChallengeShouldDiffer() throws UnirestException {
-        final AtomicReference<JsonWebToken> oldCodeChallenge = new AtomicReference();
-        final AtomicReference<JsonWebToken> newCodeChallenge = new AtomicReference();
+        final AtomicReference<JsonWebToken> oldCodeChallenge = new AtomicReference<>();
+        final AtomicReference<JsonWebToken> newCodeChallenge = new AtomicReference<>();
 
         idpClient.setAfterAuthenticationCallback(
             response -> oldCodeChallenge.set(extractAuthenticationTokenFromResponse(response, "code")));
@@ -292,8 +294,9 @@ class TokenRetrievalTest {
     @Test
     void ssoShouldBeEncrypted() throws UnirestException {
         final IdpTokenResult tokenResult = idpClient.login(egkUserIdentity);
-
-        assertThatThrownBy(() -> tokenResult.getSsoToken().getBodyClaims())
+        final IdpJwe ssoToken = tokenResult.getSsoToken();
+        assertThat(ssoToken).isNotNull();
+        assertThatThrownBy(ssoToken::getBodyClaims)
             .isInstanceOf(RuntimeException.class);
     }
 
@@ -731,8 +734,8 @@ class TokenRetrievalTest {
             idpConfiguration.setServerUrl("http://falsche.url.des.servers");
 
             idpClient.setFixedIdpHost("http://localhost:" + localServerPort);
-            idpClient.initialize();
-            idpClient.login(egkUserIdentity);
+            Assertions.assertDoesNotThrow(() -> idpClient.initialize());
+            Assertions.assertDoesNotThrow(() -> idpClient.login(egkUserIdentity));
         } finally {
             idpConfiguration.setServerUrl(null);
         }
@@ -744,8 +747,8 @@ class TokenRetrievalTest {
             idpConfiguration.setServerUrl("http://falsche.url.des.servers");
 
             idpClient.setFixedIdpHost("localhost:" + localServerPort);
-            idpClient.initialize();
-            idpClient.login(egkUserIdentity);
+            Assertions.assertDoesNotThrow(() -> idpClient.initialize());
+            Assertions.assertDoesNotThrow(() -> idpClient.login(egkUserIdentity));
         } finally {
             idpConfiguration.setServerUrl(null);
         }
@@ -797,7 +800,7 @@ class TokenRetrievalTest {
             .hasMessageContaining("EPK-Typ fehlerhaft");
     }
 
-    private Function<MultipartBody, MultipartBody> patchJweHeader(Consumer<JSONObject> patcher) {
+    private UnaryOperator<MultipartBody> patchJweHeader(Consumer<JSONObject> patcher) {
         return body -> {
             try {
                 String[] jwe = body.multiParts().stream()

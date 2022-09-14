@@ -164,6 +164,7 @@ class AuthenticationChallengeBuilderTest {
     void verifyThatAuthenticationChallengeCarriesNeitherExpNorIatClaimInHeader() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
             .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
+        assertThat(response.getChallenge().getHeaderClaims().keySet()).isNotEmpty();
         assertThat(response.getChallenge().getHeaderClaims().keySet())
             .doesNotContain(EXPIRES_AT.getJoseName())
             .doesNotContain(ISSUED_AT.getJoseName());
@@ -173,6 +174,7 @@ class AuthenticationChallengeBuilderTest {
     void challengeToken_checkForKidInHeader() {
         final AuthenticationChallenge response = authenticationChallengeBuilder
             .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
+        assertThat(response.getChallenge().getHeaderClaims()).isNotEmpty();
         assertThat(response.getChallenge().getHeaderClaims())
             .containsEntry(KEY_ID.getJoseName(), SERVER_KEY_IDENTITY);
     }

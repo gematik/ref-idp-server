@@ -37,6 +37,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(PkiKeyResolver.class)
 class IdpJwtProcessorTest {
 
+    static {
+        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+        Security.insertProviderAt(new BouncyCastleProvider(), 1);
+    }
+
     static final long TOKEN_VALIDITY_MINUTES = 10;
     JwtBuilder jwtBuilder = new JwtBuilder()
         .expiresAt(ZonedDateTime.now().plusMinutes(10))
@@ -84,7 +89,8 @@ class IdpJwtProcessorTest {
         jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
         // delete first character
         final String jwtJasonInvalid = jwt.getRawString().substring(1);
-        assertThatThrownBy(() -> jwtProcessor.verifyAndThrowExceptionIfFail(new JsonWebToken(jwtJasonInvalid)))
+        JsonWebToken jsonWebToken = new JsonWebToken(jwtJasonInvalid);
+        assertThatThrownBy(() -> jwtProcessor.verifyAndThrowExceptionIfFail(jsonWebToken))
             .isInstanceOf(RuntimeException.class);
     }
 
@@ -93,7 +99,9 @@ class IdpJwtProcessorTest {
         final JsonWebToken jwt = createJwt(ecc);
         // delete last character
         final String jwtJasonInvalid = jwt.getRawString().substring(0, jwt.getRawString().length() - 1);
-        assertThatThrownBy(() -> jwtProcessor.verifyAndThrowExceptionIfFail(new JsonWebToken(jwtJasonInvalid)))
+        JsonWebToken jsonWebToken = new JsonWebToken(jwtJasonInvalid);
+        assertThat(jsonWebToken).isNotNull();
+        assertThatThrownBy(() -> jwtProcessor.verifyAndThrowExceptionIfFail(jsonWebToken))
             .isInstanceOf(RuntimeException.class);
     }
 

@@ -27,7 +27,6 @@ import de.gematik.idp.authentication.UriUtils;
 import de.gematik.idp.client.IdpClient;
 import de.gematik.idp.client.IdpTokenResult;
 import de.gematik.idp.crypto.model.PkiIdentity;
-import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpController;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.tests.PkiKeyResolver;
@@ -61,8 +60,6 @@ class AuthenticationCallTest {
     @Autowired
     private IdpKey idpEnc;
     private AuthenticationChallengeBuilder authenticationChallengeBuilderSpy;
-    @Autowired
-    private IdpConfiguration idpConfiguration;
 
     @BeforeEach
     public void startup(@PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity) {
@@ -116,10 +113,6 @@ class AuthenticationCallTest {
 
     @Test
     void verifyResponseAttribute_sso_token_forPsNotExists() {
-//        idpConfiguration.getRegisteredClient().put(
-//            TestConstants.CLIENT_ID_GEAMTIK_TEST_PS,
-//            IdpClientConfiguration.builder().redirectUri(TestConstants.REDIRECT_URI_GEAMTIK_TEST_PS)
-//                .returnSsoToken(false).build());
         idpClient = IdpClient.builder()
             .clientId(TestConstants.CLIENT_ID_GEAMTIK_TEST_PS)
             .discoveryDocumentUrl("http://localhost:" + localServerPort + "/discoveryDocument")

@@ -17,7 +17,6 @@
 package de.gematik.idp.authentication;
 
 import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
-
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.IdpJoseException;
@@ -107,7 +106,7 @@ public class JwtBuilder {
         Objects.requireNonNull(signerKey, "No private key supplied, cancelling JWT signing");
 
         final JwtClaims claims = new JwtClaims();
-        bodyClaims.forEach((key, value) -> claims.setClaim(key, value));
+        bodyClaims.forEach(claims::setClaim);
 
         final JsonWebSignature jws = new JsonWebSignature();
         jws.setPayload(claims.toJson());

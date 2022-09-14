@@ -24,12 +24,14 @@ import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.tests.PkiKeyResolver.Filename;
+import java.security.Security;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.crypto.spec.SecretKeySpec;
 import org.assertj.core.api.InstanceOfAssertFactories;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,6 +42,11 @@ class JsonWebTokenTest {
     private IdpJwtProcessor idpJwtProcessor;
     private SecretKeySpec aesKey;
     private PkiIdentity identity;
+
+    static {
+        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+        Security.insertProviderAt(new BouncyCastleProvider(), 1);
+    }
 
     @BeforeEach
     public void setup(@PkiKeyResolver.Filename("ecc") final PkiIdentity identity) {
@@ -84,8 +91,7 @@ class JsonWebTokenTest {
         final JsonWebToken jsonWebToken = idpJwtProcessor.buildJwt(new JwtBuilder()
             .addAllBodyClaims(Map.of("foo", "bar")));
 
-        assertThat(jsonWebToken.getBodyClaims().get("foo"))
-            .isEqualTo("bar");
+        assertThat(jsonWebToken.getBodyClaims()).containsEntry("foo", "bar");
     }
 
     @Test
@@ -94,7 +100,7 @@ class JsonWebTokenTest {
         final JsonWebToken jsonWebToken = idpJwtProcessor.buildJwt(new JwtBuilder()
             .addAllBodyClaims(Map.of(CONFIRMATION.getJoseName(), now.toEpochSecond())));
 
-        assertThat(jsonWebToken.getDateTimeClaim(CONFIRMATION, () -> jsonWebToken.getBodyClaims()))
+        assertThat(jsonWebToken.getDateTimeClaim(CONFIRMATION, jsonWebToken::getBodyClaims))
             .get(InstanceOfAssertFactories.ZONED_DATE_TIME)
             .isEqualToIgnoringNanos(now);
     }

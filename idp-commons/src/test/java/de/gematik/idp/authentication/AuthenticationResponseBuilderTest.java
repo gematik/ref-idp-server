@@ -29,6 +29,7 @@ import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.JsonWebToken;
+import java.security.PublicKey;
 import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import java.util.Base64;
@@ -55,8 +56,9 @@ class AuthenticationResponseBuilderTest {
     private JwtConsumer serverJwtConsumer;
     private AuthenticationChallenge challenge;
 
-    {
-        Security.addProvider(new BouncyCastleProvider());
+    static {
+        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+        Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 
     @BeforeEach
@@ -116,9 +118,12 @@ class AuthenticationResponseBuilderTest {
     void verifyResponseIsNotSignedByServerIdentity() {
         final AuthenticationResponse authenticationResponse =
             authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
+        JsonWebToken signedChallenge = authenticationResponse.getSignedChallenge();
+        assertThat(signedChallenge).isNotNull();
+        PublicKey publicKey = serverIdentity.getCertificate().getPublicKey();
 
-        assertThatThrownBy(() -> authenticationResponse.getSignedChallenge().verify(
-            serverIdentity.getCertificate().getPublicKey()))
+        assertThatThrownBy(() -> signedChallenge
+            .verify(publicKey))
             .isInstanceOf(IdpJoseException.class);
     }
 

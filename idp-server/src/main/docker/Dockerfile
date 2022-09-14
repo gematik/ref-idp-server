@@ -1,4 +1,4 @@
-FROM eclipse-temurin:11.0.16_8-jre
+FROM eclipse-temurin:17.0.4.1_1-jre
 
 LABEL de.gematik.vendor="gematik GmbH" \
       maintainer="software-development@gematik.de" \

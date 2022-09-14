@@ -19,6 +19,8 @@ package de.gematik.idp.test.steps.helpers;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
+import de.gematik.idp.crypto.CryptoLoader;
+import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.test.steps.model.DiscoveryDocument;
 import de.gematik.test.bdd.Context;
 import java.io.*;
@@ -29,6 +31,7 @@ import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Date;
 import java.util.Map.Entry;
+import java.util.Objects;
 import lombok.SneakyThrows;
 import org.apache.commons.collections.IteratorUtils;
 import org.assertj.core.api.Assertions;
@@ -62,14 +65,14 @@ public class KeyAndCertificateStepsHelper {
         }
         Assertions.assertThat(is).withFailMessage("Unable to locate cert resource '" + certFile + "'").isNotNull();
         final KeyStore keyStore = KeyStore.getInstance("pkcs12", new BouncyCastleProvider());
-        try (final ByteArrayInputStream bis = new ByteArrayInputStream(is.readAllBytes())) {
+        try (final ByteArrayInputStream bis = new ByteArrayInputStream(Objects.requireNonNull(is).readAllBytes())) {
             keyStore.load(bis, password.toCharArray());
         }
         return (X509Certificate) keyStore.getCertificate(keyStore.aliases().nextElement());
     }
 
     public Key readPrivateKeyFromKeyStore(final String keyStoreFileName, final String password)
-        throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException {
+        throws IOException {
         final InputStream is;
         if (keyStoreFileName.startsWith("file://")) {
             is = new FileInputStream(keyStoreFileName.substring("file://".length()));
@@ -78,9 +81,8 @@ public class KeyAndCertificateStepsHelper {
         }
         Assertions.assertThat(is).withFailMessage("Unable to locate key resource '" + keyStoreFileName + "'")
             .isNotNull();
-        final KeyStore keyStore = KeyStore.getInstance("pkcs12", new BouncyCastleProvider());
-        keyStore.load(new ByteArrayInputStream(is.readAllBytes()), password.toCharArray());
-        return keyStore.getKey(keyStore.aliases().nextElement(), password.toCharArray());
+        PkiIdentity pkiIdentity = CryptoLoader.getIdentityFromP12(Objects.requireNonNull(is).readAllBytes(), password);
+        return pkiIdentity.getPrivateKey();
     }
 
     @SneakyThrows
@@ -92,7 +94,7 @@ public class KeyAndCertificateStepsHelper {
             is = getClass().getResourceAsStream(keyFile);
         }
         Assertions.assertThat(is).withFailMessage("Unable to locate key resource '" + keyFile + "'").isNotNull();
-        final PKCS8EncodedKeySpec privKeySpec = new PKCS8EncodedKeySpec(is.readAllBytes());
+        final PKCS8EncodedKeySpec privKeySpec = new PKCS8EncodedKeySpec(Objects.requireNonNull(is).readAllBytes());
         final KeyFactory factory = KeyFactory.getInstance("EC");
         return factory.generatePrivate(privKeySpec);
     }
@@ -105,7 +107,7 @@ public class KeyAndCertificateStepsHelper {
         } else {
             is = getClass().getResourceAsStream(keyFile);
         }
-        final PEMParser pemParser = new PEMParser(new InputStreamReader(is));
+        final PEMParser pemParser = new PEMParser(new InputStreamReader(Objects.requireNonNull(is)));
         return SubjectPublicKeyInfo.getInstance(pemParser.readObject());
     }
 
@@ -179,7 +181,7 @@ public class KeyAndCertificateStepsHelper {
 
         // check for self signed
         assertThatThrownBy(() -> cert.verify(cert.getPublicKey())).isInstanceOf(SignatureException.class);
-        assertThat(cert.getSubjectDN().getName()).isNotEqualTo(cert.getIssuerDN().getName());
+        assertThat(cert.getSubjectX500Principal().getName()).isNotEqualTo(cert.getIssuerDN().getName());
 
         // TODO pkilib check revocation of cert once pkilib is able to do it
 

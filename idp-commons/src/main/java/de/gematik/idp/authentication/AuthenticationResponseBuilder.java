@@ -19,8 +19,8 @@ package de.gematik.idp.authentication;
 import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
 import static de.gematik.idp.crypto.KeyAnalysis.isEcKey;
 import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
-
 import de.gematik.idp.crypto.model.PkiIdentity;
+import de.gematik.idp.exceptions.IdpRuntimeException;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.token.JsonWebToken;
 import lombok.AllArgsConstructor;
@@ -61,7 +61,7 @@ public class AuthenticationResponseBuilder {
                 .signedChallenge(new JsonWebToken(compactSerialization))
                 .build();
         } catch (final JoseException e) {
-            throw new RuntimeException(e);
+            throw new IdpRuntimeException(e);
         }
     }
 }

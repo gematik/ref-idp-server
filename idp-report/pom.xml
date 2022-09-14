@@ -1,31 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>idp-global</artifactId>
+        <groupId>de.gematik.idp</groupId>
+        <version>21.0.0</version>
+    </parent>
     <artifactId>idp-report</artifactId>
 
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <configuration>
-                            <excludes>
-                                <exclude>de.gematik.idp.tests.*</exclude>
-                            </excludes>
-                        </configuration>
-                        <goals>
-                            <goal>report-aggregate</goal>
-                        </goals>
-                        <id>report-aggregate</id>
-                    </execution>
-                </executions>
-                <groupId>org.jacoco</groupId>
-                <version>0.8.5</version>
-            </plugin>
-        </plugins>
-    </build>
 
     <dependencies>
         <dependency>
@@ -61,10 +45,29 @@
         </dependency>
     </dependencies>
 
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <artifactId>idp-global</artifactId>
-        <groupId>de.gematik.idp</groupId>
-        <version>20.0.9</version>
-    </parent>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${version.jacoco-maven-plugin}</version>
+                <executions>
+                    <execution>
+                        <id>jacoco-report-aggregate</id>
+                        <configuration>
+                            <excludes>
+                                <exclude>de.gematik.idp.tests.*</exclude>
+                            </excludes>
+                        </configuration>
+                        <goals>
+                            <goal>report-aggregate</goal>
+                        </goals>
+                        <phase>verify</phase>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+
 </project>

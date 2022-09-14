@@ -47,6 +47,7 @@ import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 public class X509ClaimExtraction {
 
     private static final int KVNR_LENGTH = 10; // gemSpec_PKI, 4.2
+    private static final String VAL_IN_CERT_TOO_LONG = "Value in certificate too long!";
 
     /**
      * Detects the certificate-type and returns a key/value store for claims and the corresponding values.
@@ -71,13 +72,13 @@ public class X509ClaimExtraction {
         } else if (certificateType == SMCB) {
             final Optional<String> valueFromDn = getValueFromDn(certificate.getSubjectX500Principal(), RFC4519Style.cn);
             if (valueFromDn.isPresent() && valueFromDn.get().length() > 64) {
-                throw new IdpCryptoException("Value in certificate too long!");
+                throw new IdpCryptoException(VAL_IN_CERT_TOO_LONG);
             }
             claimMap.put(ORGANIZATION_NAME.getFieldname(), valueFromDn.orElse(null));
         } else if (certificateType == EGK) {
             final Optional<String> valueFromDn = getValueFromDn(certificate.getSubjectX500Principal(), RFC4519Style.o);
             if (valueFromDn.isPresent() && valueFromDn.get().length() > 64) {
-                throw new IdpCryptoException("Value in certificate too long!");
+                throw new IdpCryptoException(VAL_IN_CERT_TOO_LONG);
             }
             claimMap.put(ORGANIZATION_NAME.getFieldname(), valueFromDn.orElse(null));
         }
@@ -99,7 +100,7 @@ public class X509ClaimExtraction {
                     .filter(ou -> ou.matches("[a-zA-Z]\\d{9}"))
                     .findFirst()
                     .orElseThrow(() -> new IdpCryptoException(
-                        "Could not find OU in EGK Subject-DN: '" + certificate.getSubjectDN().toString())));
+                        "Could not find OU in EGK Subject-DN: '" + certificate.getSubjectX500Principal().toString())));
         }
         return claimMap;
     }
@@ -111,7 +112,7 @@ public class X509ClaimExtraction {
             throw new IdpCryptoException("No value found in certificate!");
         }
         if (valueFromDn.isPresent() && valueFromDn.get().length() > 64) {
-            throw new IdpCryptoException("Value in certificate too long!");
+            throw new IdpCryptoException(VAL_IN_CERT_TOO_LONG);
         }
         return valueFromDn.orElse(null);
     }

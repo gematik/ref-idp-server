@@ -18,10 +18,12 @@ package de.gematik.idp.server;
 
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.services.ServerVersionInterceptor;
+import java.security.Security;
 import java.util.Locale;
 import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import net.dracoblue.spring.web.mvc.method.annotation.HttpResponseHeaderHandlerInterceptor;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.trace.http.HttpTraceRepository;
 import org.springframework.boot.actuate.trace.http.InMemoryHttpTraceRepository;
@@ -40,6 +42,11 @@ public class IdpServer implements WebMvcConfigurer {
     private final IdpConfiguration idpConfiguration;
     private final HttpResponseHeaderHandlerInterceptor httpResponsHeaderHandlerInterceptor;
     private final ServerVersionInterceptor serverVersionInterceptor;
+
+    static {
+        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+        Security.insertProviderAt(new BouncyCastleProvider(), 1);
+    }
 
     @SuppressWarnings("java:S4823")
     public static void main(final String[] args) {

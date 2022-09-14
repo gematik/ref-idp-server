@@ -34,9 +34,9 @@ public class CucumberValuesConverter {
     @NotNull
     public Map<String, String> getMapFromDatatable(final DataTable params) {
         final List<Map<String, String>> rows = params.asMaps(String.class, String.class);
-        Assertions.assertThat(rows.size())
+        Assertions.assertThat(rows)
             .withFailMessage("Expected one data row, check your feature file")
-            .isEqualTo(1);
+            .hasSize(1);
         return parseParams(rows.get(0));
 
     }

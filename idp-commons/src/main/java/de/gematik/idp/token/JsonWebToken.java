@@ -59,13 +59,11 @@ public class JsonWebToken extends IdpJoseObject {
             jwtConsumer.process(getRawString());
         } catch (final InvalidJwtException e) {
             if (e.getErrorDetails().stream()
-                .filter(error -> error.getErrorCode() == ErrorCodes.EXPIRED)
-                .findAny().isPresent()) {
+                .anyMatch(error -> error.getErrorCode() == ErrorCodes.EXPIRED)) {
                 throw new IdpJwtExpiredException(e);
             }
             if (e.getErrorDetails().stream()
-                .filter(error -> error.getErrorCode() == ErrorCodes.SIGNATURE_INVALID)
-                .findAny().isPresent()) {
+                .anyMatch(error -> error.getErrorCode() == ErrorCodes.SIGNATURE_INVALID)) {
                 throw new IdpJwtSignatureInvalidException(e);
             }
             throw new IdpJoseException("Invalid JWT encountered", e);

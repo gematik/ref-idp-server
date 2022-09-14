@@ -17,7 +17,6 @@
 package de.gematik.idp.test.steps.helpers;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
 import de.gematik.idp.test.steps.model.CodeAuthType;
 import de.gematik.test.bdd.TestEnvironmentConfigurator;
 import de.gematik.test.tiger.common.config.TigerGlobalConfiguration;
@@ -27,7 +26,6 @@ import java.security.Key;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.tomcat.util.buf.HexUtils;
 import org.assertj.core.api.Assertions;
 
@@ -78,10 +76,9 @@ public class IdpTestEnvironmentConfigurator extends TestEnvironmentConfigurator 
 
     public static synchronized void initializeIDPTestEnvironment() {
 
-        if (initialized) return;
-
-        // initialize Jose4j to support Gematik specific brainpool curves
-        BrainpoolCurves.init();
+        if (initialized) {
+            return;
+        }
 
         final String idpLocalDiscdoc = getProperty(IDP_LOCAL_DISCDOC);
 

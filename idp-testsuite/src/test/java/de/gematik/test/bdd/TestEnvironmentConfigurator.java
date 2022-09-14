@@ -20,11 +20,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.security.Security;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 /**
  * ${ENV.xxxxx} in property values will be replaced with the value of the environment variable xxxxx at test run
@@ -38,6 +40,8 @@ public class TestEnvironmentConfigurator {
 
     static {
         initialize();
+        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+        Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 
     public static String getTestEnvVar(final String varName) {
