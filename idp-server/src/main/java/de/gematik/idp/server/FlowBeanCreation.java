@@ -16,6 +16,7 @@
 
 package de.gematik.idp.server;
 
+import static de.gematik.pki.gemlibpki.certificate.CertificateProfile.*;
 import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
 import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
@@ -30,11 +31,10 @@ import de.gematik.idp.server.services.DiscoveryDocumentBuilder;
 import de.gematik.idp.token.AccessTokenBuilder;
 import de.gematik.idp.token.IdTokenBuilder;
 import de.gematik.idp.token.SsoTokenBuilder;
-import de.gematik.pki.certificate.CertificateProfile;
-import de.gematik.pki.certificate.TucPki018Verifier;
-import de.gematik.pki.tsl.TslConverter;
-import de.gematik.pki.tsl.TslInformationProvider;
-import de.gematik.pki.tsl.TspService;
+import de.gematik.pki.gemlibpki.certificate.TucPki018Verifier;
+import de.gematik.pki.gemlibpki.tsl.TslConverter;
+import de.gematik.pki.gemlibpki.tsl.TslInformationProvider;
+import de.gematik.pki.gemlibpki.tsl.TspService;
 import eu.europa.esig.trustedlist.jaxb.tsl.TrustStatusListType;
 import java.io.IOException;
 import java.security.Key;
@@ -125,9 +125,10 @@ public class FlowBeanCreation {
             return TucPki018Verifier.builder()
                 .productType(idpConfiguration.getProductTypeDisplayString())
                 .tspServiceList(tspServiceTypeList)
-                .certificateProfiles(List.of(CertificateProfile.C_CH_AUT_RSA, CertificateProfile.C_CH_AUT_ECC,
-                    CertificateProfile.C_HCI_AUT_RSA, CertificateProfile.C_HCI_AUT_ECC,
-                    CertificateProfile.C_HP_AUT_RSA, CertificateProfile.C_HP_AUT_ECC))
+                .certificateProfiles(
+                    List.of(CERT_PROFILE_C_CH_AUT_RSA, CERT_PROFILE_C_CH_AUT_ECC, CERT_PROFILE_C_HCI_AUT_RSA,
+                        CERT_PROFILE_C_HCI_AUT_ECC, CERT_PROFILE_C_HP_AUT_RSA, CERT_PROFILE_C_HP_AUT_ECC
+                    ))
                 .withOcspCheck(false)
                 .build();
         } catch (final IOException e) {

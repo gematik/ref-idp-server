@@ -1,0 +1,76 @@
+version: '3.7'
+
+# Common Health Check Properties
+x-healthcheck-config: &healthcheck-ref
+  # Expects that the Spring Actuator port is 8180
+  test: "curl --fail --silent http://localhost:8180/actuator/health | grep UP"
+  interval: 15s
+  timeout: 10s
+  retries: 40
+  start_period: 30s
+
+# Common Environment Timezone Entry
+x-environment-timezone: &environment-timezone-ref
+  TZ: Europe/Berlin
+
+# Common Service Properties
+x-service-setup: &service-setup-ref
+  restart: always
+
+# Common Network
+x-service-network: &service-network-ref
+  networks:
+    idp-federation:
+
+services:
+  # Database
+  db:
+    image: mysql:8.0.22
+    container_name: idp-mysql
+    <<: *service-network-ref
+    <<: *service-setup-ref
+    environment:
+      MYSQL_ROOT_USER: root
+      MYSQL_ROOT_PASSWORD: idp
+      MYSQL_DATABASE: IDP
+      <<: *environment-timezone-ref
+    ports:
+      - "8572:3306"
+    volumes:
+      - idp-data-db:/var/lib/mysql
+    healthcheck:
+      test: "/usr/bin/mysql --user=root --password=idp --execute \"SHOW DATABASES;\""
+      interval: 20s
+      timeout: 20s
+      retries: 10
+
+  # Idp-Server
+  idpserver:
+    image: eu.gcr.io/gematik-all-infra-prod/idp/idp-server:${appVersion}
+    user: 10000:10000
+    container_name: idp-server
+    <<: *service-network-ref
+    <<: *service-setup-ref
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://db:3306/IDP"
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: "com.mysql.cj.jdbc.Driver"
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: idp
+      SPRING_DATASOURCE_INITIALIZATION_MODE: always
+      SPRING_JPA_DATABASE_PLATFORM: "org.hibernate.dialect.MySQL5Dialect"
+      SPRING_H2_CONSOLE_ENABLED: "false"
+      IDP_SERVERURL: ""
+      MANAGEMENT_PORT: 8180 # Spring Actuator Port
+      <<: *environment-timezone-ref
+    ports:
+      - "8571:8080"
+    healthcheck:
+      <<: *healthcheck-ref
+
+volumes:
+  idp-data-db:
+    name: idp-data-db
+
+networks:
+  idp-federation:
+    name: idp-federation

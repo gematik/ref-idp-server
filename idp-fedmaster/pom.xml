@@ -8,11 +8,11 @@
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>21.0.0</version>
+        <version>21.0.1</version>
     </parent>
 
     <artifactId>idp-fedmaster</artifactId>
-    <version>21.0.0</version>
+    <version>21.0.1</version>
     <packaging>jar</packaging>
 
     <properties>

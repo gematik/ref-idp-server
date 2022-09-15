@@ -31,7 +31,6 @@ build.sh
 docker-compose-all.yml
 docker-compose.deploy.yml
 docker-compose-deployLTU_DEV.yml
-docker-compose-ref.yml
 idp-server/Dockerfile
 DockerfileMySql
 CI.Jenkinsfile
