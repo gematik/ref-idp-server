@@ -1,3 +1,7 @@
+# Release 21.0.3
+
+- publish docker image at https://hub.docker.com/r/gematik1/idp-server
+
 # Release 21.0.1
 
 - update gemLibPki

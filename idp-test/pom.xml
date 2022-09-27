@@ -8,9 +8,9 @@
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>21.0.1</version>
+        <version>21.0.3</version>
     </parent>
-    <version>21.0.1</version>
+    <version>21.0.3</version>
 
     <dependencies>
         <dependency>

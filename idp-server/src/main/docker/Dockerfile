@@ -1,8 +1,14 @@
 FROM eclipse-temurin:17.0.4.1_1-jre
 
+ARG COMMIT_HASH
+ARG VERSION
+
 LABEL de.gematik.vendor="gematik GmbH" \
       maintainer="software-development@gematik.de" \
-      de.gematik.app="IDP Referenzimplementierung"
+      de.gematik.app="IDP Referenzimplementierung" \
+      de.gematik.git-repo-name="https://gitlab.prod.ccs.gematik.solutions/git/idp/idp-global.git" \
+      de.gematik.commit-sha=$COMMIT_HASH \
+      de.gematik.version=$VERSION
 
 # The STOPSIGNAL instruction sets the system call signal that will be sent to the container to exit
 # SIGTERM = 15 - https://de.wikipedia.org/wiki/Signal_(Unix)

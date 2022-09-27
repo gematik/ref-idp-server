@@ -1,4 +1,4 @@
-## Übersicht
+## Overview
 
 Das Projekt **IDP-Global** setzt sich aus verschiedenen Teilprojekten zusammen. Diese sind
 
@@ -14,23 +14,35 @@ Das Projekt **IDP-Global** setzt sich aus verschiedenen Teilprojekten zusammen. 
 
 Die letzten 3 Teilprojekte in o.s. Liste sind nicht Teil der Referenzimplementierung/Veröffentlichung auf github.
 
-### Verwendung des Idp-Server im Docker image
+### Idp-Server as docker image
+
+#### Use existing image from docker hub
+
+https://hub.docker.com/repository/docker/gematik1/idp-server
+
+#### Build image of Idp-Server, 2 examples
 
 in project root:
 
-#### build image of Idp-Server
+###### Example 1: build with all tests
 
 ```console 
 $ mvn clean install -pl idp-server -am
 ```
 
-#### start container
+###### Example 2: build without unit/int tests, set parameter commit_hash for dockerfile
+
+```console 
+$ mvn clean install -pl idp-server -am -Dskip.unittests -Dskip.inttests -Dcommit_hash=`git log --pretty=format:'%H' -n 1`
+```
+
+#### Start container
 
 ```console 
 $ docker run --rm -it -p 8571:8080 eu.gcr.io/gematik-all-infra-prod/idp/idp-server:21.0.1
 ```
 
-oder docker compose verwenden:
+or use docker compose:
 
 ```console
 $ mvn clean install -pl idp-server -am
@@ -38,7 +50,7 @@ $ export appVersion=21.0.1
 $ docker-compose --project-name myidp -f docker-compose-ref.yml up -d
 ```
 
-#### smoke test: get discovery document
+#### Smoke test: get discovery document
 
 ```console 
 $ curl http://localhost:8571/auth/realms/idp/.well-known/openid-configuration
@@ -46,21 +58,21 @@ $ curl http://localhost:8571/auth/realms/idp/.well-known/openid-configuration
 
 ### Unittests
 
-Unittests können mit `-Dskip.unittests` deaktiviert werden.
+disable: `-Dskip.unittests`
 
 ### Integrationstests/Zulassungstests
 
-Integrationstests stellen die Tests in der Idp-Testsuite dar.<br>
-Basierend auf der Integrationstestsuite können auch Zulassungstests durchgeführt werden. Mehr Informationen hierzu
-finden sich im [README im submodule idp-testsuite](idp-testsuite/README.md)
+disable: `-Dskip.inttests`
 
-Integrationstests können mit `-Dskip.inttests` deaktiviert werden.
+Tests of the Idp-Testsuite are integration tests as well.<br>
+Based on integration tests, approval tests are poosible. Please refer to
+[README im submodule idp-testsuite](idp-testsuite/README.md).
 
 ## Caveats
 
-Sämtliche Targets müssen aus dem **Basisverzeichnis idp-global** aufgerufen werden!
+Call all build targets always from project root ("idp-global").
 
-## Tokenflow Seiten
+## Tokenflow sites
 
 * [TokenFlow EGK](https://gematik.github.io/ref-idp-server/tokenFlowEgk.html)
 * [TokenFlow PS](https://gematik.github.io/ref-idp-server/tokenFlowPs.html)

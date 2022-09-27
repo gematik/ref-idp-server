@@ -7,12 +7,16 @@
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>21.0.1</version>
+        <version>21.0.3</version>
     </parent>
 
     <artifactId>idp-server</artifactId>
-    <version>21.0.1</version>
+    <version>21.0.3</version>
     <packaging>jar</packaging>
+
+    <properties>
+        <commit_hash>undefined</commit_hash>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -255,6 +259,10 @@
                             <build>
                                 <dockerFile>${basedir}/target/tmpdocker/Dockerfile</dockerFile>
                                 <contextDir>${basedir}/target/tmpdocker</contextDir>
+                                <args>
+                                    <VERSION>${version}</VERSION>
+                                    <COMMIT_HASH>${commit_hash}</COMMIT_HASH>
+                                </args>
                             </build>
                             <name>${docker.image.name.smartcard}:${project.version}</name>
                         </image>
