@@ -6,13 +6,13 @@
     <artifactId>idp-testsuite</artifactId>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
-    <version>21.0.3</version>
+    <version>21.0.7</version>
 
     <parent>
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>21.0.3</version>
+        <version>21.0.7</version>
     </parent>
 
     <properties>

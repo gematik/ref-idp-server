@@ -7,11 +7,11 @@
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>21.0.3</version>
+        <version>21.0.7</version>
     </parent>
 
     <artifactId>idp-server</artifactId>
-    <version>21.0.3</version>
+    <version>21.0.7</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -224,6 +224,7 @@
                 <executions>
                     <execution>
                         <configuration>
+                            <skip>${skip.dockerbuild}</skip>
                             <encoding>UTF-8</encoding>
                             <outputDirectory>${basedir}/target/tmpdocker</outputDirectory>
                             <resources>
@@ -245,7 +246,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <id>copy-docker-resources</id>
-                        <phase>install</phase>
+                        <phase>package</phase>
                     </execution>
                 </executions>
             </plugin>
@@ -254,13 +255,14 @@
                 <artifactId>docker-maven-plugin</artifactId>
                 <version>${version.docker-maven-plugin}</version>
                 <configuration>
+                    <skip>${skip.dockerbuild}</skip>
                     <images>
                         <image>
                             <build>
                                 <dockerFile>${basedir}/target/tmpdocker/Dockerfile</dockerFile>
                                 <contextDir>${basedir}/target/tmpdocker</contextDir>
                                 <args>
-                                    <VERSION>${version}</VERSION>
+                                    <VERSION>${project.version}</VERSION>
                                     <COMMIT_HASH>${commit_hash}</COMMIT_HASH>
                                 </args>
                             </build>
@@ -275,7 +277,7 @@
                             <goal>build</goal>
                         </goals>
                         <id>default</id>
-                        <phase>install</phase>
+                        <phase>package</phase>
                     </execution>
                 </executions>
             </plugin>

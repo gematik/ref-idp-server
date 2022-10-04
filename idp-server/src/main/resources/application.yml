@@ -51,7 +51,7 @@ idp:
       redirectUri: http://localhost:8090/callback
       returnSsoToken: true
     AuthenticatorDevRemote:
-      redirectUri: toBeReplaced
+      redirectUri: http://hidden/callback
       returnSsoToken: true
   errors:
     genericErrorMap:

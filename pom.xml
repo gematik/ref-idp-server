@@ -11,7 +11,7 @@
 
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>21.0.3</version>
+    <version>21.0.7</version>
     <packaging>pom</packaging>
 
     <description>IDP</description>
@@ -34,6 +34,45 @@
         <url>http://www.gematik.de</url>
     </organization>
 
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>gematik</name>
+            <email>software-development@gematik.de</email>
+            <url>https://gematik.github.io/</url>
+            <organization>gematik GmbH</organization>
+            <organizationUrl>https://www.gematik.de/</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/gematik/ref-idp-server.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:gematik/ref-idp-server.git</developerConnection>
+        <url>https://github.com/gematik/ref-idp-server</url>
+    </scm>
+
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/gematik/ref-idp-server/issues</url>
+    </issueManagement>
+
+    <distributionManagement>
+        <repository>
+            <id>releases</id>
+            <url>${releaseDeploymentRepository}</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <url>${snapshotDeploymentRepository}</url>
+        </snapshotRepository>
+    </distributionManagement>
+    
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -136,6 +175,7 @@
         <version.maven-compiler-plugin>3.10.1</version.maven-compiler-plugin>
         <version.maven-enforcer-plugin>3.1.0</version.maven-enforcer-plugin>
         <version.maven-failsafe-plugin>3.0.0-M5</version.maven-failsafe-plugin>
+        <version.maven-gpg-plugin>3.0.1</version.maven-gpg-plugin>
         <version.maven-jar-plugin>3.2.0</version.maven-jar-plugin>
         <version.maven-javadoc-plugin>3.4.1</version.maven-javadoc-plugin>
         <version.maven-project-info-reports-plugin>3.1.1</version.maven-project-info-reports-plugin>
@@ -145,6 +185,7 @@
         <!-- settings for upload to sonar server -->
         <version.maven-source-plugin>3.0.1</version.maven-source-plugin>
         <version.maven-surefire-plugin>3.0.0-M3</version.maven-surefire-plugin>
+        <version.nexus-staging-maven-plugin>1.6.13</version.nexus-staging-maven-plugin>
         <version.sonar-maven-plugin>3.7.0.1746</version.sonar-maven-plugin>
         <version.spring-boot-maven-plugin>2.7.3</version.spring-boot-maven-plugin>
     </properties>
@@ -265,4 +306,45 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>external</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>${version.maven-gpg-plugin}</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <phase>verify</phase>
+                                <configuration>
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>${version.nexus-staging-maven-plugin}</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                            <stagingProgressTimeoutMinutes>20</stagingProgressTimeoutMinutes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

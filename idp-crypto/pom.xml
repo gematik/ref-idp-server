@@ -7,11 +7,11 @@
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>21.0.3</version>
+        <version>21.0.7</version>
     </parent>
 
     <artifactId>idp-crypto</artifactId>
-    <version>21.0.3</version>
+    <version>21.0.7</version>
 
     <dependencies>
         <dependency>

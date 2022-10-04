@@ -1,3 +1,7 @@
+# Release 21.0.7
+
+- publish Idp-client on maven central repository
+
 # Release 21.0.3
 
 - publish docker image at https://hub.docker.com/r/gematik1/idp-server

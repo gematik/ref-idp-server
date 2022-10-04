@@ -8,17 +8,18 @@
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>21.0.3</version>
+        <version>21.0.7</version>
     </parent>
 
     <artifactId>idp-fachdienst</artifactId>
-    <version>21.0.3</version>
+    <version>21.0.7</version>
     <packaging>jar</packaging>
 
     <properties>
         <node.version>v16.14.0</node.version>
         <npm.version>8.3.1</npm.version>
         <frontend-maven-plugin.version>1.12.1</frontend-maven-plugin.version>
+        <commit_hash>undefined</commit_hash>
     </properties>
 
     <dependencies>
@@ -140,6 +141,7 @@
                 <executions>
                     <execution>
                         <configuration>
+                            <skip>${skip.dockerbuild}</skip>
                             <encoding>UTF-8</encoding>
                             <outputDirectory>${basedir}/target/tmpdocker</outputDirectory>
                             <resources>
@@ -161,7 +163,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <id>copy-docker-resources</id>
-                        <phase>install</phase>
+                        <phase>package</phase>
                     </execution>
                     <execution>
                         <id>Copy Vue frontend into Spring Boot target static folder</id>
@@ -186,10 +188,15 @@
                 <artifactId>docker-maven-plugin</artifactId>
                 <version>${version.docker-maven-plugin}</version>
                 <configuration>
+                    <skip>${skip.dockerbuild}</skip>
                     <images>
                         <image>
                             <build>
                                 <dockerFile>${basedir}/target/tmpdocker/Dockerfile</dockerFile>
+                                <args>
+                                    <VERSION>${project.version}</VERSION>
+                                    <COMMIT_HASH>${commit_hash}</COMMIT_HASH>
+                                </args>
                             </build>
                             <name>${docker.image.name.fachdienst}:${project.version}</name>
                         </image>
@@ -202,7 +209,7 @@
                             <goal>build</goal>
                         </goals>
                         <id>default</id>
-                        <phase>install</phase>
+                        <phase>package</phase>
                     </execution>
                 </executions>
             </plugin>
