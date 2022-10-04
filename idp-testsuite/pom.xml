@@ -6,13 +6,13 @@
     <artifactId>idp-testsuite</artifactId>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
-    <version>21.0.7</version>
+    <version>21.0.8</version>
 
     <parent>
         <artifactId>idp-global</artifactId>
         <groupId>de.gematik.idp</groupId>
         <relativePath>../pom.xml</relativePath>
-        <version>21.0.7</version>
+        <version>21.0.8</version>
     </parent>
 
     <properties>
@@ -556,7 +556,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>${version.maven-javadoc-plugin}</version>
                 <configuration>
                     <tags>
                         <tag>
