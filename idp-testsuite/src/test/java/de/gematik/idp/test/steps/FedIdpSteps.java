@@ -68,7 +68,7 @@ public class FedIdpSteps extends IdpStepsBase {
     public void fetchFachdienstIdpList() {
 
         final Map<String, Object> ctxt = de.gematik.test.bdd.Context.get().getMapForCurrentThread();
-        final String url = Context.get().getString(ContextKey.FACHDIENST_URL) + IdpConstants.ENTITY_LISTING_ENDPOINT;
+        final String url = Context.get().getString(ContextKey.FACHDIENST_URL) + IdpConstants.IDP_LIST_ENDPOINT;
         final Response resp = requestResponseAndAssertStatus(
             url, null, HttpMethods.GET,
             null, null, HttpStatus.SUCCESS);
@@ -109,7 +109,7 @@ public class FedIdpSteps extends IdpStepsBase {
 
     private String getIssByName(final String name, final String entityList) {
         final Map<String, Object> bodyClaims = new JsonWebToken(entityList).getBodyClaims();
-        final List<Map<String, Object>> idpEntityList = (List<Map<String, Object>>) bodyClaims.get("idp_entity_list");
+        final List<Map<String, Object>> idpEntityList = (List<Map<String, Object>>) bodyClaims.get("idp_entity");
         final Map<String, Object> m = idpEntityList
             .stream()
             .filter(o -> o.get("organization_name").equals(name))

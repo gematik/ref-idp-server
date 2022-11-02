@@ -1,3 +1,7 @@
+# Release 21.0.12
+
+- update dependencies
+
 # Release 21.0.8
 
 - fix: add source plugin and javadoc to bring Idp-Client to maven central repository

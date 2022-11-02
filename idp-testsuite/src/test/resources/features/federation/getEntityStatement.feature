@@ -41,7 +41,7 @@ Feature: EntityStatements abrufen
     When IDP I fetch fachdienst EntityStatement
     And TGR find request to path "/.well-known/openid-federation"
     Then the response status is 200
-    And IDP the response content type matches 'application/jose.*'
+    And IDP the response content type matches 'application/entity-statement+jwt;charset=UTF-8'
 
   @Product:Fachdienst
   @TCID:FACHDIENST_ENTITY_STATEMENT_002 @PRIO:1
@@ -59,7 +59,7 @@ Feature: EntityStatements abrufen
         """
 {
   alg: "ES256",
-  typ: "JWT",
+  typ: "entity-statement+jwt",
   kid: "puk_fachdienst_sig"
 }
         """
@@ -145,7 +145,7 @@ Feature: EntityStatements abrufen
     When IDP I fetch fedmaster EntityStatement
     And TGR find request to path "/.well-known/openid-federation"
     Then the response status is 200
-    And IDP the response content type matches 'application/jose.*'
+    And IDP the response content type matches 'application/entity-statement+jwt;charset=UTF-8'
 
 
   @Product:FedMaster
@@ -165,7 +165,7 @@ Feature: EntityStatements abrufen
         """
 {
   alg: "ES256",
-  typ: "JWT",
+  typ: "entity-statement+jwt",
   kid: "puk_fed_sig"
 }
         """
@@ -207,7 +207,9 @@ Feature: EntityStatements abrufen
   },
   metadata: {
     federation_entity: {
-      federation_api_endpoint: 'http.*/federation_api_endpoint'
+      federation_fetch_endpoint: 'http.*/federation_fetch_endpoint',
+      federation_list_endpoint: 'http.*/federation_list',
+      idp_list_endpoint: 'http.*/.well-known/idp_list'
     }
   }
 }
@@ -231,7 +233,7 @@ Feature: EntityStatements abrufen
     When IDP I fetch fed sektoral idp EntityStatement
     And TGR find request to path "/.well-known/openid-federation"
     Then the response status is 200
-    And IDP the response content type matches 'application/jose.*'
+    And IDP the response content type matches 'application/entity-statement+jwt;charset=UTF-8'
 
 
   @Product:FedIdp
@@ -251,7 +253,7 @@ Feature: EntityStatements abrufen
         """
 {
   alg: "ES256",
-  typ: "JWT",
+  typ: "entity-statement+jwt",
   kid: "puk_fed_idp_sig"
 }
         """

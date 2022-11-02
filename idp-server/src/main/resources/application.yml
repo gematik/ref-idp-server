@@ -53,6 +53,9 @@ idp:
     AuthenticatorDevRemote:
       redirectUri: http://hidden/callback
       returnSsoToken: true
+    GematikNotificationGateway:
+      redirectUri: http://localhost:9042/notification-gateway/callback
+      returnSsoToken: true
   errors:
     genericErrorMap:
       client_id:

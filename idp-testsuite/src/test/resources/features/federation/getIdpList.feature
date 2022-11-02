@@ -57,13 +57,13 @@ Feature: IDP Liste am Fachdienst abrufen
 
     Given TGR clear recorded messages
     And IDP I fetch the Fachdienst's IDP List
-    When TGR find request to path "/.well-known/entity_listing"
+    When TGR find request to path "/.well-known/idp_list"
     Then TGR current response at "$.body.header" matches as JSON:
         """
         {
           alg: "ES256",
           kid: ".*",
-          typ: "JWT"
+          typ: "idp-list+jwt"
         }
         """
 
@@ -78,17 +78,17 @@ Feature: IDP Liste am Fachdienst abrufen
   - iss,
   - iat,
   - exp,
-  - idp_entry_list
+  - idp_entity
 
 
     Given TGR clear recorded messages
     And IDP I fetch the Fachdienst's IDP List
-    When TGR find request to path "/.well-known/entity_listing"
+    When TGR find request to path "/.well-known/idp_list"
     Then TGR current response at "$.body.body" matches as JSON:
         """
           { iss:                   'http.*',
             iat:                   "${json-unit.ignore}",
-            idp_entity_list:       [{"organization_name":"IDP_SEKTORAL","iss":".*","user_type_supported":"IP","logo_uri":"todo-logo"}],
+            idp_entity:       [{"organization_name":"IDP_SEKTORAL","iss":".*","user_type_supported":"IP","logo_uri":"todo-logo"}],
             exp:                   "${json-unit.ignore}"
           }
         """

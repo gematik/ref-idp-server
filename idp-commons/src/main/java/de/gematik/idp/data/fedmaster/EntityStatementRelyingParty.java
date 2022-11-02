@@ -37,6 +37,7 @@ public class EntityStatementRelyingParty {
 
     private String iss;
     private String sub;
+    private String aud;
     private long iat;
     private long exp;
     private IdpJwksDocument jwks;

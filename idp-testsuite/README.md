@@ -70,7 +70,7 @@ mit dem aktuellen Release sind folgende Testszenarien abgedeckt:
 
 ## Installation der notwendigen Software
 
-* OpenJDK 11
+* OpenJDK (Version in pom: ${version.java})
 * Maven
 * Jetbrains Intellij (optional)
 

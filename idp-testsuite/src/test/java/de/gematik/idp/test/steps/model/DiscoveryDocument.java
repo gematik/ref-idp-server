@@ -73,6 +73,9 @@ public class DiscoveryDocument {
     private final String kkAppListUri;
 
     public static String adaptUrlToSymbolicIdpHost(String url) {
+        if (url.contains("pairing")) {
+            return url;
+        }
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
         return builder.host(IdpTestEnvironmentConfigurator.getFqdnInternet()).port(null).scheme("http").toUriString();
     }

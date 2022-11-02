@@ -33,12 +33,14 @@ import de.gematik.idp.server.services.SsoTokenValidator;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.SsoTokenBuilder;
+import java.security.Security;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,6 +55,11 @@ class SsoTokenValidatorTest {
     private SsoTokenBuilder ssoTokenBuilder;
     private final ServerUrlService urlService = new ServerUrlService(new IdpConfiguration());
     private SecretKeySpec tokenEncryptionKey;
+
+    static {
+        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+        Security.insertProviderAt(new BouncyCastleProvider(), 1);
+    }
 
     @BeforeEach
     public void init(

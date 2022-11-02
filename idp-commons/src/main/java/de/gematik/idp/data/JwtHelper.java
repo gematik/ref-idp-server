@@ -33,13 +33,13 @@ import lombok.NonNull;
 public final class JwtHelper {
 
     public static String signJson(final IdpJwtProcessor jwtProcessor, final ObjectMapper objectMapper,
-        final Object object) {
+        final Object object, String typ) {
         try {
             return jwtProcessor
                 .buildJws(
                     objectMapper.writeValueAsString(object),
                     Map.ofEntries(
-                        Map.entry("typ", "JWT")
+                        Map.entry("typ", typ)
                     ),
                     false)
                 .getRawString();

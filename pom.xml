@@ -6,12 +6,12 @@
     <parent>
         <artifactId>spring-boot-starter-parent</artifactId>
         <groupId>org.springframework.boot</groupId>
-        <version>2.7.3</version>
+        <version>2.7.5</version>
     </parent>
 
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>21.0.8</version>
+    <version>21.0.12</version>
     <packaging>pom</packaging>
 
     <description>IDP</description>
@@ -72,7 +72,7 @@
             <url>${snapshotDeploymentRepository}</url>
         </snapshotRepository>
     </distributionManagement>
-    
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -150,12 +150,11 @@
 
         <version.aforeporter>1.2.1</version.aforeporter>
         <version.assertj>3.23.1</version.assertj>
-        <version.bouncycastle.bcpkix>1.71.1</version.bouncycastle.bcpkix>
+        <version.bouncycastle.bcpkix>1.72</version.bouncycastle.bcpkix>
         <version.commons-io>2.11.0</version.commons-io>
         <version.gemLibPki>0.9.3</version.gemLibPki>
-        <version.h2>2.1.212</version.h2>
-        <version.json>20220320</version.json>
-        <version.jsoniter>0.9.23</version.jsoniter>
+        <version.h2>2.1.214</version.h2>
+        <version.json>20220924</version.json>
         <!--higher versions do not work -->
         <version.liquibase>4.7.1</version.liquibase>
         <version.logback>1.2.9</version.logback>
@@ -163,31 +162,32 @@
         <version.plexus-utils>3.4.2</version.plexus-utils>
         <version.rest-assured>5.2.0</version.rest-assured>
         <version.serenity.core>3.2.4</version.serenity.core>
-        <version.tiger>0.24.0</version.tiger>
-        <version.unirest>3.13.11</version.unirest>
+        <version.tiger>0.24.2</version.tiger>
+        <version.unirest>3.13.12</version.unirest>
 
-        <version.build-helper-maven-plugin>3.2.0</version.build-helper-maven-plugin>
-        <version.docker-maven-plugin>0.34.1</version.docker-maven-plugin>
+        <version.build-helper-maven-plugin>3.3.0</version.build-helper-maven-plugin>
+        <version.docker-maven-plugin>0.40.2</version.docker-maven-plugin>
         <version.copy-rename-maven-plugin>1.0.1</version.copy-rename-maven-plugin>
         <version.jacoco-maven-plugin>0.8.8</version.jacoco-maven-plugin>
         <version.maven>3.8.6</version.maven>
-        <version.maven-clean-plugin>3.1.0</version.maven-clean-plugin>
+        <version.maven-clean-plugin>3.2.0</version.maven-clean-plugin>
         <version.maven-compiler-plugin>3.10.1</version.maven-compiler-plugin>
         <version.maven-enforcer-plugin>3.1.0</version.maven-enforcer-plugin>
-        <version.maven-failsafe-plugin>3.0.0-M5</version.maven-failsafe-plugin>
+        <version.maven-failsafe-plugin>3.0.0-M7</version.maven-failsafe-plugin>
         <version.maven-gpg-plugin>3.0.1</version.maven-gpg-plugin>
-        <version.maven-jar-plugin>3.2.0</version.maven-jar-plugin>
+        <version.maven-jar-plugin>3.3.0</version.maven-jar-plugin>
         <version.maven-javadoc-plugin>3.4.1</version.maven-javadoc-plugin>
-        <version.maven-project-info-reports-plugin>3.1.1</version.maven-project-info-reports-plugin>
+        <version.maven-project-info-reports-plugin>3.4.1</version.maven-project-info-reports-plugin>
         <!-- only needed for mvn site to avoid stack traces flooding the console -->
-        <version.maven-resources-plugin>3.2.0</version.maven-resources-plugin>
-        <version.maven-site-plugin>3.9.1</version.maven-site-plugin>
+        <version.maven-resources-plugin>3.3.0</version.maven-resources-plugin>
+        <version.maven-site-plugin>3.12.1</version.maven-site-plugin>
         <!-- settings for upload to sonar server -->
-        <version.maven-source-plugin>3.0.1</version.maven-source-plugin>
-        <version.maven-surefire-plugin>3.0.0-M3</version.maven-surefire-plugin>
+        <version.maven-source-plugin>3.2.1</version.maven-source-plugin>
+        <version.maven-surefire-plugin>3.0.0-M7</version.maven-surefire-plugin>
         <version.nexus-staging-maven-plugin>1.6.13</version.nexus-staging-maven-plugin>
-        <version.sonar-maven-plugin>3.7.0.1746</version.sonar-maven-plugin>
-        <version.spring-boot-maven-plugin>2.7.3</version.spring-boot-maven-plugin>
+        <version.sonar-maven-plugin>3.9.1.2184</version.sonar-maven-plugin>
+        <version.spring-boot-maven-plugin>2.7.5</version.spring-boot-maven-plugin>
+        <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
     </properties>
 
     <build>

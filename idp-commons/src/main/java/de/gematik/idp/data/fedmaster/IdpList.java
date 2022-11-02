@@ -29,11 +29,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class EntityListing {
+public class IdpList {
 
     private String iss;
     private long iat;
     private long exp;
-    private List<EntityListEntry> idpEntityList;
+    private List<IdpListEntry> idpEntity;
 
 }
