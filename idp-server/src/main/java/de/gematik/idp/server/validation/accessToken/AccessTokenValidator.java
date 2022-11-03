@@ -24,25 +24,26 @@ import javax.validation.ConstraintValidatorContext;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class AccessTokenValidator implements ConstraintValidator<ValidateKvnrWithAccessToken, String> {
+public class AccessTokenValidator
+    implements ConstraintValidator<ValidateKvnrWithAccessToken, String> {
 
-    private ClaimName targetClaim;
-    private final RequestAccessToken requestAccessToken;
+  private final RequestAccessToken requestAccessToken;
+  private ClaimName targetClaim;
 
-    @Override
-    public void initialize(final ValidateKvnrWithAccessToken constraintAnnotation) {
-        targetClaim = constraintAnnotation.shouldMatch();
-    }
+  @Override
+  public void initialize(final ValidateKvnrWithAccessToken constraintAnnotation) {
+    targetClaim = constraintAnnotation.shouldMatch();
+  }
 
-    @Override
-    public boolean isValid(final String value, final ConstraintValidatorContext context) {
-        return Optional.ofNullable(requestAccessToken.getAccessToken())
-            .map(accessToken -> accessToken.getBodyClaim(targetClaim))
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .filter(String.class::isInstance)
-            .map(String.class::cast)
-            .map(claimValue -> claimValue.equals(value))
-            .orElse(false);
-    }
+  @Override
+  public boolean isValid(final String value, final ConstraintValidatorContext context) {
+    return Optional.ofNullable(requestAccessToken.getAccessToken())
+        .map(accessToken -> accessToken.getBodyClaim(targetClaim))
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .filter(String.class::isInstance)
+        .map(String.class::cast)
+        .map(claimValue -> claimValue.equals(value))
+        .orElse(false);
+  }
 }

@@ -1,3 +1,7 @@
+# Release 21.0.14
+
+- reformat code: spotless-maven-plugin, style: GOOGLE
+
 # Release 21.0.12
 
 - update dependencies
@@ -44,7 +48,8 @@
 
 - Dependencies aktualisiert
 - Federation Master, Fachdienst und Sektoralen IDP mit ersten Endpunkten für PoC bereitgestellt
-- Testsuite akzeptiert jetzt zusätzliche Scopes im Discovery Document und zusätzliche Schlüssel im JWKS
+- Testsuite akzeptiert jetzt zusätzliche Scopes im Discovery Document und zusätzliche Schlüssel im
+  JWKS
 - IDP Client unterstützt jetzt den Claim "e-rezept-dev"
 - tiger-test-lib version korrigiert
 
@@ -52,9 +57,11 @@
 
 - Bereitstellung eines MVP für einen sektoralen IDP
 - Unterstützung des Fast Track Flows im IDP Server
-- Erweiterung der Testsuite um Testfälle für den Fast Track (gekennzeichnet über @FastTrack Annotation)
+- Erweiterung der Testsuite um Testfälle für den Fast Track (gekennzeichnet über @FastTrack
+  Annotation)
 - Die vom sektoralen IDP bereitgestellten Token sind momentan noch statisch
-- Der sektorale IDP bietet keine Authentisierungsmethode an, sondern liefert direkt den AUTHORIZATION_CODE aus
+- Der sektorale IDP bietet keine Authentisierungsmethode an, sondern liefert direkt den
+  AUTHORIZATION_CODE aus
 - Noch keine Tokenverschlüsslung auf der Strecke zwischen zentralem und sektoralem IDP
 - Erweiterung eines Testfalls um weitere HBA-Ausprägungen
 - Für SMC-Bs wird jetzt der commonName statt des organizationNames verwendet
@@ -176,7 +183,8 @@
 
 RELEASE 7.0.0 IDP
 
-- Es gibt einen TokenLoggerTest der die Tokens des Workflows in ein Dokument speichert (siehe idp-server/target)
+- Es gibt einen TokenLoggerTest der die Tokens des Workflows in ein Dokument speichert (siehe
+  idp-server/target)
 - Prüfungen Tokengültigkeit
 - diverse Tokenclaims angepasst
 - Tokenverschlüsselung umgesetzt Testsuite

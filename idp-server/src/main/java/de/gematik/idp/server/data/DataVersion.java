@@ -18,5 +18,5 @@ package de.gematik.idp.server.data;
 
 public interface DataVersion {
 
-    public String getDataVersion();
+  public String getDataVersion();
 }

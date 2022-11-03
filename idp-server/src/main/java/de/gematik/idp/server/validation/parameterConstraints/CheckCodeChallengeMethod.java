@@ -35,18 +35,19 @@ import javax.validation.Payload;
 @Retention(RUNTIME)
 public @interface CheckCodeChallengeMethod {
 
-    String message() default "2008";
+  String message() default "2008";
 
-    Class<?>[] groups() default {};
+  Class<?>[] groups() default {};
 
-    Class<? extends Payload>[] payload() default {};
+  Class<? extends Payload>[] payload() default {};
 
-    class CodeChallengeMethodVerifier implements ConstraintValidator<CheckCodeChallengeMethod, CodeChallengeMethod> {
+  class CodeChallengeMethodVerifier
+      implements ConstraintValidator<CheckCodeChallengeMethod, CodeChallengeMethod> {
 
-        @Override
-        public boolean isValid(final CodeChallengeMethod codeChallengeMethod,
-            final ConstraintValidatorContext context) {
-            return codeChallengeMethod == CodeChallengeMethod.S256;
-        }
+    @Override
+    public boolean isValid(
+        final CodeChallengeMethod codeChallengeMethod, final ConstraintValidatorContext context) {
+      return codeChallengeMethod == CodeChallengeMethod.S256;
     }
+  }
 }

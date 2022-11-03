@@ -16,7 +16,14 @@
 
 package de.gematik.idp.server.data;
 
-import static de.gematik.idp.field.ClaimName.*;
+import static de.gematik.idp.field.ClaimName.CLIENT_ID;
+import static de.gematik.idp.field.ClaimName.CODE_CHALLENGE;
+import static de.gematik.idp.field.ClaimName.CODE_CHALLENGE_METHOD;
+import static de.gematik.idp.field.ClaimName.NONCE;
+import static de.gematik.idp.field.ClaimName.REDIRECT_URI;
+import static de.gematik.idp.field.ClaimName.RESPONSE_TYPE;
+import static de.gematik.idp.field.ClaimName.STATE;
+
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Builder;
@@ -26,30 +33,29 @@ import lombok.Getter;
 @Builder
 public class FasttrackSession {
 
-    // userAgent == e.g. eRezeptApp, outer session related artifacts
-    private final String userAgentCodeChallenge;
-    private final String userAgentCodeChallengeMethod;
-    private final String userAgentNonce;
-    private final String userAgentState;
-    private final String userAgentId;
-    private final String userAgentSekIdp;
-    private final String userAgentRedirectUri;
-    private final String userResponseType;
+  // userAgent == e.g. eRezeptApp, outer session related artifacts
+  private final String userAgentCodeChallenge;
+  private final String userAgentCodeChallengeMethod;
+  private final String userAgentNonce;
+  private final String userAgentState;
+  private final String userAgentId;
+  private final String userAgentSekIdp;
+  private final String userAgentRedirectUri;
+  private final String userResponseType;
 
+  // IDP-Server, inner session related artifacts
+  private final String idpCodeVerifier;
 
-    // IDP-Server, inner session related artifacts
-    private final String idpCodeVerifier;
+  public Map<String, String> getSessionDataAsMap() {
+    final Map<String, String> sessionMap = new HashMap<>();
+    sessionMap.put(CODE_CHALLENGE.getJoseName(), userAgentCodeChallenge);
+    sessionMap.put(CODE_CHALLENGE_METHOD.getJoseName(), userAgentCodeChallengeMethod);
+    sessionMap.put(NONCE.getJoseName(), userAgentNonce);
+    sessionMap.put(STATE.getJoseName(), userAgentState);
+    sessionMap.put(REDIRECT_URI.getJoseName(), userAgentRedirectUri);
+    sessionMap.put(CLIENT_ID.getJoseName(), userAgentId);
+    sessionMap.put(RESPONSE_TYPE.getJoseName(), userResponseType);
 
-    public Map<String, String> getSessionDataAsMap() {
-        final Map<String, String> sessionMap = new HashMap<>();
-        sessionMap.put(CODE_CHALLENGE.getJoseName(), userAgentCodeChallenge);
-        sessionMap.put(CODE_CHALLENGE_METHOD.getJoseName(), userAgentCodeChallengeMethod);
-        sessionMap.put(NONCE.getJoseName(), userAgentNonce);
-        sessionMap.put(STATE.getJoseName(), userAgentState);
-        sessionMap.put(REDIRECT_URI.getJoseName(), userAgentRedirectUri);
-        sessionMap.put(CLIENT_ID.getJoseName(), userAgentId);
-        sessionMap.put(RESPONSE_TYPE.getJoseName(), userResponseType);
-
-        return sessionMap;
-    }
+    return sessionMap;
+  }
 }

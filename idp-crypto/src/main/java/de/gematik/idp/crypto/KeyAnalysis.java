@@ -24,7 +24,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class KeyAnalysis {
 
-    public static boolean isEcKey(final PublicKey publicKey) {
-        return publicKey instanceof ECPublicKey;
-    }
+  public static boolean isEcKey(final PublicKey publicKey) {
+    return publicKey instanceof ECPublicKey;
+  }
 }

@@ -30,10 +30,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class IdpTokenResult {
 
-    private JsonWebToken accessToken;
-    private JsonWebToken idToken;
-    private int expiresIn;
-    private String tokenType;
-    private IdpJwe ssoToken;
-    private LocalDateTime validUntil;
+  private JsonWebToken accessToken;
+  private JsonWebToken idToken;
+  private int expiresIn;
+  private String tokenType;
+  private IdpJwe ssoToken;
+  private LocalDateTime validUntil;
 }

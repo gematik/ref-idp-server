@@ -18,6 +18,7 @@ package de.gematik.idp.crypto;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import java.io.File;
@@ -31,58 +32,62 @@ import org.junit.jupiter.api.Test;
 
 public class EcSignerUtilityTest {
 
-    private static PkiIdentity identity;
-    private static PkiIdentity otherIdentity;
+  private static PkiIdentity identity;
+  private static PkiIdentity otherIdentity;
 
-    static {
-        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-        Security.insertProviderAt(new BouncyCastleProvider(), 1);
-    }
+  static {
+    Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+    Security.insertProviderAt(new BouncyCastleProvider(), 1);
+  }
 
-    @BeforeAll
-    public static void init() throws IOException {
-        identity = certificateDataFrom(
-            "src/test/resources/109500969_X114428530_c.ch.aut-ecc.p12");
-        otherIdentity = certificateDataFrom(
-            "src/test/resources/833621999741600_c.hci.aut-apo-ecc.p12");
-    }
+  @BeforeAll
+  public static void init() throws IOException {
+    identity = certificateDataFrom("src/test/resources/109500969_X114428530_c.ch.aut-ecc.p12");
+    otherIdentity = certificateDataFrom("src/test/resources/833621999741600_c.hci.aut-apo-ecc.p12");
+  }
 
-    private static PkiIdentity certificateDataFrom(final String filename) throws IOException {
-        return CryptoLoader.getIdentityFromP12(FileUtils.readFileToByteArray(new File(filename)), "00");
-    }
+  private static PkiIdentity certificateDataFrom(final String filename) throws IOException {
+    return CryptoLoader.getIdentityFromP12(FileUtils.readFileToByteArray(new File(filename)), "00");
+  }
 
-    @Test
-    void createSignatureAndVerifyWithSameKey() {
-        final byte[] ecSignature = EcSignerUtility.createEcSignature("foobar".getBytes(), identity.getPrivateKey());
-        EcSignerUtility.verifyEcSignatureAndThrowExceptionWhenFail("foobar".getBytes(),
-            identity.getCertificate().getPublicKey(),
-            ecSignature);
-    }
+  @Test
+  void createSignatureAndVerifyWithSameKey() {
+    final byte[] ecSignature =
+        EcSignerUtility.createEcSignature("foobar".getBytes(), identity.getPrivateKey());
+    EcSignerUtility.verifyEcSignatureAndThrowExceptionWhenFail(
+        "foobar".getBytes(), identity.getCertificate().getPublicKey(), ecSignature);
+  }
 
-    @Test
-    void createSignatureAndVerifyWithOtherKey_shouldFail() {
-        final byte[] toBeSigned = "foobar".getBytes();
-        final byte[] ecSignature = EcSignerUtility.createEcSignature(toBeSigned, identity.getPrivateKey());
-        assertThat(ecSignature).hasSizeGreaterThan(0);
-        PublicKey publicKeyOtherIdentity = otherIdentity.getCertificate().getPublicKey();
-        assertThat(publicKeyOtherIdentity).isNotNull();
+  @Test
+  void createSignatureAndVerifyWithOtherKey_shouldFail() {
+    final byte[] toBeSigned = "foobar".getBytes();
+    final byte[] ecSignature =
+        EcSignerUtility.createEcSignature(toBeSigned, identity.getPrivateKey());
+    assertThat(ecSignature).hasSizeGreaterThan(0);
+    PublicKey publicKeyOtherIdentity = otherIdentity.getCertificate().getPublicKey();
+    assertThat(publicKeyOtherIdentity).isNotNull();
 
-        assertThatThrownBy(() -> EcSignerUtility
-            .verifyEcSignatureAndThrowExceptionWhenFail(toBeSigned, publicKeyOtherIdentity, ecSignature))
-            .isInstanceOf(IdpCryptoException.class);
-    }
+    assertThatThrownBy(
+            () ->
+                EcSignerUtility.verifyEcSignatureAndThrowExceptionWhenFail(
+                    toBeSigned, publicKeyOtherIdentity, ecSignature))
+        .isInstanceOf(IdpCryptoException.class);
+  }
 
-    @Test
-    void createSignatureAndVerifyWithDifferentContent_shouldFail() {
-        final byte[] toBeSigned = "foobar".getBytes();
-        final byte[] toBeSignedOther = "barfoo".getBytes();
-        final byte[] ecSignature = EcSignerUtility.createEcSignature(toBeSigned, identity.getPrivateKey());
-        assertThat(ecSignature).hasSizeGreaterThan(0);
-        PublicKey publicKeyIdentity = identity.getCertificate().getPublicKey();
-        assertThat(publicKeyIdentity).isNotNull();
+  @Test
+  void createSignatureAndVerifyWithDifferentContent_shouldFail() {
+    final byte[] toBeSigned = "foobar".getBytes();
+    final byte[] toBeSignedOther = "barfoo".getBytes();
+    final byte[] ecSignature =
+        EcSignerUtility.createEcSignature(toBeSigned, identity.getPrivateKey());
+    assertThat(ecSignature).hasSizeGreaterThan(0);
+    PublicKey publicKeyIdentity = identity.getCertificate().getPublicKey();
+    assertThat(publicKeyIdentity).isNotNull();
 
-        assertThatThrownBy(() -> EcSignerUtility
-            .verifyEcSignatureAndThrowExceptionWhenFail(toBeSignedOther, publicKeyIdentity, ecSignature))
-            .isInstanceOf(IdpCryptoException.class);
-    }
+    assertThatThrownBy(
+            () ->
+                EcSignerUtility.verifyEcSignatureAndThrowExceptionWhenFail(
+                    toBeSignedOther, publicKeyIdentity, ecSignature))
+        .isInstanceOf(IdpCryptoException.class);
+  }
 }

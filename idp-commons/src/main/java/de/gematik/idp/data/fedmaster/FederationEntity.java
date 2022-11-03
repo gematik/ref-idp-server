@@ -30,8 +30,7 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class FederationEntity {
 
-    private String federationFetchEndpoint;
-    private String federationListEndpoint;
-    private String idpListEndpoint;
-
+  private String federationFetchEndpoint;
+  private String federationListEndpoint;
+  private String idpListEndpoint;
 }

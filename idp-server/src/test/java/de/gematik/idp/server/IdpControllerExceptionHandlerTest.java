@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.UriUtils;
@@ -43,34 +44,32 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-
 @ExtendWith(SpringExtension.class)
 @ExtendWith(PkiKeyResolver.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class IdpControllerExceptionHandlerTest {
 
-    private final static String EXCEPTION_TEXT = "exception text";
+  private static final String EXCEPTION_TEXT = "exception text";
 
-    @LocalServerPort
-    private int port;
-    @MockBean
-    private IdpAuthenticator idpAuthenticator;
-    private String serverUrl;
+  @LocalServerPort private int port;
+  @MockBean private IdpAuthenticator idpAuthenticator;
+  private String serverUrl;
 
-    @BeforeAll
-    void init() {
-        serverUrl = "http://localhost:" + port;
-        Unirest.config().reset();
-        Unirest.config().followRedirects(false);
-    }
+  @BeforeAll
+  void init() {
+    serverUrl = "http://localhost:" + port;
+    Unirest.config().reset();
+    Unirest.config().followRedirects(false);
+  }
 
-
-    @Test
-    void testIdpServerInvalidRequestException() {
-        doThrow(new IdpServerException(IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST))
-            .when(idpAuthenticator).validateRedirectUri(any(), any());
-        final HttpResponse<JsonNode> response = Unirest.get(serverUrl + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
+  @Test
+  void testIdpServerInvalidRequestException() {
+    doThrow(new IdpServerException(IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST))
+        .when(idpAuthenticator)
+        .validateRedirectUri(any(), any());
+    final HttpResponse<JsonNode> response =
+        Unirest.get(serverUrl + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
             .queryString("signed_challenge", "signed_challenge")
             .queryString("client_id", TestConstants.CLIENT_ID_E_REZEPT_APP)
             .queryString("state", "state")
@@ -83,22 +82,23 @@ class IdpControllerExceptionHandlerTest {
             .accept(MediaType.APPLICATION_JSON.toString())
             .asJson();
 
-        final JSONObject errorObject = response.getBody().getObject();
+    final JSONObject errorObject = response.getBody().getObject();
 
-        assertThat(response.getStatus()).isEqualTo(400);
-        assertThat(errorObject.getString("error")).isEqualTo("invalid_request");
-        assertThat(errorObject.get("gematik_uuid")).isNotNull();
-        assertThat(errorObject.get("gematik_timestamp")).isNotNull();
-    }
+    assertThat(response.getStatus()).isEqualTo(400);
+    assertThat(errorObject.getString("error")).isEqualTo("invalid_request");
+    assertThat(errorObject.get("gematik_uuid")).isNotNull();
+    assertThat(errorObject.get("gematik_timestamp")).isNotNull();
+  }
 
+  @Test
+  void testIdpServerInvalidLengthNonceException() {
 
-    @Test
-    void testIdpServerInvalidLengthNonceException() {
-
-        doThrow(new IdpServerException(IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST))
-            .when(idpAuthenticator).validateRedirectUri(any(), any());
-        String nonceToLong = "fdsalkfdksalfdsawertzuiopasdfghdd";
-        final HttpResponse<JsonNode> response = Unirest.get(serverUrl + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
+    doThrow(new IdpServerException(IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST))
+        .when(idpAuthenticator)
+        .validateRedirectUri(any(), any());
+    String nonceToLong = "fdsalkfdksalfdsawertzuiopasdfghdd";
+    final HttpResponse<JsonNode> response =
+        Unirest.get(serverUrl + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
             .queryString("signed_challenge", "signed_challenge")
             .queryString("client_id", TestConstants.CLIENT_ID_E_REZEPT_APP)
             .queryString("state", "state")
@@ -111,23 +111,25 @@ class IdpControllerExceptionHandlerTest {
             .accept(MediaType.APPLICATION_JSON.toString())
             .asJson();
 
-        final JSONObject errorObject = response.getBody().getObject();
+    final JSONObject errorObject = response.getBody().getObject();
 
-        assertThat(response.getStatus()).isEqualTo(400);
-        assertThat(errorObject.getString("error")).isEqualTo("invalid_request");
-        assertThat(errorObject.get("gematik_uuid")).isNotNull();
-        assertThat(errorObject.get("gematik_timestamp")).isNotNull();
-        assertThat(errorObject.get("gematik_error_text")).isEqualTo("nonce ist ungültig");
-    }
+    assertThat(response.getStatus()).isEqualTo(400);
+    assertThat(errorObject.getString("error")).isEqualTo("invalid_request");
+    assertThat(errorObject.get("gematik_uuid")).isNotNull();
+    assertThat(errorObject.get("gematik_timestamp")).isNotNull();
+    assertThat(errorObject.get("gematik_error_text")).isEqualTo("nonce ist ungültig");
+  }
 
-    @Test
-    void testIdpServerInvalidLengthStateException() {
+  @Test
+  void testIdpServerInvalidLengthStateException() {
 
-        doThrow(new IdpServerException(IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST))
-            .when(idpAuthenticator).validateRedirectUri(any(), any());
-        String nonceCorrectLength = "dsalkfdksalfdsawertzuiopasdfghdd";
-        String stateToLong = "fdsalkfdksalfdsawertzuiopasdfghdd";
-        final HttpResponse<JsonNode> response = Unirest.get(serverUrl + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
+    doThrow(new IdpServerException(IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST))
+        .when(idpAuthenticator)
+        .validateRedirectUri(any(), any());
+    String nonceCorrectLength = "dsalkfdksalfdsawertzuiopasdfghdd";
+    String stateToLong = "fdsalkfdksalfdsawertzuiopasdfghdd";
+    final HttpResponse<JsonNode> response =
+        Unirest.get(serverUrl + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
             .queryString("signed_challenge", "signed_challenge")
             .queryString("client_id", TestConstants.CLIENT_ID_E_REZEPT_APP)
             .queryString("state", stateToLong)
@@ -140,45 +142,48 @@ class IdpControllerExceptionHandlerTest {
             .accept(MediaType.APPLICATION_JSON.toString())
             .asJson();
 
-        final JSONObject errorObject = response.getBody().getObject();
+    final JSONObject errorObject = response.getBody().getObject();
 
-        assertThat(response.getStatus()).isEqualTo(302);
-        assertThat(response.getHeaders().get("Location").get(0)).contains("state%20ist%20ung%C3%BCltig");
-    }
+    assertThat(response.getStatus()).isEqualTo(302);
+    assertThat(response.getHeaders().get("Location").get(0))
+        .contains("state%20ist%20ung%C3%BCltig");
+  }
 
-    @Test
-    void authentication_idpServerException_expectRedirect() {
-        when(idpAuthenticator.getBasicFlowTokenLocation(any()))
-            .thenThrow(new IdpServerException(EXCEPTION_TEXT, IdpErrorType.INVALID_REQUEST, HttpStatus.FOUND));
-        final HttpResponse response = Unirest.post(serverUrl + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
+  @Test
+  void authentication_idpServerException_expectRedirect() {
+    when(idpAuthenticator.getBasicFlowTokenLocation(any()))
+        .thenThrow(
+            new IdpServerException(EXCEPTION_TEXT, IdpErrorType.INVALID_REQUEST, HttpStatus.FOUND));
+    final HttpResponse response =
+        Unirest.post(serverUrl + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
             .queryString("signed_challenge", "signed_challenge")
             .accept(MediaType.APPLICATION_JSON.toString())
             .asEmpty();
 
-        assertThat(response.getStatus()).isEqualTo(HttpStatus.FOUND.value());
-        assertThat(UriUtils.extractParameterMap(response.getHeaders().getFirst(HttpHeaders.LOCATION)))
-            .containsEntry("error", "invalid_request")
-            .containsEntry("error_description", EXCEPTION_TEXT)
-            .containsEntry("gematik_error_text", EXCEPTION_TEXT)
-            .containsKey("gematik_timestamp")
-            .containsKey("gematik_uuid");
-    }
+    assertThat(response.getStatus()).isEqualTo(HttpStatus.FOUND.value());
+    assertThat(UriUtils.extractParameterMap(response.getHeaders().getFirst(HttpHeaders.LOCATION)))
+        .containsEntry("error", "invalid_request")
+        .containsEntry("error_description", EXCEPTION_TEXT)
+        .containsEntry("gematik_error_text", EXCEPTION_TEXT)
+        .containsKey("gematik_timestamp")
+        .containsKey("gematik_uuid");
+  }
 
-    @Test
-    void authentication_genericError_expectRedirect() {
-        when(idpAuthenticator.getBasicFlowTokenLocation(any()))
-            .thenThrow(new IdpServerException(EXCEPTION_TEXT, IdpErrorType.SERVER_ERROR, HttpStatus.FOUND));
-        final HttpResponse response = Unirest
-            .post(serverUrl + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
+  @Test
+  void authentication_genericError_expectRedirect() {
+    when(idpAuthenticator.getBasicFlowTokenLocation(any()))
+        .thenThrow(
+            new IdpServerException(EXCEPTION_TEXT, IdpErrorType.SERVER_ERROR, HttpStatus.FOUND));
+    final HttpResponse response =
+        Unirest.post(serverUrl + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
             .queryString("signed_challenge", "signed_challenge")
             .accept(MediaType.APPLICATION_JSON.toString())
             .asEmpty();
 
-        assertThat(response.getStatus()).isEqualTo(HttpStatus.FOUND.value());
-        assertThat(UriUtils.extractParameterMap(response.getHeaders().getFirst(HttpHeaders.LOCATION)))
-            .containsEntry("error", "server_error")
-            .containsEntry("error_description", EXCEPTION_TEXT);
-        assertThat(response.getHeaders().getFirst("Cache-Control"))
-            .containsOnlyOnce("no-store");
-    }
+    assertThat(response.getStatus()).isEqualTo(HttpStatus.FOUND.value());
+    assertThat(UriUtils.extractParameterMap(response.getHeaders().getFirst(HttpHeaders.LOCATION)))
+        .containsEntry("error", "server_error")
+        .containsEntry("error_description", EXCEPTION_TEXT);
+    assertThat(response.getHeaders().getFirst("Cache-Control")).containsOnlyOnce("no-store");
+  }
 }

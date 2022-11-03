@@ -25,12 +25,13 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class IdpKey {
 
-    private final PkiIdentity identity;
+  private final PkiIdentity identity;
 
-    public IdpKeyDescriptor buildJwk(final boolean addX5C) {
-        final IdpKeyDescriptor keyDesc = IdpKeyDescriptor
-            .constructFromX509Certificate(identity.getCertificate(), identity.getKeyId(), addX5C);
-        keyDesc.setPublicKeyUse(identity.getUse().orElse(null));
-        return keyDesc;
-    }
+  public IdpKeyDescriptor buildJwk(final boolean addX5C) {
+    final IdpKeyDescriptor keyDesc =
+        IdpKeyDescriptor.constructFromX509Certificate(
+            identity.getCertificate(), identity.getKeyId(), addX5C);
+    keyDesc.setPublicKeyUse(identity.getUse().orElse(null));
+    return keyDesc;
+  }
 }

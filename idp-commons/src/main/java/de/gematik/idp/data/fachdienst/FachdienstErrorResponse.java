@@ -31,8 +31,7 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class FachdienstErrorResponse {
 
-    private long timestamp;
-    private String errorMessage;
-    @JsonIgnore
-    private int httpStatusCode;
+  private long timestamp;
+  private String errorMessage;
+  @JsonIgnore private int httpStatusCode;
 }

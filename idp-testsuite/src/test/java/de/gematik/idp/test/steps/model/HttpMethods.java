@@ -18,18 +18,22 @@ package de.gematik.idp.test.steps.model;
 
 @SuppressWarnings("unused")
 public enum HttpMethods {
-    GET("GET"), POST("POST"), PUT("PUT"), DELETE("DELETE"), HEAD("HEAD");
+  GET("GET"),
+  POST("POST"),
+  PUT("PUT"),
+  DELETE("DELETE"),
+  HEAD("HEAD");
 
-    public final static String CUCUMBER_REGEX = "(GET|POST|PUT|DELETE|HEAD)";
+  public static final String CUCUMBER_REGEX = "(GET|POST|PUT|DELETE|HEAD)";
 
-    private final String value;
+  private final String value;
 
-    HttpMethods(final String value) {
-        this.value = value;
-    }
+  HttpMethods(final String value) {
+    this.value = value;
+  }
 
-    @Override
-    public String toString() {
-        return value;
-    }
+  @Override
+  public String toString() {
+    return value;
+  }
 }

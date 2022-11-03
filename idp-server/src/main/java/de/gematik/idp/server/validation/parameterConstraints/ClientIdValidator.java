@@ -24,10 +24,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ClientIdValidator implements ConstraintValidator<CheckClientId, String> {
 
-    final ClientRegistrationService clientRegistrationService;
+  final ClientRegistrationService clientRegistrationService;
 
-    @Override
-    public boolean isValid(final String clientId, final ConstraintValidatorContext constraintValidatorContext) {
-        return clientRegistrationService.getClientConfiguration(clientId).isPresent();
-    }
+  @Override
+  public boolean isValid(
+      final String clientId, final ConstraintValidatorContext constraintValidatorContext) {
+    return clientRegistrationService.getClientConfiguration(clientId).isPresent();
+  }
 }

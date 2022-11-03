@@ -29,61 +29,58 @@ import net.thucydides.core.annotations.Steps;
 @Slf4j
 public class BiometricsGlue {
 
-    @Steps
-    IdpBiometricsSteps biosteps;
+  @Steps IdpBiometricsSteps biosteps;
 
-    @Steps
-    CucumberValuesConverter cucumberValuesConverter;
+  @Steps CucumberValuesConverter cucumberValuesConverter;
 
+  @When("IDP I create a device information token with")
+  public void iCreateADeviceInformationTokenWith(final DataTable data) {
+    final Map<String, String> map = cucumberValuesConverter.getMapFromDatatable(data);
+    Context.get().put(ContextKey.DEVICE_INFO, map);
+  }
 
-    @When("IDP I create a device information token with")
-    public void iCreateADeviceInformationTokenWith(final DataTable data) {
-        final Map<String, String> map = cucumberValuesConverter.getMapFromDatatable(data);
-        Context.get().put(ContextKey.DEVICE_INFO, map);
-    }
+  @And("IDP I create pairing data with")
+  public void iCreatePairingDataWith(final DataTable data) {
+    Context.get().put(ContextKey.PAIRING_DATA, cucumberValuesConverter.getMapFromDatatable(data));
+  }
 
-    @And("IDP I create pairing data with")
-    public void iCreatePairingDataWith(final DataTable data) {
-        Context.get().put(ContextKey.PAIRING_DATA, cucumberValuesConverter.getMapFromDatatable(data));
-    }
+  @And("IDP I create authentication data with")
+  public void iCreateAuthenticationDataWith(final DataTable data) {
+    biosteps.createAuthenticationData(cucumberValuesConverter.getMapFromDatatable(data));
+  }
 
-    @And("IDP I create authentication data with")
-    public void iCreateAuthenticationDataWith(final DataTable data) {
-        biosteps.createAuthenticationData(cucumberValuesConverter.getMapFromDatatable(data));
-    }
+  @And("IDP I sign pairing data with {string}")
+  public void iSignPairingDataWithCert(final String certFile) {
+    biosteps.signPairingData(certFile);
+  }
 
-    @And("IDP I sign pairing data with {string}")
-    public void iSignPairingDataWithCert(final String certFile) {
-        biosteps.signPairingData(certFile);
-    }
+  @And("IDP I sign authentication data with {string}")
+  public void iSignAuthenticationDataWithKey(final String keyFile) {
+    biosteps.signAuthenticationData(keyFile, "1.0");
+  }
 
-    @And("IDP I sign authentication data with {string}")
-    public void iSignAuthenticationDataWithKey(final String keyFile) {
-        biosteps.signAuthenticationData(keyFile, "1.0");
-    }
+  @And("IDP I sign authentication data with {string} and version {string}")
+  public void iSignAuthenticationDataWithKeyAndVersion(final String keyFile, final String version) {
+    biosteps.signAuthenticationData(keyFile, version);
+  }
 
-    @And("IDP I sign authentication data with {string} and version {string}")
-    public void iSignAuthenticationDataWithKeyAndVersion(final String keyFile, final String version) {
-        biosteps.signAuthenticationData(keyFile, version);
-    }
+  @When("IDP I register the device with {string}")
+  public void iRegisterTheDeviceWithCert(final String certFile) {
+    biosteps.registerDeviceWithCert(certFile, "1.0");
+  }
 
-    @When("IDP I register the device with {string}")
-    public void iRegisterTheDeviceWithCert(final String certFile) {
-        biosteps.registerDeviceWithCert(certFile, "1.0");
-    }
+  @When("IDP I register the device with {string} and version {string}")
+  public void iRegisterTheDeviceWithAndVersion(final String keyVerifier, final String versionReg) {
+    biosteps.registerDeviceWithCert(keyVerifier, versionReg);
+  }
 
-    @When("IDP I register the device with {string} and version {string}")
-    public void iRegisterTheDeviceWithAndVersion(final String keyVerifier, final String versionReg) {
-        biosteps.registerDeviceWithCert(keyVerifier, versionReg);
-    }
+  @When("IDP I deregister the device with {string}")
+  public void iDeregisterTheDeviceWith(final String keyVerifier) {
+    biosteps.deregisterDeviceWithKey(keyVerifier);
+  }
 
-    @When("IDP I deregister the device with {string}")
-    public void iDeregisterTheDeviceWith(final String keyVerifier) {
-        biosteps.deregisterDeviceWithKey(keyVerifier);
-    }
-
-    @And("IDP I request all pairings")
-    public void iRequestAllPairings() {
-        biosteps.requestAllPairings();
-    }
+  @And("IDP I request all pairings")
+  public void iRequestAllPairings() {
+    biosteps.requestAllPairings();
+  }
 }

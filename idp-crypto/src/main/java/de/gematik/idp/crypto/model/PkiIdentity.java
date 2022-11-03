@@ -30,8 +30,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PkiIdentity {
 
-    private X509Certificate certificate;
-    private PrivateKey privateKey;
-    private Optional<String> keyId;
-    private Optional<String> use;
+  private X509Certificate certificate;
+  private PrivateKey privateKey;
+  private Optional<String> keyId;
+  private Optional<String> use;
 }

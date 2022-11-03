@@ -17,6 +17,7 @@
 package de.gematik.idp.server.controllers;
 
 import static de.gematik.idp.IdpConstants.APPLIST_ENDPOINT;
+
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.server.data.KkAppList;
 import java.util.Map;
@@ -30,28 +31,22 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AppListController {
 
-    private final IdpKey discSig;
-    private IdpJwtProcessor jwtProcessor;
-    private final KkAppList kkAppList;
+  private final IdpKey discSig;
+  private final KkAppList kkAppList;
+  private IdpJwtProcessor jwtProcessor;
 
-    @PostConstruct
-    public void setUp() {
-        jwtProcessor = new IdpJwtProcessor(discSig.getIdentity());
-    }
+  @PostConstruct
+  public void setUp() {
+    jwtProcessor = new IdpJwtProcessor(discSig.getIdentity());
+  }
 
-    @GetMapping(value = APPLIST_ENDPOINT, produces = "application/jwt;charset=UTF-8")
-    public String getAppList(final HttpServletRequest request) {
-        return signAppList(kkAppList.getListAsJson().toString());
-    }
+  @GetMapping(value = APPLIST_ENDPOINT, produces = "application/jwt;charset=UTF-8")
+  public String getAppList(final HttpServletRequest request) {
+    return signAppList(kkAppList.getListAsJson().toString());
+  }
 
+  private String signAppList(final String list) {
 
-    private String signAppList(final String list) {
-
-        return jwtProcessor
-            .buildJws(
-                list, Map.ofEntries(Map.entry("typ", "JWT")), true)
-            .getRawString();
-
-    }
-
+    return jwtProcessor.buildJws(list, Map.ofEntries(Map.entry("typ", "JWT")), true).getRawString();
+  }
 }

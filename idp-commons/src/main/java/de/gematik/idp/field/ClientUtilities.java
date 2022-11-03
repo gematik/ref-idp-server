@@ -25,14 +25,16 @@ import org.apache.commons.lang3.RandomStringUtils;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ClientUtilities {
 
-    public static String generateCodeChallenge(final String codeVerifier) {
-        // see https://tools.ietf.org/html/rfc7636#section-4.2
-        return new String(Base64.getUrlEncoder().withoutPadding().encode(DigestUtils.sha256(codeVerifier)));
-    }
+  public static String generateCodeChallenge(final String codeVerifier) {
+    // see https://tools.ietf.org/html/rfc7636#section-4.2
+    return new String(
+        Base64.getUrlEncoder().withoutPadding().encode(DigestUtils.sha256(codeVerifier)));
+  }
 
-    @SuppressWarnings("java:S2245")
-    public static String generateCodeVerifier() {
-        return Base64.getUrlEncoder().withoutPadding()
-            .encodeToString(DigestUtils.sha256(RandomStringUtils.random(123)));
-    }
+  @SuppressWarnings("java:S2245")
+  public static String generateCodeVerifier() {
+    return Base64.getUrlEncoder()
+        .withoutPadding()
+        .encodeToString(DigestUtils.sha256(RandomStringUtils.random(123)));
+  }
 }

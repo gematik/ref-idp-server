@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class KkAppListEntry {
 
-    private final String kkAppName;
-    private final String kkAppUri;
-    private final String kkAppId;
+  private final String kkAppName;
+  private final String kkAppUri;
+  private final String kkAppId;
 }

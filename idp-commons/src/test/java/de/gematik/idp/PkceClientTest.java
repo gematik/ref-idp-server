@@ -17,6 +17,7 @@
 package de.gematik.idp;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 import de.gematik.idp.field.ClientUtilities;
 import de.gematik.idp.tests.Remark;
 import de.gematik.idp.tests.Rfc;
@@ -24,41 +25,42 @@ import org.junit.jupiter.api.Test;
 
 class PkceClientTest {
 
-    @Test
-    @Rfc("https://tools.ietf.org/html/rfc7636#section-4.1")
-    void checkAlphabetforCodeVerifier() {
-        final String codeVerifier = ClientUtilities.generateCodeVerifier();
-        assertThat(codeVerifier).matches("[\\w-_.~]*");
-    }
+  @Test
+  @Rfc("https://tools.ietf.org/html/rfc7636#section-4.1")
+  void checkAlphabetforCodeVerifier() {
+    final String codeVerifier = ClientUtilities.generateCodeVerifier();
+    assertThat(codeVerifier).matches("[\\w-_.~]*");
+  }
 
-    @Test
-    @Rfc("https://tools.ietf.org/html/rfc7636#section-4.1")
-    void checkLengthOfCodeVerifier() {
-        final String codeVerifier = ClientUtilities.generateCodeVerifier();
-        assertThat(codeVerifier.length()).isGreaterThanOrEqualTo(43).isLessThanOrEqualTo(128);
-    }
+  @Test
+  @Rfc("https://tools.ietf.org/html/rfc7636#section-4.1")
+  void checkLengthOfCodeVerifier() {
+    final String codeVerifier = ClientUtilities.generateCodeVerifier();
+    assertThat(codeVerifier.length()).isGreaterThanOrEqualTo(43).isLessThanOrEqualTo(128);
+  }
 
-    @Test
-    @Rfc("https://tools.ietf.org/html/rfc7636#section-4.1")
-    void checkEachCodeVerifierIsDifferent() {
-        final String firstCodeVerifier = ClientUtilities.generateCodeVerifier();
-        final String seccondCodeVerifier = ClientUtilities.generateCodeVerifier();
-        assertThat(firstCodeVerifier).isNotEqualTo(seccondCodeVerifier);
-    }
+  @Test
+  @Rfc("https://tools.ietf.org/html/rfc7636#section-4.1")
+  void checkEachCodeVerifierIsDifferent() {
+    final String firstCodeVerifier = ClientUtilities.generateCodeVerifier();
+    final String seccondCodeVerifier = ClientUtilities.generateCodeVerifier();
+    assertThat(firstCodeVerifier).isNotEqualTo(seccondCodeVerifier);
+  }
 
-    @Test
-    @Rfc("rfc7636 Appendix B")
-    @Remark("This example is in rfc7636 Appendix B")
-    void checkTransformationS256() {
-        assertThat(ClientUtilities.generateCodeChallenge("dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"))
-            .isEqualTo("E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM");
-    }
+  @Test
+  @Rfc("rfc7636 Appendix B")
+  @Remark("This example is in rfc7636 Appendix B")
+  void checkTransformationS256() {
+    assertThat(ClientUtilities.generateCodeChallenge("dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"))
+        .isEqualTo("E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM");
+  }
 
-    @Test
-    @Remark("base64urlencode auf output von sha256 gibt laenger 43 oder 44")
-    @Rfc("rfc7636")
-    void checkLengthOfCodeChellange() {
-        final String codeChellange = ClientUtilities.generateCodeChallenge(ClientUtilities.generateCodeVerifier());
-        assertThat(codeChellange).hasSize(43);
-    }
+  @Test
+  @Remark("base64urlencode auf output von sha256 gibt laenger 43 oder 44")
+  @Rfc("rfc7636")
+  void checkLengthOfCodeChellange() {
+    final String codeChellange =
+        ClientUtilities.generateCodeChallenge(ClientUtilities.generateCodeVerifier());
+    assertThat(codeChellange).hasSize(43);
+  }
 }

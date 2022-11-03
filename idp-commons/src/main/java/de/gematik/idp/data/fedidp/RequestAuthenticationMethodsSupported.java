@@ -30,6 +30,6 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class RequestAuthenticationMethodsSupported {
 
-    private String[] ar;
-    private String[] par;
+  private String[] ar;
+  private String[] par;
 }

@@ -23,7 +23,7 @@ import lombok.Data;
 @Builder
 public class AuthenticationResponse {
 
-    private final String code;
-    private final String location;
-    private final String ssoToken;
+  private final String code;
+  private final String location;
+  private final String ssoToken;
 }

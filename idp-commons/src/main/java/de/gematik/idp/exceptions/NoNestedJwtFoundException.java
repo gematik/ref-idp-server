@@ -18,7 +18,7 @@ package de.gematik.idp.exceptions;
 
 public class NoNestedJwtFoundException extends IdpJoseException {
 
-    public NoNestedJwtFoundException() {
-        super("Unable to find nested JWT");
-    }
+  public NoNestedJwtFoundException() {
+    super("Unable to find nested JWT");
+  }
 }

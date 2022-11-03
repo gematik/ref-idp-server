@@ -26,8 +26,8 @@ import org.springframework.web.context.annotation.RequestScope;
 @Data
 public class RequestAccessToken {
 
-    /**
-     * Hält das Access-Token des aktuellen Requests. Wird null sein wenn es keinen Access-Token gibt.
-     */
-    private JsonWebToken accessToken;
+  /**
+   * Hält das Access-Token des aktuellen Requests. Wird null sein wenn es keinen Access-Token gibt.
+   */
+  private JsonWebToken accessToken;
 }

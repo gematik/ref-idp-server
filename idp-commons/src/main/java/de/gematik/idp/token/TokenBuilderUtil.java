@@ -24,10 +24,9 @@ import org.apache.commons.codec.digest.DigestUtils;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TokenBuilderUtil {
 
-    public static String buildSubjectClaim(final String audClaim, final String idNummerClaim,
-        final String serverSubjectSalt) {
-        return Base64.encodeBase64URLSafeString(DigestUtils.sha256(
-            audClaim + idNummerClaim + serverSubjectSalt
-        ));
-    }
+  public static String buildSubjectClaim(
+      final String audClaim, final String idNummerClaim, final String serverSubjectSalt) {
+    return Base64.encodeBase64URLSafeString(
+        DigestUtils.sha256(audClaim + idNummerClaim + serverSubjectSalt));
+  }
 }

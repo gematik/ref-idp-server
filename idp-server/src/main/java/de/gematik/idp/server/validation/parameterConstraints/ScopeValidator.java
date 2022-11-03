@@ -28,29 +28,27 @@ import org.springframework.http.HttpStatus;
 
 public class ScopeValidator implements ConstraintValidator<CheckScope, String> {
 
-    @Override
-    public boolean isValid(final String rawScopes, final ConstraintValidatorContext context) {
-        if (StringUtils.isEmpty(rawScopes)) {
-            throw new IdpServerException(1005, IdpErrorType.INVALID_REQUEST, "scope wurde nicht übermittelt",
-                HttpStatus.FOUND);
-        }
-
-        final String[] scopes = rawScopes.split(" ");
-        final long numberOfValidScopes = Stream.of(scopes)
-            .map(IdpScope::fromJwtValue)
-            .filter(Optional::isPresent)
-            .count();
-
-        if (!rawScopes.contains(IdpScope.OPENID.getJwtValue()) || (scopes.length < 2)) {
-            throw new IdpServerException(1022, IdpErrorType.INVALID_SCOPE, "scope ist ungültig", HttpStatus.FOUND);
-        }
-
-        if (numberOfValidScopes != scopes.length) {
-            throw new IdpServerException(1030, IdpErrorType.INVALID_SCOPE, "Fachdienst ist unbekannt",
-                HttpStatus.FOUND);
-        }
-
-        return true;
+  @Override
+  public boolean isValid(final String rawScopes, final ConstraintValidatorContext context) {
+    if (StringUtils.isEmpty(rawScopes)) {
+      throw new IdpServerException(
+          1005, IdpErrorType.INVALID_REQUEST, "scope wurde nicht übermittelt", HttpStatus.FOUND);
     }
-}
 
+    final String[] scopes = rawScopes.split(" ");
+    final long numberOfValidScopes =
+        Stream.of(scopes).map(IdpScope::fromJwtValue).filter(Optional::isPresent).count();
+
+    if (!rawScopes.contains(IdpScope.OPENID.getJwtValue()) || (scopes.length < 2)) {
+      throw new IdpServerException(
+          1022, IdpErrorType.INVALID_SCOPE, "scope ist ungültig", HttpStatus.FOUND);
+    }
+
+    if (numberOfValidScopes != scopes.length) {
+      throw new IdpServerException(
+          1030, IdpErrorType.INVALID_SCOPE, "Fachdienst ist unbekannt", HttpStatus.FOUND);
+    }
+
+    return true;
+  }
+}

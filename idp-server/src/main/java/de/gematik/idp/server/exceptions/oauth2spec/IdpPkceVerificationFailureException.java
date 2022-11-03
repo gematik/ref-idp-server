@@ -22,9 +22,9 @@ import org.springframework.http.HttpStatus;
 
 public class IdpPkceVerificationFailureException extends IdpServerException {
 
-    private static final long serialVersionUID = -8208966997249616972L;
+  private static final long serialVersionUID = -8208966997249616972L;
 
-    public IdpPkceVerificationFailureException(final String message) {
-        super(message, IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
-    }
+  public IdpPkceVerificationFailureException(final String message) {
+    super(message, IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+  }
 }

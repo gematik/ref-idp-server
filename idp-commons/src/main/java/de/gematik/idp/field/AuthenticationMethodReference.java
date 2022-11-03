@@ -22,15 +22,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public enum AuthenticationMethodReference {
+  MULTI_FACTOR_AUTHENTICATON("mfa", false),
+  SMARTCARD("sc", false),
+  PIN("pin", false),
+  HARDWARE_KEY("hwk", true),
+  FACE_UNLOCK("face", true),
+  FINGERPRINT("fpt", true),
+  PASSWORD("pwd", true);
 
-    MULTI_FACTOR_AUTHENTICATON("mfa", false),
-    SMARTCARD("sc", false),
-    PIN("pin", false),
-    HARDWARE_KEY("hwk", true),
-    FACE_UNLOCK("face", true),
-    FINGERPRINT("fpt", true),
-    PASSWORD("pwd", true);
-
-    private final String description;
-    private final boolean isAlternativeAuthentication;
+  private final String description;
+  private final boolean isAlternativeAuthentication;
 }

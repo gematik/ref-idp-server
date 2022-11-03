@@ -24,7 +24,11 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 
 @Data
 @Builder
@@ -33,24 +37,19 @@ import lombok.*;
 @NoArgsConstructor
 public class DeviceInformation implements DataVersion {
 
-    @NotBlank
-    private String name;
-    @NotNull
-    @Valid
-    private DeviceType deviceType;
-    @NotBlank
-    private String deviceInformationDataVersion;
+  @NotBlank private String name;
+  @NotNull @Valid private DeviceType deviceType;
+  @NotBlank private String deviceInformationDataVersion;
 
+  @SneakyThrows
+  public String toJson() {
+    final ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+    return ow.writeValueAsString(this);
+  }
 
-    @SneakyThrows
-    public String toJson() {
-        final ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-        return ow.writeValueAsString(this);
-    }
-
-    @Override
-    @JsonIgnore
-    public String getDataVersion() {
-        return deviceInformationDataVersion;
-    }
+  @Override
+  @JsonIgnore
+  public String getDataVersion() {
+    return deviceInformationDataVersion;
+  }
 }

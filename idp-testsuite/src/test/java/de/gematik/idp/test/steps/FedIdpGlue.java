@@ -29,60 +29,56 @@ import net.thucydides.core.annotations.Steps;
 @Slf4j
 public class FedIdpGlue {
 
-    @Steps
-    FedIdpSteps fedsteps;
+  @Steps FedIdpSteps fedsteps;
 
-    @Steps
-    CucumberValuesConverter cucumberValuesConverter;
+  @Steps CucumberValuesConverter cucumberValuesConverter;
 
-    /**
-     * put federation enpoints in context
-     *
-     * @gematik.context.in USER_AGENT
-     * @gematik.context.out RESPONSE
-     */
-    @Given("IDP I initialize the federation endpoints")
-    @Gegebensei("IDP ich initialisiere die Endpunkte der Föderation")
-    @SneakyThrows
-    public void iInitializeFederationEndpoints() {
-        fedsteps.initializeIdpFederation();
-    }
+  /**
+   * put federation enpoints in context
+   *
+   * @gematik.context.in USER_AGENT
+   * @gematik.context.out RESPONSE
+   */
+  @Given("IDP I initialize the federation endpoints")
+  @Gegebensei("IDP ich initialisiere die Endpunkte der Föderation")
+  @SneakyThrows
+  public void iInitializeFederationEndpoints() {
+    fedsteps.initializeIdpFederation();
+  }
 
-    /**
-     * fetch the fachdienst's IDP List
-     *
-     * @gematik.context.in USER_AGENT
-     * @gematik.context.out CLIENT_ID, RESPONSE, CHALLENGE, USER_CONSENT
-     * @see CucumberValuesConverter
-     */
-    @Wenn("IDP Ich rufe die Liste der IDPs vom Fachdienst ab")
-    @When("IDP I fetch the Fachdienst's IDP List")
-    @SneakyThrows
-    public void iFetchFachdienstIdpList() {
-        fedsteps.fetchFachdienstIdpList();
-    }
+  /**
+   * fetch the fachdienst's IDP List
+   *
+   * @gematik.context.in USER_AGENT
+   * @gematik.context.out CLIENT_ID, RESPONSE, CHALLENGE, USER_CONSENT
+   * @see CucumberValuesConverter
+   */
+  @Wenn("IDP Ich rufe die Liste der IDPs vom Fachdienst ab")
+  @When("IDP I fetch the Fachdienst's IDP List")
+  @SneakyThrows
+  public void iFetchFachdienstIdpList() {
+    fedsteps.fetchFachdienstIdpList();
+  }
 
-    /**
-     * fetch the fachdienst's IDP List
-     *
-     * @gematik.context.in USER_AGENT
-     * @gematik.context.out CLIENT_ID, RESPONSE, CHALLENGE, USER_CONSENT
-     * @see CucumberValuesConverter
-     */
-    @Wenn("IDP Ich rufe das EntityStatement vom {IdpEndpointType} ab")
-    @When("IDP I fetch {IdpEndpointType} EntityStatement")
-    @SneakyThrows
-    public void iFetchEntityStatenment(final IdpEndpointType idpEndpointType) {
-        fedsteps.fetchEntityStatement(idpEndpointType);
-    }
+  /**
+   * fetch the fachdienst's IDP List
+   *
+   * @gematik.context.in USER_AGENT
+   * @gematik.context.out CLIENT_ID, RESPONSE, CHALLENGE, USER_CONSENT
+   * @see CucumberValuesConverter
+   */
+  @Wenn("IDP Ich rufe das EntityStatement vom {IdpEndpointType} ab")
+  @When("IDP I fetch {IdpEndpointType} EntityStatement")
+  @SneakyThrows
+  public void iFetchEntityStatenment(final IdpEndpointType idpEndpointType) {
+    fedsteps.fetchEntityStatement(idpEndpointType);
+  }
 
-    /**
-     * send a request to log into a web portal via a browser
-     */
-    @Wenn("IDP Ich logge mich im Browser auf dem Web Portal des Fachdienstes ein")
-    @When("IDP I log into the fachdienst's web portal in browser")
-    @SneakyThrows
-    public void iSendLoginRequest() {
-        fedsteps.sendLoginRequest();
-    }
+  /** send a request to log into a web portal via a browser */
+  @Wenn("IDP Ich logge mich im Browser auf dem Web Portal des Fachdienstes ein")
+  @When("IDP I log into the fachdienst's web portal in browser")
+  @SneakyThrows
+  public void iSendLoginRequest() {
+    fedsteps.sendLoginRequest();
+  }
 }

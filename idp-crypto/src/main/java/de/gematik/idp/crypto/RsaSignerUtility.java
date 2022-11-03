@@ -17,23 +17,27 @@
 package de.gematik.idp.crypto;
 
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
-import java.security.*;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.Signature;
+import java.security.SignatureException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class RsaSignerUtility {
 
-    private RsaSignerUtility() {
-    }
+  private RsaSignerUtility() {}
 
-    public static byte[] createRsaSignature(final byte[] toBeSignedData, final PrivateKey privateKey) {
-        try {
-            final Signature signer = Signature.getInstance("SHA256withRSAAndMGF1", new BouncyCastleProvider());
-            signer.initSign(privateKey);
-            signer.update(toBeSignedData);
-            return signer.sign();
-        } catch (final NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
-            throw new IdpCryptoException(e);
-        }
+  public static byte[] createRsaSignature(
+      final byte[] toBeSignedData, final PrivateKey privateKey) {
+    try {
+      final Signature signer =
+          Signature.getInstance("SHA256withRSAAndMGF1", new BouncyCastleProvider());
+      signer.initSign(privateKey);
+      signer.update(toBeSignedData);
+      return signer.sign();
+    } catch (final NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+      throw new IdpCryptoException(e);
     }
-
+  }
 }

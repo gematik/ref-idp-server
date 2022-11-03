@@ -23,8 +23,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class StringToIdpJweConverter implements Converter<String, IdpJwe> {
 
-    @Override
-    public IdpJwe convert(final String content) {
-        return new IdpJwe(content);
-    }
+  @Override
+  public IdpJwe convert(final String content) {
+    return new IdpJwe(content);
+  }
 }

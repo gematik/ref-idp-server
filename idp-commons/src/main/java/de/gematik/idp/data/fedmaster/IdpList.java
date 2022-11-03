@@ -31,9 +31,8 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class IdpList {
 
-    private String iss;
-    private long iat;
-    private long exp;
-    private List<IdpListEntry> idpEntity;
-
+  private String iss;
+  private long iat;
+  private long exp;
+  private List<IdpListEntry> idpEntity;
 }

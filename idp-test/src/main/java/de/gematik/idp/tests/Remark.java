@@ -18,6 +18,5 @@ package de.gematik.idp.tests;
 
 public @interface Remark {
 
-    String value();
-
+  String value();
 }

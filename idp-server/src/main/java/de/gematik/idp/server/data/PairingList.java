@@ -29,5 +29,5 @@ import lombok.Data;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class PairingList {
 
-    private final List<PairingDto> pairingEntries;
+  private final List<PairingDto> pairingEntries;
 }

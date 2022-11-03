@@ -22,7 +22,7 @@ import org.springframework.http.HttpStatus;
 
 public class IdpServerInvalidRedirectUriException extends IdpServerException {
 
-    public IdpServerInvalidRedirectUriException(final String s) {
-        super(s, IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
-    }
+  public IdpServerInvalidRedirectUriException(final String s) {
+    super(s, IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+  }
 }

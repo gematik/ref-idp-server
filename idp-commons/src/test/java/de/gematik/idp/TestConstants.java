@@ -18,5 +18,5 @@ package de.gematik.idp;
 
 public class TestConstants {
 
-    public static final String CLIENT_ID_E_REZEPT_APP = "eRezeptApp";
+  public static final String CLIENT_ID_E_REZEPT_APP = "eRezeptApp";
 }

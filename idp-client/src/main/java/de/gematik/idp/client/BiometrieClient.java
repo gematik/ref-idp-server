@@ -43,93 +43,109 @@ import org.springframework.http.MediaType;
 @Data
 public class BiometrieClient {
 
-    private static final String USER_AGENT = "IdP-Client";
-    private static final String BEARER = "Bearer ";
-    private final DiscoveryDocumentResponse discoveryDocumentResponse;
-    private JsonWebToken accessToken;
+  private static final String USER_AGENT = "IdP-Client";
+  private static final String BEARER = "Bearer ";
+  private final DiscoveryDocumentResponse discoveryDocumentResponse;
+  private JsonWebToken accessToken;
 
-    @SneakyThrows
-    public RegistrationData insertPairing(final PkiIdentity identity, final KeyPair keyPairToRegister) {
-        final JsonWebToken signedPairingData = new JwtBuilder()
+  @SneakyThrows
+  public RegistrationData insertPairing(
+      final PkiIdentity identity, final KeyPair keyPairToRegister) {
+    final JsonWebToken signedPairingData =
+        new JwtBuilder()
             .setSignerKey(identity.getPrivateKey())
-            .addBodyClaim(ClaimName.AUTH_CERT_SUBJECT_PUBLIC_KEY_INFO,
-                Base64.getUrlEncoder().withoutPadding()
+            .addBodyClaim(
+                ClaimName.AUTH_CERT_SUBJECT_PUBLIC_KEY_INFO,
+                Base64.getUrlEncoder()
+                    .withoutPadding()
                     .encodeToString(identity.getCertificate().getPublicKey().getEncoded()))
             .addBodyClaim(ClaimName.DEVICE_PRODUCT, "meinPhone")
-            .addBodyClaim(ClaimName.CERTIFICATE_SERIALNUMBER, identity.getCertificate().getSerialNumber().toString())
+            .addBodyClaim(
+                ClaimName.CERTIFICATE_SERIALNUMBER,
+                identity.getCertificate().getSerialNumber().toString())
             .addBodyClaim(ClaimName.KEY_IDENTIFIER, "seIdVomPhoneHerGeneriert")
-            .addBodyClaim(ClaimName.SE_SUBJECT_PUBLIC_KEY_INFO,
-                Base64.getUrlEncoder().withoutPadding()
+            .addBodyClaim(
+                ClaimName.SE_SUBJECT_PUBLIC_KEY_INFO,
+                Base64.getUrlEncoder()
+                    .withoutPadding()
                     .encodeToString(keyPairToRegister.getPublic().getEncoded()))
-            .addBodyClaim(ClaimName.CERTIFICATE_ISSUER,
-                Base64.getUrlEncoder().withoutPadding()
-                    .encodeToString(identity.getCertificate().getIssuerX500Principal().getEncoded()))
+            .addBodyClaim(
+                ClaimName.CERTIFICATE_ISSUER,
+                Base64.getUrlEncoder()
+                    .withoutPadding()
+                    .encodeToString(
+                        identity.getCertificate().getIssuerX500Principal().getEncoded()))
             .addBodyClaim(ClaimName.PAIRING_DATA_VERSION, "1.0")
-            .addBodyClaim(ClaimName.CERTIFICATE_NOT_AFTER, identity.getCertificate().getNotAfter()
-                .toInstant().getEpochSecond())
+            .addBodyClaim(
+                ClaimName.CERTIFICATE_NOT_AFTER,
+                identity.getCertificate().getNotAfter().toInstant().getEpochSecond())
             .buildJwt();
-        return insertPairing(RegistrationData.builder()
-            .authCert(Base64.getUrlEncoder().withoutPadding().encodeToString(identity.getCertificate().getEncoded()))
+    return insertPairing(
+        RegistrationData.builder()
+            .authCert(
+                Base64.getUrlEncoder()
+                    .withoutPadding()
+                    .encodeToString(identity.getCertificate().getEncoded()))
             .signedPairingData(signedPairingData.getRawString())
-            .deviceInformation(DeviceInformation.builder()
-                .deviceType(DeviceType.builder()
-                    .build())
-                .build())
+            .deviceInformation(
+                DeviceInformation.builder().deviceType(DeviceType.builder().build()).build())
             .build());
-    }
+  }
 
-    public RegistrationData insertPairing(final RegistrationData biometrieData) {
-        try {
-            final String payload = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(biometrieData);
-            final HttpResponse<String> response = Unirest.post(getPairingEndpoint())
-                .field("encrypted_registration_data", IdpJwe
-                    .createWithPayloadAndEncryptWithKey(payload, discoveryDocumentResponse.getIdpEnc(), "JSON")
-                    .getRawString())
-                .header(HttpHeaders.AUTHORIZATION, buildAuthorizationHeader())
-                .header(HttpHeaders.USER_AGENT, USER_AGENT)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                .asString();
-            if (!response.isSuccess()) {
-                throw new IdpClientRuntimeException("Error during registration: " + response.getBody());
-            }
-            return biometrieData;
-        } catch (final JsonProcessingException e) {
-            throw new IdpClientRuntimeException(e);
-        }
+  public RegistrationData insertPairing(final RegistrationData biometrieData) {
+    try {
+      final String payload =
+          new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(biometrieData);
+      final HttpResponse<String> response =
+          Unirest.post(getPairingEndpoint())
+              .field(
+                  "encrypted_registration_data",
+                  IdpJwe.createWithPayloadAndEncryptWithKey(
+                          payload, discoveryDocumentResponse.getIdpEnc(), "JSON")
+                      .getRawString())
+              .header(HttpHeaders.AUTHORIZATION, buildAuthorizationHeader())
+              .header(HttpHeaders.USER_AGENT, USER_AGENT)
+              .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+              .asString();
+      if (!response.isSuccess()) {
+        throw new IdpClientRuntimeException("Error during registration: " + response.getBody());
+      }
+      return biometrieData;
+    } catch (final JsonProcessingException e) {
+      throw new IdpClientRuntimeException(e);
     }
+  }
 
-    private String buildAuthorizationHeader() {
-        return BEARER + accessToken.encrypt(discoveryDocumentResponse.getIdpEnc()).getRawString();
-    }
+  private String buildAuthorizationHeader() {
+    return BEARER + accessToken.encrypt(discoveryDocumentResponse.getIdpEnc()).getRawString();
+  }
 
-    private String getPairingEndpoint() {
-        return discoveryDocumentResponse.getPairingEndpoint();
-    }
+  private String getPairingEndpoint() {
+    return discoveryDocumentResponse.getPairingEndpoint();
+  }
 
-    public List<RegistrationData> getAllPairings() {
-        final HttpResponse<List<RegistrationData>> response = Unirest
-            .get(getPairingEndpoint())
+  public List<RegistrationData> getAllPairings() {
+    final HttpResponse<List<RegistrationData>> response =
+        Unirest.get(getPairingEndpoint())
             .header(HttpHeaders.AUTHORIZATION, buildAuthorizationHeader())
             .header(HttpHeaders.USER_AGENT, USER_AGENT)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .asObject(new GenericType<>() {
-            });
+            .asObject(new GenericType<>() {});
 
-        if (response.getStatus() != HttpStatus.SC_OK) {
-            throw new IdpClientRuntimeException(
-                "Unexpected Server-Response " + response.getStatus());
-        }
-
-        return response.getBody();
+    if (response.getStatus() != HttpStatus.SC_OK) {
+      throw new IdpClientRuntimeException("Unexpected Server-Response " + response.getStatus());
     }
 
-    public boolean deleteAllPairingsForKvnr(final String kvnr) {
-        final HttpResponse<String> response = Unirest.delete(getPairingEndpoint() + "/" + kvnr)
+    return response.getBody();
+  }
+
+  public boolean deleteAllPairingsForKvnr(final String kvnr) {
+    final HttpResponse<String> response =
+        Unirest.delete(getPairingEndpoint() + "/" + kvnr)
             .header(HttpHeaders.AUTHORIZATION, BEARER + accessToken.getRawString())
             .header(HttpHeaders.USER_AGENT, USER_AGENT)
             .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
             .asString();
-        return response.getStatus() == HttpStatus.SC_OK;
-    }
+    return response.getStatus() == HttpStatus.SC_OK;
+  }
 }
-

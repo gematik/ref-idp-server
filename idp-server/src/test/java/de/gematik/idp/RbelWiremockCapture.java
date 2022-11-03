@@ -17,6 +17,7 @@
 package de.gematik.idp;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.common.ProxySettings;
@@ -36,95 +37,121 @@ import org.bouncycastle.util.Arrays;
 @Slf4j
 public class RbelWiremockCapture extends RbelCapturer {
 
-    private final String proxyFor;
-    private final ProxySettings proxySettings;
-    private final WireMockConfiguration wireMockConfiguration;
-    private WireMockServer wireMockServer;
-    private boolean isInitialized;
+  private final String proxyFor;
+  private final ProxySettings proxySettings;
+  private final WireMockConfiguration wireMockConfiguration;
+  private WireMockServer wireMockServer;
+  private boolean isInitialized;
 
-    @Builder
-    public RbelWiremockCapture(final RbelConverter rbelConverter,
-        final String proxyFor, final ProxySettings proxySettings, final WireMockConfiguration wireMockConfiguration) {
-        super(rbelConverter);
-        this.proxyFor = proxyFor;
-        this.proxySettings = proxySettings;
-        this.wireMockConfiguration = wireMockConfiguration;
+  @Builder
+  public RbelWiremockCapture(
+      final RbelConverter rbelConverter,
+      final String proxyFor,
+      final ProxySettings proxySettings,
+      final WireMockConfiguration wireMockConfiguration) {
+    super(rbelConverter);
+    this.proxyFor = proxyFor;
+    this.proxySettings = proxySettings;
+    this.wireMockConfiguration = wireMockConfiguration;
+  }
+
+  public RbelWiremockCapture initialize() {
+    if (isInitialized) {
+      return this;
     }
 
-    public RbelWiremockCapture initialize() {
-        if (isInitialized) {
-            return this;
-        }
+    log.info(
+        "Starting Wiremock-Capture. This will boot a proxy-server for the target url '{}'",
+        proxyFor);
+    final WireMockConfiguration wireMockConfiguration = getWireMockConfiguration();
+    wireMockServer = new WireMockServer(wireMockConfiguration);
+    wireMockServer.start();
 
-        log.info("Starting Wiremock-Capture. This will boot a proxy-server for the target url '{}'", proxyFor);
-        final WireMockConfiguration wireMockConfiguration = getWireMockConfiguration();
-        wireMockServer = new WireMockServer(wireMockConfiguration);
-        wireMockServer.start();
+    wireMockServer.stubFor(
+        WireMock.any(WireMock.anyUrl()).willReturn(aResponse().proxiedFrom(proxyFor)));
 
-        wireMockServer.stubFor(WireMock.any(WireMock.anyUrl())
-            .willReturn(aResponse().proxiedFrom(proxyFor)));
-
-        wireMockServer.addMockServiceRequestListener((request, response) -> {
-            getRbelConverter().parseMessage(requestToRbelMessage(request),
-                new RbelHostname(request.getClientIp(), -1),
-                new RbelHostname(request.getHost(), request.getPort()), Optional.empty());
-            getRbelConverter().parseMessage(responseToRbelMessage(response),
-                new RbelHostname(request.getClientIp(), -1),
-                new RbelHostname(request.getHost(), request.getPort()), Optional.empty());
+    wireMockServer.addMockServiceRequestListener(
+        (request, response) -> {
+          getRbelConverter()
+              .parseMessage(
+                  requestToRbelMessage(request),
+                  new RbelHostname(request.getClientIp(), -1),
+                  new RbelHostname(request.getHost(), request.getPort()),
+                  Optional.empty());
+          getRbelConverter()
+              .parseMessage(
+                  responseToRbelMessage(response),
+                  new RbelHostname(request.getClientIp(), -1),
+                  new RbelHostname(request.getHost(), request.getPort()),
+                  Optional.empty());
         });
 
-        log.info("Started Wiremock-Server at '{}'.", wireMockServer.baseUrl());
+    log.info("Started Wiremock-Server at '{}'.", wireMockServer.baseUrl());
 
-        isInitialized = true;
+    isInitialized = true;
 
-        return this;
+    return this;
+  }
+
+  private WireMockConfiguration getWireMockConfiguration() {
+    if (this.wireMockConfiguration != null) {
+      return this.wireMockConfiguration;
     }
-
-    private WireMockConfiguration getWireMockConfiguration() {
-        if (this.wireMockConfiguration != null) {
-            return this.wireMockConfiguration;
-        }
-        final WireMockConfiguration wireMockConfiguration = WireMockConfiguration.options()
+    final WireMockConfiguration wireMockConfiguration =
+        WireMockConfiguration.options()
             .dynamicPort()
             .trustAllProxyTargets(true)
             .enableBrowserProxying(false);
-        if (proxySettings != null) {
-            wireMockConfiguration.proxyVia(proxySettings);
-        }
-        return wireMockConfiguration;
+    if (proxySettings != null) {
+      wireMockConfiguration.proxyVia(proxySettings);
     }
+    return wireMockConfiguration;
+  }
 
-    private byte[] requestToRbelMessage(final Request request) {
-        byte[] httpRequestHeader = (request.getMethod().toString() + " " + getRequestUrl(request) + " HTTP/1.1\r\n"
-            + request.getHeaders().all().stream().map(HttpHeader::toString)
-            .collect(Collectors.joining("\r\n")) + "\r\n\r\n").getBytes();
+  private byte[] requestToRbelMessage(final Request request) {
+    byte[] httpRequestHeader =
+        (request.getMethod().toString()
+                + " "
+                + getRequestUrl(request)
+                + " HTTP/1.1\r\n"
+                + request.getHeaders().all().stream()
+                    .map(HttpHeader::toString)
+                    .collect(Collectors.joining("\r\n"))
+                + "\r\n\r\n")
+            .getBytes();
 
-        return Arrays.concatenate(httpRequestHeader, request.getBody());
+    return Arrays.concatenate(httpRequestHeader, request.getBody());
+  }
+
+  private byte[] responseToRbelMessage(final Response response) {
+    byte[] httpResponseHeader =
+        ("HTTP/1.1 "
+                + response.getStatus()
+                + " "
+                + (response.getStatusMessage() != null ? response.getStatusMessage() : "")
+                + "\r\n"
+                + response.getHeaders().all().stream()
+                    .map(HttpHeader::toString)
+                    .map(str -> str.replace("\n", "\r\n"))
+                    .collect(Collectors.joining("\r\n"))
+                + "\r\n\r\n")
+            .getBytes();
+
+    return Arrays.concatenate(httpResponseHeader, response.getBody());
+  }
+
+  private String getRequestUrl(Request request) {
+    return (proxyFor == null ? "" : proxyFor) + request.getUrl();
+  }
+
+  public String getProxyAdress() {
+    return "http://localhost:" + wireMockServer.port();
+  }
+
+  @Override
+  public void close() {
+    if (wireMockServer.isRunning()) {
+      wireMockServer.stop();
     }
-
-    private byte[] responseToRbelMessage(final Response response) {
-        byte[] httpResponseHeader = ("HTTP/1.1 " + response.getStatus() + " "
-            + (response.getStatusMessage() != null ? response.getStatusMessage() : "") + "\r\n"
-            + response.getHeaders().all().stream().map(HttpHeader::toString)
-            .map(str -> str.replace("\n", "\r\n"))
-            .collect(Collectors.joining("\r\n"))
-            + "\r\n\r\n").getBytes();
-
-        return Arrays.concatenate(httpResponseHeader, response.getBody());
-    }
-
-    private String getRequestUrl(Request request) {
-        return (proxyFor == null ? "" : proxyFor) + request.getUrl();
-    }
-
-    public String getProxyAdress() {
-        return "http://localhost:" + wireMockServer.port();
-    }
-
-    @Override
-    public void close() {
-        if (wireMockServer.isRunning()) {
-            wireMockServer.stop();
-        }
-    }
+  }
 }

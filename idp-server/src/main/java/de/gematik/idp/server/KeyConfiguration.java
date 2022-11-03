@@ -40,46 +40,47 @@ import org.springframework.util.StreamUtils;
 @RequiredArgsConstructor
 public class KeyConfiguration {
 
-    private final ResourceLoader resourceLoader;
-    private final IdpConfiguration idpConfiguration;
+  private final ResourceLoader resourceLoader;
+  private final IdpConfiguration idpConfiguration;
 
-    @Bean
-    public IdpKey idpEnc() {
-        return getIdpKey(idpConfiguration.getIdpEnc());
+  @Bean
+  public IdpKey idpEnc() {
+    return getIdpKey(idpConfiguration.getIdpEnc());
+  }
+
+  @Bean
+  public IdpKey idpSig() {
+    return getIdpKey(idpConfiguration.getIdpSig());
+  }
+
+  @Bean
+  public IdpKey discSig() {
+    return getIdpKey(idpConfiguration.getDiscSig());
+  }
+
+  @Bean
+  public Key symmetricEncryptionKey() {
+    return new SecretKeySpec(
+        DigestUtils.sha256(idpConfiguration.getSymmetricEncryptionKey()), "AES");
+  }
+
+  @Bean
+  public IdpJwtProcessor idpSigProcessor() {
+    return new IdpJwtProcessor(idpSig().getIdentity());
+  }
+
+  private IdpKey getIdpKey(final IdpKeyConfiguration keyConfiguration) {
+    final Resource resource = resourceLoader.getResource(keyConfiguration.getFileName());
+    try (final InputStream inputStream = resource.getInputStream()) {
+      final PkiIdentity pkiIdentity =
+          CryptoLoader.getIdentityFromP12(StreamUtils.copyToByteArray(inputStream), "00");
+
+      pkiIdentity.setKeyId(Optional.ofNullable(keyConfiguration.getKeyId()));
+      pkiIdentity.setUse(Optional.ofNullable(keyConfiguration.getUse()));
+      return new IdpKey(pkiIdentity);
+    } catch (final IOException e) {
+      throw new IdpServerStartupException(
+          "Error while loading Key from resource '" + keyConfiguration.getFileName() + "'", e);
     }
-
-    @Bean
-    public IdpKey idpSig() {
-        return getIdpKey(idpConfiguration.getIdpSig());
-    }
-
-    @Bean
-    public IdpKey discSig() {
-        return getIdpKey(idpConfiguration.getDiscSig());
-    }
-
-    @Bean
-    public Key symmetricEncryptionKey() {
-        return new SecretKeySpec(DigestUtils.sha256(idpConfiguration.getSymmetricEncryptionKey()), "AES");
-    }
-
-    @Bean
-    public IdpJwtProcessor idpSigProcessor() {
-        return new IdpJwtProcessor(idpSig().getIdentity());
-    }
-
-    private IdpKey getIdpKey(final IdpKeyConfiguration keyConfiguration) {
-        final Resource resource = resourceLoader.getResource(keyConfiguration.getFileName());
-        try (final InputStream inputStream = resource.getInputStream()) {
-            final PkiIdentity pkiIdentity = CryptoLoader.getIdentityFromP12(
-                StreamUtils.copyToByteArray(inputStream), "00");
-
-            pkiIdentity.setKeyId(Optional.ofNullable(keyConfiguration.getKeyId()));
-            pkiIdentity.setUse(Optional.ofNullable(keyConfiguration.getUse()));
-            return new IdpKey(pkiIdentity);
-        } catch (final IOException e) {
-            throw new IdpServerStartupException(
-                "Error while loading Key from resource '" + keyConfiguration.getFileName() + "'", e);
-        }
-    }
+  }
 }

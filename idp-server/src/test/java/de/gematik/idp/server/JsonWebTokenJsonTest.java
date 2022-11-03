@@ -16,8 +16,8 @@
 
 package de.gematik.idp.server;
 
-
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.client.data.AuthorizationResponse;
@@ -30,23 +30,23 @@ import org.springframework.boot.test.json.JsonContent;
 
 class JsonWebTokenJsonTest {
 
-    private JacksonTester<AuthorizationResponse> jacksonTester;
+  private JacksonTester<AuthorizationResponse> jacksonTester;
 
-    @BeforeEach
-    public void setup() {
-        final ObjectMapper objectMapper = new ObjectMapper();
-        JacksonTester.initFields(this, objectMapper);
-    }
+  @BeforeEach
+  public void setup() {
+    final ObjectMapper objectMapper = new ObjectMapper();
+    JacksonTester.initFields(this, objectMapper);
+  }
 
-    @Test
-    void testSerialization() throws IOException {
-        final JsonContent<AuthorizationResponse> jsonContent = jacksonTester.write(AuthorizationResponse.builder()
-            .authenticationChallenge(AuthenticationChallenge.builder()
-                .challenge(new JsonWebToken("foobar"))
-                .build())
-            .build());
+  @Test
+  void testSerialization() throws IOException {
+    final JsonContent<AuthorizationResponse> jsonContent =
+        jacksonTester.write(
+            AuthorizationResponse.builder()
+                .authenticationChallenge(
+                    AuthenticationChallenge.builder().challenge(new JsonWebToken("foobar")).build())
+                .build());
 
-        assertThat(jsonContent.getJson())
-            .contains("\"challenge\":\"foobar\"");
-    }
+    assertThat(jsonContent.getJson()).contains("\"challenge\":\"foobar\"");
+  }
 }

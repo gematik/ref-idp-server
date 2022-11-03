@@ -30,6 +30,6 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class Metadata {
 
-    private OpenidProvider openidProvider;
-    private FederationEntity federationEntity;
+  private OpenidProvider openidProvider;
+  private FederationEntity federationEntity;
 }

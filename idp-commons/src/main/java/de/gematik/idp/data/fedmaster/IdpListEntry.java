@@ -28,8 +28,8 @@ import lombok.RequiredArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class IdpListEntry {
 
-    private final String organizationName;
-    private final String iss;
-    private final String logoUri;
-    private final String userTypeSupported;
+  private final String organizationName;
+  private final String iss;
+  private final String logoUri;
+  private final String userTypeSupported;
 }

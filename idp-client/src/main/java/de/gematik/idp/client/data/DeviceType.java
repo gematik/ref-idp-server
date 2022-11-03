@@ -30,16 +30,10 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DeviceType {
 
-    @Builder.Default
-    private String deviceTypeDataVersion = "1.0";
-    @Builder.Default
-    private String product = "meinPhone";
-    @Builder.Default
-    private String model = "latest";
-    @Builder.Default
-    private String os = "Android";
-    @Builder.Default
-    private String osVersion = "1.2.3";
-    @Builder.Default
-    private String manufacturer = "Werke";
+  @Builder.Default private String deviceTypeDataVersion = "1.0";
+  @Builder.Default private String product = "meinPhone";
+  @Builder.Default private String model = "latest";
+  @Builder.Default private String os = "Android";
+  @Builder.Default private String osVersion = "1.2.3";
+  @Builder.Default private String manufacturer = "Werke";
 }

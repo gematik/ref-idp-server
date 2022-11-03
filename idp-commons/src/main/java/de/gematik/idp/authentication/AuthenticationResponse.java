@@ -29,8 +29,10 @@ import lombok.NoArgsConstructor;
 @Builder
 public class AuthenticationResponse {
 
-    @JsonProperty(value = "Signierte Antwort auf die Authentication Challenge. JWT, welches im x5c-Attribut das "
-        + "Auth-Zertifikats des Aufrufers enthält. Im Body muss als 'njwt' Bit-genau die Original-Challenge des "
-        + "Servers enthalten sein.")
-    private JsonWebToken signedChallenge;
+  @JsonProperty(
+      value =
+          "Signierte Antwort auf die Authentication Challenge. JWT, welches im x5c-Attribut das"
+              + " Auth-Zertifikats des Aufrufers enthält. Im Body muss als 'njwt' Bit-genau die"
+              + " Original-Challenge des Servers enthalten sein.")
+  private JsonWebToken signedChallenge;
 }

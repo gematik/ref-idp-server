@@ -22,13 +22,13 @@ import org.springframework.http.HttpStatus;
 
 public class IdpServerAccessDeniedException extends IdpServerException {
 
-    private static final long serialVersionUID = -2411138408758899652L;
+  private static final long serialVersionUID = -2411138408758899652L;
 
-    public IdpServerAccessDeniedException(final String message, final Exception e) {
-        super(message, e, IdpErrorType.ACCESS_DENIED, HttpStatus.FORBIDDEN);
-    }
+  public IdpServerAccessDeniedException(final String message, final Exception e) {
+    super(message, e, IdpErrorType.ACCESS_DENIED, HttpStatus.FORBIDDEN);
+  }
 
-    public IdpServerAccessDeniedException(final String s) {
-        super(s, IdpErrorType.ACCESS_DENIED, HttpStatus.FORBIDDEN);
-    }
+  public IdpServerAccessDeniedException(final String s) {
+    super(s, IdpErrorType.ACCESS_DENIED, HttpStatus.FORBIDDEN);
+  }
 }

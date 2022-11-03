@@ -21,6 +21,7 @@ import static de.gematik.idp.field.ClaimName.ISSUED_AT;
 import static de.gematik.idp.field.ClaimName.TYPE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers;
@@ -48,81 +49,91 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(PkiKeyResolver.class)
 class SsoTokenValidatorTest {
 
-    private SsoTokenValidator ssoTokenValidator;
-    private PkiIdentity rsaUserIdentity;
-    private PkiIdentity egkUserIdentity;
-    private IdpJwtProcessor serverTokenProzessor;
-    private SsoTokenBuilder ssoTokenBuilder;
-    private final ServerUrlService urlService = new ServerUrlService(new IdpConfiguration());
-    private SecretKeySpec tokenEncryptionKey;
+  static {
+    Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+    Security.insertProviderAt(new BouncyCastleProvider(), 1);
+  }
 
-    static {
-        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-        Security.insertProviderAt(new BouncyCastleProvider(), 1);
-    }
+  private final ServerUrlService urlService = new ServerUrlService(new IdpConfiguration());
+  private SsoTokenValidator ssoTokenValidator;
+  private PkiIdentity rsaUserIdentity;
+  private PkiIdentity egkUserIdentity;
+  private IdpJwtProcessor serverTokenProzessor;
+  private SsoTokenBuilder ssoTokenBuilder;
+  private SecretKeySpec tokenEncryptionKey;
 
-    @BeforeEach
-    public void init(
-        @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity,
-        @PkiKeyResolver.Filename("rsa") final PkiIdentity rsaIdentity) {
-        egkUserIdentity = egkIdentity;
-        rsaUserIdentity = rsaIdentity;
-        final IdpKey serverKey = new IdpKey(egkUserIdentity);
-        serverTokenProzessor = new IdpJwtProcessor(egkUserIdentity);
-        tokenEncryptionKey = new SecretKeySpec(DigestUtils.sha256("fdsfdsafdsayvcxy".getBytes()), "AES");
-        ssoTokenBuilder = new SsoTokenBuilder(serverTokenProzessor, urlService.determineServerUrl(),
-            tokenEncryptionKey);
-        ssoTokenValidator = new SsoTokenValidator(serverKey, tokenEncryptionKey);
-    }
+  @BeforeEach
+  public void init(
+      @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity,
+      @PkiKeyResolver.Filename("rsa") final PkiIdentity rsaIdentity) {
+    egkUserIdentity = egkIdentity;
+    rsaUserIdentity = rsaIdentity;
+    final IdpKey serverKey = new IdpKey(egkUserIdentity);
+    serverTokenProzessor = new IdpJwtProcessor(egkUserIdentity);
+    tokenEncryptionKey =
+        new SecretKeySpec(DigestUtils.sha256("fdsfdsafdsayvcxy".getBytes()), "AES");
+    ssoTokenBuilder =
+        new SsoTokenBuilder(
+            serverTokenProzessor, urlService.determineServerUrl(), tokenEncryptionKey);
+    ssoTokenValidator = new SsoTokenValidator(serverKey, tokenEncryptionKey);
+  }
 
-    @Test
-    void validateValidSsoToken() {
-        assertDoesNotThrow(() -> ssoTokenValidator.decryptAndValidateSsoToken(generateValidSsoToken()));
-    }
+  @Test
+  void validateValidSsoToken() {
+    assertDoesNotThrow(() -> ssoTokenValidator.decryptAndValidateSsoToken(generateValidSsoToken()));
+  }
 
-    @Test
-    void validateSsoTokenExpired() {
-        assertThatThrownBy(() -> ssoTokenValidator.decryptAndValidateSsoToken(generateExpiredSsoToken()))
-            .isInstanceOf(IdpServerException.class);
-    }
+  @Test
+  void validateSsoTokenExpired() {
+    assertThatThrownBy(
+            () -> ssoTokenValidator.decryptAndValidateSsoToken(generateExpiredSsoToken()))
+        .isInstanceOf(IdpServerException.class);
+  }
 
-    @Test
-    void validateSsoTokenInvalidCert() {
-        assertThatThrownBy(() -> ssoTokenValidator.decryptAndValidateSsoToken(generateInvalidSsoToken()))
-            .isInstanceOf(IdpJoseException.class);
-    }
+  @Test
+  void validateSsoTokenInvalidCert() {
+    assertThatThrownBy(
+            () -> ssoTokenValidator.decryptAndValidateSsoToken(generateInvalidSsoToken()))
+        .isInstanceOf(IdpJoseException.class);
+  }
 
-    private IdpJwe generateExpiredSsoToken() {
-        return serverTokenProzessor.buildJwt(new JwtBuilder()
+  private IdpJwe generateExpiredSsoToken() {
+    return serverTokenProzessor
+        .buildJwt(
+            new JwtBuilder()
                 .addAllHeaderClaims(generateHeaderClaims())
                 .addAllBodyClaims(generateBodyClaims())
                 .expiresAt(ZonedDateTime.now().minusMinutes(1)))
-            .encrypt(tokenEncryptionKey);
-    }
+        .encrypt(tokenEncryptionKey);
+  }
 
-    private IdpJwe generateInvalidSsoToken() {
-        final IdpJwtProcessor invalidProcessor = new IdpJwtProcessor(rsaUserIdentity);
-        return invalidProcessor.buildJwt(new JwtBuilder()
+  private IdpJwe generateInvalidSsoToken() {
+    final IdpJwtProcessor invalidProcessor = new IdpJwtProcessor(rsaUserIdentity);
+    return invalidProcessor
+        .buildJwt(
+            new JwtBuilder()
                 .addAllHeaderClaims(generateHeaderClaims())
                 .addAllBodyClaims(generateBodyClaims())
                 .expiresAt(ZonedDateTime.now().plusMinutes(5)))
-            .encrypt(tokenEncryptionKey);
-    }
+        .encrypt(tokenEncryptionKey);
+  }
 
-    private Map<String, Object> generateHeaderClaims() {
-        final Map<String, Object> headerClaims = new HashMap<>();
-        headerClaims.put(ALGORITHM.getJoseName(), BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256);
-        headerClaims.put(TYPE.getJoseName(), "JWT");
-        return headerClaims;
-    }
+  private Map<String, Object> generateHeaderClaims() {
+    final Map<String, Object> headerClaims = new HashMap<>();
+    headerClaims.put(
+        ALGORITHM.getJoseName(), BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256);
+    headerClaims.put(TYPE.getJoseName(), "JWT");
+    return headerClaims;
+  }
 
-    private Map<String, Object> generateBodyClaims() {
-        final Map<String, Object> bodyClaims = new HashMap<>();
-        bodyClaims.put(ISSUED_AT.getJoseName(), ZonedDateTime.now().toEpochSecond());
-        return bodyClaims;
-    }
+  private Map<String, Object> generateBodyClaims() {
+    final Map<String, Object> bodyClaims = new HashMap<>();
+    bodyClaims.put(ISSUED_AT.getJoseName(), ZonedDateTime.now().toEpochSecond());
+    return bodyClaims;
+  }
 
-    private IdpJwe generateValidSsoToken() {
-        return ssoTokenBuilder.buildSsoToken(egkUserIdentity.getCertificate(), ZonedDateTime.now(), List.of(""));
-    }
+  private IdpJwe generateValidSsoToken() {
+    return ssoTokenBuilder.buildSsoToken(
+        egkUserIdentity.getCertificate(), ZonedDateTime.now(), List.of(""));
+  }
 }

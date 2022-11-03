@@ -24,11 +24,11 @@ import lombok.Data;
 @Builder
 public class TokenRequest {
 
-    private final String tokenUrl;
-    private final String clientId;
-    private final String code;
-    private final String codeVerifier;
-    private final String redirectUrl;
-    private final String ssoToken;
-    private final PublicKey idpEnc;
+  private final String tokenUrl;
+  private final String clientId;
+  private final String code;
+  private final String codeVerifier;
+  private final String redirectUrl;
+  private final String ssoToken;
+  private final PublicKey idpEnc;
 }

@@ -19,47 +19,49 @@ package de.gematik.idp.test.steps.model;
 import java.util.Arrays;
 
 public enum DateCompareMode {
-    BEFORE, AFTER, NOT_BEFORE, NOT_AFTER;
+  BEFORE,
+  AFTER,
+  NOT_BEFORE,
+  NOT_AFTER;
 
-    public final static String CUCUMBER_REGEX = "(before|after|not\\ before|not\\ after)";
+  public static final String CUCUMBER_REGEX = "(before|after|not\\ before|not\\ after)";
 
-    private final String value;
-    private final String compareMathSign;
+  private final String value;
+  private final String compareMathSign;
 
-    public static DateCompareMode fromString(final String value) {
-        return Arrays.stream(DateCompareMode.values())
-            .filter(e -> e.value.equals(value))
-            .findFirst()
-            .orElseThrow(() -> new AssertionError("Invalid date compare mode '" + value + "'"));
-
+  DateCompareMode() {
+    value = name().toLowerCase().replace("_", " ");
+    switch (value) {
+      case "not before":
+        compareMathSign = ">=";
+        break;
+      case "after":
+        compareMathSign = ">";
+        break;
+      case "before":
+        compareMathSign = "<";
+        break;
+      case "not after":
+        compareMathSign = "<=";
+        break;
+      default:
+        compareMathSign = "??";
     }
+  }
 
-    DateCompareMode() {
-        value = name().toLowerCase().replace("_", " ");
-        switch (value) {
-            case "not before":
-                compareMathSign = ">=";
-                break;
-            case "after":
-                compareMathSign = ">";
-                break;
-            case "before":
-                compareMathSign = "<";
-                break;
-            case "not after":
-                compareMathSign = "<=";
-                break;
-            default:
-                compareMathSign = "??";
-        }
-    }
+  public static DateCompareMode fromString(final String value) {
+    return Arrays.stream(DateCompareMode.values())
+        .filter(e -> e.value.equals(value))
+        .findFirst()
+        .orElseThrow(() -> new AssertionError("Invalid date compare mode '" + value + "'"));
+  }
 
-    @Override
-    public String toString() {
-        return value;
-    }
+  @Override
+  public String toString() {
+    return value;
+  }
 
-    public String mathSign() {
-        return compareMathSign;
-    }
+  public String mathSign() {
+    return compareMathSign;
+  }
 }

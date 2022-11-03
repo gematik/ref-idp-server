@@ -30,5 +30,5 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class Metadata {
 
-    private FederationEntity federationEntity;
+  private FederationEntity federationEntity;
 }

@@ -17,6 +17,7 @@
 package de.gematik.idp.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.tests.Afo;
@@ -37,47 +38,42 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class ClientSystemValidationTest {
 
-    @LocalServerPort
-    private int port;
-    @Autowired
-    private IdpConfiguration idpConfiguration;
+  @LocalServerPort private int port;
+  @Autowired private IdpConfiguration idpConfiguration;
 
-    @AfterAll
-    public static void reset() {
-        Unirest.config().reset();
+  @AfterAll
+  public static void reset() {
+    Unirest.config().reset();
+  }
+
+  @Test
+  @Afo("A_20588")
+  @Disabled("Breaks the server build, even though it shouldn't")
+  void retrieveWithoutUserAgent_shouldYield403() {
+    final String defaultUserAgent =
+        Unirest.config().getDefaultHeaders().getFirst(HttpHeaders.USER_AGENT);
+    try {
+      Unirest.config().setDefaultHeader(HttpHeaders.USER_AGENT, "");
+
+      final HttpResponse<String> response =
+          Unirest.get("http://localhost:" + port + IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT)
+              .asString();
+      assertThat(response.getStatus()).isEqualTo(403);
+      assertThat(response.getBody()).contains("No Client-System found in request");
+    } finally {
+      Unirest.config().setDefaultHeader(HttpHeaders.USER_AGENT, defaultUserAgent);
+      Unirest.config().reset();
     }
+  }
 
-    @Test
-    @Afo("A_20588")
-    @Disabled("Breaks the server build, even though it shouldn't")
-    void retrieveWithoutUserAgent_shouldYield403() {
-        final String defaultUserAgent = Unirest.config().getDefaultHeaders().getFirst(HttpHeaders.USER_AGENT);
-        try {
-            Unirest.config().setDefaultHeader(HttpHeaders.USER_AGENT, "");
-
-            final HttpResponse<String> response = Unirest
-                .get("http://localhost:" + port + IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT)
-                .asString();
-            assertThat(response.getStatus())
-                .isEqualTo(403);
-            assertThat(response.getBody())
-                .contains("No Client-System found in request");
-        } finally {
-            Unirest.config().setDefaultHeader(HttpHeaders.USER_AGENT, defaultUserAgent);
-            Unirest.config().reset();
-        }
-    }
-
-    @Test
-    @Afo("A_20589")
-    void retrieveWithBlockeUserAgent_shouldYield403() {
-        final HttpResponse<String> response = Unirest
-            .get("http://localhost:" + port + IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT)
+  @Test
+  @Afo("A_20589")
+  void retrieveWithBlockeUserAgent_shouldYield403() {
+    final HttpResponse<String> response =
+        Unirest.get("http://localhost:" + port + IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT)
             .header(HttpHeaders.USER_AGENT, idpConfiguration.getBlockedClientSystems().get(0))
             .asString();
-        assertThat(response.getStatus())
-            .isEqualTo(403);
-        assertThat(response.getBody())
-            .contains("Given Client-System is blocked");
-    }
+    assertThat(response.getStatus()).isEqualTo(403);
+    assertThat(response.getBody()).contains("Given Client-System is blocked");
+  }
 }

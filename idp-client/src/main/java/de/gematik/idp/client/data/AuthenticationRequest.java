@@ -25,9 +25,9 @@ import lombok.Data;
 @Builder
 public class AuthenticationRequest {
 
-    private final String authenticationEndpointUrl;
-    private final IdpJwe signedChallenge;
-    private final IdpJwe encryptedSignedAuthenticationData;
-    private final String ssoToken;
-    private final JsonWebToken challengeToken;
+  private final String authenticationEndpointUrl;
+  private final IdpJwe signedChallenge;
+  private final IdpJwe encryptedSignedAuthenticationData;
+  private final String ssoToken;
+  private final JsonWebToken challengeToken;
 }

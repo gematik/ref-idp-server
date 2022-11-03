@@ -32,22 +32,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DeviceType implements DataVersion {
 
-    @NotBlank
-    private String manufacturer;
-    @NotBlank
-    private String product;
-    @NotBlank
-    private String model;
-    @NotBlank
-    private String os;
-    @NotBlank
-    private String osVersion;
-    @NotBlank
-    private String deviceTypeDataVersion;
+  @NotBlank private String manufacturer;
+  @NotBlank private String product;
+  @NotBlank private String model;
+  @NotBlank private String os;
+  @NotBlank private String osVersion;
+  @NotBlank private String deviceTypeDataVersion;
 
-    @Override
-    @JsonIgnore
-    public String getDataVersion() {
-        return deviceTypeDataVersion;
-    }
+  @Override
+  @JsonIgnore
+  public String getDataVersion() {
+    return deviceTypeDataVersion;
+  }
 }

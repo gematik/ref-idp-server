@@ -16,8 +16,28 @@
 
 package de.gematik.idp.token;
 
-import static de.gematik.idp.field.ClaimName.*;
+import static de.gematik.idp.field.ClaimName.ACCESS_TOKEN_HASH;
+import static de.gematik.idp.field.ClaimName.AUDIENCE;
+import static de.gematik.idp.field.ClaimName.AUTHENTICATION_CLASS_REFERENCE;
+import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
+import static de.gematik.idp.field.ClaimName.AUTHORIZED_PARTY;
+import static de.gematik.idp.field.ClaimName.AUTH_TIME;
+import static de.gematik.idp.field.ClaimName.CLIENT_ID;
+import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
+import static de.gematik.idp.field.ClaimName.FAMILY_NAME;
+import static de.gematik.idp.field.ClaimName.GIVEN_NAME;
+import static de.gematik.idp.field.ClaimName.ID_NUMBER;
+import static de.gematik.idp.field.ClaimName.ISSUED_AT;
+import static de.gematik.idp.field.ClaimName.ISSUER;
+import static de.gematik.idp.field.ClaimName.JWT_ID;
+import static de.gematik.idp.field.ClaimName.NONCE;
+import static de.gematik.idp.field.ClaimName.ORGANIZATION_NAME;
+import static de.gematik.idp.field.ClaimName.PROFESSION_OID;
+import static de.gematik.idp.field.ClaimName.SCOPE;
+import static de.gematik.idp.field.ClaimName.SUBJECT;
+import static de.gematik.idp.field.ClaimName.TYPE;
 import static de.gematik.idp.token.TokenBuilderUtil.buildSubjectClaim;
+
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtBuilder;
@@ -25,7 +45,11 @@ import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.field.ClaimName;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Data;
@@ -37,56 +61,82 @@ import org.jose4j.jwt.NumericDate;
 @Data
 public class IdTokenBuilder {
 
-    private static final Set<String> requiredClaims = Stream.of(PROFESSION_OID, GIVEN_NAME, FAMILY_NAME,
-            ORGANIZATION_NAME, ID_NUMBER, AUTHENTICATION_CLASS_REFERENCE, CLIENT_ID, SCOPE, AUTH_TIME)
-        .map(ClaimName::getJoseName)
-        .collect(Collectors.toSet());
-    private static final List<ClaimName> CLAIMS_TO_TAKE_FROM_AUTHENTICATION_TOKEN = List
-        .of(GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER, AUTH_TIME, NONCE);
+  private static final Set<String> requiredClaims =
+      Stream.of(
+              PROFESSION_OID,
+              GIVEN_NAME,
+              FAMILY_NAME,
+              ORGANIZATION_NAME,
+              ID_NUMBER,
+              AUTHENTICATION_CLASS_REFERENCE,
+              CLIENT_ID,
+              SCOPE,
+              AUTH_TIME)
+          .map(ClaimName::getJoseName)
+          .collect(Collectors.toSet());
+  private static final List<ClaimName> CLAIMS_TO_TAKE_FROM_AUTHENTICATION_TOKEN =
+      List.of(
+          GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER, AUTH_TIME, NONCE);
 
-    private final IdpJwtProcessor jwtProcessor;
-    private final String issuerUrl;
-    private final String serverSubjectSalt;
+  private final IdpJwtProcessor jwtProcessor;
+  private final String issuerUrl;
+  private final String serverSubjectSalt;
 
-    public JsonWebToken buildIdToken(final String clientId, final JsonWebToken authenticationToken,
-        final JsonWebToken accessToken) {
-        final Map<String, Object> claimsMap = new HashMap<>();
-        final ZonedDateTime now = ZonedDateTime.now();
-        final String atHashValue = Base64.getUrlEncoder().withoutPadding().encodeToString(
-            ArrayUtils.subarray(DigestUtils.sha256(accessToken.getRawString()), 0, 16));
+  public JsonWebToken buildIdToken(
+      final String clientId,
+      final JsonWebToken authenticationToken,
+      final JsonWebToken accessToken) {
+    final Map<String, Object> claimsMap = new HashMap<>();
+    final ZonedDateTime now = ZonedDateTime.now();
+    final String atHashValue =
+        Base64.getUrlEncoder()
+            .withoutPadding()
+            .encodeToString(
+                ArrayUtils.subarray(DigestUtils.sha256(accessToken.getRawString()), 0, 16));
 
-        claimsMap.put(ISSUER.getJoseName(), issuerUrl);
-        claimsMap.put(SUBJECT.getJoseName(), clientId);
-        claimsMap.put(AUDIENCE.getJoseName(), clientId);
-        claimsMap.put(ISSUED_AT.getJoseName(), now.toEpochSecond());
+    claimsMap.put(ISSUER.getJoseName(), issuerUrl);
+    claimsMap.put(SUBJECT.getJoseName(), clientId);
+    claimsMap.put(AUDIENCE.getJoseName(), clientId);
+    claimsMap.put(ISSUED_AT.getJoseName(), now.toEpochSecond());
 
-        CLAIMS_TO_TAKE_FROM_AUTHENTICATION_TOKEN.stream()
-            .map(claimName -> Pair.of(claimName, authenticationToken.getBodyClaim(claimName)))
-            .filter(pair -> pair.getValue().isPresent())
-            .forEach(pair -> claimsMap.put(pair.getKey().getJoseName(), pair.getValue().get()));
-        claimsMap.put(AUTHORIZED_PARTY.getJoseName(),
-            authenticationToken.getBodyClaim(CLIENT_ID)
-                .orElseThrow(() -> new IdpJoseException("Missing '" + AUTHORIZED_PARTY.getJoseName() + "' claim!")));
-        claimsMap.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(),
-            authenticationToken.getBodyClaim(AUTHENTICATION_METHODS_REFERENCE)
-                .or(() -> accessToken.getBodyClaim(AUTHENTICATION_METHODS_REFERENCE))
-                .orElseThrow());
-        claimsMap.put(AUTHENTICATION_CLASS_REFERENCE.getJoseName(), IdpConstants.EIDAS_LOA_HIGH);
-        claimsMap.put(ACCESS_TOKEN_HASH.getJoseName(), atHashValue);
-        claimsMap.put(SUBJECT.getJoseName(),
-            buildSubjectClaim(
-                clientId,
-                authenticationToken.getStringBodyClaim(ID_NUMBER)
-                    .orElseThrow(() -> new IdpJoseException("Missing '" + ID_NUMBER.getJoseName() + "' claim!")),
-                serverSubjectSalt));
-        claimsMap.put(JWT_ID.getJoseName(), Nonce.getNonceAsHex(IdpConstants.JTI_LENGTH));
-        claimsMap.put(EXPIRES_AT.getJoseName(), NumericDate.fromSeconds(now.plusMinutes(5).toEpochSecond()).getValue());
+    CLAIMS_TO_TAKE_FROM_AUTHENTICATION_TOKEN.stream()
+        .map(claimName -> Pair.of(claimName, authenticationToken.getBodyClaim(claimName)))
+        .filter(pair -> pair.getValue().isPresent())
+        .forEach(pair -> claimsMap.put(pair.getKey().getJoseName(), pair.getValue().get()));
+    claimsMap.put(
+        AUTHORIZED_PARTY.getJoseName(),
+        authenticationToken
+            .getBodyClaim(CLIENT_ID)
+            .orElseThrow(
+                () ->
+                    new IdpJoseException(
+                        "Missing '" + AUTHORIZED_PARTY.getJoseName() + "' claim!")));
+    claimsMap.put(
+        AUTHENTICATION_METHODS_REFERENCE.getJoseName(),
+        authenticationToken
+            .getBodyClaim(AUTHENTICATION_METHODS_REFERENCE)
+            .or(() -> accessToken.getBodyClaim(AUTHENTICATION_METHODS_REFERENCE))
+            .orElseThrow());
+    claimsMap.put(AUTHENTICATION_CLASS_REFERENCE.getJoseName(), IdpConstants.EIDAS_LOA_HIGH);
+    claimsMap.put(ACCESS_TOKEN_HASH.getJoseName(), atHashValue);
+    claimsMap.put(
+        SUBJECT.getJoseName(),
+        buildSubjectClaim(
+            clientId,
+            authenticationToken
+                .getStringBodyClaim(ID_NUMBER)
+                .orElseThrow(
+                    () -> new IdpJoseException("Missing '" + ID_NUMBER.getJoseName() + "' claim!")),
+            serverSubjectSalt));
+    claimsMap.put(JWT_ID.getJoseName(), Nonce.getNonceAsHex(IdpConstants.JTI_LENGTH));
+    claimsMap.put(
+        EXPIRES_AT.getJoseName(),
+        NumericDate.fromSeconds(now.plusMinutes(5).toEpochSecond()).getValue());
 
-        final Map<String, Object> headerClaims = new HashMap<>();
-        headerClaims.put(TYPE.getJoseName(), "JWT");
+    final Map<String, Object> headerClaims = new HashMap<>();
+    headerClaims.put(TYPE.getJoseName(), "JWT");
 
-        return jwtProcessor.buildJwt(new JwtBuilder()
-            .addAllBodyClaims(claimsMap)
-            .addAllHeaderClaims(headerClaims));
-    }
+    return jwtProcessor.buildJwt(
+        new JwtBuilder().addAllBodyClaims(claimsMap).addAllHeaderClaims(headerClaims));
+  }
 }

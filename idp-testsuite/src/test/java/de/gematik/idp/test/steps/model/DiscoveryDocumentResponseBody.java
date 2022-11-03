@@ -46,151 +46,154 @@ import org.json.JSONObject;
 
 public class DiscoveryDocumentResponseBody implements ResponseBody {
 
-    JSONObject jsonBody;
-    JSONObject jsonHeader;
+  JSONObject jsonBody;
+  JSONObject jsonHeader;
 
-    String signedContent;
+  String signedContent;
 
-    @SneakyThrows
-    public DiscoveryDocumentResponseBody(final File templateBody, final File templateHeader, final File privateKey)
-        throws IOException, JSONException {
-        jsonBody = new JSONObject(IOUtils.toString(new FileReader(templateBody, StandardCharsets.UTF_8)));
+  @SneakyThrows
+  public DiscoveryDocumentResponseBody(
+      final File templateBody, final File templateHeader, final File privateKey)
+      throws IOException, JSONException {
+    jsonBody =
+        new JSONObject(IOUtils.toString(new FileReader(templateBody, StandardCharsets.UTF_8)));
 
-        final ZonedDateTime now = ZonedDateTime.now();
-        jsonBody.put("exp", now.plusHours(24).toEpochSecond());
-        jsonBody.put("iat", now.toEpochSecond());
+    final ZonedDateTime now = ZonedDateTime.now();
+    jsonBody.put("exp", now.plusHours(24).toEpochSecond());
+    jsonBody.put("iat", now.toEpochSecond());
 
-        jsonHeader = new JSONObject(IOUtils.toString(new FileReader(templateHeader, StandardCharsets.UTF_8)));
+    jsonHeader =
+        new JSONObject(IOUtils.toString(new FileReader(templateHeader, StandardCharsets.UTF_8)));
 
-        String keyPwd = System.getenv("IDP_LOCAL_DISCDOC_PKEY_PWD");
-        if (keyPwd == null) {
-            keyPwd = "00";
-        }
-        final byte[] p12FileContent = FileUtils
-            .readFileToByteArray(privateKey);
-        final PkiIdentity pkiId = CryptoLoader.getIdentityFromP12(p12FileContent, keyPwd);
-        final IdpJwtProcessor jwtProcessor = new IdpJwtProcessor(pkiId);
-        final Map<String, Object> headers = new HashMap<>();
-        jsonHeader.keys().forEachRemaining(key -> {
-            try {
+    String keyPwd = System.getenv("IDP_LOCAL_DISCDOC_PKEY_PWD");
+    if (keyPwd == null) {
+      keyPwd = "00";
+    }
+    final byte[] p12FileContent = FileUtils.readFileToByteArray(privateKey);
+    final PkiIdentity pkiId = CryptoLoader.getIdentityFromP12(p12FileContent, keyPwd);
+    final IdpJwtProcessor jwtProcessor = new IdpJwtProcessor(pkiId);
+    final Map<String, Object> headers = new HashMap<>();
+    jsonHeader
+        .keys()
+        .forEachRemaining(
+            key -> {
+              try {
                 headers.put(key.toString(), jsonHeader.get(key.toString()).toString());
-            } catch (final JSONException e) {
+              } catch (final JSONException e) {
                 Assertions.fail("Unable to convert headers for discovery document", e);
-            }
-        });
-        signedContent = jwtProcessor
-            .buildJws(jsonBody.toString(), headers, false)
-            .getRawString();
-    }
+              }
+            });
+    signedContent = jwtProcessor.buildJws(jsonBody.toString(), headers, false).getRawString();
+  }
 
-    @Override
-    public String print() {
-        return signedContent;
-    }
+  @Override
+  public String print() {
+    return signedContent;
+  }
 
-    @SneakyThrows
-    @Override
-    public String prettyPrint() {
-        return signedContent;
-    }
+  @SneakyThrows
+  @Override
+  public String prettyPrint() {
+    return signedContent;
+  }
 
-    @Override
-    public String asPrettyString() {
-        return signedContent;
-    }
+  @Override
+  public String asPrettyString() {
+    return signedContent;
+  }
 
-    @Override
-    public ResponseBody peek() {
-        return null;
-    }
+  @Override
+  public ResponseBody peek() {
+    return null;
+  }
 
-    @Override
-    public ResponseBody prettyPeek() {
-        return null;
-    }
+  @Override
+  public ResponseBody prettyPeek() {
+    return null;
+  }
 
-    @Override
-    public <T> T as(final Class<T> cls) {
-        return null;
-    }
+  @Override
+  public <T> T as(final Class<T> cls) {
+    return null;
+  }
 
-    @Override
-    public <T> T as(final Class<T> cls, final ObjectMapperType mapperType) {
-        return null;
-    }
+  @Override
+  public <T> T as(final Class<T> cls, final ObjectMapperType mapperType) {
+    return null;
+  }
 
-    @Override
-    public <T> T as(final Class<T> cls, final ObjectMapper mapper) {
-        return null;
-    }
+  @Override
+  public <T> T as(final Class<T> cls, final ObjectMapper mapper) {
+    return null;
+  }
 
-    @Override
-    public <T> T as(final TypeRef<T> typeRef) {
-        return null;
-    }
+  @Override
+  public <T> T as(final TypeRef<T> typeRef) {
+    return null;
+  }
 
-    @Override
-    public <T> T as(final Type cls) {
-        return null;
-    }
+  @Override
+  public <T> T as(final Type cls) {
+    return null;
+  }
 
-    @Override
-    public <T> T as(final Type cls, final ObjectMapperType mapperType) {
-        return null;
-    }
+  @Override
+  public <T> T as(final Type cls, final ObjectMapperType mapperType) {
+    return null;
+  }
 
-    @Override
-    public <T> T as(final Type cls, final ObjectMapper mapper) {
-        return null;
-    }
+  @Override
+  public <T> T as(final Type cls, final ObjectMapper mapper) {
+    return null;
+  }
 
-    @Override
-    public JsonPath jsonPath() {
-        return null;
-    }
+  @Override
+  public JsonPath jsonPath() {
+    return null;
+  }
 
-    @Override
-    public JsonPath jsonPath(final JsonPathConfig config) {
-        return null;
-    }
+  @Override
+  public JsonPath jsonPath(final JsonPathConfig config) {
+    return null;
+  }
 
-    @Override
-    public XmlPath xmlPath() {
-        return null;
-    }
+  @Override
+  public XmlPath xmlPath() {
+    return null;
+  }
 
-    @Override
-    public XmlPath xmlPath(final XmlPathConfig config) {
-        return null;
-    }
+  @Override
+  public XmlPath xmlPath(final XmlPathConfig config) {
+    return null;
+  }
 
-    @Override
-    public XmlPath xmlPath(final CompatibilityMode compatibilityMode) {
-        return null;
-    }
+  @Override
+  public XmlPath xmlPath(final CompatibilityMode compatibilityMode) {
+    return null;
+  }
 
-    @Override
-    public XmlPath htmlPath() {
-        return null;
-    }
+  @Override
+  public XmlPath htmlPath() {
+    return null;
+  }
 
-    @Override
-    public <T> T path(final String path, final String... arguments) {
-        return null;
-    }
+  @Override
+  public <T> T path(final String path, final String... arguments) {
+    return null;
+  }
 
-    @Override
-    public String asString() {
-        return signedContent;
-    }
+  @Override
+  public String asString() {
+    return signedContent;
+  }
 
-    @Override
-    public byte[] asByteArray() {
-        return null;
-    }
+  @Override
+  public byte[] asByteArray() {
+    return null;
+  }
 
-    @Override
-    public InputStream asInputStream() {
-        return null;
-    }
+  @Override
+  public InputStream asInputStream() {
+    return null;
+  }
 }

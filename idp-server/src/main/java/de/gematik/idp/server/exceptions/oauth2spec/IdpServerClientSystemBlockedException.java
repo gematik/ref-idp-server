@@ -22,9 +22,9 @@ import org.springframework.http.HttpStatus;
 
 public class IdpServerClientSystemBlockedException extends IdpServerException {
 
-    private static final long serialVersionUID = -3422049477567171420L;
+  private static final long serialVersionUID = -3422049477567171420L;
 
-    public IdpServerClientSystemBlockedException() {
-        super("Given Client-System is blocked", IdpErrorType.ACCESS_DENIED, HttpStatus.FORBIDDEN);
-    }
+  public IdpServerClientSystemBlockedException() {
+    super("Given Client-System is blocked", IdpErrorType.ACCESS_DENIED, HttpStatus.FORBIDDEN);
+  }
 }

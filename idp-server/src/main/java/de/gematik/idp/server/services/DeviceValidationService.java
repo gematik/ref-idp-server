@@ -28,28 +28,33 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class DeviceValidationService {
 
-    private final DeviceValidationRepository deviceValidationRepository;
+  private final DeviceValidationRepository deviceValidationRepository;
 
-    public DeviceValidationState assess(final DeviceType deviceType) {
-        final Optional<DeviceValidationData> deviceValidation = getDeviceValidation(deviceType);
-        return deviceValidation.map(DeviceValidationData::getState)
-            .orElse(DeviceValidationState.UNKNOWN);
-    }
+  public DeviceValidationState assess(final DeviceType deviceType) {
+    final Optional<DeviceValidationData> deviceValidation = getDeviceValidation(deviceType);
+    return deviceValidation
+        .map(DeviceValidationData::getState)
+        .orElse(DeviceValidationState.UNKNOWN);
+  }
 
-    private Optional<DeviceValidationData> getDeviceValidation(final DeviceType deviceType) {
-        final DeviceValidationData deviceData = convertDeviceTypeToDeviceValidationData(deviceType);
-        return deviceValidationRepository
-            .findByManufacturerAndProductAndModelAndOsAndOsVersion(deviceData.getManufacturer(),
-                deviceData.getProduct(), deviceData.getModel(), deviceData.getOs(), deviceData.getOsVersion());
-    }
+  private Optional<DeviceValidationData> getDeviceValidation(final DeviceType deviceType) {
+    final DeviceValidationData deviceData = convertDeviceTypeToDeviceValidationData(deviceType);
+    return deviceValidationRepository.findByManufacturerAndProductAndModelAndOsAndOsVersion(
+        deviceData.getManufacturer(),
+        deviceData.getProduct(),
+        deviceData.getModel(),
+        deviceData.getOs(),
+        deviceData.getOsVersion());
+  }
 
-    private DeviceValidationData convertDeviceTypeToDeviceValidationData(final DeviceType deviceType) {
-        return DeviceValidationData.builder()
-            .manufacturer(deviceType.getManufacturer())
-            .product(deviceType.getProduct())
-            .model(deviceType.getModel())
-            .os(deviceType.getOs())
-            .osVersion(deviceType.getOsVersion())
-            .build();
-    }
+  private DeviceValidationData convertDeviceTypeToDeviceValidationData(
+      final DeviceType deviceType) {
+    return DeviceValidationData.builder()
+        .manufacturer(deviceType.getManufacturer())
+        .product(deviceType.getProduct())
+        .model(deviceType.getModel())
+        .os(deviceType.getOs())
+        .osVersion(deviceType.getOsVersion())
+        .build();
+  }
 }

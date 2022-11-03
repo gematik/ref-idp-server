@@ -20,7 +20,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey;
 
 @Getter
@@ -29,41 +33,48 @@ import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey;
 @NoArgsConstructor
 public class IdpRsaKeyDescriptor extends IdpKeyDescriptor {
 
-    @JsonProperty("n")
-    private String rsaModulusValue;
-    @JsonProperty("e")
-    private String rsaExponentValue;
+  @JsonProperty("n")
+  private String rsaModulusValue;
 
-    @Builder
-    public IdpRsaKeyDescriptor(final String[] x5c, final String publicKeyUse, final String keyId,
-        final String keyType,
-        final String rsaModulusValue, final String rsaExponentValue) {
-        super(x5c, publicKeyUse, keyId, keyType);
-        this.rsaModulusValue = rsaModulusValue;
-        this.rsaExponentValue = rsaExponentValue;
+  @JsonProperty("e")
+  private String rsaExponentValue;
+
+  @Builder
+  public IdpRsaKeyDescriptor(
+      final String[] x5c,
+      final String publicKeyUse,
+      final String keyId,
+      final String keyType,
+      final String rsaModulusValue,
+      final String rsaExponentValue) {
+    super(x5c, publicKeyUse, keyId, keyType);
+    this.rsaModulusValue = rsaModulusValue;
+    this.rsaExponentValue = rsaExponentValue;
+  }
+
+  public static IdpKeyDescriptor constructFromX509Certificate(
+      final X509Certificate certificate, final String keyId, final boolean addX5C) {
+    try {
+      final IdpRsaKeyDescriptor.IdpRsaKeyDescriptorBuilder descriptorBuilder =
+          IdpRsaKeyDescriptor.builder().keyId(keyId).keyType(getKeyType(certificate));
+      if (addX5C) {
+        descriptorBuilder.x5c(getCertArray(certificate));
+      }
+
+      final BCRSAPublicKey bcrsaPublicKey = (BCRSAPublicKey) certificate.getPublicKey();
+      descriptorBuilder
+          .rsaModulusValue(
+              Base64.getUrlEncoder()
+                  .withoutPadding()
+                  .encodeToString(bcrsaPublicKey.getModulus().toByteArray()))
+          .rsaExponentValue(
+              Base64.getUrlEncoder()
+                  .withoutPadding()
+                  .encodeToString(bcrsaPublicKey.getPublicExponent().toByteArray()));
+
+      return descriptorBuilder.build();
+    } catch (final ClassCastException e) {
+      throw new IdpCryptoException("Unknown Key-Format encountered!", e);
     }
-
-    public static IdpKeyDescriptor constructFromX509Certificate(final X509Certificate certificate, final String keyId,
-        final boolean addX5C) {
-        try {
-            final IdpRsaKeyDescriptor.IdpRsaKeyDescriptorBuilder descriptorBuilder = IdpRsaKeyDescriptor.builder()
-                .keyId(keyId)
-                .keyType(getKeyType(certificate));
-            if (addX5C) {
-                descriptorBuilder.x5c(getCertArray(certificate));
-            }
-
-            final BCRSAPublicKey bcrsaPublicKey = (BCRSAPublicKey) certificate.getPublicKey();
-            descriptorBuilder
-                .rsaModulusValue(
-                    Base64.getUrlEncoder().withoutPadding().encodeToString(bcrsaPublicKey.getModulus().toByteArray()))
-                .rsaExponentValue(
-                    Base64.getUrlEncoder().withoutPadding()
-                        .encodeToString(bcrsaPublicKey.getPublicExponent().toByteArray()));
-
-            return descriptorBuilder.build();
-        } catch (final ClassCastException e) {
-            throw new IdpCryptoException("Unknown Key-Format encountered!", e);
-        }
-    }
+  }
 }

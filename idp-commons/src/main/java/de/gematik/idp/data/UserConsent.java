@@ -31,6 +31,6 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class UserConsent {
 
-    private Map<String, String> requestedScopes;
-    private Map<String, String> requestedClaims;
+  private Map<String, String> requestedScopes;
+  private Map<String, String> requestedClaims;
 }

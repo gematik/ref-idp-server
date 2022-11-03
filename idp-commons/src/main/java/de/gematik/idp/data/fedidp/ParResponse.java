@@ -30,7 +30,6 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ParResponse {
 
-    private String requestUri;
-    private int expiresIn;
-
+  private String requestUri;
+  private int expiresIn;
 }

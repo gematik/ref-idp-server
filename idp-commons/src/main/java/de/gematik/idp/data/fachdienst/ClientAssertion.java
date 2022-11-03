@@ -16,7 +16,6 @@
 
 package de.gematik.idp.data.fachdienst;
 
-
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
@@ -24,9 +23,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Client assertion issued by Fachdienst
- */
+/** Client assertion issued by Fachdienst */
 @Data
 @Builder
 @NoArgsConstructor
@@ -34,11 +31,10 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ClientAssertion {
 
-    private String iss;
-    private String sub;
-    private String aud;
-    private String jti;
-    private long iat;
-    private long exp;
-
+  private String iss;
+  private String sub;
+  private String aud;
+  private String jti;
+  private long iat;
+  private long exp;
 }

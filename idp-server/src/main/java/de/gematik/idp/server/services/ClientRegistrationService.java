@@ -26,10 +26,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ClientRegistrationService {
 
-    final IdpConfiguration idpConfiguration;
+  final IdpConfiguration idpConfiguration;
 
-    public Optional<IdpClientConfiguration> getClientConfiguration(final String clientId) {
-        return Optional.ofNullable(idpConfiguration.getRegisteredClient().get(clientId));
-    }
-
+  public Optional<IdpClientConfiguration> getClientConfiguration(final String clientId) {
+    return Optional.ofNullable(idpConfiguration.getRegisteredClient().get(clientId));
+  }
 }

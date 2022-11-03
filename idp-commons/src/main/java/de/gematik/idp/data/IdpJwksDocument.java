@@ -31,14 +31,17 @@ import lombok.NoArgsConstructor;
 @Data
 public class IdpJwksDocument {
 
-    private List<IdpKeyDescriptor> keys;
+  private List<IdpKeyDescriptor> keys;
 
-    public static IdpJwksDocument constructFromX509Certificate(final PkiIdentity... identities) {
-        return IdpJwksDocument.builder()
-            .keys(Stream.of(identities)
-                .map(identity -> IdpKeyDescriptor.constructFromX509Certificate(identity.getCertificate(),
-                    identity.getKeyId(), true))
+  public static IdpJwksDocument constructFromX509Certificate(final PkiIdentity... identities) {
+    return IdpJwksDocument.builder()
+        .keys(
+            Stream.of(identities)
+                .map(
+                    identity ->
+                        IdpKeyDescriptor.constructFromX509Certificate(
+                            identity.getCertificate(), identity.getKeyId(), true))
                 .collect(Collectors.toList()))
-            .build();
-    }
+        .build();
+  }
 }

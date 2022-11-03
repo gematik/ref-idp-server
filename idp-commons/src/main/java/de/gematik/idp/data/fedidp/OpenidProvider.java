@@ -30,29 +30,28 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class OpenidProvider {
 
-    private String issuer;
-    private String signedJwksUri;
-    private String organizationName;
-    private String logoUri;
-    private String authorizationEndpoint;
-    private String tokenEndpoint;
-    private String pushedAuthorizationRequestEndpoint;
-    private String[] clientRegistrationTypesSupported;
-    private String[] subjectTypesSupported;
-    private String[] responseTypesSupported;
-    private String[] scopesSupported;
-    private String[] responseModesSupported;
-    private String[] grantTypesSupported;
-    private boolean requirePushedAuthorizationRequests;
-    private String[] tokenEndpointAuthMethodsSupported;
-    private String[] tokenEndpointAuthSigningAlgValuesSupported;
-    private RequestAuthenticationMethodsSupported requestAuthenticationMethodsSupported;
-    private String[] requestObjectSigningAlgValuesSupported;
-    private String[] idTokenSigningAlgValuesSupported;
-    private String[] idTokenEncryptionAlgValuesSupported;
-    private String[] idTokenEncryptionEncValuesSupported;
-    private String[] claimsSupported;
-    private String[] claimsParameterSupported;
-    private String userTypeSupported;
-
+  private String issuer;
+  private String signedJwksUri;
+  private String organizationName;
+  private String logoUri;
+  private String authorizationEndpoint;
+  private String tokenEndpoint;
+  private String pushedAuthorizationRequestEndpoint;
+  private String[] clientRegistrationTypesSupported;
+  private String[] subjectTypesSupported;
+  private String[] responseTypesSupported;
+  private String[] scopesSupported;
+  private String[] responseModesSupported;
+  private String[] grantTypesSupported;
+  private boolean requirePushedAuthorizationRequests;
+  private String[] tokenEndpointAuthMethodsSupported;
+  private String[] tokenEndpointAuthSigningAlgValuesSupported;
+  private RequestAuthenticationMethodsSupported requestAuthenticationMethodsSupported;
+  private String[] requestObjectSigningAlgValuesSupported;
+  private String[] idTokenSigningAlgValuesSupported;
+  private String[] idTokenEncryptionAlgValuesSupported;
+  private String[] idTokenEncryptionEncValuesSupported;
+  private String[] claimsSupported;
+  private String[] claimsParameterSupported;
+  private String userTypeSupported;
 }

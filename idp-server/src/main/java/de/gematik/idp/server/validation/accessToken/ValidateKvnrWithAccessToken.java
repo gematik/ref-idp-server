@@ -17,7 +17,11 @@
 package de.gematik.idp.server.validation.accessToken;
 
 import de.gematik.idp.field.ClaimName;
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
@@ -27,11 +31,11 @@ import javax.validation.Payload;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidateKvnrWithAccessToken {
 
-    String message() default "Angefragte KVNR nicht berechtigt";
+  String message() default "Angefragte KVNR nicht berechtigt";
 
-    Class<?>[] groups() default {};
+  Class<?>[] groups() default {};
 
-    Class<? extends Payload>[] payload() default {};
+  Class<? extends Payload>[] payload() default {};
 
-    ClaimName shouldMatch() default ClaimName.ID_NUMBER;
+  ClaimName shouldMatch() default ClaimName.ID_NUMBER;
 }

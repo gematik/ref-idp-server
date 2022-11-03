@@ -16,10 +16,23 @@
 
 package de.gematik.idp.authentication;
 
-import static de.gematik.idp.field.ClaimName.*;
+import static de.gematik.idp.field.ClaimName.ALGORITHM;
+import static de.gematik.idp.field.ClaimName.CLIENT_ID;
+import static de.gematik.idp.field.ClaimName.CODE_CHALLENGE;
+import static de.gematik.idp.field.ClaimName.CODE_CHALLENGE_METHOD;
+import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
+import static de.gematik.idp.field.ClaimName.ISSUED_AT;
+import static de.gematik.idp.field.ClaimName.ISSUER;
+import static de.gematik.idp.field.ClaimName.JWT_ID;
+import static de.gematik.idp.field.ClaimName.REDIRECT_URI;
+import static de.gematik.idp.field.ClaimName.RESPONSE_TYPE;
+import static de.gematik.idp.field.ClaimName.SCOPE;
+import static de.gematik.idp.field.ClaimName.SERVER_NONCE;
+import static de.gematik.idp.field.ClaimName.STATE;
 import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.PkiKeyResolver;
@@ -37,118 +50,129 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(PkiKeyResolver.class)
 class IdpJwtProcessorTest {
 
-    static {
-        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-        Security.insertProviderAt(new BouncyCastleProvider(), 1);
-    }
+  static final long TOKEN_VALIDITY_MINUTES = 10;
 
-    static final long TOKEN_VALIDITY_MINUTES = 10;
-    JwtBuilder jwtBuilder = new JwtBuilder()
-        .expiresAt(ZonedDateTime.now().plusMinutes(10))
-        .addAllBodyClaims(new HashMap<>(Map.ofEntries(
-            entry(ISSUED_AT.getJoseName(), ZonedDateTime.now().toEpochSecond()),
-            entry(ISSUER.getJoseName(), "https://idp.zentral.idp.splitdns.ti-dienste.de"),
-            entry(RESPONSE_TYPE.getJoseName(), "code"),
-            entry(SCOPE.getJoseName(), "openid e-rezept"),
-            entry(CLIENT_ID.getJoseName(), "ZXJlemVwdC1hcHA"),
-            entry(STATE.getJoseName(), "af0ifjsldkj"),
-            entry(REDIRECT_URI.getJoseName(), "https://app.e-rezept.com/authnres"),
-            entry(JWT_ID.getJoseName(), "c3a8f9c8-aa62-11ea-ac15-6b7a3355d0f6"),
-            entry(CODE_CHALLENGE_METHOD.getJoseName(), "S256"),
-            entry(CODE_CHALLENGE.getJoseName(), "S41HgHxhXL1CIpfGvivWYpbO9b_QKzva-9ImuZbt0Is")
-        )))
+  static {
+    Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+    Security.insertProviderAt(new BouncyCastleProvider(), 1);
+  }
 
-        .addAllHeaderClaims(new HashMap<>(Map.ofEntries(
-            // two parts of header are written by library: ("typ", "JWT"),("alg", "ES256")
-            entry(SERVER_NONCE.getJoseName(), "sLlxlkskAyuzdDOwe8nZeeQVFBWgscNkRcpgHmKidFc"),
-            entry(EXPIRES_AT.getJoseName(),
-                LocalDateTime.now().plusMinutes(TOKEN_VALIDITY_MINUTES).toEpochSecond(ZoneOffset.UTC))
-        )));
+  JwtBuilder jwtBuilder =
+      new JwtBuilder()
+          .expiresAt(ZonedDateTime.now().plusMinutes(10))
+          .addAllBodyClaims(
+              new HashMap<>(
+                  Map.ofEntries(
+                      entry(ISSUED_AT.getJoseName(), ZonedDateTime.now().toEpochSecond()),
+                      entry(ISSUER.getJoseName(), "https://idp.zentral.idp.splitdns.ti-dienste.de"),
+                      entry(RESPONSE_TYPE.getJoseName(), "code"),
+                      entry(SCOPE.getJoseName(), "openid e-rezept"),
+                      entry(CLIENT_ID.getJoseName(), "ZXJlemVwdC1hcHA"),
+                      entry(STATE.getJoseName(), "af0ifjsldkj"),
+                      entry(REDIRECT_URI.getJoseName(), "https://app.e-rezept.com/authnres"),
+                      entry(JWT_ID.getJoseName(), "c3a8f9c8-aa62-11ea-ac15-6b7a3355d0f6"),
+                      entry(CODE_CHALLENGE_METHOD.getJoseName(), "S256"),
+                      entry(
+                          CODE_CHALLENGE.getJoseName(),
+                          "S41HgHxhXL1CIpfGvivWYpbO9b_QKzva-9ImuZbt0Is"))))
+          .addAllHeaderClaims(
+              new HashMap<>(
+                  Map.ofEntries(
+                      // two parts of header are written by library: ("typ", "JWT"),("alg", "ES256")
+                      entry(
+                          SERVER_NONCE.getJoseName(),
+                          "sLlxlkskAyuzdDOwe8nZeeQVFBWgscNkRcpgHmKidFc"),
+                      entry(
+                          EXPIRES_AT.getJoseName(),
+                          LocalDateTime.now()
+                              .plusMinutes(TOKEN_VALIDITY_MINUTES)
+                              .toEpochSecond(ZoneOffset.UTC)))));
 
-    private IdpJwtProcessor jwtProcessor;
+  private IdpJwtProcessor jwtProcessor;
 
-    {
-        Security.addProvider(new BouncyCastleProvider());
-    }
+  {
+    Security.addProvider(new BouncyCastleProvider());
+  }
 
-    @Test
-    void build_rsa(final PkiIdentity rsa) {
-        final JsonWebToken jwt = createJwt(rsa);
-        jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
-    }
+  @Test
+  void build_rsa(final PkiIdentity rsa) {
+    final JsonWebToken jwt = createJwt(rsa);
+    jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
+  }
 
-    @Test
-    void build_ecc(final PkiIdentity ecc) {
-        final JsonWebToken jwt = createJwt(ecc);
-        jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
-    }
+  @Test
+  void build_ecc(final PkiIdentity ecc) {
+    final JsonWebToken jwt = createJwt(ecc);
+    jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
+  }
 
-    @Test
-    void verifyInvalidHeader_ecc(final PkiIdentity ecc) {
-        final JsonWebToken jwt = createJwt(ecc);
-        jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
-        // delete first character
-        final String jwtJasonInvalid = jwt.getRawString().substring(1);
-        JsonWebToken jsonWebToken = new JsonWebToken(jwtJasonInvalid);
-        assertThatThrownBy(() -> jwtProcessor.verifyAndThrowExceptionIfFail(jsonWebToken))
-            .isInstanceOf(RuntimeException.class);
-    }
+  @Test
+  void verifyInvalidHeader_ecc(final PkiIdentity ecc) {
+    final JsonWebToken jwt = createJwt(ecc);
+    jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
+    // delete first character
+    final String jwtJasonInvalid = jwt.getRawString().substring(1);
+    JsonWebToken jsonWebToken = new JsonWebToken(jwtJasonInvalid);
+    assertThatThrownBy(() -> jwtProcessor.verifyAndThrowExceptionIfFail(jsonWebToken))
+        .isInstanceOf(RuntimeException.class);
+  }
 
-    @Test
-    void verifyInvalidSignature_ecc(final PkiIdentity ecc) {
-        final JsonWebToken jwt = createJwt(ecc);
-        // delete last character
-        final String jwtJasonInvalid = jwt.getRawString().substring(0, jwt.getRawString().length() - 1);
-        JsonWebToken jsonWebToken = new JsonWebToken(jwtJasonInvalid);
-        assertThat(jsonWebToken).isNotNull();
-        assertThatThrownBy(() -> jwtProcessor.verifyAndThrowExceptionIfFail(jsonWebToken))
-            .isInstanceOf(RuntimeException.class);
-    }
+  @Test
+  void verifyInvalidSignature_ecc(final PkiIdentity ecc) {
+    final JsonWebToken jwt = createJwt(ecc);
+    // delete last character
+    final String jwtJasonInvalid = jwt.getRawString().substring(0, jwt.getRawString().length() - 1);
+    JsonWebToken jsonWebToken = new JsonWebToken(jwtJasonInvalid);
+    assertThat(jsonWebToken).isNotNull();
+    assertThatThrownBy(() -> jwtProcessor.verifyAndThrowExceptionIfFail(jsonWebToken))
+        .isInstanceOf(RuntimeException.class);
+  }
 
-    @Test
-    void verifySignAlgo_ecc(final PkiIdentity ecc) {
-        final JsonWebToken jwt = createJwt(ecc);
-        jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
-        assertThat(jwtProcessor.getHeaderDecoded(jwt))
-            .contains(BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256);
-        assertThat(jwtProcessor.getHeaderDecoded(jwt)).doesNotContain("RS256");
-    }
+  @Test
+  void verifySignAlgo_ecc(final PkiIdentity ecc) {
+    final JsonWebToken jwt = createJwt(ecc);
+    jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
+    assertThat(jwtProcessor.getHeaderDecoded(jwt))
+        .contains(BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256);
+    assertThat(jwtProcessor.getHeaderDecoded(jwt)).doesNotContain("RS256");
+  }
 
-    @Test
-    void verifyHeaderElementsComplete_ecc(final PkiIdentity ecc) {
-        final JsonWebToken jwt = createJwt(ecc);
-        jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
-        assertThat(jwtProcessor.getHeaderDecoded(jwt))
-            .contains(ALGORITHM.getJoseName());
-    }
+  @Test
+  void verifyHeaderElementsComplete_ecc(final PkiIdentity ecc) {
+    final JsonWebToken jwt = createJwt(ecc);
+    jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
+    assertThat(jwtProcessor.getHeaderDecoded(jwt)).contains(ALGORITHM.getJoseName());
+  }
 
-    @Test
-    void verifyPayloadElementsComplete_ecc(final PkiIdentity ecc) {
-        final JsonWebToken jwt = createJwt(ecc);
-        jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
-        final String payloadAsString = jwtProcessor.getPayloadDecoded(jwt);
-        assertThat(payloadAsString)
-            .contains(RESPONSE_TYPE.getJoseName())
-            .contains(SCOPE.getJoseName())
-            .contains(CLIENT_ID.getJoseName())
-            .contains(STATE.getJoseName())
-            .contains(REDIRECT_URI.getJoseName())
-            .contains(CODE_CHALLENGE_METHOD.getJoseName())
-            .contains(CODE_CHALLENGE.getJoseName())
-            .contains(EXPIRES_AT.getJoseName());
-    }
+  @Test
+  void verifyPayloadElementsComplete_ecc(final PkiIdentity ecc) {
+    final JsonWebToken jwt = createJwt(ecc);
+    jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
+    final String payloadAsString = jwtProcessor.getPayloadDecoded(jwt);
+    assertThat(payloadAsString)
+        .contains(RESPONSE_TYPE.getJoseName())
+        .contains(SCOPE.getJoseName())
+        .contains(CLIENT_ID.getJoseName())
+        .contains(STATE.getJoseName())
+        .contains(REDIRECT_URI.getJoseName())
+        .contains(CODE_CHALLENGE_METHOD.getJoseName())
+        .contains(CODE_CHALLENGE.getJoseName())
+        .contains(EXPIRES_AT.getJoseName());
+  }
 
-    @Test
-    void verifyPayloadMeetsJwtDescription_ecc(final PkiIdentity ecc) {
-        final JsonWebToken jwtAsBase64 = createJwt(ecc);
-        jwtProcessor.verifyAndThrowExceptionIfFail(jwtAsBase64);
-        final String payloadAsString = jwtProcessor.getPayloadDecoded(jwtAsBase64);
-        jwtBuilder.getClaims().forEach((key, value) -> assertThat(payloadAsString).contains(key));
-        jwtBuilder.getClaims().forEach((key, value) -> assertThat(payloadAsString).contains(value.toString()));
-    }
+  @Test
+  void verifyPayloadMeetsJwtDescription_ecc(final PkiIdentity ecc) {
+    final JsonWebToken jwtAsBase64 = createJwt(ecc);
+    jwtProcessor.verifyAndThrowExceptionIfFail(jwtAsBase64);
+    final String payloadAsString = jwtProcessor.getPayloadDecoded(jwtAsBase64);
+    jwtBuilder.getClaims().forEach((key, value) -> assertThat(payloadAsString).contains(key));
+    jwtBuilder
+        .getClaims()
+        .forEach((key, value) -> assertThat(payloadAsString).contains(value.toString()));
+  }
 
-    private JsonWebToken createJwt(final PkiIdentity identity) {
-        jwtProcessor = new IdpJwtProcessor(identity);
-        return jwtProcessor.buildJwt(jwtBuilder);
-    }
+  private JsonWebToken createJwt(final PkiIdentity identity) {
+    jwtProcessor = new IdpJwtProcessor(identity);
+    return jwtProcessor.buildJwt(jwtBuilder);
+  }
 }

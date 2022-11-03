@@ -25,31 +25,34 @@ import lombok.Getter;
 @EqualsAndHashCode
 public class IdpClientRuntimeException extends RuntimeException {
 
-    private static final long serialVersionUID = -3280232274428362763L;
-    private final Optional<String> gematikErrorCode;
-    private final Optional<IdpErrorType> idpErrorType;
+  private static final long serialVersionUID = -3280232274428362763L;
+  private final Optional<String> gematikErrorCode;
+  private final Optional<IdpErrorType> idpErrorType;
 
-    public IdpClientRuntimeException(final Exception e) {
-        super(e);
-        gematikErrorCode = Optional.empty();
-        idpErrorType = Optional.empty();
-    }
+  public IdpClientRuntimeException(final Exception e) {
+    super(e);
+    gematikErrorCode = Optional.empty();
+    idpErrorType = Optional.empty();
+  }
 
-    public IdpClientRuntimeException(final String s) {
-        super(s);
-        gematikErrorCode = Optional.empty();
-        idpErrorType = Optional.empty();
-    }
+  public IdpClientRuntimeException(final String s) {
+    super(s);
+    gematikErrorCode = Optional.empty();
+    idpErrorType = Optional.empty();
+  }
 
-    public IdpClientRuntimeException(final String message, final Exception e) {
-        super(message, e);
-        gematikErrorCode = Optional.empty();
-        idpErrorType = Optional.empty();
-    }
+  public IdpClientRuntimeException(final String message, final Exception e) {
+    super(message, e);
+    gematikErrorCode = Optional.empty();
+    idpErrorType = Optional.empty();
+  }
 
-    public IdpClientRuntimeException(final String s, final Optional<String> gematikCode, final Optional<IdpErrorType> errorDescription) {
-        super(s);
-        gematikErrorCode = gematikCode;
-        idpErrorType = errorDescription;
-    }
+  public IdpClientRuntimeException(
+      final String s,
+      final Optional<String> gematikCode,
+      final Optional<IdpErrorType> errorDescription) {
+    super(s);
+    gematikErrorCode = gematikCode;
+    idpErrorType = errorDescription;
+  }
 }

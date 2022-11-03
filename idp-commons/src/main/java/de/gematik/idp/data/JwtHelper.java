@@ -32,54 +32,55 @@ import lombok.NonNull;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class JwtHelper {
 
-    public static String signJson(final IdpJwtProcessor jwtProcessor, final ObjectMapper objectMapper,
-        final Object object, String typ) {
-        try {
-            return jwtProcessor
-                .buildJws(
-                    objectMapper.writeValueAsString(object),
-                    Map.ofEntries(
-                        Map.entry("typ", typ)
-                    ),
-                    false)
-                .getRawString();
-        } catch (final JsonProcessingException e) {
-            throw new IdpRuntimeException("EntityStatement to json failed", e);
-        }
+  public static String signJson(
+      final IdpJwtProcessor jwtProcessor,
+      final ObjectMapper objectMapper,
+      final Object object,
+      String typ) {
+    try {
+      return jwtProcessor
+          .buildJws(
+              objectMapper.writeValueAsString(object), Map.ofEntries(Map.entry("typ", typ)), false)
+          .getRawString();
+    } catch (final JsonProcessingException e) {
+      throw new IdpRuntimeException("EntityStatement to json failed", e);
     }
+  }
 
-    public static IdpJwksDocument getJwks(final FederationPrivKey federationKey) {
-        final List<PkiIdentity> identities = new ArrayList<>();
-        identities.add(federationKey.getIdentity());
-        return IdpJwksDocument.builder()
-            .keys(identities.stream()
-                .map(identity -> {
-                    final IdpKeyDescriptor keyDesc = IdpKeyDescriptor
-                        .constructFromX509Certificate(identity.getCertificate(),
-                            identity.getKeyId(),
-                            false);
-                    keyDesc.setPublicKeyUse(identity.getUse().orElse(null));
-                    return keyDesc;
-                })
+  public static IdpJwksDocument getJwks(final FederationPrivKey federationKey) {
+    final List<PkiIdentity> identities = new ArrayList<>();
+    identities.add(federationKey.getIdentity());
+    return IdpJwksDocument.builder()
+        .keys(
+            identities.stream()
+                .map(
+                    identity -> {
+                      final IdpKeyDescriptor keyDesc =
+                          IdpKeyDescriptor.constructFromX509Certificate(
+                              identity.getCertificate(), identity.getKeyId(), false);
+                      keyDesc.setPublicKeyUse(identity.getUse().orElse(null));
+                      return keyDesc;
+                    })
                 .collect(Collectors.toList()))
-            .build();
-    }
+        .build();
+  }
 
-    // TODO: IDP-740
-    public static IdpJwksDocument getJwks(@NonNull final FederationPubKey federationPubKey) {
-        final List<PkiIdentity> identities = new ArrayList<>();
-        identities.add(federationPubKey.getIdentity());
-        return IdpJwksDocument.builder()
-            .keys(identities.stream()
-                .map(identity -> {
-                    final IdpKeyDescriptor keyDesc = IdpKeyDescriptor
-                        .constructFromX509Certificate(identity.getCertificate(),
-                            identity.getKeyId(),
-                            true);
-                    keyDesc.setPublicKeyUse(identity.getUse().orElse(null));
-                    return keyDesc;
-                })
+  // TODO: IDP-740
+  public static IdpJwksDocument getJwks(@NonNull final FederationPubKey federationPubKey) {
+    final List<PkiIdentity> identities = new ArrayList<>();
+    identities.add(federationPubKey.getIdentity());
+    return IdpJwksDocument.builder()
+        .keys(
+            identities.stream()
+                .map(
+                    identity -> {
+                      final IdpKeyDescriptor keyDesc =
+                          IdpKeyDescriptor.constructFromX509Certificate(
+                              identity.getCertificate(), identity.getKeyId(), true);
+                      keyDesc.setPublicKeyUse(identity.getUse().orElse(null));
+                      return keyDesc;
+                    })
                 .collect(Collectors.toList()))
-            .build();
-    }
+        .build();
+  }
 }

@@ -22,9 +22,9 @@ import org.springframework.http.HttpStatus;
 
 public class IdpServerClientSystemMissingException extends IdpServerException {
 
-    private static final long serialVersionUID = 2561403120877450021L;
+  private static final long serialVersionUID = 2561403120877450021L;
 
-    public IdpServerClientSystemMissingException() {
-        super("No Client-System found in request", IdpErrorType.ACCESS_DENIED, HttpStatus.FORBIDDEN);
-    }
+  public IdpServerClientSystemMissingException() {
+    super("No Client-System found in request", IdpErrorType.ACCESS_DENIED, HttpStatus.FORBIDDEN);
+  }
 }

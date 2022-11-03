@@ -16,11 +16,15 @@
 
 package de.gematik.idp.server.controllers;
 
-
 import static de.gematik.idp.EnvHelper.getSystemProperty;
-import static de.gematik.idp.IdpConstants.*;
+import static de.gematik.idp.IdpConstants.ALTERNATIVE_AUTHORIZATION_ENDPOINT;
+import static de.gematik.idp.IdpConstants.BASIC_AUTHORIZATION_ENDPOINT;
+import static de.gematik.idp.IdpConstants.SSO_ENDPOINT;
+import static de.gematik.idp.IdpConstants.THIRD_PARTY_ENDPOINT;
+import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
 import static de.gematik.idp.field.ClientUtilities.generateCodeChallenge;
 import static de.gematik.idp.field.ClientUtilities.generateCodeVerifier;
+
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
@@ -69,127 +73,162 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 @RequiredArgsConstructor
 @HttpResponseHeaders({
-    @HttpResponseHeader(name = "Cache-Control", value = "no-store"),
-    @HttpResponseHeader(name = "Pragma", value = "no-cache")
+  @HttpResponseHeader(name = "Cache-Control", value = "no-store"),
+  @HttpResponseHeader(name = "Pragma", value = "no-cache")
 })
 @Slf4j
 public class IdpController {
 
-    private static final String SHA256_AS_BASE64_REGEX = "^[_\\-a-zA-Z0-9]{42,44}[=]{0,2}$";
-    private static final int MAX_FASTTRACK_SESSION_AMOUNT = 10000;
-    private static final int FASTTRACK_IDP_STATE_LENGTH = 32;
-    private static final int FASTTRACK_IDP_NONCE_LENGTH = 32;
-    private final ServerUrlService serverUrlService;
-    private final AuthenticationChallengeBuilder authenticationChallengeBuilder;
-    private final IdpAuthenticator idpAuthenticator;
-    private final TokenService tokenService;
-    private final Map<String, FasttrackSession> fasttrackSessions = new LinkedHashMap<>() {
+  private static final String SHA256_AS_BASE64_REGEX = "^[_\\-a-zA-Z0-9]{42,44}[=]{0,2}$";
+  private static final int MAX_FASTTRACK_SESSION_AMOUNT = 10000;
+  private static final int FASTTRACK_IDP_STATE_LENGTH = 32;
+  private static final int FASTTRACK_IDP_NONCE_LENGTH = 32;
+  private final ServerUrlService serverUrlService;
+  private final AuthenticationChallengeBuilder authenticationChallengeBuilder;
+  private final IdpAuthenticator idpAuthenticator;
+  private final TokenService tokenService;
+  private final Map<String, FasttrackSession> fasttrackSessions =
+      new LinkedHashMap<>() {
 
         @Override
         protected boolean removeEldestEntry(final Entry<String, FasttrackSession> eldest) {
-            return size() > MAX_FASTTRACK_SESSION_AMOUNT;
+          return size() > MAX_FASTTRACK_SESSION_AMOUNT;
         }
-    };
-    private final KkAppList kkAppList;
+      };
+  private final KkAppList kkAppList;
 
-    @GetMapping(value = BASIC_AUTHORIZATION_ENDPOINT, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ValidateClientSystem
-    public AuthenticationChallenge getAuthenticationChallenge(
-        @RequestParam(name = "client_id") @NotEmpty(message = "1002") @CheckClientId final String clientId,
-        @RequestParam(name = "state") @NotEmpty(message = "2002") @Pattern(regexp = "^[_\\-a-zA-Z0-9]{1,32}$", message = "2006") final String state,
-        @RequestParam(name = "redirect_uri") @NotNull(message = "1004") final String redirectUri,
-        @RequestParam(name = "nonce", required = false) @Pattern(regexp = "^[_\\-a-zA-Z0-9]{1,32}$", message = "2007") final String nonce,
-        @RequestParam(name = "response_type") @NotEmpty(message = "2004") @Pattern(regexp = "code", message = "2005") final String responseType,
-        @RequestParam(name = "code_challenge") @NotEmpty(message = "2009") @Pattern(regexp = SHA256_AS_BASE64_REGEX, message = "2010") final String codeChallenge,
-        @RequestParam(name = "code_challenge_method") @Pattern(regexp = "S256", message = "2008") final String codeChallengeMethod,
-        @RequestParam(name = "scope") @CheckScope final String scope,
-        final HttpServletResponse response) {
-        idpAuthenticator.validateRedirectUri(clientId, redirectUri);
-        setNoCacheHeader(response);
-        return authenticationChallengeBuilder
-            .buildAuthenticationChallenge(clientId, state, redirectUri, codeChallenge, scope, nonce);
+  @GetMapping(value = BASIC_AUTHORIZATION_ENDPOINT, produces = MediaType.APPLICATION_JSON_VALUE)
+  @ValidateClientSystem
+  public AuthenticationChallenge getAuthenticationChallenge(
+      @RequestParam(name = "client_id") @NotEmpty(message = "1002") @CheckClientId
+          final String clientId,
+      @RequestParam(name = "state")
+          @NotEmpty(message = "2002")
+          @Pattern(regexp = "^[_\\-a-zA-Z0-9]{1,32}$", message = "2006")
+          final String state,
+      @RequestParam(name = "redirect_uri") @NotNull(message = "1004") final String redirectUri,
+      @RequestParam(name = "nonce", required = false)
+          @Pattern(regexp = "^[_\\-a-zA-Z0-9]{1,32}$", message = "2007")
+          final String nonce,
+      @RequestParam(name = "response_type")
+          @NotEmpty(message = "2004")
+          @Pattern(regexp = "code", message = "2005")
+          final String responseType,
+      @RequestParam(name = "code_challenge")
+          @NotEmpty(message = "2009")
+          @Pattern(regexp = SHA256_AS_BASE64_REGEX, message = "2010")
+          final String codeChallenge,
+      @RequestParam(name = "code_challenge_method") @Pattern(regexp = "S256", message = "2008")
+          final String codeChallengeMethod,
+      @RequestParam(name = "scope") @CheckScope final String scope,
+      final HttpServletResponse response) {
+    idpAuthenticator.validateRedirectUri(clientId, redirectUri);
+    setNoCacheHeader(response);
+    return authenticationChallengeBuilder.buildAuthenticationChallenge(
+        clientId, state, redirectUri, codeChallenge, scope, nonce);
+  }
+
+  @PostMapping(BASIC_AUTHORIZATION_ENDPOINT)
+  @ValidateClientSystem
+  public void validateChallengeAndGetTokenCode(
+      @RequestParam(value = "signed_challenge", required = false) @NotNull(message = "2030")
+          final IdpJwe signedChallenge,
+      final HttpServletResponse response) {
+    setNoCacheHeader(response);
+    response.setStatus(HttpStatus.FOUND.value());
+
+    final String tokenLocation = idpAuthenticator.getBasicFlowTokenLocation(signedChallenge);
+    response.setHeader(HttpHeaders.LOCATION, tokenLocation);
+  }
+
+  @PostMapping(ALTERNATIVE_AUTHORIZATION_ENDPOINT)
+  @ValidateClientSystem
+  public void validateSignedAuthenticationDataAndGetTokenCode(
+      @RequestParam(value = "encrypted_signed_authentication_data", required = false) @NotNull
+          final IdpJwe signedAuthenticationData,
+      final HttpServletResponse response) {
+    setNoCacheHeader(response);
+    response.setStatus(HttpStatus.FOUND.value());
+    final String tokenLocation =
+        idpAuthenticator.getAlternateFlowTokenLocation(signedAuthenticationData);
+    response.setHeader(HttpHeaders.LOCATION, tokenLocation);
+  }
+
+  @PostMapping(value = SSO_ENDPOINT, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+  @ValidateClientSystem
+  public void validateSsoTokenAndGetTokenCode(
+      @RequestParam(value = "ssotoken", required = false) @NotNull(message = "2040")
+          final IdpJwe ssoToken,
+      @RequestParam(value = "unsigned_challenge", required = false) @NotNull(message = "2030")
+          final JsonWebToken challengeToken,
+      final HttpServletResponse response) {
+    setNoCacheHeader(response);
+    response.setStatus(HttpStatus.FOUND.value());
+
+    final String tokenLocation = idpAuthenticator.getSsoTokenLocation(ssoToken, challengeToken);
+    response.setHeader(HttpHeaders.LOCATION, tokenLocation);
+  }
+
+  @PostMapping(value = TOKEN_ENDPOINT, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+  @ValidateClientSystem
+  public TokenResponse getTokensForCode(
+      @RequestParam("code") @NotNull(message = "3005") final IdpJwe authenticationToken,
+      @RequestParam("key_verifier") @NotNull final IdpJwe keyVerifier,
+      @RequestParam("grant_type")
+          @NotEmpty(message = "3006")
+          @Pattern(regexp = "authorization_code", message = "3014")
+          final String grantType,
+      @RequestParam("redirect_uri") final String redirectUri,
+      @RequestParam("client_id") @NotEmpty(message = "1002") @CheckClientId(message = "3007")
+          final String clientId,
+      final HttpServletResponse response) {
+    if (StringUtils.isEmpty(authenticationToken.getRawString())) {
+      throw new IdpServerException(
+          3005, IdpErrorType.INVALID_REQUEST, "Authorization Code wurde nicht übermittelt");
     }
+    setNoCacheHeader(response);
+    return tokenService.getTokenResponse(authenticationToken, keyVerifier, redirectUri, clientId);
+  }
 
-    @PostMapping(BASIC_AUTHORIZATION_ENDPOINT)
-    @ValidateClientSystem
-    public void validateChallengeAndGetTokenCode(
-        @RequestParam(value = "signed_challenge", required = false) @NotNull(message = "2030") final IdpJwe signedChallenge,
-        final HttpServletResponse response) {
-        setNoCacheHeader(response);
-        response.setStatus(HttpStatus.FOUND.value());
+  /* Fasttrack
+   * Request(in)  == message nr.1
+   * Response(out)== message nr.2
+   */
+  @GetMapping(value = THIRD_PARTY_ENDPOINT)
+  public void getAuthorizationRequestIncludingRedirect(
+      @RequestParam(name = "client_id") @NotEmpty(message = "1002") final String userAgentClientId,
+      @RequestParam(name = "state")
+          @NotEmpty(message = "2002")
+          @Pattern(regexp = ".+", message = "2006")
+          final String userAgentState,
+      @RequestParam(name = "redirect_uri") @NotNull(message = "1004")
+          final String userAgentRedirectUri,
+      @RequestParam(name = "nonce", required = false) @Pattern(regexp = ".+", message = "2007")
+          final String userAgentNonce,
+      @RequestParam(name = "response_type")
+          @NotEmpty(message = "2004")
+          @Pattern(regexp = "code", message = "2005")
+          final String responseType,
+      @RequestParam(name = "code_challenge")
+          @NotEmpty(message = "2009")
+          @Pattern(regexp = SHA256_AS_BASE64_REGEX, message = "2010")
+          final String userAgentCodeChallenge,
+      @RequestParam(name = "code_challenge_method") @Pattern(regexp = "S256", message = "2008")
+          final String userAgentCodeChallengeMethod,
+      @RequestParam(name = "scope") @NotEmpty(message = "1002") final String userAgentScope,
+      @RequestParam(name = "kk_app_id") @NotEmpty(message = "1002") final String sekIdpId,
+      final HttpServletResponse response) {
 
-        final String tokenLocation = idpAuthenticator.getBasicFlowTokenLocation(signedChallenge);
-        response.setHeader(HttpHeaders.LOCATION, tokenLocation);
-    }
+    final String idpState = Nonce.getNonceAsHex(FASTTRACK_IDP_STATE_LENGTH);
+    final String idpCodeChallengeMethod = "S256";
+    final String idpNonce = Nonce.getNonceAsHex(FASTTRACK_IDP_NONCE_LENGTH);
+    final String idpCodeVerifier = generateCodeVerifier(); // top secret
 
-    @PostMapping(ALTERNATIVE_AUTHORIZATION_ENDPOINT)
-    @ValidateClientSystem
-    public void validateSignedAuthenticationDataAndGetTokenCode(
-        @RequestParam(value = "encrypted_signed_authentication_data", required = false) @NotNull final IdpJwe signedAuthenticationData,
-        final HttpServletResponse response) {
-        setNoCacheHeader(response);
-        response.setStatus(HttpStatus.FOUND.value());
-        final String tokenLocation = idpAuthenticator.getAlternateFlowTokenLocation(signedAuthenticationData);
-        response.setHeader(HttpHeaders.LOCATION, tokenLocation);
-    }
+    log.info("Amount of stored fasttrackSessions: {}", fasttrackSessions.size());
 
-    @PostMapping(value = SSO_ENDPOINT, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    @ValidateClientSystem
-    public void validateSsoTokenAndGetTokenCode(
-        @RequestParam(value = "ssotoken", required = false) @NotNull(message = "2040") final IdpJwe ssoToken,
-        @RequestParam(value = "unsigned_challenge", required = false) @NotNull(message = "2030") final JsonWebToken challengeToken,
-        final HttpServletResponse response) {
-        setNoCacheHeader(response);
-        response.setStatus(HttpStatus.FOUND.value());
-
-        final String tokenLocation = idpAuthenticator.getSsoTokenLocation(
-            ssoToken,
-            challengeToken);
-        response.setHeader(HttpHeaders.LOCATION, tokenLocation);
-    }
-
-    @PostMapping(value = TOKEN_ENDPOINT, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    @ValidateClientSystem
-    public TokenResponse getTokensForCode(
-        @RequestParam("code") @NotNull(message = "3005") final IdpJwe authenticationToken,
-        @RequestParam("key_verifier") @NotNull final IdpJwe keyVerifier,
-        @RequestParam("grant_type") @NotEmpty(message = "3006") @Pattern(regexp = "authorization_code", message = "3014") final String grantType,
-        @RequestParam("redirect_uri") final String redirectUri,
-        @RequestParam("client_id") @NotEmpty(message = "1002") @CheckClientId(message = "3007") final String clientId,
-        final HttpServletResponse response) {
-        if (StringUtils.isEmpty(authenticationToken.getRawString())) {
-            throw new IdpServerException(3005, IdpErrorType.INVALID_REQUEST,
-                "Authorization Code wurde nicht übermittelt");
-        }
-        setNoCacheHeader(response);
-        return tokenService.getTokenResponse(authenticationToken, keyVerifier, redirectUri, clientId);
-    }
-
-    /* Fasttrack
-     * Request(in)  == message nr.1
-     * Response(out)== message nr.2
-     */
-    @GetMapping(value = THIRD_PARTY_ENDPOINT)
-    public void getAuthorizationRequestIncludingRedirect(
-        @RequestParam(name = "client_id") @NotEmpty(message = "1002") final String userAgentClientId,
-        @RequestParam(name = "state") @NotEmpty(message = "2002") @Pattern(regexp = ".+", message = "2006") final String userAgentState,
-        @RequestParam(name = "redirect_uri") @NotNull(message = "1004") final String userAgentRedirectUri,
-        @RequestParam(name = "nonce", required = false) @Pattern(regexp = ".+", message = "2007") final String userAgentNonce,
-        @RequestParam(name = "response_type") @NotEmpty(message = "2004") @Pattern(regexp = "code", message = "2005") final String responseType,
-        @RequestParam(name = "code_challenge") @NotEmpty(message = "2009") @Pattern(regexp = SHA256_AS_BASE64_REGEX, message = "2010") final String userAgentCodeChallenge,
-        @RequestParam(name = "code_challenge_method") @Pattern(regexp = "S256", message = "2008") final String userAgentCodeChallengeMethod,
-        @RequestParam(name = "scope") @NotEmpty(message = "1002") final String userAgentScope,
-        @RequestParam(name = "kk_app_id") @NotEmpty(message = "1002") final String sekIdpId,
-        final HttpServletResponse response) {
-
-        final String idpState = Nonce.getNonceAsHex(FASTTRACK_IDP_STATE_LENGTH);
-        final String idpCodeChallengeMethod = "S256";
-        final String idpNonce = Nonce.getNonceAsHex(FASTTRACK_IDP_NONCE_LENGTH);
-        final String idpCodeVerifier = generateCodeVerifier(); // top secret
-
-        log.info("Amount of stored fasttrackSessions: {}", fasttrackSessions.size());
-
-        fasttrackSessions.put(idpState, FasttrackSession.builder()
+    fasttrackSessions.put(
+        idpState,
+        FasttrackSession.builder()
             .userAgentCodeChallenge(userAgentCodeChallenge)
             .userAgentCodeChallengeMethod(userAgentCodeChallengeMethod)
             .userAgentNonce(userAgentNonce)
@@ -199,49 +238,53 @@ public class IdpController {
             .userAgentRedirectUri(userAgentRedirectUri)
             .userResponseType(responseType)
             .idpCodeVerifier(idpCodeVerifier)
-            .build()
-        );
+            .build());
 
-        try {
-            final URIBuilder locationBuilder = new URIBuilder(getKkAppUri(sekIdpId));
-            locationBuilder
-                .addParameter("client_id", "smartcardIdp")
-                .addParameter("state", idpState)
-                .addParameter("redirect_uri", userAgentRedirectUri)
-                .addParameter("code_challenge", generateCodeChallenge(idpCodeVerifier))
-                .addParameter("code_challenge_method", idpCodeChallengeMethod)
-                .addParameter("response_type", responseType)
-                .addParameter("nonce", idpNonce)
-                .addParameter("scope", "erp_sek_auth+openid");
-            response.setHeader(HttpHeaders.LOCATION, locationBuilder.build().toString());
-            setNoCacheHeader(response);
-            response.setStatus(HttpStatus.FOUND.value());
-        } catch (final URISyntaxException | NoSuchElementException e) {
-            throw new IdpServerException("Parameter problem: \"kk_app_id\"", IdpErrorType.INVALID_REQUEST,
-                HttpStatus.BAD_REQUEST);
-        }
+    try {
+      final URIBuilder locationBuilder = new URIBuilder(getKkAppUri(sekIdpId));
+      locationBuilder
+          .addParameter("client_id", "smartcardIdp")
+          .addParameter("state", idpState)
+          .addParameter("redirect_uri", userAgentRedirectUri)
+          .addParameter("code_challenge", generateCodeChallenge(idpCodeVerifier))
+          .addParameter("code_challenge_method", idpCodeChallengeMethod)
+          .addParameter("response_type", responseType)
+          .addParameter("nonce", idpNonce)
+          .addParameter("scope", "erp_sek_auth+openid");
+      response.setHeader(HttpHeaders.LOCATION, locationBuilder.build().toString());
+      setNoCacheHeader(response);
+      response.setStatus(HttpStatus.FOUND.value());
+    } catch (final URISyntaxException | NoSuchElementException e) {
+      throw new IdpServerException(
+          "Parameter problem: \"kk_app_id\"", IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
     }
+  }
 
+  /* Fasttrack
+   * Request(in)  == message nr.9
+   *   Inner Request(out)  == message nr.10
+   *   Inner Response(in)  == message nr.11
+   * Response(out) == message nr.12
+   */
+  @PostMapping(value = THIRD_PARTY_ENDPOINT)
+  @ValidateClientSystem
+  public void postAuthorizationRequestIncludingAuthorizationCode(
+      @RequestParam("code") @NotNull(message = "3005") final String authorizationCode,
+      @RequestParam(name = "state")
+          @NotEmpty(message = "2002")
+          @Pattern(regexp = ".+", message = "2006")
+          final String idpState,
+      @RequestParam(name = "kk_app_redirect_uri") @NotNull(message = "1004") final String kkAppUri,
+      final HttpServletResponse response) {
+    final FasttrackSession ftSession = fasttrackSessions.get(idpState);
+    log.info(
+        "idp-sektoral address: "
+            + getSekIdpLocation(ftSession.getUserAgentSekIdp())
+            + IdpConstants.TOKEN_ENDPOINT);
 
-    /* Fasttrack
-     * Request(in)  == message nr.9
-     *   Inner Request(out)  == message nr.10
-     *   Inner Response(in)  == message nr.11
-     * Response(out) == message nr.12
-     */
-    @PostMapping(value = THIRD_PARTY_ENDPOINT)
-    @ValidateClientSystem
-    public void postAuthorizationRequestIncludingAuthorizationCode(
-        @RequestParam("code") @NotNull(message = "3005") final String authorizationCode,
-        @RequestParam(name = "state") @NotEmpty(message = "2002") @Pattern(regexp = ".+", message = "2006") final String idpState,
-        @RequestParam(name = "kk_app_redirect_uri") @NotNull(message = "1004") final String kkAppUri,
-        final HttpServletResponse response) {
-        final FasttrackSession ftSession = fasttrackSessions.get(idpState);
-        log.info(
-            "idp-sektoral address: " + getSekIdpLocation(ftSession.getUserAgentSekIdp()) + IdpConstants.TOKEN_ENDPOINT);
-
-        // message nr.10 Token Request as http post
-        final HttpResponse<JsonNode> sektoralTokenResponse = Unirest.post(
+    // message nr.10 Token Request as http post
+    final HttpResponse<JsonNode> sektoralTokenResponse =
+        Unirest.post(
                 getSekIdpLocation(ftSession.getUserAgentSekIdp()) + IdpConstants.TOKEN_ENDPOINT)
             .field("client_id", "smartcardidp")
             .field("grant_type", "authorization_code")
@@ -252,34 +295,37 @@ public class IdpController {
             .header(javax.ws.rs.core.HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
             .asJson();
 
-        log.info("id_token: {}", sektoralTokenResponse.getBody().getObject().getString("id_token"));
+    log.info("id_token: {}", sektoralTokenResponse.getBody().getObject().getString("id_token"));
 
-        // message nr.12
-        final JsonWebToken idToken = new JsonWebToken(
-            sektoralTokenResponse.getBody().getObject().getString("id_token"));
-        final String authorizationCodeLocation = idpAuthenticator
-            .getAuthorizationCodeLocation(idToken, ftSession.getSessionDataAsMap());
-        response.setHeader(HttpHeaders.LOCATION, authorizationCodeLocation);
-        setNoCacheHeader(response);
-        response.setStatus(HttpStatus.FOUND.value());
+    // message nr.12
+    final JsonWebToken idToken =
+        new JsonWebToken(sektoralTokenResponse.getBody().getObject().getString("id_token"));
+    final String authorizationCodeLocation =
+        idpAuthenticator.getAuthorizationCodeLocation(idToken, ftSession.getSessionDataAsMap());
+    response.setHeader(HttpHeaders.LOCATION, authorizationCodeLocation);
+    setNoCacheHeader(response);
+    response.setStatus(HttpStatus.FOUND.value());
 
-        fasttrackSessions.remove(idpState);
-    }
+    fasttrackSessions.remove(idpState);
+  }
 
-    private String getKkAppUri(final String kkAppId) {
-        return kkAppList.getAppUri(kkAppId);
-    }
+  private String getKkAppUri(final String kkAppId) {
+    return kkAppList.getAppUri(kkAppId);
+  }
 
-    private String getSekIdpLocation(final String sekIdpIdentifier) {
-        log.info("Get location of idp-sektoral from environment. Identifier \"{}\" is not used.", sekIdpIdentifier);
-        return new StringBuilder()
-            .append(getSystemProperty("IDP_SEKTORAL").orElse("http://127.0.0.1"))
-            .append(":")
-            .append(getSystemProperty("IDP_SEKTORAL_PORT").orElseThrow()).toString();
-    }
+  private String getSekIdpLocation(final String sekIdpIdentifier) {
+    log.info(
+        "Get location of idp-sektoral from environment. Identifier \"{}\" is not used.",
+        sekIdpIdentifier);
+    return new StringBuilder()
+        .append(getSystemProperty("IDP_SEKTORAL").orElse("http://127.0.0.1"))
+        .append(":")
+        .append(getSystemProperty("IDP_SEKTORAL_PORT").orElseThrow())
+        .toString();
+  }
 
-    private void setNoCacheHeader(final HttpServletResponse response) {
-        response.setHeader("Cache-Control", "no-store");
-        response.setHeader("Pragma", "no-cache");
-    }
+  private void setNoCacheHeader(final HttpServletResponse response) {
+    response.setHeader("Cache-Control", "no-store");
+    response.setHeader("Pragma", "no-cache");
+  }
 }

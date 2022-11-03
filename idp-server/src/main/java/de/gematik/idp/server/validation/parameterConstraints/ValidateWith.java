@@ -31,9 +31,9 @@ import javax.validation.Payload;
 @Retention(RUNTIME)
 public @interface ValidateWith {
 
-    String message() default "";
+  String message() default "";
 
-    Class<?>[] groups() default {};
+  Class<?>[] groups() default {};
 
-    Class<? extends Payload>[] payload() default {};
+  Class<? extends Payload>[] payload() default {};
 }

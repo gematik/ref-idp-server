@@ -18,6 +18,7 @@ package de.gematik.idp.server.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 import de.gematik.idp.server.pairing.PairingData;
 import de.gematik.idp.tests.PkiKeyResolver;
 import java.time.ZonedDateTime;
@@ -32,43 +33,40 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ExtendWith(PkiKeyResolver.class)
 @Transactional
-@TestPropertySource(properties = {
-    "spring.jpa.hibernate.ddl-auto=validate"
-})
+@TestPropertySource(properties = {"spring.jpa.hibernate.ddl-auto=validate"})
 class PairingServiceTest {
 
-    private static final String testIdNumber = "X114428530";
-    private static final String testDeviceName = "Peters Fon";
+  private static final String testIdNumber = "X114428530";
+  private static final String testDeviceName = "Peters Fon";
 
-    @Autowired
-    private PairingService pairingService;
+  @Autowired private PairingService pairingService;
 
-    @BeforeEach
-    public void cleanUp() {
-        pairingService.deleteAllPairing(testIdNumber);
-    }
+  @BeforeEach
+  public void cleanUp() {
+    pairingService.deleteAllPairing(testIdNumber);
+  }
 
-    @Test
-    void insertPairingAndFindEntrySuccessfully() {
-        pairingService.insertPairing(createPairingDto("123"));
-        assertThat(pairingService.getPairingList(testIdNumber)).isNotEmpty();
-    }
+  @Test
+  void insertPairingAndFindEntrySuccessfully() {
+    pairingService.insertPairing(createPairingDto("123"));
+    assertThat(pairingService.getPairingList(testIdNumber)).isNotEmpty();
+  }
 
-    @Test
-    void insertPairingAndDeleteEntrySuccessfully() {
-        pairingService.insertPairing(createPairingDto("456"));
-        assertDoesNotThrow(() -> pairingService.deleteAllPairing(testIdNumber));
-        assertThat(pairingService.getPairingList(testIdNumber)).isEmpty();
-    }
+  @Test
+  void insertPairingAndDeleteEntrySuccessfully() {
+    pairingService.insertPairing(createPairingDto("456"));
+    assertDoesNotThrow(() -> pairingService.deleteAllPairing(testIdNumber));
+    assertThat(pairingService.getPairingList(testIdNumber)).isEmpty();
+  }
 
-    private PairingData createPairingDto(final String keyIdentifier) {
-        return PairingData.builder()
-            .id(null)
-            .idNumber(testIdNumber)
-            .keyIdentifier(keyIdentifier)
-            .deviceName(testDeviceName)
-            .signedPairingData("bla")
-            .timestampPairing(ZonedDateTime.now())
-            .build();
-    }
+  private PairingData createPairingDto(final String keyIdentifier) {
+    return PairingData.builder()
+        .id(null)
+        .idNumber(testIdNumber)
+        .keyIdentifier(keyIdentifier)
+        .deviceName(testDeviceName)
+        .signedPairingData("bla")
+        .timestampPairing(ZonedDateTime.now())
+        .build();
+  }
 }

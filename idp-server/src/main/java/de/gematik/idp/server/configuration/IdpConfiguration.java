@@ -36,20 +36,20 @@ import org.springframework.stereotype.Component;
 @Builder
 public class IdpConfiguration {
 
-    private IdpKeyConfiguration idpSig;
-    private IdpKeyConfiguration idpEnc;
-    private IdpKeyConfiguration discSig;
-    private String symmetricEncryptionKey;
-    private String serverUrl;
-    private String issuerUrl;
-    private String version;
-    private String redirectUri;
-    private String subjectSaltValue;
-    private List<String> blockedClientSystems;
-    private String productTypeDisplayString;
-    private Locale defaultLocale;
-    private Map<String, IdpClientConfiguration> registeredClient;
-    private Map<String, String> scopeAudienceUrls;
-    private UserConsentConfiguration userConsent;
-    private IdpErrorConfiguration errors;
+  private IdpKeyConfiguration idpSig;
+  private IdpKeyConfiguration idpEnc;
+  private IdpKeyConfiguration discSig;
+  private String symmetricEncryptionKey;
+  private String serverUrl;
+  private String issuerUrl;
+  private String version;
+  private String redirectUri;
+  private String subjectSaltValue;
+  private List<String> blockedClientSystems;
+  private String productTypeDisplayString;
+  private Locale defaultLocale;
+  private Map<String, IdpClientConfiguration> registeredClient;
+  private Map<String, String> scopeAudienceUrls;
+  private UserConsentConfiguration userConsent;
+  private IdpErrorConfiguration errors;
 }

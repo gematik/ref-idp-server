@@ -39,31 +39,25 @@ import org.jose4j.json.internal.json_simple.JSONAware;
 @NoArgsConstructor
 public class RegistrationData implements JSONAware, DataVersion {
 
-    @NotNull
-    private String signedPairingData;
-    @NotNull
-    private String authCert;
-    @NotNull
-    @Valid
-    private DeviceInformation deviceInformation;
-    @NotEmpty
-    private String registrationDataVersion;
+  @NotNull private String signedPairingData;
+  @NotNull private String authCert;
+  @NotNull @Valid private DeviceInformation deviceInformation;
+  @NotEmpty private String registrationDataVersion;
 
-    @Override
-    public String toJSONString() {
-        try {
-            final ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.setSerializationInclusion(Include.NON_NULL);
-            return objectMapper
-                .writeValueAsString(this);
-        } catch (final JsonProcessingException e) {
-            throw new IdpJoseException("Error during Claim serialization", e);
-        }
+  @Override
+  public String toJSONString() {
+    try {
+      final ObjectMapper objectMapper = new ObjectMapper();
+      objectMapper.setSerializationInclusion(Include.NON_NULL);
+      return objectMapper.writeValueAsString(this);
+    } catch (final JsonProcessingException e) {
+      throw new IdpJoseException("Error during Claim serialization", e);
     }
+  }
 
-    @Override
-    @JsonIgnore
-    public String getDataVersion() {
-        return registrationDataVersion;
-    }
+  @Override
+  @JsonIgnore
+  public String getDataVersion() {
+    return registrationDataVersion;
+  }
 }

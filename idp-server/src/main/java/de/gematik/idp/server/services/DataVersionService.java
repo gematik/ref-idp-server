@@ -18,6 +18,7 @@ package de.gematik.idp.server.services;
 
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_DATA_VERSION;
 import static de.gematik.idp.field.ClaimName.PAIRING_DATA_VERSION;
+
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.server.data.DataVersion;
 import de.gematik.idp.server.exceptions.IdpServerException;
@@ -32,32 +33,38 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class DataVersionService {
 
-    private static final String ALLOWED_VERSION = "1.0";
+  private static final String ALLOWED_VERSION = "1.0";
 
-    public void checkDataVersion(final DataVersion dataVersion) {
-        checkVersion(Optional.ofNullable(dataVersion.getDataVersion()), dataVersion.getClass().getSimpleName());
-    }
+  public void checkDataVersion(final DataVersion dataVersion) {
+    checkVersion(
+        Optional.ofNullable(dataVersion.getDataVersion()), dataVersion.getClass().getSimpleName());
+  }
 
-    public void checkSignedAuthDataVersion(final JsonWebToken signedAuthData) {
-        checkVersion(signedAuthData.getStringBodyClaim(AUTHENTICATION_DATA_VERSION), "Authentication data");
-    }
+  public void checkSignedAuthDataVersion(final JsonWebToken signedAuthData) {
+    checkVersion(
+        signedAuthData.getStringBodyClaim(AUTHENTICATION_DATA_VERSION), "Authentication data");
+  }
 
-    private void checkVersion(final Optional<String> checkVersion, final String type) {
-        final boolean versionOk = checkVersion
+  private void checkVersion(final Optional<String> checkVersion, final String type) {
+    final boolean versionOk =
+        checkVersion
             .filter(Predicate.not(String::isBlank))
             .filter(ALLOWED_VERSION::equals)
             .isPresent();
-        if (!versionOk) {
-            throw new IdpServerException(IdpServerException.ERROR_ID_ACCESS_DENIED, IdpErrorType.ACCESS_DENIED,
-                String.format("%s version is not supported!", type), HttpStatus.FORBIDDEN);
-        }
+    if (!versionOk) {
+      throw new IdpServerException(
+          IdpServerException.ERROR_ID_ACCESS_DENIED,
+          IdpErrorType.ACCESS_DENIED,
+          String.format("%s version is not supported!", type),
+          HttpStatus.FORBIDDEN);
     }
+  }
 
-    public void checkSignedPairingDataVersion(final JsonWebToken signedPairingData) {
-        checkVersion(signedPairingData.getStringBodyClaim(PAIRING_DATA_VERSION), "Pairing data");
-    }
+  public void checkSignedPairingDataVersion(final JsonWebToken signedPairingData) {
+    checkVersion(signedPairingData.getStringBodyClaim(PAIRING_DATA_VERSION), "Pairing data");
+  }
 
-    public String getCurrentVersion() {
-        return ALLOWED_VERSION;
-    }
+  public String getCurrentVersion() {
+    return ALLOWED_VERSION;
+  }
 }

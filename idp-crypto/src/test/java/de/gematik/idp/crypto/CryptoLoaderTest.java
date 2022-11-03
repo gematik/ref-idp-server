@@ -18,6 +18,7 @@ package de.gematik.idp.crypto;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import de.gematik.idp.crypto.model.PkiIdentity;
 import java.io.File;
 import java.io.IOException;
@@ -28,42 +29,43 @@ import org.junit.jupiter.api.Test;
 
 class CryptoLoaderTest {
 
-    @Test
-    void loadRsaCertificateFromP12() throws IOException {
-        final byte[] p12FileContent = FileUtils
-            .readFileToByteArray(new File("src/test/resources/833621999741600_c.hci.aut-apo-rsa.p12"));
-        final X509Certificate certificate = CryptoLoader.getCertificateFromP12(p12FileContent, "00");
+  @Test
+  void loadRsaCertificateFromP12() throws IOException {
+    final byte[] p12FileContent =
+        FileUtils.readFileToByteArray(
+            new File("src/test/resources/833621999741600_c.hci.aut-apo-rsa.p12"));
+    final X509Certificate certificate = CryptoLoader.getCertificateFromP12(p12FileContent, "00");
 
-        assertThat(certificate.getSubjectX500Principal().toString())
-            .containsIgnoringCase("CN=");
-    }
+    assertThat(certificate.getSubjectX500Principal().toString()).containsIgnoringCase("CN=");
+  }
 
-    @Test
-    void loadEccCertificateFromP12() throws IOException {
-        final byte[] p12FileContent = FileUtils
-            .readFileToByteArray(new File("src/test/resources/authenticatorModule_idpServer.p12"));
-        final X509Certificate certificate = CryptoLoader.getCertificateFromP12(p12FileContent, "00");
+  @Test
+  void loadEccCertificateFromP12() throws IOException {
+    final byte[] p12FileContent =
+        FileUtils.readFileToByteArray(
+            new File("src/test/resources/authenticatorModule_idpServer.p12"));
+    final X509Certificate certificate = CryptoLoader.getCertificateFromP12(p12FileContent, "00");
 
-        assertThat(certificate.getSubjectX500Principal().toString())
-            .containsIgnoringCase("CN=");
-    }
+    assertThat(certificate.getSubjectX500Principal().toString()).containsIgnoringCase("CN=");
+  }
 
-    @SneakyThrows
-    @Test
-    void loadNonCertificateFile() {
-        final byte[] thisFileIsNoCertificate = FileUtils.readFileToByteArray(new File("pom.xml"));
-        assertThat(thisFileIsNoCertificate).hasSizeGreaterThan(0);
-        assertThatThrownBy(() -> CryptoLoader.getCertificateFromP12(
-            thisFileIsNoCertificate, "00")).isInstanceOf(RuntimeException.class);
-    }
+  @SneakyThrows
+  @Test
+  void loadNonCertificateFile() {
+    final byte[] thisFileIsNoCertificate = FileUtils.readFileToByteArray(new File("pom.xml"));
+    assertThat(thisFileIsNoCertificate).hasSizeGreaterThan(0);
+    assertThatThrownBy(() -> CryptoLoader.getCertificateFromP12(thisFileIsNoCertificate, "00"))
+        .isInstanceOf(RuntimeException.class);
+  }
 
-    @Test
-    void loadIdentityFromP12() throws IOException {
-        final byte[] p12FileContent = FileUtils
-            .readFileToByteArray(new File("src/test/resources/authenticatorModule_idpServer.p12"));
-        final PkiIdentity identity = CryptoLoader.getIdentityFromP12(p12FileContent, "00");
+  @Test
+  void loadIdentityFromP12() throws IOException {
+    final byte[] p12FileContent =
+        FileUtils.readFileToByteArray(
+            new File("src/test/resources/authenticatorModule_idpServer.p12"));
+    final PkiIdentity identity = CryptoLoader.getIdentityFromP12(p12FileContent, "00");
 
-        assertThat(identity.getCertificate().getSubjectX500Principal().toString())
-            .containsIgnoringCase("CN=");
-    }
+    assertThat(identity.getCertificate().getSubjectX500Principal().toString())
+        .containsIgnoringCase("CN=");
+  }
 }

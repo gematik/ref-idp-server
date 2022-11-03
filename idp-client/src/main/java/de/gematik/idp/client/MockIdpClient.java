@@ -17,7 +17,14 @@
 package de.gematik.idp.client;
 
 import de.gematik.idp.IdpConstants;
-import de.gematik.idp.authentication.*;
+import de.gematik.idp.authentication.AuthenticationChallenge;
+import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
+import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
+import de.gematik.idp.authentication.AuthenticationResponse;
+import de.gematik.idp.authentication.AuthenticationResponseBuilder;
+import de.gematik.idp.authentication.AuthenticationTokenBuilder;
+import de.gematik.idp.authentication.IdpJwtProcessor;
+import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.data.UserConsentConfiguration;
@@ -30,10 +37,20 @@ import de.gematik.idp.token.JsonWebToken;
 import java.security.Security;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.crypto.spec.SecretKeySpec;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
@@ -44,121 +61,149 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 @Builder(toBuilder = true)
 public class MockIdpClient implements IIdpClient {
 
-    static {
-        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-        Security.insertProviderAt(new BouncyCastleProvider(), 1);
-        BrainpoolCurves.init();
+  private static final String SERVER_SUB_SALT = "someArbitrarySubSaltValue";
+
+  static {
+    Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+    Security.insertProviderAt(new BouncyCastleProvider(), 1);
+    BrainpoolCurves.init();
+  }
+
+  private final PkiIdentity serverIdentity;
+  private final String clientId;
+  private final boolean produceTokensWithInvalidSignature;
+  private final boolean produceOnlyExpiredTokens;
+  @Builder.Default private final String uriIdpServer = IdpConstants.DEFAULT_SERVER_URL;
+  private final EnumMap<IdpScope, String> scopeToAudienceUrls = new EnumMap<>(IdpScope.class);
+  private AccessTokenBuilder accessTokenBuilder;
+  private AuthenticationResponseBuilder authenticationResponseBuilder;
+  private AuthenticationTokenBuilder authenticationTokenBuilder;
+  private AuthenticationChallengeBuilder authenticationChallengeBuilder;
+  private IdpJwtProcessor jwtProcessor;
+  private SecretKeySpec encryptionKey;
+
+  @Override
+  public IdpTokenResult login(final PkiIdentity clientIdentity) {
+    assertThatMockIdClientIsInitialized();
+
+    return IdpTokenResult.builder()
+        .accessToken(buildAccessToken(clientIdentity))
+        .validUntil(LocalDateTime.now().plusMinutes(5))
+        .build();
+  }
+
+  private JsonWebToken buildAccessToken(final PkiIdentity clientIdentity) {
+    final AuthenticationChallenge challenge =
+        authenticationChallengeBuilder.buildAuthenticationChallenge(
+            clientId,
+            "placeholderValue",
+            "foo",
+            "foo",
+            IdpScope.OPENID.getJwtValue() + " " + IdpScope.EREZEPT.getJwtValue(),
+            "nonceValue");
+    final AuthenticationResponse authenticationResponse =
+        authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
+    final IdpJwe authenticationToken =
+        authenticationTokenBuilder.buildAuthenticationToken(
+            clientIdentity.getCertificate(),
+            authenticationResponse
+                .getSignedChallenge()
+                .getBodyClaim(ClaimName.NESTED_JWT)
+                .map(Objects::toString)
+                .map(JsonWebToken::new)
+                .map(JsonWebToken::getBodyClaims)
+                .orElseThrow(),
+            ZonedDateTime.now());
+
+    JsonWebToken accessToken =
+        accessTokenBuilder.buildAccessToken(authenticationToken.decryptNestedJwt(encryptionKey));
+
+    if (produceOnlyExpiredTokens) {
+      accessToken =
+          resignToken(
+              accessToken.getHeaderClaims(),
+              accessToken.getBodyClaims(),
+              ZonedDateTime.now().minusMinutes(10));
     }
 
-    private static final String SERVER_SUB_SALT = "someArbitrarySubSaltValue";
-    private final PkiIdentity serverIdentity;
-    private final String clientId;
-    private final boolean produceTokensWithInvalidSignature;
-    private final boolean produceOnlyExpiredTokens;
-    @Builder.Default
-    private final String uriIdpServer = IdpConstants.DEFAULT_SERVER_URL;
-    private final EnumMap<IdpScope, String> scopeToAudienceUrls = new EnumMap<>(IdpScope.class);
-    private AccessTokenBuilder accessTokenBuilder;
-    private AuthenticationResponseBuilder authenticationResponseBuilder;
-    private AuthenticationTokenBuilder authenticationTokenBuilder;
-    private AuthenticationChallengeBuilder authenticationChallengeBuilder;
-    private IdpJwtProcessor jwtProcessor;
-    private SecretKeySpec encryptionKey;
-
-    @Override
-    public IdpTokenResult login(final PkiIdentity clientIdentity) {
-        assertThatMockIdClientIsInitialized();
-
-        return IdpTokenResult.builder()
-            .accessToken(buildAccessToken(clientIdentity))
-            .validUntil(LocalDateTime.now().plusMinutes(5))
-            .build();
+    if (produceTokensWithInvalidSignature) {
+      final List<String> strings = Arrays.asList(accessToken.getRawString().split("\\."));
+      strings.set(2, strings.get(2) + "mvK");
+      accessToken = new JsonWebToken(strings.stream().collect(Collectors.joining(".")));
     }
 
-    private JsonWebToken buildAccessToken(final PkiIdentity clientIdentity) {
-        final AuthenticationChallenge challenge = authenticationChallengeBuilder
-            .buildAuthenticationChallenge(clientId, "placeholderValue", "foo", "foo",
-                IdpScope.OPENID.getJwtValue() + " " + IdpScope.EREZEPT.getJwtValue(), "nonceValue");
-        final AuthenticationResponse authenticationResponse = authenticationResponseBuilder
-            .buildResponseForChallenge(challenge, clientIdentity);
-        final IdpJwe authenticationToken = authenticationTokenBuilder
-            .buildAuthenticationToken(clientIdentity.getCertificate(),
-                authenticationResponse.getSignedChallenge().getBodyClaim(ClaimName.NESTED_JWT)
-                    .map(Objects::toString)
-                    .map(JsonWebToken::new)
-                    .map(JsonWebToken::getBodyClaims)
-                    .orElseThrow(),
-                ZonedDateTime.now());
+    return accessToken;
+  }
 
-        JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(
-            authenticationToken.decryptNestedJwt(encryptionKey));
-
-        if (produceOnlyExpiredTokens) {
-            accessToken = resignToken(accessToken.getHeaderClaims(),
-                accessToken.getBodyClaims(),
-                ZonedDateTime.now().minusMinutes(10));
-        }
-
-        if (produceTokensWithInvalidSignature) {
-            final List<String> strings = Arrays.asList(accessToken.getRawString().split("\\."));
-            strings.set(2, strings.get(2) + "mvK");
-            accessToken = new JsonWebToken(strings.stream()
-                .collect(Collectors.joining(".")));
-        }
-
-        return accessToken;
-    }
-
-    public JsonWebToken resignToken(
-        final Map<String, Object> headerClaims,
-        final Map<String, Object> bodyClaims,
-        final ZonedDateTime expiresAt) {
-        Objects.requireNonNull(jwtProcessor, "jwtProcessor is null. Did you call initialize()?");
-        return jwtProcessor.buildJwt(new JwtBuilder()
+  public JsonWebToken resignToken(
+      final Map<String, Object> headerClaims,
+      final Map<String, Object> bodyClaims,
+      final ZonedDateTime expiresAt) {
+    Objects.requireNonNull(jwtProcessor, "jwtProcessor is null. Did you call initialize()?");
+    return jwtProcessor.buildJwt(
+        new JwtBuilder()
             .addAllBodyClaims(bodyClaims)
             .addAllHeaderClaims(headerClaims)
             .expiresAt(expiresAt));
-    }
+  }
 
-    @Override
-    public MockIdpClient initialize() {
-        scopeToAudienceUrls.put(IdpScope.EREZEPT, "https://erp-test.zentral.erp.splitdns.ti-dienste.de/");
-        scopeToAudienceUrls.put(IdpScope.PAIRING, "https://idp-pairing-test.zentral.idp.splitdns.ti-dienste.de");
+  @Override
+  public MockIdpClient initialize() {
+    scopeToAudienceUrls.put(
+        IdpScope.EREZEPT, "https://erp-test.zentral.erp.splitdns.ti-dienste.de/");
+    scopeToAudienceUrls.put(
+        IdpScope.PAIRING, "https://idp-pairing-test.zentral.idp.splitdns.ti-dienste.de");
 
-        serverIdentity.setKeyId(Optional.of("puk_idp_sig"));
-        serverIdentity.setUse(Optional.of("sig"));
-        jwtProcessor = new IdpJwtProcessor(serverIdentity);
-        accessTokenBuilder = new AccessTokenBuilder(jwtProcessor, uriIdpServer, SERVER_SUB_SALT,
-            scopeToAudienceUrls);
-        authenticationChallengeBuilder = AuthenticationChallengeBuilder.builder()
+    serverIdentity.setKeyId(Optional.of("puk_idp_sig"));
+    serverIdentity.setUse(Optional.of("sig"));
+    jwtProcessor = new IdpJwtProcessor(serverIdentity);
+    accessTokenBuilder =
+        new AccessTokenBuilder(jwtProcessor, uriIdpServer, SERVER_SUB_SALT, scopeToAudienceUrls);
+    authenticationChallengeBuilder =
+        AuthenticationChallengeBuilder.builder()
             .serverSigner(new IdpJwtProcessor(serverIdentity))
             .uriIdpServer(uriIdpServer)
-            .userConsentConfiguration(UserConsentConfiguration.builder()
-                .claimsToBeIncluded(Map.of(IdpScope.OPENID, List.of(),
-                    IdpScope.EREZEPT, List.of(),
-                    IdpScope.PAIRING, List.of()))
-                .descriptionTexts(UserConsentDescriptionTexts.builder()
-                    .claims(Collections.emptyMap())
-                    .scopes(Map.of(IdpScope.OPENID, "openid",
-                        IdpScope.PAIRING, "pairing",
-                        IdpScope.EREZEPT, "erezept"))
+            .userConsentConfiguration(
+                UserConsentConfiguration.builder()
+                    .claimsToBeIncluded(
+                        Map.of(
+                            IdpScope.OPENID,
+                            List.of(),
+                            IdpScope.EREZEPT,
+                            List.of(),
+                            IdpScope.PAIRING,
+                            List.of()))
+                    .descriptionTexts(
+                        UserConsentDescriptionTexts.builder()
+                            .claims(Collections.emptyMap())
+                            .scopes(
+                                Map.of(
+                                    IdpScope.OPENID,
+                                    "openid",
+                                    IdpScope.PAIRING,
+                                    "pairing",
+                                    IdpScope.EREZEPT,
+                                    "erezept"))
+                            .build())
                     .build())
-                .build())
             .build();
-        authenticationResponseBuilder = new AuthenticationResponseBuilder();
-        encryptionKey = new SecretKeySpec(DigestUtils.sha256("fdsa"), "AES");
-        authenticationTokenBuilder = AuthenticationTokenBuilder.builder()
+    authenticationResponseBuilder = new AuthenticationResponseBuilder();
+    encryptionKey = new SecretKeySpec(DigestUtils.sha256("fdsa"), "AES");
+    authenticationTokenBuilder =
+        AuthenticationTokenBuilder.builder()
             .jwtProcessor(jwtProcessor)
             .authenticationChallengeVerifier(new AuthenticationChallengeVerifier(serverIdentity))
             .encryptionKey(encryptionKey)
             .build();
-        return this;
-    }
+    return this;
+  }
 
-    private void assertThatMockIdClientIsInitialized() {
-        Objects.requireNonNull(accessTokenBuilder, "accessTokenBuilder is null. Did you call initialize()?");
-        Objects.requireNonNull(authenticationTokenBuilder,
-            "authenticationTokenBuilder is null. Did you call initialize()?");
-        Objects.requireNonNull(clientId, "clientId is null. You have to set it!");
-    }
+  private void assertThatMockIdClientIsInitialized() {
+    Objects.requireNonNull(
+        accessTokenBuilder, "accessTokenBuilder is null. Did you call initialize()?");
+    Objects.requireNonNull(
+        authenticationTokenBuilder,
+        "authenticationTokenBuilder is null. Did you call initialize()?");
+    Objects.requireNonNull(clientId, "clientId is null. You have to set it!");
+  }
 }

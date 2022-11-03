@@ -21,6 +21,7 @@ import static de.gematik.idp.field.ClaimName.X509_CERTIFICATE_CHAIN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.data.UserConsentConfiguration;
 import de.gematik.idp.data.UserConsentDescriptionTexts;
@@ -49,115 +50,130 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(PkiKeyResolver.class)
 class AuthenticationResponseBuilderTest {
 
-    private AuthenticationResponseBuilder authenticationResponseBuilder;
-    private AuthenticationChallengeVerifier authenticationChallengeVerifier;
-    private PkiIdentity serverIdentity;
-    private PkiIdentity clientIdentity;
-    private JwtConsumer serverJwtConsumer;
-    private AuthenticationChallenge challenge;
+  static {
+    Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+    Security.insertProviderAt(new BouncyCastleProvider(), 1);
+  }
 
-    static {
-        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-        Security.insertProviderAt(new BouncyCastleProvider(), 1);
-    }
+  private AuthenticationResponseBuilder authenticationResponseBuilder;
+  private AuthenticationChallengeVerifier authenticationChallengeVerifier;
+  private PkiIdentity serverIdentity;
+  private PkiIdentity clientIdentity;
+  private JwtConsumer serverJwtConsumer;
+  private AuthenticationChallenge challenge;
 
-    @BeforeEach
-    public void init(@PkiKeyResolver.Filename("hsm_ecc") final PkiIdentity serverIdentity,
-        @PkiKeyResolver.Filename("c.ch.aut-ecc") final PkiIdentity clientIdentity) {
-        this.clientIdentity = clientIdentity;
-        this.serverIdentity = serverIdentity;
+  @BeforeEach
+  public void init(
+      @PkiKeyResolver.Filename("hsm_ecc") final PkiIdentity serverIdentity,
+      @PkiKeyResolver.Filename("c.ch.aut-ecc") final PkiIdentity clientIdentity) {
+    this.clientIdentity = clientIdentity;
+    this.serverIdentity = serverIdentity;
 
-        final AuthenticationChallengeBuilder authenticationChallengeBuilder = AuthenticationChallengeBuilder.builder()
+    final AuthenticationChallengeBuilder authenticationChallengeBuilder =
+        AuthenticationChallengeBuilder.builder()
             .serverSigner(new IdpJwtProcessor(serverIdentity))
-            .userConsentConfiguration(UserConsentConfiguration.builder()
-                .claimsToBeIncluded(Map.of(IdpScope.OPENID, List.of(),
-                    IdpScope.EREZEPT, List.of(),
-                    IdpScope.PAIRING, List.of()))
-                .descriptionTexts(UserConsentDescriptionTexts.builder()
-                    .claims(Collections.emptyMap())
-                    .scopes(Map.of(IdpScope.OPENID, "openid",
-                        IdpScope.PAIRING, "pairing",
-                        IdpScope.EREZEPT, "erezept"))
+            .userConsentConfiguration(
+                UserConsentConfiguration.builder()
+                    .claimsToBeIncluded(
+                        Map.of(
+                            IdpScope.OPENID,
+                            List.of(),
+                            IdpScope.EREZEPT,
+                            List.of(),
+                            IdpScope.PAIRING,
+                            List.of()))
+                    .descriptionTexts(
+                        UserConsentDescriptionTexts.builder()
+                            .claims(Collections.emptyMap())
+                            .scopes(
+                                Map.of(
+                                    IdpScope.OPENID,
+                                    "openid",
+                                    IdpScope.PAIRING,
+                                    "pairing",
+                                    IdpScope.EREZEPT,
+                                    "erezept"))
+                            .build())
                     .build())
-                .build())
             .build();
-        authenticationResponseBuilder = AuthenticationResponseBuilder.builder()
-            .build();
-        serverJwtConsumer = new JwtConsumerBuilder()
+    authenticationResponseBuilder = AuthenticationResponseBuilder.builder().build();
+    serverJwtConsumer =
+        new JwtConsumerBuilder()
             .setVerificationKey(clientIdentity.getCertificate().getPublicKey())
             .build();
 
-        authenticationChallengeVerifier = AuthenticationChallengeVerifier.builder()
-            .serverIdentity(serverIdentity)
-            .build();
+    authenticationChallengeVerifier =
+        AuthenticationChallengeVerifier.builder().serverIdentity(serverIdentity).build();
 
-        challenge = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
-    }
+    challenge =
+        authenticationChallengeBuilder.buildAuthenticationChallenge(
+            "goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue");
+  }
 
-    @Test
-    void verifyClientCertificateIsInHeaderAttribute() throws CertificateEncodingException {
-        final AuthenticationResponse authenticationResponse =
-            authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
+  @Test
+  void verifyClientCertificateIsInHeaderAttribute() throws CertificateEncodingException {
+    final AuthenticationResponse authenticationResponse =
+        authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
 
-        Assertions.assertThat(authenticationResponse.getSignedChallenge().getHeaderClaims())
-            .extractingByKey(X509_CERTIFICATE_CHAIN.getJoseName(), InstanceOfAssertFactories.LIST)
-            .contains(Base64.getEncoder().encodeToString(clientIdentity.getCertificate().getEncoded()));
-    }
+    Assertions.assertThat(authenticationResponse.getSignedChallenge().getHeaderClaims())
+        .extractingByKey(X509_CERTIFICATE_CHAIN.getJoseName(), InstanceOfAssertFactories.LIST)
+        .contains(Base64.getEncoder().encodeToString(clientIdentity.getCertificate().getEncoded()));
+  }
 
-    @Test
-    void verifyResponseIsSignedByClientIdentity() throws InvalidJwtException {
-        final AuthenticationResponse authenticationResponse =
-            authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
-        assertDoesNotThrow(() ->
-            serverJwtConsumer.process(authenticationResponse.getSignedChallenge().getRawString())
-        );
-    }
+  @Test
+  void verifyResponseIsSignedByClientIdentity() throws InvalidJwtException {
+    final AuthenticationResponse authenticationResponse =
+        authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
+    assertDoesNotThrow(
+        () ->
+            serverJwtConsumer.process(authenticationResponse.getSignedChallenge().getRawString()));
+  }
 
-    @Test
-    void verifyResponseIsNotSignedByServerIdentity() {
-        final AuthenticationResponse authenticationResponse =
-            authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
-        JsonWebToken signedChallenge = authenticationResponse.getSignedChallenge();
-        assertThat(signedChallenge).isNotNull();
-        PublicKey publicKey = serverIdentity.getCertificate().getPublicKey();
+  @Test
+  void verifyResponseIsNotSignedByServerIdentity() {
+    final AuthenticationResponse authenticationResponse =
+        authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
+    JsonWebToken signedChallenge = authenticationResponse.getSignedChallenge();
+    assertThat(signedChallenge).isNotNull();
+    PublicKey publicKey = serverIdentity.getCertificate().getPublicKey();
 
-        assertThatThrownBy(() -> signedChallenge
-            .verify(publicKey))
-            .isInstanceOf(IdpJoseException.class);
-    }
+    assertThatThrownBy(() -> signedChallenge.verify(publicKey))
+        .isInstanceOf(IdpJoseException.class);
+  }
 
-    @Test
-    void verifyNestedTokenIsEqualToChallenge() {
-        final AuthenticationResponse authenticationResponse =
-            authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
+  @Test
+  void verifyNestedTokenIsEqualToChallenge() {
+    final AuthenticationResponse authenticationResponse =
+        authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
 
-        Assertions.assertThat(authenticationResponse.getSignedChallenge().getBodyClaims())
-            .extractingByKey(ClaimName.NESTED_JWT.getJoseName())
-            .isEqualTo(challenge.getChallenge().getRawString());
-    }
+    Assertions.assertThat(authenticationResponse.getSignedChallenge().getBodyClaims())
+        .extractingByKey(ClaimName.NESTED_JWT.getJoseName())
+        .isEqualTo(challenge.getChallenge().getRawString());
+  }
 
-    @Test
-    void verifyChallengeResponseOnlyContainsNestedJwt() {
-        final AuthenticationResponse authenticationResponse =
-            authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
+  @Test
+  void verifyChallengeResponseOnlyContainsNestedJwt() {
+    final AuthenticationResponse authenticationResponse =
+        authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
 
-        final Map<String, Object> extractedClaims = authenticationChallengeVerifier
-            .extractClaimsFromSignedChallenge(authenticationResponse);
-        assertThat(extractedClaims)
-            .containsOnlyKeys(NESTED_JWT.getJoseName())
-            .containsEntry(NESTED_JWT.getJoseName(), challenge.getChallenge().getRawString());
-    }
+    final Map<String, Object> extractedClaims =
+        authenticationChallengeVerifier.extractClaimsFromSignedChallenge(authenticationResponse);
+    assertThat(extractedClaims)
+        .containsOnlyKeys(NESTED_JWT.getJoseName())
+        .containsEntry(NESTED_JWT.getJoseName(), challenge.getChallenge().getRawString());
+  }
 
-    @Test
-    void verifyChallengeResponseOnlyContainsExp() {
-        final AuthenticationResponse authenticationResponse =
-            authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
+  @Test
+  void verifyChallengeResponseOnlyContainsExp() {
+    final AuthenticationResponse authenticationResponse =
+        authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
 
-        Assertions.assertThat(authenticationResponse.getSignedChallenge()
+    Assertions.assertThat(
+            authenticationResponse
+                .getSignedChallenge()
                 .getStringBodyClaim(ClaimName.NESTED_JWT)
                 .map(JsonWebToken::new)
                 .map(token -> token.getHeaderDateTimeClaim(ClaimName.EXPIRES_AT)))
-            .isPresent();
-    }
+        .isPresent();
+  }
 }

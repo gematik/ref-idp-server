@@ -28,9 +28,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class DeviceValidationDto {
 
-    private String manufacturer;
-    private String product;
-    private String os;
-    private String osVersion;
-    private DeviceValidationState state;
+  private String manufacturer;
+  private String product;
+  private String os;
+  private String osVersion;
+  private DeviceValidationState state;
 }

@@ -16,7 +16,6 @@
 
 package de.gematik.idp.data.fedidp;
 
-
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.gematik.idp.data.IdpJwksDocument;
@@ -25,9 +24,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Entity statement related to sektoralem (federated) IDP issued by sektoralem (federated) IDP
- */
+/** Entity statement related to sektoralem (federated) IDP issued by sektoralem (federated) IDP */
 @Data
 @Builder
 @NoArgsConstructor
@@ -35,11 +32,11 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class EntityStatement {
 
-    private String iss;
-    private String sub;
-    private long iat;
-    private long exp;
-    private IdpJwksDocument jwks;
-    private String[] authorityHints;
-    private Metadata metadata;
+  private String iss;
+  private String sub;
+  private long iat;
+  private long exp;
+  private IdpJwksDocument jwks;
+  private String[] authorityHints;
+  private Metadata metadata;
 }

@@ -22,13 +22,13 @@ import org.springframework.http.HttpStatus;
 
 public class IdpServerUnauthorizedClientException extends IdpServerException {
 
-    private static final long serialVersionUID = -4815079492921628349L;
+  private static final long serialVersionUID = -4815079492921628349L;
 
-    public IdpServerUnauthorizedClientException(final String message, final Exception e) {
-        super(message, e, IdpErrorType.UNAUTHORIZED_CLIENT, HttpStatus.FORBIDDEN);
-    }
+  public IdpServerUnauthorizedClientException(final String message, final Exception e) {
+    super(message, e, IdpErrorType.UNAUTHORIZED_CLIENT, HttpStatus.FORBIDDEN);
+  }
 
-    public IdpServerUnauthorizedClientException(final String s) {
-        super(s, IdpErrorType.UNAUTHORIZED_CLIENT, HttpStatus.FORBIDDEN);
-    }
+  public IdpServerUnauthorizedClientException(final String s) {
+    super(s, IdpErrorType.UNAUTHORIZED_CLIENT, HttpStatus.FORBIDDEN);
+  }
 }

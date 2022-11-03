@@ -23,12 +23,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class EnvHelper {
 
-    public static Optional<String> getSystemProperty(final String envName) {
-        return Optional.ofNullable(getProperty(envName));
-    }
+  public static Optional<String> getSystemProperty(final String envName) {
+    return Optional.ofNullable(getProperty(envName));
+  }
 
-    private static String getProperty(final String key) {
-        return System.getProperty(key,
-            System.getenv(key)); // fallback
-    }
+  private static String getProperty(final String key) {
+    return System.getProperty(key, System.getenv(key)); // fallback
+  }
 }

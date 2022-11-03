@@ -17,6 +17,7 @@
 package de.gematik.idp.server.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 import de.gematik.idp.server.data.DeviceType;
 import de.gematik.idp.server.devicevalidation.DeviceValidationData;
 import de.gematik.idp.server.devicevalidation.DeviceValidationRepository;
@@ -31,68 +32,72 @@ import org.springframework.boot.test.context.SpringBootTest;
 @Transactional
 class DeviceValidationServiceTest {
 
-    @Autowired
-    private DeviceValidationService deviceValidationService;
-    @Autowired
-    private DeviceValidationRepository deviceValidationRepository;
+  @Autowired private DeviceValidationService deviceValidationService;
+  @Autowired private DeviceValidationRepository deviceValidationRepository;
 
-    @Test
-    void testAssessDeviceValidation() {
-        final DeviceValidationData deviceValidationData = createDeviceValidationData();
-        final DeviceType deviceType = createDeviceType(deviceValidationData);
-        assertThat(findDeviceValidationDataFromRepo(deviceValidationData)).isEmpty();
-        final DeviceValidationState state = deviceValidationService.assess(deviceType);
-        assertThat(state).isEqualTo(DeviceValidationState.UNKNOWN);
-    }
+  @Test
+  void testAssessDeviceValidation() {
+    final DeviceValidationData deviceValidationData = createDeviceValidationData();
+    final DeviceType deviceType = createDeviceType(deviceValidationData);
+    assertThat(findDeviceValidationDataFromRepo(deviceValidationData)).isEmpty();
+    final DeviceValidationState state = deviceValidationService.assess(deviceType);
+    assertThat(state).isEqualTo(DeviceValidationState.UNKNOWN);
+  }
 
-    @Test
-    void testAssessWithExistingDeviceValidation() {
-        final DeviceValidationData deviceValidationData = createDeviceValidationData();
-        deviceValidationRepository.save(deviceValidationData);
-        final DeviceType deviceType = createDeviceType(deviceValidationData);
-        final DeviceValidationState state = deviceValidationService.assess(deviceType);
-        assertThat(state).isEqualTo(DeviceValidationState.ALLOW);
-        cleanUp();
-    }
+  @Test
+  void testAssessWithExistingDeviceValidation() {
+    final DeviceValidationData deviceValidationData = createDeviceValidationData();
+    deviceValidationRepository.save(deviceValidationData);
+    final DeviceType deviceType = createDeviceType(deviceValidationData);
+    final DeviceValidationState state = deviceValidationService.assess(deviceType);
+    assertThat(state).isEqualTo(DeviceValidationState.ALLOW);
+    cleanUp();
+  }
 
-    @Test
-    void testValidationRepository() {
-        final DeviceValidationData expected = deviceValidationRepository.save(createDeviceValidationData());
-        final DeviceValidationData validationData = deviceValidationRepository.getOne(expected.getId());
-        assertThat(validationData)
-            .usingRecursiveComparison()
-            .isEqualTo(expected);
-        final Optional<DeviceValidationData> findData = findDeviceValidationDataFromRepo(
-            expected);
-        assertThat(findData).isPresent();
-        assertThat(findData.get())
-            .usingRecursiveComparison().isEqualTo(expected);
-        cleanUp();
-    }
+  @Test
+  void testValidationRepository() {
+    final DeviceValidationData expected =
+        deviceValidationRepository.save(createDeviceValidationData());
+    final DeviceValidationData validationData = deviceValidationRepository.getOne(expected.getId());
+    assertThat(validationData).usingRecursiveComparison().isEqualTo(expected);
+    final Optional<DeviceValidationData> findData = findDeviceValidationDataFromRepo(expected);
+    assertThat(findData).isPresent();
+    assertThat(findData.get()).usingRecursiveComparison().isEqualTo(expected);
+    cleanUp();
+  }
 
-    private Optional<DeviceValidationData> findDeviceValidationDataFromRepo(final DeviceValidationData expected) {
-        return deviceValidationRepository
-            .findByManufacturerAndProductAndModelAndOsAndOsVersion(expected.getManufacturer(),
-                expected.getProduct(), expected.getModel(), expected.getOs(), expected.getOsVersion());
-    }
+  private Optional<DeviceValidationData> findDeviceValidationDataFromRepo(
+      final DeviceValidationData expected) {
+    return deviceValidationRepository.findByManufacturerAndProductAndModelAndOsAndOsVersion(
+        expected.getManufacturer(),
+        expected.getProduct(),
+        expected.getModel(),
+        expected.getOs(),
+        expected.getOsVersion());
+  }
 
-    private DeviceType createDeviceType(final DeviceValidationData data) {
-        return DeviceType.builder()
-            .manufacturer(data.getManufacturer())
-            .product(data.getProduct())
-            .model(data.getModel())
-            .os(data.getOs())
-            .osVersion(data.getOsVersion())
-            .build();
-    }
+  private DeviceType createDeviceType(final DeviceValidationData data) {
+    return DeviceType.builder()
+        .manufacturer(data.getManufacturer())
+        .product(data.getProduct())
+        .model(data.getModel())
+        .os(data.getOs())
+        .osVersion(data.getOsVersion())
+        .build();
+  }
 
-    private DeviceValidationData createDeviceValidationData() {
-        return DeviceValidationData.builder().manufacturer("TestManufacturer").product("TestProduct").model("TestModel")
-            .os("testOs").osVersion("testOsVersion").state(
-                DeviceValidationState.ALLOW).build();
-    }
+  private DeviceValidationData createDeviceValidationData() {
+    return DeviceValidationData.builder()
+        .manufacturer("TestManufacturer")
+        .product("TestProduct")
+        .model("TestModel")
+        .os("testOs")
+        .osVersion("testOsVersion")
+        .state(DeviceValidationState.ALLOW)
+        .build();
+  }
 
-    private void cleanUp() {
-        deviceValidationRepository.deleteAll();
-    }
+  private void cleanUp() {
+    deviceValidationRepository.deleteAll();
+  }
 }

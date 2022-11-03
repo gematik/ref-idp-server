@@ -18,11 +18,11 @@ package de.gematik.idp.server.exceptions;
 
 public class IdpServerStartupException extends RuntimeException {
 
-    public IdpServerStartupException(final String message, final Exception cause) {
-        super(message, cause);
-    }
+  public IdpServerStartupException(final String message, final Exception cause) {
+    super(message, cause);
+  }
 
-    public IdpServerStartupException(final String message) {
-        super(message);
-    }
+  public IdpServerStartupException(final String message) {
+    super(message);
+  }
 }

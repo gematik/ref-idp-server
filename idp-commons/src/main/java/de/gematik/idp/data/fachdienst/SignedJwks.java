@@ -16,7 +16,6 @@
 
 package de.gematik.idp.data.fachdienst;
 
-
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.gematik.idp.data.IdpJwksDocument;
@@ -25,9 +24,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Entity statement related to Fachdienst issued by Fachdienst
- */
+/** Entity statement related to Fachdienst issued by Fachdienst */
 @Data
 @Builder
 @NoArgsConstructor
@@ -35,8 +32,7 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class SignedJwks {
 
-    private String iss;
-    private long iat;
-    private IdpJwksDocument jwks;
-
+  private String iss;
+  private long iat;
+  private IdpJwksDocument jwks;
 }

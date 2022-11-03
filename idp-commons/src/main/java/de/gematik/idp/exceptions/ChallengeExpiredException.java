@@ -18,7 +18,7 @@ package de.gematik.idp.exceptions;
 
 public class ChallengeExpiredException extends IdpJoseException {
 
-    public ChallengeExpiredException() {
-        super("The given challenge is expired");
-    }
+  public ChallengeExpiredException() {
+    super("The given challenge is expired");
+  }
 }

@@ -33,15 +33,19 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class IdpErrorResponse {
 
-    private IdpErrorType error;
-    @JsonProperty("gematik_code")
-    private String code;
-    @JsonProperty("gematik_timestamp")
-    private long timestamp;
-    @JsonProperty("gematik_uuid")
-    private String errorUuid;
-    @JsonProperty("gematik_error_text")
-    private String detailMessage;
-    @JsonIgnore
-    private int httpStatusCode;
+  private IdpErrorType error;
+
+  @JsonProperty("gematik_code")
+  private String code;
+
+  @JsonProperty("gematik_timestamp")
+  private long timestamp;
+
+  @JsonProperty("gematik_uuid")
+  private String errorUuid;
+
+  @JsonProperty("gematik_error_text")
+  private String detailMessage;
+
+  @JsonIgnore private int httpStatusCode;
 }

@@ -19,29 +19,30 @@ package de.gematik.idp.test.steps.model;
 import java.util.Arrays;
 
 public enum AccessTokenType {
-    EREZEPT, PAIRING;
+  EREZEPT,
+  PAIRING;
 
-    public final static String CUCUMBER_REGEX = "(erezept|pairing)";
+  public static final String CUCUMBER_REGEX = "(erezept|pairing)";
 
-    private final String value;
+  private final String value;
 
-    public static AccessTokenType fromString(final String value) {
-        return Arrays.stream(AccessTokenType.values())
-            .filter(e -> e.value.equals(value))
-            .findFirst()
-            .orElseThrow(() -> new AssertionError("Invalid access token type '" + value + "'"));
-    }
+  AccessTokenType() {
+    value = name().toLowerCase();
+  }
 
-    AccessTokenType() {
-        value = name().toLowerCase();
-    }
+  public static AccessTokenType fromString(final String value) {
+    return Arrays.stream(AccessTokenType.values())
+        .filter(e -> e.value.equals(value))
+        .findFirst()
+        .orElseThrow(() -> new AssertionError("Invalid access token type '" + value + "'"));
+  }
 
-    @Override
-    public String toString() {
-        return value;
-    }
+  @Override
+  public String toString() {
+    return value;
+  }
 
-    public String toScope() {
-        return value.replace("erezept", "e-rezept");
-    }
+  public String toScope() {
+    return value.replace("erezept", "e-rezept");
+  }
 }

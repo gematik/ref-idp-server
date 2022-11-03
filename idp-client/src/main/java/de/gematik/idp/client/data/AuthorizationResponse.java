@@ -24,5 +24,5 @@ import lombok.Data;
 @Builder
 public class AuthorizationResponse {
 
-    private final AuthenticationChallenge authenticationChallenge;
+  private final AuthenticationChallenge authenticationChallenge;
 }

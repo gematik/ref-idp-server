@@ -27,16 +27,15 @@ import org.springframework.web.servlet.AsyncHandlerInterceptor;
 @RequiredArgsConstructor
 public class ServerVersionInterceptor implements AsyncHandlerInterceptor {
 
-    private final IdpConfiguration idpConfiguration;
+  private final IdpConfiguration idpConfiguration;
 
-    @Override
-    public final boolean preHandle(
-        final HttpServletRequest request,
-        final HttpServletResponse response,
-        final Object handler) throws Exception {
+  @Override
+  public final boolean preHandle(
+      final HttpServletRequest request, final HttpServletResponse response, final Object handler)
+      throws Exception {
 
-        response.setHeader("Version", idpConfiguration.getVersion());
+    response.setHeader("Version", idpConfiguration.getVersion());
 
-        return true;
-    }
+    return true;
+  }
 }

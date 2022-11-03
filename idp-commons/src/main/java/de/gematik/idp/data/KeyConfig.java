@@ -27,7 +27,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class KeyConfig {
 
-    private String fileName;
-    private String keyId;
-    private String use;
+  private String fileName;
+  private String keyId;
+  private String use;
 }

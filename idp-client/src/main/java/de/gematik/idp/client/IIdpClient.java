@@ -20,7 +20,7 @@ import de.gematik.idp.crypto.model.PkiIdentity;
 
 public interface IIdpClient {
 
-    IdpTokenResult login(PkiIdentity idpIdentity);
+  IdpTokenResult login(PkiIdentity idpIdentity);
 
-    IIdpClient initialize();
+  IIdpClient initialize();
 }

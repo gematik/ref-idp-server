@@ -17,23 +17,24 @@
 package de.gematik.idp;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 import de.gematik.idp.field.ClientUtilities;
 import org.junit.jupiter.api.Test;
 
 class ClientUtilitiesTest {
 
-    private static final String BASE64_URL_REGEX = "^[0-9a-zA-Z\\-\\.~_]+$";
-    private static final int SHA256_AS_B64_LENGTH = 43;
+  private static final String BASE64_URL_REGEX = "^[0-9a-zA-Z\\-\\.~_]+$";
+  private static final int SHA256_AS_B64_LENGTH = 43;
 
-    @Test
-    void generateCodeChallengeFromVerifier() {
-        final String codeVerifier = ClientUtilities.generateCodeVerifier();
+  @Test
+  void generateCodeChallengeFromVerifier() {
+    final String codeVerifier = ClientUtilities.generateCodeVerifier();
 
-        final String codeChallenge = ClientUtilities.generateCodeChallenge(codeVerifier);
+    final String codeChallenge = ClientUtilities.generateCodeChallenge(codeVerifier);
 
-        assertThat(codeChallenge)
-            .matches(BASE64_URL_REGEX)
-            .isEqualTo(ClientUtilities.generateCodeChallenge(codeVerifier))
-            .hasSize(SHA256_AS_B64_LENGTH);
-    }
+    assertThat(codeChallenge)
+        .matches(BASE64_URL_REGEX)
+        .isEqualTo(ClientUtilities.generateCodeChallenge(codeVerifier))
+        .hasSize(SHA256_AS_B64_LENGTH);
+  }
 }

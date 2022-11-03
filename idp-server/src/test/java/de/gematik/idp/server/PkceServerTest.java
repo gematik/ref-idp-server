@@ -20,6 +20,7 @@ import static de.gematik.idp.client.AuthenticatorClient.getAllFieldElementsAsMap
 import static de.gematik.idp.client.AuthenticatorClient.getAllHeaderElementsAsMap;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+
 import de.gematik.idp.TestConstants;
 import de.gematik.idp.client.IdpClient;
 import de.gematik.idp.client.IdpClientRuntimeException;
@@ -53,168 +54,172 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class PkceServerTest {
 
-    private final PkceChecker pkceChecker = new PkceChecker();
-    @Autowired
-    private IdpConfiguration idpConfiguration;
-    @Autowired
-    private Key symmetricEncryptionKey;
-    @Autowired
-    private IdpKey idpSig;
-    private IdpClient idpClient;
-    private PkiIdentity egkUserIdentity;
-    @LocalServerPort
-    private int localServerPort;
+  private final PkceChecker pkceChecker = new PkceChecker();
+  @Autowired private IdpConfiguration idpConfiguration;
+  @Autowired private Key symmetricEncryptionKey;
+  @Autowired private IdpKey idpSig;
+  private IdpClient idpClient;
+  private PkiIdentity egkUserIdentity;
+  @LocalServerPort private int localServerPort;
 
-    @BeforeEach
-    public void startup(
-        @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity) {
-        idpClient = IdpClient.builder()
+  @BeforeEach
+  public void startup(
+      @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity) {
+    idpClient =
+        IdpClient.builder()
             .clientId(TestConstants.CLIENT_ID_E_REZEPT_APP)
             .discoveryDocumentUrl("http://localhost:" + localServerPort + "/discoveryDocument")
             .redirectUrl(TestConstants.REDIRECT_URI_E_REZEPT_APP)
             .build();
 
-        idpClient.initialize();
+    idpClient.initialize();
 
-        egkUserIdentity = PkiIdentity.builder()
+    egkUserIdentity =
+        PkiIdentity.builder()
             .certificate(egkIdentity.getCertificate())
             .privateKey(egkIdentity.getPrivateKey())
             .build();
-    }
+  }
 
-    @Test
-    void testPkcePositiv() throws UnirestException {
-        idpClient
-            .setBeforeAuthorizationCallback(
-                request -> assertThat(request.getUrl()).contains("code_challenge=")
-                    .contains("code_challenge_method=S256"));
+  @Test
+  void testPkcePositiv() throws UnirestException {
+    idpClient.setBeforeAuthorizationCallback(
+        request ->
+            assertThat(request.getUrl())
+                .contains("code_challenge=")
+                .contains("code_challenge_method=S256"));
 
-        final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
-    }
+    final IdpTokenResult tokenResponse = idpClient.login(egkUserIdentity);
+  }
 
-    @Test
-    @Remark("Client sendet code_challenge_method=plain statt S256, Server muss Error senden")
-    @Rfc("rfc7636, section 4.4.1")
-    void pkceNegativPlainInAuthorization() throws UnirestException {
-        idpClient.setCodeChallengeMethod(CodeChallengeMethod.PLAIN);
+  @Test
+  @Remark("Client sendet code_challenge_method=plain statt S256, Server muss Error senden")
+  @Rfc("rfc7636, section 4.4.1")
+  void pkceNegativPlainInAuthorization() throws UnirestException {
+    idpClient.setCodeChallengeMethod(CodeChallengeMethod.PLAIN);
 
-        idpClient.setAfterAuthorizationCallback(r -> assertThat(r.getStatus()).isEqualTo(302));
+    idpClient.setAfterAuthorizationCallback(r -> assertThat(r.getStatus()).isEqualTo(302));
 
-        assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
-            .isInstanceOf(IdpClientRuntimeException.class)
-            .hasMessageContaining("2008")
-            .hasMessageContaining("code_challenge_method ist ungültig");
-    }
+    assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
+        .isInstanceOf(IdpClientRuntimeException.class)
+        .hasMessageContaining("2008")
+        .hasMessageContaining("code_challenge_method ist ungültig");
+  }
 
-    @Test
-    @Remark("Client sendet kein code_challenge, Server muss Error senden")
-    @Rfc("rfc7636, section 4.4.1")
-    void pkceNegativNoCodeChallengeInAuthorization() throws UnirestException {
-        idpClient.setBeforeAuthorizationMapper(request -> Unirest
-            .get(request.getUrl()
-                .replaceFirst("&code_challenge=[\\w-_.~]*&code_challenge_method=S256", ""))
-            .headers(getAllHeaderElementsAsMap(request)));
+  @Test
+  @Remark("Client sendet kein code_challenge, Server muss Error senden")
+  @Rfc("rfc7636, section 4.4.1")
+  void pkceNegativNoCodeChallengeInAuthorization() throws UnirestException {
+    idpClient.setBeforeAuthorizationMapper(
+        request ->
+            Unirest.get(
+                    request
+                        .getUrl()
+                        .replaceFirst("&code_challenge=[\\w-_.~]*&code_challenge_method=S256", ""))
+                .headers(getAllHeaderElementsAsMap(request)));
 
-        idpClient.setAfterAuthorizationCallback(r -> assertThat(r.getStatus()).isEqualTo(302));
+    idpClient.setAfterAuthorizationCallback(r -> assertThat(r.getStatus()).isEqualTo(302));
 
-        assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
-            .isInstanceOf(IdpClientRuntimeException.class)
-            .hasMessageContaining("2009")
-            .hasMessageContaining("code_challenge wurde nicht übermittelt");
-    }
+    assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
+        .isInstanceOf(IdpClientRuntimeException.class)
+        .hasMessageContaining("2009")
+        .hasMessageContaining("code_challenge wurde nicht übermittelt");
+  }
 
-    @Test
-    @Remark("Client sendet falschen code_verifier, Server muss Error senden")
-    @Rfc("rfc7636, section 4.4.1")
-    void pkceNegativInvalidCodeVerifier() throws UnirestException {
-        idpClient.setAuthenticationResponseMapper(authenticationResponse ->
+  @Test
+  @Remark("Client sendet falschen code_verifier, Server muss Error senden")
+  @Rfc("rfc7636, section 4.4.1")
+  void pkceNegativInvalidCodeVerifier() throws UnirestException {
+    idpClient.setAuthenticationResponseMapper(
+        authenticationResponse ->
             AuthenticationResponse.builder()
                 .ssoToken(authenticationResponse.getSsoToken())
                 .location(authenticationResponse.getLocation())
                 .code(
-                    new IdpJwe(authenticationResponse.getCode()).decryptNestedJwt(
-                            symmetricEncryptionKey)
-                        .toJwtDescription().addBodyClaim(ClaimName.CODE_CHALLENGE, "wrongCodeChallengeValue")
+                    new IdpJwe(authenticationResponse.getCode())
+                        .decryptNestedJwt(symmetricEncryptionKey)
+                        .toJwtDescription()
+                        .addBodyClaim(ClaimName.CODE_CHALLENGE, "wrongCodeChallengeValue")
                         .setSignerKey(idpSig.getIdentity().getPrivateKey())
-                        .buildJwt().encrypt(symmetricEncryptionKey).getRawString()).build());
+                        .buildJwt()
+                        .encrypt(symmetricEncryptionKey)
+                        .getRawString())
+                .build());
 
-        idpClient.setAfterTokenCallback(r -> assertThat(r.getStatus()).isEqualTo(400));
+    idpClient.setAfterTokenCallback(r -> assertThat(r.getStatus()).isEqualTo(400));
 
-        assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
-            .isInstanceOf(IdpClientRuntimeException.class)
-            .hasMessageContaining("3000")
-            .hasMessageContaining("code_verifier stimmt nicht mit code_challenge überein");
-    }
+    assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
+        .isInstanceOf(IdpClientRuntimeException.class)
+        .hasMessageContaining("3000")
+        .hasMessageContaining("code_verifier stimmt nicht mit code_challenge überein");
+  }
 
-    @Test
-    @Remark("Client sendet keinen code_verifier, Server muss Error senden")
-    @Rfc("rfc7636, section 4.4.1")
-    void pkceNegativMissingCodeVerifier()
-        throws UnirestException {
-        idpClient.setBeforeTokenMapper(request -> {
-            final Map<String, Object> newFields = getAllFieldElementsAsMap(request);
-            newFields.remove("key_verifier");
-            return Unirest
-                .post(request.getUrl())
-                .headers(getAllHeaderElementsAsMap(request))
-                .fields(newFields);
+  @Test
+  @Remark("Client sendet keinen code_verifier, Server muss Error senden")
+  @Rfc("rfc7636, section 4.4.1")
+  void pkceNegativMissingCodeVerifier() throws UnirestException {
+    idpClient.setBeforeTokenMapper(
+        request -> {
+          final Map<String, Object> newFields = getAllFieldElementsAsMap(request);
+          newFields.remove("key_verifier");
+          return Unirest.post(request.getUrl())
+              .headers(getAllHeaderElementsAsMap(request))
+              .fields(newFields);
         });
 
-        idpClient.setAfterTokenCallback(r -> assertThat(r.getStatus()).isEqualTo(400));
+    idpClient.setAfterTokenCallback(r -> assertThat(r.getStatus()).isEqualTo(400));
 
-        assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
-            .isInstanceOf(IdpClientRuntimeException.class);
-    }
+    assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
+        .isInstanceOf(IdpClientRuntimeException.class);
+  }
 
-    @Test
-    @Rfc("rfc7636 Appendix B")
-    @Remark("This example is in rfc7636 Appendix B")
-    void checkVerifyCodeVerifier() {
-        final String validCodeVerifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
-        final String validCodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
-        pkceChecker.checkCodeVerifier(validCodeVerifier, validCodeChallenge);
-    }
+  @Test
+  @Rfc("rfc7636 Appendix B")
+  @Remark("This example is in rfc7636 Appendix B")
+  void checkVerifyCodeVerifier() {
+    final String validCodeVerifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
+    final String validCodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
+    pkceChecker.checkCodeVerifier(validCodeVerifier, validCodeChallenge);
+  }
 
-    @Test
-    @Rfc("rfc7636 Appendix B")
-    @Remark("code verifier and code challenge dont match")
-    void codeVerifierInvalid() {
-        final String invalidCodeVerifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk" + "_";
-        final String validCodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
-        assertThatThrownBy(
-            () -> pkceChecker
-                .checkCodeVerifier(invalidCodeVerifier + "_", validCodeChallenge))
-            .isInstanceOf(IdpServerException.class);
-    }
+  @Test
+  @Rfc("rfc7636 Appendix B")
+  @Remark("code verifier and code challenge dont match")
+  void codeVerifierInvalid() {
+    final String invalidCodeVerifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk" + "_";
+    final String validCodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
+    assertThatThrownBy(
+            () -> pkceChecker.checkCodeVerifier(invalidCodeVerifier + "_", validCodeChallenge))
+        .isInstanceOf(IdpServerException.class);
+  }
 
-    @Test
-    @Rfc("rfc7636 Appendix B")
-    @Remark("code verifier is too short")
-    void codeVerifierTooShort() {
-        final String shortCodeVerifier = "too_short_too_short_too_short_too_short_to";
-        final String shortCodeChallenge = "9VHAvw0tiyfbpsis_ClQrXjEm0gJgivDIacuuj5kjOY";
-        assertThatThrownBy(
-            () -> pkceChecker.checkCodeVerifier(shortCodeVerifier, shortCodeChallenge))
-            .isInstanceOf(IdpServerException.class);
-    }
+  @Test
+  @Rfc("rfc7636 Appendix B")
+  @Remark("code verifier is too short")
+  void codeVerifierTooShort() {
+    final String shortCodeVerifier = "too_short_too_short_too_short_too_short_to";
+    final String shortCodeChallenge = "9VHAvw0tiyfbpsis_ClQrXjEm0gJgivDIacuuj5kjOY";
+    assertThatThrownBy(() -> pkceChecker.checkCodeVerifier(shortCodeVerifier, shortCodeChallenge))
+        .isInstanceOf(IdpServerException.class);
+  }
 
-    @Test
-    @Rfc("rfc7636 Appendix B")
-    @Remark("code verifier is too long")
-    void codeVerifierTooLong() {
-        final String longCodeVerifier = "too_long_too_long_too_long_too_long_too_long_too_long_too_long_too_long_too_long_too_long_too_long_too_long_too_long_too_long_too";
-        final String longCodeChallenge = "CkXOaKyJw8vCDOWgnvqgQDSVbll0xJRaq_DzY8f5Zr0";
-        assertThatThrownBy(() -> pkceChecker
-            .checkCodeVerifier(longCodeVerifier, longCodeChallenge))
-            .isInstanceOf(IdpServerException.class);
-    }
+  @Test
+  @Rfc("rfc7636 Appendix B")
+  @Remark("code verifier is too long")
+  void codeVerifierTooLong() {
+    final String longCodeVerifier =
+        "too_long_too_long_too_long_too_long_too_long_too_long_too_long_too_long_too_long_too_long_too_long_too_long_too_long_too_long_too";
+    final String longCodeChallenge = "CkXOaKyJw8vCDOWgnvqgQDSVbll0xJRaq_DzY8f5Zr0";
+    assertThatThrownBy(() -> pkceChecker.checkCodeVerifier(longCodeVerifier, longCodeChallenge))
+        .isInstanceOf(IdpServerException.class);
+  }
 
-    @Test
-    @Rfc("rfc7636 Appendix B")
-    @Remark("code verifier is empty")
-    void emptyCodeVerifier() {
-        final String validCodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
-        assertThatThrownBy(() -> pkceChecker.checkCodeVerifier("", validCodeChallenge))
-            .isInstanceOf(IdpServerException.class);
-    }
+  @Test
+  @Rfc("rfc7636 Appendix B")
+  @Remark("code verifier is empty")
+  void emptyCodeVerifier() {
+    final String validCodeChallenge = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
+    assertThatThrownBy(() -> pkceChecker.checkCodeVerifier("", validCodeChallenge))
+        .isInstanceOf(IdpServerException.class);
+  }
 }

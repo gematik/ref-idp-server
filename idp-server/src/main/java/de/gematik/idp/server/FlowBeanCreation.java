@@ -16,7 +16,13 @@
 
 package de.gematik.idp.server;
 
-import static de.gematik.pki.gemlibpki.certificate.CertificateProfile.*;
+import static de.gematik.pki.gemlibpki.certificate.CertificateProfile.CERT_PROFILE_C_CH_AUT_ECC;
+import static de.gematik.pki.gemlibpki.certificate.CertificateProfile.CERT_PROFILE_C_CH_AUT_RSA;
+import static de.gematik.pki.gemlibpki.certificate.CertificateProfile.CERT_PROFILE_C_HCI_AUT_ECC;
+import static de.gematik.pki.gemlibpki.certificate.CertificateProfile.CERT_PROFILE_C_HCI_AUT_RSA;
+import static de.gematik.pki.gemlibpki.certificate.CertificateProfile.CERT_PROFILE_C_HP_AUT_ECC;
+import static de.gematik.pki.gemlibpki.certificate.CertificateProfile.CERT_PROFILE_C_HP_AUT_RSA;
+
 import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
 import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
@@ -52,112 +58,129 @@ import org.springframework.context.annotation.Configuration;
 @RequiredArgsConstructor
 public class FlowBeanCreation {
 
-    private final IdpJwtProcessor idpSigProcessor;
-    private final IdpKey idpEnc;
-    private final IdpKey idpSig;
-    private final Key symmetricEncryptionKey;
-    private final ServerUrlService serverUrlService;
-    private final IdpConfiguration idpConfiguration;
+  private final IdpJwtProcessor idpSigProcessor;
+  private final IdpKey idpEnc;
+  private final IdpKey idpSig;
+  private final Key symmetricEncryptionKey;
+  private final ServerUrlService serverUrlService;
+  private final IdpConfiguration idpConfiguration;
 
-    @Bean
-    public AuthenticationTokenBuilder authenticationTokenBuilder() {
-        return new AuthenticationTokenBuilder(idpSigProcessor, symmetricEncryptionKey,
-            authenticationChallengeVerifier(), serverUrlService.getIssuerUrl());
+  @Bean
+  public AuthenticationTokenBuilder authenticationTokenBuilder() {
+    return new AuthenticationTokenBuilder(
+        idpSigProcessor,
+        symmetricEncryptionKey,
+        authenticationChallengeVerifier(),
+        serverUrlService.getIssuerUrl());
+  }
+
+  @Bean
+  public AccessTokenBuilder accessTokenBuilder() {
+    final EnumMap<IdpScope, String> scopeToAudienceUrls = new EnumMap<>(IdpScope.class);
+    idpConfiguration
+        .getScopeAudienceUrls()
+        .forEach(
+            (scopeName, audienceUrl) ->
+                scopeToAudienceUrls.put(
+                    IdpScope.fromJwtValue(scopeName).orElseThrow(), audienceUrl));
+    return new AccessTokenBuilder(
+        idpSigProcessor,
+        serverUrlService.determineServerUrl(),
+        getSubjectSaltValue(),
+        scopeToAudienceUrls);
+  }
+
+  @Bean
+  public IdTokenBuilder idTokenBuilder() {
+    return new IdTokenBuilder(
+        idpSigProcessor, serverUrlService.determineServerUrl(), getSubjectSaltValue());
+  }
+
+  @Bean
+  public SsoTokenBuilder ssoTokenBuilder() {
+    return new SsoTokenBuilder(
+        idpSigProcessor, serverUrlService.getIssuerUrl(), symmetricEncryptionKey);
+  }
+
+  @Bean
+  public DiscoveryDocumentBuilder discoveryDocumentBuilder() {
+    return new DiscoveryDocumentBuilder();
+  }
+
+  @Bean
+  public AuthenticationChallengeBuilder authenticationChallengeBuilder() {
+    return AuthenticationChallengeBuilder.builder()
+        .serverSigner(idpSigProcessor)
+        .uriIdpServer(serverUrlService.determineServerUrl())
+        .userConsentConfiguration(idpConfiguration.getUserConsent())
+        .build();
+  }
+
+  @Bean
+  public AuthenticationChallengeVerifier authenticationChallengeVerifier() {
+    return AuthenticationChallengeVerifier.builder().serverIdentity(idpSig.getIdentity()).build();
+  }
+
+  @Bean
+  public ModelMapper modelMapper() {
+    return new ModelMapper();
+  }
+
+  @Bean
+  public TucPki018Verifier certificateVerifier() {
+    try {
+      final byte[] tslBytes =
+          Objects.requireNonNull(
+                  FlowBeanCreation.class.getClassLoader().getResourceAsStream("TSL_default.xml"),
+                  "Resource unavailable.")
+              .readAllBytes();
+      final TrustStatusListType tsl = TslConverter.bytesToTsl(tslBytes).orElseThrow();
+      final List<TspService> tspServiceTypeList = new TslInformationProvider(tsl).getTspServices();
+
+      return TucPki018Verifier.builder()
+          .productType(idpConfiguration.getProductTypeDisplayString())
+          .tspServiceList(tspServiceTypeList)
+          .certificateProfiles(
+              List.of(
+                  CERT_PROFILE_C_CH_AUT_RSA,
+                  CERT_PROFILE_C_CH_AUT_ECC,
+                  CERT_PROFILE_C_HCI_AUT_RSA,
+                  CERT_PROFILE_C_HCI_AUT_ECC,
+                  CERT_PROFILE_C_HP_AUT_RSA,
+                  CERT_PROFILE_C_HP_AUT_ECC))
+          .withOcspCheck(false)
+          .build();
+    } catch (final IOException e) {
+      throw new IdpServerStartupException("Error while reading TSL, " + e.getMessage());
     }
+  }
 
-    @Bean
-    public AccessTokenBuilder accessTokenBuilder() {
-        final EnumMap<IdpScope, String> scopeToAudienceUrls = new EnumMap<>(IdpScope.class);
-        idpConfiguration.getScopeAudienceUrls()
-            .forEach((scopeName, audienceUrl) -> scopeToAudienceUrls
-                .put(IdpScope.fromJwtValue(scopeName).orElseThrow(), audienceUrl));
-        return new AccessTokenBuilder(idpSigProcessor, serverUrlService.determineServerUrl(), getSubjectSaltValue(),
-            scopeToAudienceUrls);
-    }
+  @Bean
+  public KkAppList kkAppList() {
+    final KkAppList theAppList = new KkAppList();
 
-    @Bean
-    public IdTokenBuilder idTokenBuilder() {
-        return new IdTokenBuilder(idpSigProcessor, serverUrlService.determineServerUrl(), getSubjectSaltValue());
-    }
-
-    @Bean
-    public SsoTokenBuilder ssoTokenBuilder() {
-        return new SsoTokenBuilder(idpSigProcessor, serverUrlService.getIssuerUrl(),
-            symmetricEncryptionKey);
-    }
-
-    @Bean
-    public DiscoveryDocumentBuilder discoveryDocumentBuilder() {
-        return new DiscoveryDocumentBuilder();
-    }
-
-    @Bean
-    public AuthenticationChallengeBuilder authenticationChallengeBuilder() {
-        return AuthenticationChallengeBuilder.builder()
-            .serverSigner(idpSigProcessor)
-            .uriIdpServer(serverUrlService.determineServerUrl())
-            .userConsentConfiguration(idpConfiguration.getUserConsent())
-            .build();
-    }
-
-    @Bean
-    public AuthenticationChallengeVerifier authenticationChallengeVerifier() {
-        return AuthenticationChallengeVerifier.builder()
-            .serverIdentity(idpSig.getIdentity())
-            .build();
-    }
-
-    @Bean
-    public ModelMapper modelMapper() {
-        return new ModelMapper();
-    }
-
-    @Bean
-    public TucPki018Verifier certificateVerifier() {
-        try {
-            final byte[] tslBytes = Objects.requireNonNull(
-                    FlowBeanCreation.class.getClassLoader().getResourceAsStream("TSL_default.xml"),
-                    "Resource unavailable.")
-                .readAllBytes();
-            final TrustStatusListType tsl = TslConverter.bytesToTsl(tslBytes).orElseThrow();
-            final List<TspService> tspServiceTypeList = new TslInformationProvider(tsl).getTspServices();
-
-            return TucPki018Verifier.builder()
-                .productType(idpConfiguration.getProductTypeDisplayString())
-                .tspServiceList(tspServiceTypeList)
-                .certificateProfiles(
-                    List.of(CERT_PROFILE_C_CH_AUT_RSA, CERT_PROFILE_C_CH_AUT_ECC, CERT_PROFILE_C_HCI_AUT_RSA,
-                        CERT_PROFILE_C_HCI_AUT_ECC, CERT_PROFILE_C_HP_AUT_RSA, CERT_PROFILE_C_HP_AUT_ECC
-                    ))
-                .withOcspCheck(false)
-                .build();
-        } catch (final IOException e) {
-            throw new IdpServerStartupException("Error while reading TSL, " + e.getMessage());
-        }
-    }
-
-    @Bean
-    public KkAppList kkAppList() {
-        final KkAppList theAppList = new KkAppList();
-
-        theAppList.add(KkAppListEntry.builder()
+    theAppList.add(
+        KkAppListEntry.builder()
             .kkAppId("kkAppId001")
             .kkAppName("Gematik KK")
             .kkAppUri("https://kk.dev.gematik.solutions")
             .build());
 
-        theAppList.add(KkAppListEntry.builder()
+    theAppList.add(
+        KkAppListEntry.builder()
             .kkAppId("kkAppId002")
             .kkAppName("Andere KK")
             .kkAppUri("https://to.be.defined")
             .build());
 
-        return theAppList;
-    }
+    return theAppList;
+  }
 
-    private String getSubjectSaltValue() {
-        return Optional.ofNullable(idpConfiguration.getSubjectSaltValue())
-            .filter(StringUtils::isNotEmpty)
-            .orElseThrow(() -> new IdpServerStartupException("Missing configuration value: idp.subjectSaltValue"));
-    }
+  private String getSubjectSaltValue() {
+    return Optional.ofNullable(idpConfiguration.getSubjectSaltValue())
+        .filter(StringUtils::isNotEmpty)
+        .orElseThrow(
+            () ->
+                new IdpServerStartupException("Missing configuration value: idp.subjectSaltValue"));
+  }
 }

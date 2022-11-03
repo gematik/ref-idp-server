@@ -22,14 +22,13 @@ import org.json.JSONObject;
 
 public class SerenityJSONObject extends JSONObject {
 
-    public SerenityJSONObject(final JSONObject json) throws JSONException {
-        super(json.toString());
-    }
+  public SerenityJSONObject(final JSONObject json) throws JSONException {
+    super(json.toString());
+  }
 
-
-    @Override
-    @SneakyThrows
-    public String toString() {
-        return "\n" + super.toString(2) + "\n";
-    }
+  @Override
+  @SneakyThrows
+  public String toString() {
+    return "\n" + super.toString(2) + "\n";
+  }
 }

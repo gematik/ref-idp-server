@@ -40,265 +40,266 @@ import org.json.JSONException;
 
 public class DiscoveryDocumentResponse implements Response {
 
-    private final DiscoveryDocumentResponseBody body;
+  private final DiscoveryDocumentResponseBody body;
 
-    public DiscoveryDocumentResponse(final File templateBody, final File templateHeader, final File privateKey)
-        throws IOException, JSONException {
-        body = new DiscoveryDocumentResponseBody(templateBody, templateHeader, privateKey);
-    }
+  public DiscoveryDocumentResponse(
+      final File templateBody, final File templateHeader, final File privateKey)
+      throws IOException, JSONException {
+    body = new DiscoveryDocumentResponseBody(templateBody, templateHeader, privateKey);
+  }
 
-    @Override
-    public String print() {
-        return body.print();
-    }
+  @Override
+  public String print() {
+    return body.print();
+  }
 
-    @Override
-    public String prettyPrint() {
-        return body.prettyPrint();
-    }
+  @Override
+  public String prettyPrint() {
+    return body.prettyPrint();
+  }
 
-    @Override
-    public String asPrettyString() {
-        return body.prettyPrint();
-    }
+  @Override
+  public String asPrettyString() {
+    return body.prettyPrint();
+  }
 
-    @Override
-    public Response peek() {
-        return null;
-    }
+  @Override
+  public Response peek() {
+    return null;
+  }
 
-    @Override
-    public Response prettyPeek() {
-        return null;
-    }
+  @Override
+  public Response prettyPeek() {
+    return null;
+  }
 
-    @Override
-    public <T> T as(final Class<T> cls) {
-        return body.as(cls);
-    }
+  @Override
+  public <T> T as(final Class<T> cls) {
+    return body.as(cls);
+  }
 
-    @Override
-    public <T> T as(final Class<T> cls, final ObjectMapperType mapperType) {
-        return body.as(cls, mapperType);
-    }
+  @Override
+  public <T> T as(final Class<T> cls, final ObjectMapperType mapperType) {
+    return body.as(cls, mapperType);
+  }
 
-    @Override
-    public <T> T as(final Class<T> cls, final ObjectMapper mapper) {
-        return body.as(cls, mapper);
-    }
+  @Override
+  public <T> T as(final Class<T> cls, final ObjectMapper mapper) {
+    return body.as(cls, mapper);
+  }
 
-    @Override
-    public <T> T as(final TypeRef<T> typeRef) {
-        return body.as(typeRef);
-    }
+  @Override
+  public <T> T as(final TypeRef<T> typeRef) {
+    return body.as(typeRef);
+  }
 
-    @Override
-    public <T> T as(final Type cls) {
-        return body.as(cls);
-    }
+  @Override
+  public <T> T as(final Type cls) {
+    return body.as(cls);
+  }
 
-    @Override
-    public <T> T as(final Type cls, final ObjectMapperType mapperType) {
-        return body.as(cls, mapperType);
-    }
+  @Override
+  public <T> T as(final Type cls, final ObjectMapperType mapperType) {
+    return body.as(cls, mapperType);
+  }
 
-    @Override
-    public <T> T as(final Type cls, final ObjectMapper mapper) {
-        return body.as(cls, mapper);
-    }
+  @Override
+  public <T> T as(final Type cls, final ObjectMapper mapper) {
+    return body.as(cls, mapper);
+  }
 
-    @Override
-    public JsonPath jsonPath() {
-        return body.jsonPath();
-    }
+  @Override
+  public JsonPath jsonPath() {
+    return body.jsonPath();
+  }
 
-    @Override
-    public JsonPath jsonPath(final JsonPathConfig config) {
-        return body.jsonPath(config);
-    }
+  @Override
+  public JsonPath jsonPath(final JsonPathConfig config) {
+    return body.jsonPath(config);
+  }
 
-    @Override
-    public XmlPath xmlPath() {
-        return body.xmlPath();
-    }
+  @Override
+  public XmlPath xmlPath() {
+    return body.xmlPath();
+  }
 
-    @Override
-    public XmlPath xmlPath(final XmlPathConfig config) {
-        return body.xmlPath(config);
-    }
+  @Override
+  public XmlPath xmlPath(final XmlPathConfig config) {
+    return body.xmlPath(config);
+  }
 
-    @Override
-    public XmlPath xmlPath(final CompatibilityMode compatibilityMode) {
-        return body.xmlPath(compatibilityMode);
-    }
+  @Override
+  public XmlPath xmlPath(final CompatibilityMode compatibilityMode) {
+    return body.xmlPath(compatibilityMode);
+  }
 
-    @Override
-    public XmlPath htmlPath() {
-        return body.htmlPath();
-    }
+  @Override
+  public XmlPath htmlPath() {
+    return body.htmlPath();
+  }
 
-    @Override
-    public <T> T path(final String path, final String... arguments) {
-        return body.path(path, arguments);
-    }
+  @Override
+  public <T> T path(final String path, final String... arguments) {
+    return body.path(path, arguments);
+  }
 
-    @Override
-    public String asString() {
-        return body.asString();
-    }
+  @Override
+  public String asString() {
+    return body.asString();
+  }
 
-    @Override
-    public byte[] asByteArray() {
-        return body.asByteArray();
-    }
+  @Override
+  public byte[] asByteArray() {
+    return body.asByteArray();
+  }
 
-    @Override
-    public InputStream asInputStream() {
-        return body.asInputStream();
-    }
+  @Override
+  public InputStream asInputStream() {
+    return body.asInputStream();
+  }
 
-    @Override
-    public Response andReturn() {
-        return null;
-    }
+  @Override
+  public Response andReturn() {
+    return null;
+  }
 
-    @Override
-    public Response thenReturn() {
-        return null;
-    }
+  @Override
+  public Response thenReturn() {
+    return null;
+  }
 
-    @Override
-    public ResponseBody body() {
-        return body;
-    }
+  @Override
+  public ResponseBody body() {
+    return body;
+  }
 
-    @Override
-    public ResponseBody getBody() {
-        return body;
-    }
+  @Override
+  public ResponseBody getBody() {
+    return body;
+  }
 
-    @Override
-    public Headers headers() {
-        return null;
-    }
+  @Override
+  public Headers headers() {
+    return null;
+  }
 
-    @Override
-    public Headers getHeaders() {
-        return null;
-    }
+  @Override
+  public Headers getHeaders() {
+    return null;
+  }
 
-    @Override
-    public String header(final String name) {
-        return null;
-    }
+  @Override
+  public String header(final String name) {
+    return null;
+  }
 
-    @Override
-    public String getHeader(final String name) {
-        return null;
-    }
+  @Override
+  public String getHeader(final String name) {
+    return null;
+  }
 
-    @Override
-    public Map<String, String> cookies() {
-        return null;
-    }
+  @Override
+  public Map<String, String> cookies() {
+    return null;
+  }
 
-    @Override
-    public Cookies detailedCookies() {
-        return null;
-    }
+  @Override
+  public Cookies detailedCookies() {
+    return null;
+  }
 
-    @Override
-    public Map<String, String> getCookies() {
-        return null;
-    }
+  @Override
+  public Map<String, String> getCookies() {
+    return null;
+  }
 
-    @Override
-    public Cookies getDetailedCookies() {
-        return null;
-    }
+  @Override
+  public Cookies getDetailedCookies() {
+    return null;
+  }
 
-    @Override
-    public String cookie(final String name) {
-        return null;
-    }
+  @Override
+  public String cookie(final String name) {
+    return null;
+  }
 
-    @Override
-    public String getCookie(final String name) {
-        return null;
-    }
+  @Override
+  public String getCookie(final String name) {
+    return null;
+  }
 
-    @Override
-    public Cookie detailedCookie(final String name) {
-        return null;
-    }
+  @Override
+  public Cookie detailedCookie(final String name) {
+    return null;
+  }
 
-    @Override
-    public Cookie getDetailedCookie(final String name) {
-        return null;
-    }
+  @Override
+  public Cookie getDetailedCookie(final String name) {
+    return null;
+  }
 
-    @Override
-    public String contentType() {
-        return "application/json";
-    }
+  @Override
+  public String contentType() {
+    return "application/json";
+  }
 
-    @Override
-    public String getContentType() {
-        return "application/json";
-    }
+  @Override
+  public String getContentType() {
+    return "application/json";
+  }
 
-    @Override
-    public String statusLine() {
-        return null;
-    }
+  @Override
+  public String statusLine() {
+    return null;
+  }
 
-    @Override
-    public String getStatusLine() {
-        return null;
-    }
+  @Override
+  public String getStatusLine() {
+    return null;
+  }
 
-    @Override
-    public String sessionId() {
-        return null;
-    }
+  @Override
+  public String sessionId() {
+    return null;
+  }
 
-    @Override
-    public String getSessionId() {
-        return null;
-    }
+  @Override
+  public String getSessionId() {
+    return null;
+  }
 
-    @Override
-    public int statusCode() {
-        return 200;
-    }
+  @Override
+  public int statusCode() {
+    return 200;
+  }
 
-    @Override
-    public int getStatusCode() {
-        return 200;
-    }
+  @Override
+  public int getStatusCode() {
+    return 200;
+  }
 
-    @Override
-    public long time() {
-        return 0;
-    }
+  @Override
+  public long time() {
+    return 0;
+  }
 
-    @Override
-    public long timeIn(final TimeUnit timeUnit) {
-        return 0;
-    }
+  @Override
+  public long timeIn(final TimeUnit timeUnit) {
+    return 0;
+  }
 
-    @Override
-    public long getTime() {
-        return 0;
-    }
+  @Override
+  public long getTime() {
+    return 0;
+  }
 
-    @Override
-    public long getTimeIn(final TimeUnit timeUnit) {
-        return 0;
-    }
+  @Override
+  public long getTimeIn(final TimeUnit timeUnit) {
+    return 0;
+  }
 
-    @Override
-    public ValidatableResponse then() {
-        return null;
-    }
+  @Override
+  public ValidatableResponse then() {
+    return null;
+  }
 }

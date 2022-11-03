@@ -39,56 +39,56 @@ import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 @RequiredArgsConstructor
 public class IdpServer implements WebMvcConfigurer {
 
-    private final IdpConfiguration idpConfiguration;
-    private final HttpResponseHeaderHandlerInterceptor httpResponsHeaderHandlerInterceptor;
-    private final ServerVersionInterceptor serverVersionInterceptor;
+  static {
+    Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+    Security.insertProviderAt(new BouncyCastleProvider(), 1);
+  }
 
-    static {
-        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-        Security.insertProviderAt(new BouncyCastleProvider(), 1);
-    }
+  private final IdpConfiguration idpConfiguration;
+  private final HttpResponseHeaderHandlerInterceptor httpResponsHeaderHandlerInterceptor;
+  private final ServerVersionInterceptor serverVersionInterceptor;
 
-    @SuppressWarnings("java:S4823")
-    public static void main(final String[] args) {
-        SpringApplication.run(IdpServer.class, args);
-    }
+  @SuppressWarnings("java:S4823")
+  public static void main(final String[] args) {
+    SpringApplication.run(IdpServer.class, args);
+  }
 
-    @Bean
-    @ConditionalOnProperty(value = "idp.debug.requestLogging")
-    public CommonsRequestLoggingFilter requestLoggingFilter() {
-        final CommonsRequestLoggingFilter loggingFilter = new CommonsRequestLoggingFilter();
-        loggingFilter.setIncludeClientInfo(true);
-        loggingFilter.setIncludeQueryString(true);
-        loggingFilter.setIncludePayload(true);
-        loggingFilter.setMaxPayloadLength(64000);
-        return loggingFilter;
-    }
+  @Bean
+  @ConditionalOnProperty(value = "idp.debug.requestLogging")
+  public CommonsRequestLoggingFilter requestLoggingFilter() {
+    final CommonsRequestLoggingFilter loggingFilter = new CommonsRequestLoggingFilter();
+    loggingFilter.setIncludeClientInfo(true);
+    loggingFilter.setIncludeQueryString(true);
+    loggingFilter.setIncludePayload(true);
+    loggingFilter.setMaxPayloadLength(64000);
+    return loggingFilter;
+  }
 
-    @PostConstruct
-    public void setIdpLocale() {
-        if (idpConfiguration.getDefaultLocale() != null) {
-            Locale.setDefault(idpConfiguration.getDefaultLocale());
-        }
+  @PostConstruct
+  public void setIdpLocale() {
+    if (idpConfiguration.getDefaultLocale() != null) {
+      Locale.setDefault(idpConfiguration.getDefaultLocale());
     }
+  }
 
-    @Bean
-    public ResourceHttpRequestHandler resourceHttpRequestHandler() {
-        return new ResourceHttpRequestHandler();
-    }
+  @Bean
+  public ResourceHttpRequestHandler resourceHttpRequestHandler() {
+    return new ResourceHttpRequestHandler();
+  }
 
-    @Bean
-    public WebMvcConfigurer headerConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addInterceptors(final InterceptorRegistry registry) {
-                registry.addInterceptor(httpResponsHeaderHandlerInterceptor);
-                registry.addInterceptor(serverVersionInterceptor);
-            }
-        };
-    }
+  @Bean
+  public WebMvcConfigurer headerConfigurer() {
+    return new WebMvcConfigurer() {
+      @Override
+      public void addInterceptors(final InterceptorRegistry registry) {
+        registry.addInterceptor(httpResponsHeaderHandlerInterceptor);
+        registry.addInterceptor(serverVersionInterceptor);
+      }
+    };
+  }
 
-    @Bean
-    public HttpTraceRepository httpTraceRepository() {
-        return new InMemoryHttpTraceRepository();
-    }
+  @Bean
+  public HttpTraceRepository httpTraceRepository() {
+    return new InMemoryHttpTraceRepository();
+  }
 }

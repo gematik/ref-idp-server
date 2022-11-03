@@ -30,9 +30,8 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class RegistrationData {
 
-    private String authCert;
-    private String signedPairingData;
-    private DeviceInformation deviceInformation;
-    @Builder.Default
-    private String registrationDataVersion = "1.0";
+  private String authCert;
+  private String signedPairingData;
+  private DeviceInformation deviceInformation;
+  @Builder.Default private String registrationDataVersion = "1.0";
 }

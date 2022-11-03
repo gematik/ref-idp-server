@@ -25,5 +25,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Afos {
 
-    Afo[] value();
+  Afo[] value();
 }

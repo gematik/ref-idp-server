@@ -37,39 +37,39 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Slf4j
 public class ClientSystemInterceptor implements HandlerInterceptor, WebMvcConfigurer {
 
-    private final IdpConfiguration idpConfiguration;
+  private final IdpConfiguration idpConfiguration;
 
-    @Override
-    public void addInterceptors(final InterceptorRegistry registry) {
-        registry.addInterceptor(this).addPathPatterns("/**");
+  @Override
+  public void addInterceptors(final InterceptorRegistry registry) {
+    registry.addInterceptor(this).addPathPatterns("/**");
+  }
+
+  @Override
+  public boolean preHandle(
+      final HttpServletRequest request, final HttpServletResponse response, final Object handler) {
+    if (!doesTargetMethodHaveValidationAnnotation(handler)) {
+      return true;
     }
 
-    @Override
-    public boolean preHandle(final HttpServletRequest request, final HttpServletResponse response,
-        final Object handler) {
-        if (!doesTargetMethodHaveValidationAnnotation(handler)) {
-            return true;
-        }
+    final String clientSystem = request.getHeader(HttpHeaders.USER_AGENT);
 
-        final String clientSystem = request.getHeader(HttpHeaders.USER_AGENT);
-
-        if (StringUtils.isEmpty(clientSystem)) {
-            throw new IdpServerClientSystemMissingException();
-        }
-
-        if (idpConfiguration.getBlockedClientSystems().contains(clientSystem)) {
-            throw new IdpServerClientSystemBlockedException();
-        }
-
-        return true;
+    if (StringUtils.isEmpty(clientSystem)) {
+      throw new IdpServerClientSystemMissingException();
     }
 
-    private boolean doesTargetMethodHaveValidationAnnotation(final Object handler) {
-        return Optional.ofNullable(handler)
-            .filter(HandlerMethod.class::isInstance)
-            .map(HandlerMethod.class::cast)
-            .filter(handlerMethod -> handlerMethod.hasMethodAnnotation(ValidateClientSystem.class))
-            .map(handlerMethod -> handlerMethod.getMethodAnnotation(ValidateClientSystem.class))
-            .isPresent();
+    if (idpConfiguration.getBlockedClientSystems().contains(clientSystem)) {
+      throw new IdpServerClientSystemBlockedException();
     }
+
+    return true;
+  }
+
+  private boolean doesTargetMethodHaveValidationAnnotation(final Object handler) {
+    return Optional.ofNullable(handler)
+        .filter(HandlerMethod.class::isInstance)
+        .map(HandlerMethod.class::cast)
+        .filter(handlerMethod -> handlerMethod.hasMethodAnnotation(ValidateClientSystem.class))
+        .map(handlerMethod -> handlerMethod.getMethodAnnotation(ValidateClientSystem.class))
+        .isPresent();
+  }
 }

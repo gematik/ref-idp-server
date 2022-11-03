@@ -17,6 +17,6 @@
 package de.gematik.idp.field;
 
 public enum CodeChallengeMethod {
-    S256,
-    PLAIN
+  S256,
+  PLAIN
 }

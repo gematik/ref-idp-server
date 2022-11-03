@@ -16,9 +16,16 @@
 
 package de.gematik.idp.authentication;
 
-import static de.gematik.idp.field.ClaimName.*;
+import static de.gematik.idp.field.ClaimName.AUTH_TIME;
+import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
+import static de.gematik.idp.field.ClaimName.FAMILY_NAME;
+import static de.gematik.idp.field.ClaimName.GIVEN_NAME;
+import static de.gematik.idp.field.ClaimName.ISSUED_AT;
+import static de.gematik.idp.field.ClaimName.PROFESSION_OID;
+import static de.gematik.idp.field.ClaimName.TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
@@ -38,104 +45,111 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(PkiKeyResolver.class)
 class AuthenticationTokenBuilderTest {
 
-    private AuthenticationTokenBuilder authenticationTokenBuilder;
-    private PkiIdentity clientIdentity;
-    private SecretKeySpec encryptionKey;
+  static {
+    Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+    Security.insertProviderAt(new BouncyCastleProvider(), 1);
+  }
 
-    static {
-        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-        Security.insertProviderAt(new BouncyCastleProvider(), 1);
-    }
+  private AuthenticationTokenBuilder authenticationTokenBuilder;
+  private PkiIdentity clientIdentity;
+  private SecretKeySpec encryptionKey;
 
-    @BeforeEach
-    public void init(final PkiIdentity ecc,
-        @Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity clientIdentity) {
+  @BeforeEach
+  public void init(
+      final PkiIdentity ecc,
+      @Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity clientIdentity) {
 
-        encryptionKey = new SecretKeySpec(DigestUtils.sha256("fdsa"), "AES");
-        authenticationTokenBuilder = AuthenticationTokenBuilder.builder()
+    encryptionKey = new SecretKeySpec(DigestUtils.sha256("fdsa"), "AES");
+    authenticationTokenBuilder =
+        AuthenticationTokenBuilder.builder()
             .jwtProcessor(new IdpJwtProcessor(ecc))
             .authenticationChallengeVerifier(mock(AuthenticationChallengeVerifier.class))
             .encryptionKey(encryptionKey)
             .build();
 
-        this.clientIdentity = clientIdentity;
-    }
+    this.clientIdentity = clientIdentity;
+  }
 
-    @Test
-    void extractClaimsFromClientCertificateTest() {
-        Assertions.assertThat(authenticationTokenBuilder
-                .buildAuthenticationToken(clientIdentity.getCertificate(), Collections.emptyMap(),
-                    ZonedDateTime.now())
+  @Test
+  void extractClaimsFromClientCertificateTest() {
+    Assertions.assertThat(
+            authenticationTokenBuilder
+                .buildAuthenticationToken(
+                    clientIdentity.getCertificate(), Collections.emptyMap(), ZonedDateTime.now())
                 .decryptNestedJwt(encryptionKey)
                 .getBodyClaims())
-            .containsEntry(PROFESSION_OID.getJoseName(), "1.2.276.0.76.4.49")
-            .containsEntry(GIVEN_NAME.getJoseName(), "Juna")
-            .containsEntry(FAMILY_NAME.getJoseName(), "Fuchs");
-    }
+        .containsEntry(PROFESSION_OID.getJoseName(), "1.2.276.0.76.4.49")
+        .containsEntry(GIVEN_NAME.getJoseName(), "Juna")
+        .containsEntry(FAMILY_NAME.getJoseName(), "Fuchs");
+  }
 
-    @Afo("A_20526")
-    @Test
-    void testAuthenticationTokenHeaderHasType() {
-        final JsonWebToken authenticationToken = authenticationTokenBuilder
-            .buildAuthenticationToken(clientIdentity.getCertificate(), Collections.emptyMap(), ZonedDateTime.now())
+  @Afo("A_20526")
+  @Test
+  void testAuthenticationTokenHeaderHasType() {
+    final JsonWebToken authenticationToken =
+        authenticationTokenBuilder
+            .buildAuthenticationToken(
+                clientIdentity.getCertificate(), Collections.emptyMap(), ZonedDateTime.now())
             .decryptNestedJwt(encryptionKey);
 
-        assertThat(authenticationToken.getHeaderClaims())
-            .containsEntry(TYPE.getJoseName(), "JWT");
-    }
+    assertThat(authenticationToken.getHeaderClaims()).containsEntry(TYPE.getJoseName(), "JWT");
+  }
 
-    @Afo("A_20731")
-    @Test
-    void testAuthenticationTokenHasAuthTime() {
-        final ZonedDateTime now = ZonedDateTime.now();
-        final JsonWebToken authenticationToken = authenticationTokenBuilder
+  @Afo("A_20731")
+  @Test
+  void testAuthenticationTokenHasAuthTime() {
+    final ZonedDateTime now = ZonedDateTime.now();
+    final JsonWebToken authenticationToken =
+        authenticationTokenBuilder
             .buildAuthenticationToken(clientIdentity.getCertificate(), Collections.emptyMap(), now)
             .decryptNestedJwt(encryptionKey);
 
-        assertThat(authenticationToken.getBodyClaims())
-            .extractingByKey(AUTH_TIME.getJoseName())
-            .extracting(Long.class::cast)
-            .isEqualTo(now.toEpochSecond());
-    }
+    assertThat(authenticationToken.getBodyClaims())
+        .extractingByKey(AUTH_TIME.getJoseName())
+        .extracting(Long.class::cast)
+        .isEqualTo(now.toEpochSecond());
+  }
 
-    @Test
-    void verifyThatAuthenticationTokenCarriesIatClaimOnlyInBody() {
-        final ZonedDateTime now = ZonedDateTime.now();
-        final JsonWebToken authenticationToken = authenticationTokenBuilder
+  @Test
+  void verifyThatAuthenticationTokenCarriesIatClaimOnlyInBody() {
+    final ZonedDateTime now = ZonedDateTime.now();
+    final JsonWebToken authenticationToken =
+        authenticationTokenBuilder
             .buildAuthenticationToken(clientIdentity.getCertificate(), Collections.emptyMap(), now)
             .decryptNestedJwt(encryptionKey);
 
-        assertThat(authenticationToken.getHeaderClaims())
-            .as("Authentication-Token Header-Claims")
-            .doesNotContainKey(ISSUED_AT.getJoseName());
-        assertThat(authenticationToken.getBodyClaims())
-            .as("Authentication-Token Body-Claims")
-            .containsKey(ISSUED_AT.getJoseName());
-    }
+    assertThat(authenticationToken.getHeaderClaims())
+        .as("Authentication-Token Header-Claims")
+        .doesNotContainKey(ISSUED_AT.getJoseName());
+    assertThat(authenticationToken.getBodyClaims())
+        .as("Authentication-Token Body-Claims")
+        .containsKey(ISSUED_AT.getJoseName());
+  }
 
-    @Test
-    void verifyThatAuthenticationTokenCarriesExpClaimInBodyAndHeader() {
-        final ZonedDateTime now = ZonedDateTime.now();
-        final JsonWebToken authenticationToken = authenticationTokenBuilder
+  @Test
+  void verifyThatAuthenticationTokenCarriesExpClaimInBodyAndHeader() {
+    final ZonedDateTime now = ZonedDateTime.now();
+    final JsonWebToken authenticationToken =
+        authenticationTokenBuilder
             .buildAuthenticationToken(clientIdentity.getCertificate(), Collections.emptyMap(), now)
             .decryptNestedJwt(encryptionKey);
 
-        assertThat(authenticationToken.getHeaderClaims())
-            .as("Authentication-Token exp in Header-Claims")
-            .doesNotContainKey(EXPIRES_AT.getJoseName());
-        assertThat(authenticationToken.getBodyClaims())
-            .as("Authentication-Token exp in Body-Claims")
-            .containsKey(EXPIRES_AT.getJoseName());
-    }
+    assertThat(authenticationToken.getHeaderClaims())
+        .as("Authentication-Token exp in Header-Claims")
+        .doesNotContainKey(EXPIRES_AT.getJoseName());
+    assertThat(authenticationToken.getBodyClaims())
+        .as("Authentication-Token exp in Body-Claims")
+        .containsKey(EXPIRES_AT.getJoseName());
+  }
 
-    @Test
-    void authenticationTokenShouldBeValidForOneMinute() {
-        final ZonedDateTime now = ZonedDateTime.now();
-        final JsonWebToken authenticationToken = authenticationTokenBuilder
+  @Test
+  void authenticationTokenShouldBeValidForOneMinute() {
+    final ZonedDateTime now = ZonedDateTime.now();
+    final JsonWebToken authenticationToken =
+        authenticationTokenBuilder
             .buildAuthenticationToken(clientIdentity.getCertificate(), Collections.emptyMap(), now)
             .decryptNestedJwt(encryptionKey);
 
-        assertThat(authenticationToken.getExpiresAt())
-            .isEqualToIgnoringNanos(now.plusMinutes(1));
-    }
+    assertThat(authenticationToken.getExpiresAt()).isEqualToIgnoringNanos(now.plusMinutes(1));
+  }
 }

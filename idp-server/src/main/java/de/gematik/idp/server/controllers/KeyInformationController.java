@@ -26,20 +26,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class KeyInformationController {
 
-    public static final String PUK_URI_SIG = "/idpSig/jwk.json";
-    public static final String PUK_URI_ENC = "/idpEnc/jwk.json";
-    private final IdpKey idpEnc;
-    private final IdpKey idpSig;
+  public static final String PUK_URI_SIG = "/idpSig/jwk.json";
+  public static final String PUK_URI_ENC = "/idpEnc/jwk.json";
+  private final IdpKey idpEnc;
+  private final IdpKey idpSig;
 
-    @GetMapping(PUK_URI_SIG)
-    @ValidateClientSystem
-    public IdpKeyDescriptor getAuthJwk() {
-        return idpSig.buildJwk(true);
-    }
+  @GetMapping(PUK_URI_SIG)
+  @ValidateClientSystem
+  public IdpKeyDescriptor getAuthJwk() {
+    return idpSig.buildJwk(true);
+  }
 
-    @GetMapping(PUK_URI_ENC)
-    @ValidateClientSystem
-    public IdpKeyDescriptor getTokenJwk() {
-        return idpEnc.buildJwk(false);
-    }
+  @GetMapping(PUK_URI_ENC)
+  @ValidateClientSystem
+  public IdpKeyDescriptor getTokenJwk() {
+    return idpEnc.buildJwk(false);
+  }
 }

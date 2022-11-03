@@ -17,7 +17,12 @@
 package de.gematik.idp.server.pairing;
 
 import java.time.ZonedDateTime;
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,19 +36,23 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PairingData {
 
-    @Id
-    @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column(name = "id_number")
-    private String idNumber;
-    @Column(name = "key_identifier")
-    private String keyIdentifier;
-    @Column(name = "device_name")
-    private String deviceName;
-    @Column(name = "signed_pairing_data")
-    private String signedPairingData;
-    @Column(name = "timestamp_pairing")
-    private ZonedDateTime timestampPairing;
+  @Id
+  @Column(name = "id")
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
+  @Column(name = "id_number")
+  private String idNumber;
+
+  @Column(name = "key_identifier")
+  private String keyIdentifier;
+
+  @Column(name = "device_name")
+  private String deviceName;
+
+  @Column(name = "signed_pairing_data")
+  private String signedPairingData;
+
+  @Column(name = "timestamp_pairing")
+  private ZonedDateTime timestampPairing;
 }

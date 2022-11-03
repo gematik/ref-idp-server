@@ -30,6 +30,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UserConsentDescriptionTexts {
 
-    private Map<IdpScope, String> scopes;
-    private Map<ClaimName, String> claims;
+  private Map<IdpScope, String> scopes;
+  private Map<ClaimName, String> claims;
 }

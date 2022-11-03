@@ -21,6 +21,7 @@ import static de.gematik.idp.field.ClaimName.PAIRING_DATA_VERSION;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.server.data.DeviceInformation;
@@ -35,125 +36,142 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(PkiKeyResolver.class)
 class DataVersionServiceTest {
 
-    private final DataVersionService dataVersionService = new DataVersionService();
-    private final String ALLOWED_VERSION = "1.0";
+  static {
+    Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+    Security.insertProviderAt(new BouncyCastleProvider(), 1);
+  }
 
-    static {
-        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-        Security.insertProviderAt(new BouncyCastleProvider(), 1);
-    }
+  private final DataVersionService dataVersionService = new DataVersionService();
+  private final String ALLOWED_VERSION = "1.0";
 
-    @Test
-    void testDeviceInformationVersionIsAllowed() {
-        assertDoesNotThrow(() ->
+  @Test
+  void testDeviceInformationVersionIsAllowed() {
+    assertDoesNotThrow(
+        () ->
             dataVersionService.checkDataVersion(
-                DeviceInformation.builder().deviceInformationDataVersion(ALLOWED_VERSION).build())
-        );
-    }
+                DeviceInformation.builder().deviceInformationDataVersion(ALLOWED_VERSION).build()));
+  }
 
-    @Test
-    void testDeviceInformationVersionIsNotAllowed() {
-        assertThatThrownBy(() ->
-            dataVersionService.checkDataVersion(
-                DeviceInformation.builder().deviceInformationDataVersion("1.1").build()))
-            .isInstanceOf(IdpServerException.class)
-            .hasMessage("DeviceInformation version is not supported!");
-    }
+  @Test
+  void testDeviceInformationVersionIsNotAllowed() {
+    assertThatThrownBy(
+            () ->
+                dataVersionService.checkDataVersion(
+                    DeviceInformation.builder().deviceInformationDataVersion("1.1").build()))
+        .isInstanceOf(IdpServerException.class)
+        .hasMessage("DeviceInformation version is not supported!");
+  }
 
-    @Test
-    void testDeviceInformationVersionIsNull() {
-        assertThatThrownBy(() ->
-            dataVersionService.checkDataVersion(
-                DeviceInformation.builder().build()))
-            .isInstanceOf(IdpServerException.class)
-            .hasMessage("DeviceInformation version is not supported!");
-    }
+  @Test
+  void testDeviceInformationVersionIsNull() {
+    assertThatThrownBy(
+            () -> dataVersionService.checkDataVersion(DeviceInformation.builder().build()))
+        .isInstanceOf(IdpServerException.class)
+        .hasMessage("DeviceInformation version is not supported!");
+  }
 
-    @Test
-    void testDeviceInformationVersionIsEmpty() {
-        assertThatThrownBy(() ->
-            dataVersionService.checkDataVersion(
-                DeviceInformation.builder().deviceInformationDataVersion("").build()))
-            .isInstanceOf(IdpServerException.class)
-            .hasMessage("DeviceInformation version is not supported!");
-    }
+  @Test
+  void testDeviceInformationVersionIsEmpty() {
+    assertThatThrownBy(
+            () ->
+                dataVersionService.checkDataVersion(
+                    DeviceInformation.builder().deviceInformationDataVersion("").build()))
+        .isInstanceOf(IdpServerException.class)
+        .hasMessage("DeviceInformation version is not supported!");
+  }
 
-    @Test
-    void testSignedAuthDataVersionIsAllowed(
-        @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc.p12") final PkiIdentity identity) {
-        final JsonWebToken webToken = new JwtBuilder().addBodyClaim(AUTHENTICATION_DATA_VERSION,
-                ALLOWED_VERSION)
-            .setSignerKey(identity.getPrivateKey()).setCertificate(identity.getCertificate())
+  @Test
+  void testSignedAuthDataVersionIsAllowed(
+      @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc.p12")
+          final PkiIdentity identity) {
+    final JsonWebToken webToken =
+        new JwtBuilder()
+            .addBodyClaim(AUTHENTICATION_DATA_VERSION, ALLOWED_VERSION)
+            .setSignerKey(identity.getPrivateKey())
+            .setCertificate(identity.getCertificate())
             .buildJwt();
 
-        assertDoesNotThrow(() ->
-            dataVersionService.checkSignedAuthDataVersion(webToken)
-        );
-    }
+    assertDoesNotThrow(() -> dataVersionService.checkSignedAuthDataVersion(webToken));
+  }
 
-    @Test
-    void testSignedAuthDataVersionIsNotAllowed(
-        @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc.p12") final PkiIdentity identity) {
-        final JsonWebToken webToken = new JwtBuilder().addBodyClaim(AUTHENTICATION_DATA_VERSION, "0.1")
-            .setSignerKey(identity.getPrivateKey()).setCertificate(identity.getCertificate())
+  @Test
+  void testSignedAuthDataVersionIsNotAllowed(
+      @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc.p12")
+          final PkiIdentity identity) {
+    final JsonWebToken webToken =
+        new JwtBuilder()
+            .addBodyClaim(AUTHENTICATION_DATA_VERSION, "0.1")
+            .setSignerKey(identity.getPrivateKey())
+            .setCertificate(identity.getCertificate())
             .buildJwt();
-        assertThatThrownBy(() ->
-            dataVersionService.checkSignedAuthDataVersion(webToken))
-            .isInstanceOf(IdpServerException.class)
-            .hasMessage("Authentication data version is not supported!");
-    }
+    assertThatThrownBy(() -> dataVersionService.checkSignedAuthDataVersion(webToken))
+        .isInstanceOf(IdpServerException.class)
+        .hasMessage("Authentication data version is not supported!");
+  }
 
-    @Test
-    void testSignedAuthDataVersionClaimNotExists(
-        @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc.p12") final PkiIdentity identity) {
-        final JsonWebToken webToken = new JwtBuilder()
-            .setSignerKey(identity.getPrivateKey()).setCertificate(identity.getCertificate())
-            .buildJwt();
-
-        assertThatThrownBy(() ->
-            dataVersionService.checkSignedAuthDataVersion(webToken))
-            .isInstanceOf(IdpServerException.class)
-            .hasMessage("Authentication data version is not supported!");
-    }
-
-    @Test
-    void testSignedAuthDataVersionIsNull(
-        @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc.p12") final PkiIdentity identity) {
-        final JsonWebToken webToken = new JwtBuilder().addBodyClaim(AUTHENTICATION_DATA_VERSION, null)
-            .setSignerKey(identity.getPrivateKey()).setCertificate(identity.getCertificate())
+  @Test
+  void testSignedAuthDataVersionClaimNotExists(
+      @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc.p12")
+          final PkiIdentity identity) {
+    final JsonWebToken webToken =
+        new JwtBuilder()
+            .setSignerKey(identity.getPrivateKey())
+            .setCertificate(identity.getCertificate())
             .buildJwt();
 
-        assertThatThrownBy(() ->
-            dataVersionService.checkSignedAuthDataVersion(webToken))
-            .isInstanceOf(IdpServerException.class)
-            .hasMessage("Authentication data version is not supported!");
-    }
+    assertThatThrownBy(() -> dataVersionService.checkSignedAuthDataVersion(webToken))
+        .isInstanceOf(IdpServerException.class)
+        .hasMessage("Authentication data version is not supported!");
+  }
 
-    @Test
-    void testSignedAuthDataVersionIsEmpty(
-        @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc.p12") final PkiIdentity identity) {
-        final JsonWebToken webToken = new JwtBuilder().addBodyClaim(AUTHENTICATION_DATA_VERSION, "")
-            .setSignerKey(identity.getPrivateKey()).setCertificate(identity.getCertificate())
+  @Test
+  void testSignedAuthDataVersionIsNull(
+      @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc.p12")
+          final PkiIdentity identity) {
+    final JsonWebToken webToken =
+        new JwtBuilder()
+            .addBodyClaim(AUTHENTICATION_DATA_VERSION, null)
+            .setSignerKey(identity.getPrivateKey())
+            .setCertificate(identity.getCertificate())
             .buildJwt();
 
-        assertThatThrownBy(() ->
-            dataVersionService.checkSignedAuthDataVersion(webToken))
-            .isInstanceOf(IdpServerException.class)
-            .hasMessage("Authentication data version is not supported!");
-    }
+    assertThatThrownBy(() -> dataVersionService.checkSignedAuthDataVersion(webToken))
+        .isInstanceOf(IdpServerException.class)
+        .hasMessage("Authentication data version is not supported!");
+  }
 
-    @Test
-    void testSignedPairingDataVersionIsAllowed(
-        @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc.p12") final PkiIdentity identity) {
-        final JsonWebToken webToken = new JwtBuilder().addBodyClaim(PAIRING_DATA_VERSION, "1.0")
-            .setSignerKey(identity.getPrivateKey()).setCertificate(identity.getCertificate())
+  @Test
+  void testSignedAuthDataVersionIsEmpty(
+      @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc.p12")
+          final PkiIdentity identity) {
+    final JsonWebToken webToken =
+        new JwtBuilder()
+            .addBodyClaim(AUTHENTICATION_DATA_VERSION, "")
+            .setSignerKey(identity.getPrivateKey())
+            .setCertificate(identity.getCertificate())
             .buildJwt();
 
-        assertDoesNotThrow(() -> dataVersionService.checkSignedPairingDataVersion(webToken));
-    }
+    assertThatThrownBy(() -> dataVersionService.checkSignedAuthDataVersion(webToken))
+        .isInstanceOf(IdpServerException.class)
+        .hasMessage("Authentication data version is not supported!");
+  }
 
-    @Test
-    void testCurrentVersion() {
-        assertThat(dataVersionService.getCurrentVersion()).isEqualTo("1.0");
-    }
+  @Test
+  void testSignedPairingDataVersionIsAllowed(
+      @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc.p12")
+          final PkiIdentity identity) {
+    final JsonWebToken webToken =
+        new JwtBuilder()
+            .addBodyClaim(PAIRING_DATA_VERSION, "1.0")
+            .setSignerKey(identity.getPrivateKey())
+            .setCertificate(identity.getCertificate())
+            .buildJwt();
+
+    assertDoesNotThrow(() -> dataVersionService.checkSignedPairingDataVersion(webToken));
+  }
+
+  @Test
+  void testCurrentVersion() {
+    assertThat(dataVersionService.getCurrentVersion()).isEqualTo("1.0");
+  }
 }

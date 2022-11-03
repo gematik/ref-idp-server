@@ -26,15 +26,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class IdpSektoralIdpSteps extends IdpStepsBase {
 
-    private final ClaimsStepHelper claimsStepHelper = new ClaimsStepHelper();
+  private final ClaimsStepHelper claimsStepHelper = new ClaimsStepHelper();
 
-    @SneakyThrows
-    public void initializeSektoralIdp() {
-        log.info(
-            "Authorization Endpoint Sektoral-IDP is " + IdpTestEnvironmentConfigurator.getAuthorizationUrlSektoralIdpURL());
+  @SneakyThrows
+  public void initializeSektoralIdp() {
+    log.info(
+        "Authorization Endpoint Sektoral-IDP is "
+            + IdpTestEnvironmentConfigurator.getAuthorizationUrlSektoralIdpURL());
 
-        Context.get()
-            .put(ContextKey.AUTH_URL_SEKTORAL_IDP, IdpTestEnvironmentConfigurator.getAuthorizationUrlSektoralIdpURL());
-    }
-
+    Context.get()
+        .put(
+            ContextKey.AUTH_URL_SEKTORAL_IDP,
+            IdpTestEnvironmentConfigurator.getAuthorizationUrlSektoralIdpURL());
+  }
 }

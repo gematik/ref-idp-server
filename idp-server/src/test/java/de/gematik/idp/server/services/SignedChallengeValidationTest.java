@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
 import static org.jose4j.jws.EcdsaUsingShaAlgorithm.convertDerToConcatenated;
+
 import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.crypto.EcSignerUtility;
@@ -43,7 +44,11 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 import lombok.SneakyThrows;
 import org.jose4j.jws.JsonWebSignature;
@@ -60,124 +65,158 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class SignedChallengeValidationTest {
 
-    private static final String SERVER_KEY_IDENTITY = "serverKeyIdentity";
+  private static final String SERVER_KEY_IDENTITY = "serverKeyIdentity";
 
-    @Autowired
-    private IdpAuthenticator idpAuthenticator;
-    @Autowired
-    private IdpKey idpEnc;
-    @Autowired
-    private IdpKey idpSig;
+  @Autowired private IdpAuthenticator idpAuthenticator;
+  @Autowired private IdpKey idpEnc;
+  @Autowired private IdpKey idpSig;
 
-    private PkiIdentity egkIdentity;
+  private PkiIdentity egkIdentity;
 
-    private JsonWebToken challengeToken;
+  private JsonWebToken challengeToken;
 
-    @BeforeEach
-    public void init(final PkiIdentity ecc,
-        @Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity) {
-        idpSig.getIdentity().setKeyId(Optional.of(SERVER_KEY_IDENTITY));
-        this.egkIdentity = PkiIdentity.builder()
+  @BeforeEach
+  public void init(
+      final PkiIdentity ecc,
+      @Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity) {
+    idpSig.getIdentity().setKeyId(Optional.of(SERVER_KEY_IDENTITY));
+    this.egkIdentity =
+        PkiIdentity.builder()
             .certificate(egkIdentity.getCertificate())
             .privateKey(egkIdentity.getPrivateKey())
             .build();
-        AuthenticationChallengeBuilder authenticationChallengeBuilder = AuthenticationChallengeBuilder.builder()
+    AuthenticationChallengeBuilder authenticationChallengeBuilder =
+        AuthenticationChallengeBuilder.builder()
             .serverSigner(new IdpJwtProcessor(idpSig.getIdentity()))
-            .userConsentConfiguration(UserConsentConfiguration.builder()
-                .claimsToBeIncluded(Map.of(IdpScope.OPENID, List.of(),
-                    IdpScope.EREZEPT, List.of(),
-                    IdpScope.PAIRING, List.of()))
-                .descriptionTexts(UserConsentDescriptionTexts.builder()
-                    .claims(Collections.emptyMap())
-                    .scopes(Map.of(IdpScope.OPENID, "openid",
-                        IdpScope.PAIRING, "pairing",
-                        IdpScope.EREZEPT, "erezept"))
+            .userConsentConfiguration(
+                UserConsentConfiguration.builder()
+                    .claimsToBeIncluded(
+                        Map.of(
+                            IdpScope.OPENID,
+                            List.of(),
+                            IdpScope.EREZEPT,
+                            List.of(),
+                            IdpScope.PAIRING,
+                            List.of()))
+                    .descriptionTexts(
+                        UserConsentDescriptionTexts.builder()
+                            .claims(Collections.emptyMap())
+                            .scopes(
+                                Map.of(
+                                    IdpScope.OPENID,
+                                    "openid",
+                                    IdpScope.PAIRING,
+                                    "pairing",
+                                    IdpScope.EREZEPT,
+                                    "erezept"))
+                            .build())
                     .build())
-                .build())
             .build();
-        this.challengeToken = authenticationChallengeBuilder
-            .buildAuthenticationChallenge("goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue")
+    this.challengeToken =
+        authenticationChallengeBuilder
+            .buildAuthenticationChallenge(
+                "goo", "foo", "bar", "schmar", "openid e-rezept", "nonceValue")
             .getChallenge();
-    }
+  }
 
+  @Test
+  void getBasicFlowTokenLocationTest_ExpectNoError() {
+    IdpJwe encryptedChallenge =
+        getSignedChallenge().encrypt(idpEnc.getIdentity().getCertificate().getPublicKey());
+    assertThat(idpAuthenticator.getBasicFlowTokenLocation(encryptedChallenge)).contains("code=");
+  }
 
-    @Test
-    void getBasicFlowTokenLocationTest_ExpectNoError() {
-        IdpJwe encryptedChallenge = getSignedChallenge().encrypt(idpEnc.getIdentity().getCertificate().getPublicKey());
-        assertThat(idpAuthenticator.getBasicFlowTokenLocation(encryptedChallenge)).contains("code=");
-    }
-
-    @SneakyThrows
-    @Test
-    void getBasicFlowTokenLocationTest_InvalidExpInJwe() {
-        JsonWebToken signedChallenge = getSignedChallenge();
-        IdpJwe encryptedChallenge = createWithPayloadAndExpiryAndEncryptWithKey(
+  @SneakyThrows
+  @Test
+  void getBasicFlowTokenLocationTest_InvalidExpInJwe() {
+    JsonWebToken signedChallenge = getSignedChallenge();
+    IdpJwe encryptedChallenge =
+        createWithPayloadAndExpiryAndEncryptWithKey(
             "{\"njwt\":\"" + signedChallenge.getRawString() + "\"}",
-            Optional.of(ZonedDateTime.now().plusMinutes(4)), idpEnc.getIdentity().getCertificate().getPublicKey(),
+            Optional.of(ZonedDateTime.now().plusMinutes(4)),
+            idpEnc.getIdentity().getCertificate().getPublicKey(),
             "NJWT");
-        assertThatThrownBy(() -> idpAuthenticator.getBasicFlowTokenLocation(encryptedChallenge)).isInstanceOf(
-            RuntimeException.class);
-    }
+    assertThatThrownBy(() -> idpAuthenticator.getBasicFlowTokenLocation(encryptedChallenge))
+        .isInstanceOf(RuntimeException.class);
+  }
 
-    @SneakyThrows
-    @Test
-    void getBasicFlowTokenLocationTest_ExpiredExpInJwe() {
-        JsonWebToken signedChallenge = getSignedChallenge();
-        IdpJwe encryptedChallenge = createWithPayloadAndExpiryAndEncryptWithKey(
+  @SneakyThrows
+  @Test
+  void getBasicFlowTokenLocationTest_ExpiredExpInJwe() {
+    JsonWebToken signedChallenge = getSignedChallenge();
+    IdpJwe encryptedChallenge =
+        createWithPayloadAndExpiryAndEncryptWithKey(
             "{\"njwt\":\"" + signedChallenge.getRawString() + "\"}",
-            Optional.of(ZonedDateTime.now().minusMinutes(1)), idpEnc.getIdentity().getCertificate().getPublicKey(),
+            Optional.of(ZonedDateTime.now().minusMinutes(1)),
+            idpEnc.getIdentity().getCertificate().getPublicKey(),
             "NJWT");
-        assertThatThrownBy(() -> idpAuthenticator.getBasicFlowTokenLocation(encryptedChallenge)).isInstanceOf(
-            RuntimeException.class);
+    assertThatThrownBy(() -> idpAuthenticator.getBasicFlowTokenLocation(encryptedChallenge))
+        .isInstanceOf(RuntimeException.class);
+  }
+
+  private JsonWebToken getSignedChallenge() {
+    return signServerChallenge(
+        challengeToken.getRawString(),
+        egkIdentity.getCertificate(),
+        tbsData -> {
+          if (egkIdentity.getPrivateKey() instanceof RSAPrivateKey) {
+            return RsaSignerUtility.createRsaSignature(tbsData, egkIdentity.getPrivateKey());
+          } else {
+            return EcSignerUtility.createEcSignature(tbsData, egkIdentity.getPrivateKey());
+          }
+        });
+  }
+
+  private JsonWebToken signServerChallenge(
+      final String challengeToSign,
+      final X509Certificate certificate,
+      final UnaryOperator<byte[]> contentSigner) {
+    final JwtClaims claims = new JwtClaims();
+    claims.setClaim(ClaimName.NESTED_JWT.getJoseName(), challengeToSign);
+    final JsonWebSignature jsonWebSignature = new JsonWebSignature();
+    jsonWebSignature.setPayload(claims.toJson());
+    jsonWebSignature.setHeader("typ", "JWT");
+    jsonWebSignature.setHeader("cty", "NJWT");
+    jsonWebSignature.setCertificateChainHeaderValue(certificate);
+    if (isEcKey(certificate.getPublicKey())) {
+      jsonWebSignature.setAlgorithmHeaderValue(BRAINPOOL256_USING_SHA256);
+    } else {
+      jsonWebSignature.setAlgorithmHeaderValue(RSA_PSS_USING_SHA256);
     }
+    final String signedJwt =
+        jsonWebSignature.getHeaders().getEncodedHeader()
+            + "."
+            + jsonWebSignature.getEncodedPayload()
+            + "."
+            + Base64.getUrlEncoder()
+                .withoutPadding()
+                .encodeToString(
+                    getSignatureBytes(
+                        contentSigner,
+                        jsonWebSignature,
+                        sigData -> {
+                          if (certificate.getPublicKey() instanceof RSAPublicKey) {
+                            return sigData;
+                          } else {
+                            try {
+                              return convertDerToConcatenated(sigData, 64);
+                            } catch (final IOException e) {
+                              throw new RuntimeException(e);
+                            }
+                          }
+                        }));
+    return new JsonWebToken(signedJwt);
+  }
 
-    private JsonWebToken getSignedChallenge() {
-        return signServerChallenge(challengeToken.getRawString(),
-            egkIdentity.getCertificate(), tbsData -> {
-                if (egkIdentity.getPrivateKey() instanceof RSAPrivateKey) {
-                    return RsaSignerUtility.createRsaSignature(tbsData, egkIdentity.getPrivateKey());
-                } else {
-                    return EcSignerUtility.createEcSignature(tbsData, egkIdentity.getPrivateKey());
-                }
-            });
-    }
-
-    private JsonWebToken signServerChallenge(final String challengeToSign, final X509Certificate certificate,
-        final UnaryOperator<byte[]> contentSigner) {
-        final JwtClaims claims = new JwtClaims();
-        claims.setClaim(ClaimName.NESTED_JWT.getJoseName(), challengeToSign);
-        final JsonWebSignature jsonWebSignature = new JsonWebSignature();
-        jsonWebSignature.setPayload(claims.toJson());
-        jsonWebSignature.setHeader("typ", "JWT");
-        jsonWebSignature.setHeader("cty", "NJWT");
-        jsonWebSignature.setCertificateChainHeaderValue(certificate);
-        if (isEcKey(certificate.getPublicKey())) {
-            jsonWebSignature.setAlgorithmHeaderValue(BRAINPOOL256_USING_SHA256);
-        } else {
-            jsonWebSignature.setAlgorithmHeaderValue(RSA_PSS_USING_SHA256);
-        }
-        final String signedJwt = jsonWebSignature.getHeaders().getEncodedHeader() + "."
-            + jsonWebSignature.getEncodedPayload() + "."
-            + Base64.getUrlEncoder().withoutPadding().encodeToString(
-            getSignatureBytes(contentSigner, jsonWebSignature, sigData -> {
-                if (certificate.getPublicKey() instanceof RSAPublicKey) {
-                    return sigData;
-                } else {
-                    try {
-                        return convertDerToConcatenated(sigData, 64);
-                    } catch (final IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }));
-        return new JsonWebToken(signedJwt);
-    }
-
-    private byte[] getSignatureBytes(final UnaryOperator<byte[]> contentSigner,
-        final JsonWebSignature jsonWebSignature, UnaryOperator<byte[]> signatureStripper) {
-        return signatureStripper.apply(contentSigner.apply((jsonWebSignature.getHeaders().getEncodedHeader() + "."
-            + jsonWebSignature.getEncodedPayload()).getBytes(StandardCharsets.UTF_8)));
-    }
-
-
+  private byte[] getSignatureBytes(
+      final UnaryOperator<byte[]> contentSigner,
+      final JsonWebSignature jsonWebSignature,
+      UnaryOperator<byte[]> signatureStripper) {
+    return signatureStripper.apply(
+        contentSigner.apply(
+            (jsonWebSignature.getHeaders().getEncodedHeader()
+                    + "."
+                    + jsonWebSignature.getEncodedPayload())
+                .getBytes(StandardCharsets.UTF_8)));
+  }
 }

@@ -17,6 +17,7 @@
 package de.gematik.idp.brainPoolExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 import de.gematik.idp.crypto.EcKeyUtility;
 import java.math.BigInteger;
 import java.security.KeyFactory;
@@ -33,33 +34,35 @@ import org.junit.jupiter.api.Test;
 
 class BrainpoolCurvesTest {
 
-    static {
-        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-        Security.insertProviderAt(new BouncyCastleProvider(), 1);
-    }
+  static {
+    Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+    Security.insertProviderAt(new BouncyCastleProvider(), 1);
+  }
 
-    @Test
-    void verify_init() {
-        BrainpoolCurves.init();
-        ECParameterSpec ecParameterSpec = EllipticCurves.getSpec("BP-256");
-        assertThat(ecParameterSpec).isNotNull();
-    }
+  @Test
+  void verify_init() {
+    BrainpoolCurves.init();
+    ECParameterSpec ecParameterSpec = EllipticCurves.getSpec("BP-256");
+    assertThat(ecParameterSpec).isNotNull();
+  }
 
-    @SneakyThrows
-    @Test
-    void ellipticCurveBouncyCastle_isEqualTo_ellipticCurveBrainPoolExtension() {
-        final String curve = "brainpoolP256r1";
-        final BigInteger theX = new BigInteger(
+  @SneakyThrows
+  @Test
+  void ellipticCurveBouncyCastle_isEqualTo_ellipticCurveBrainPoolExtension() {
+    final String curve = "brainpoolP256r1";
+    final BigInteger theX =
+        new BigInteger(
             Base64.getUrlDecoder().decode("QLpJ_LpFx-6yJhsb4OvHwU1khLnviiOwYOvmf5clK7w"));
-        final BigInteger theY = new BigInteger(
+    final BigInteger theY =
+        new BigInteger(
             Base64.getUrlDecoder().decode("mHuknfNkoMmSbytt4br0YGihOixcmBKy80UfSLdXGe4"));
 
-        final PublicKey pkBouncyCastle = EcKeyUtility.genECPublicKey(curve, theX, theY);
+    final PublicKey pkBouncyCastle = EcKeyUtility.genECPublicKey(curve, theX, theY);
 
-        final ECPoint ecPoint = new ECPoint(theX, theY);
-        final ECPublicKeySpec keySpec = new ECPublicKeySpec(ecPoint, BrainpoolCurves.BP256);
-        final PublicKey pkBrainPoolExtension = KeyFactory.getInstance("EC").generatePublic(keySpec);
+    final ECPoint ecPoint = new ECPoint(theX, theY);
+    final ECPublicKeySpec keySpec = new ECPublicKeySpec(ecPoint, BrainpoolCurves.BP256);
+    final PublicKey pkBrainPoolExtension = KeyFactory.getInstance("EC").generatePublic(keySpec);
 
-        assertThat(pkBouncyCastle).isEqualTo(pkBrainPoolExtension);
-    }
+    assertThat(pkBouncyCastle).isEqualTo(pkBrainPoolExtension);
+  }
 }

@@ -17,6 +17,7 @@
 package de.gematik.idp.server.services;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.data.IdpClientConfiguration;
 import de.gematik.idp.server.validation.parameterConstraints.ClientIdValidator;
@@ -27,33 +28,30 @@ import org.junit.jupiter.api.Test;
 
 class ClientIdValidatorTest {
 
-    private ClientIdValidator clientIdValidator;
-    public static final String CLIENT_ID = "eRezeptApp";
+  public static final String CLIENT_ID = "eRezeptApp";
+  private ClientIdValidator clientIdValidator;
 
-    @BeforeEach
-    public void init() {
-        final IdpConfiguration configuration = new IdpConfiguration();
-        final Map<String, IdpClientConfiguration> clientRegistration = new HashMap<>();
-        clientRegistration.put(CLIENT_ID, IdpClientConfiguration.builder().build());
-        configuration.setRegisteredClient(clientRegistration);
-        clientIdValidator = new ClientIdValidator(new ClientRegistrationService(configuration));
-    }
+  @BeforeEach
+  public void init() {
+    final IdpConfiguration configuration = new IdpConfiguration();
+    final Map<String, IdpClientConfiguration> clientRegistration = new HashMap<>();
+    clientRegistration.put(CLIENT_ID, IdpClientConfiguration.builder().build());
+    configuration.setRegisteredClient(clientRegistration);
+    clientIdValidator = new ClientIdValidator(new ClientRegistrationService(configuration));
+  }
 
-    @Test
-    void validateClientIdWithNullValue_ExpectCorrectError() {
-        assertThat(clientIdValidator.isValid(null, null))
-            .isFalse();
-    }
+  @Test
+  void validateClientIdWithNullValue_ExpectCorrectError() {
+    assertThat(clientIdValidator.isValid(null, null)).isFalse();
+  }
 
-    @Test
-    void validateClientIdWithInvalidValue_ExpectCorrectError() {
-        assertThat(clientIdValidator.isValid("invalidClientId", null))
-            .isFalse();
-    }
+  @Test
+  void validateClientIdWithInvalidValue_ExpectCorrectError() {
+    assertThat(clientIdValidator.isValid("invalidClientId", null)).isFalse();
+  }
 
-    @Test
-    void validateClientIdIsERezeptApp() {
-        assertThat(clientIdValidator.isValid(CLIENT_ID, null))
-            .isTrue();
-    }
+  @Test
+  void validateClientIdIsERezeptApp() {
+    assertThat(clientIdValidator.isValid(CLIENT_ID, null)).isTrue();
+  }
 }

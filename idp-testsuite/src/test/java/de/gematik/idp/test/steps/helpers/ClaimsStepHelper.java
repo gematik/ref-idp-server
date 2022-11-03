@@ -43,114 +43,128 @@ import org.json.JSONObject;
 
 public class ClaimsStepHelper {
 
-    public JSONObject extractHeaderClaimsFromJWEString(final String token) throws JoseException {
-        final JsonWebEncryption jsonWebEncryption = new JsonWebEncryption();
-        jsonWebEncryption.setCompactSerialization(token);
-        final Headers headers = jsonWebEncryption.getHeaders();
-        return new JSONObject(JsonUtil.parseJson(headers.getFullHeaderAsJsonString()));
+  public static Map<String, Object> mapNullsToJSON(final Map<String, Object> map) {
+    map.entrySet().stream()
+        .filter(entry -> entry.getValue() == null)
+        .forEach(entry -> entry.setValue(JSONObject.NULL));
+    return map;
+  }
+
+  public JSONObject extractHeaderClaimsFromJWEString(final String token) throws JoseException {
+    final JsonWebEncryption jsonWebEncryption = new JsonWebEncryption();
+    jsonWebEncryption.setCompactSerialization(token);
+    final Headers headers = jsonWebEncryption.getHeaders();
+    return new JSONObject(JsonUtil.parseJson(headers.getFullHeaderAsJsonString()));
+  }
+
+  public JSONObject extractHeaderClaimsFromJWSString(final String token) throws JoseException {
+    final JsonWebSignature jsonWebSignature = new JsonWebSignature();
+    jsonWebSignature.setCompactSerialization(token);
+    final Headers headers = jsonWebSignature.getHeaders();
+    return new JSONObject(JsonUtil.parseJson(headers.getFullHeaderAsJsonString()));
+  }
+
+  @Step
+  public void iExtractTheClaims(final ClaimLocation type) throws Throwable {
+    extractClaimsFromString(type, Context.getCurrentResponse().getBody().asString(), false);
+  }
+
+  @Step
+  public void iExtractTheClaimsFromResponseJsonField(
+      final String jsonName, final ClaimLocation type) throws Throwable {
+    final String jsoValue =
+        new JSONObject(Context.getCurrentResponse().getBody().asString()).getString(jsonName);
+    extractClaimsFromString(type, jsoValue, false);
+  }
+
+  @Step
+  public void extractClaimsFromToken(final ClaimLocation cType, final String token)
+      throws JoseException, InvalidJwtException, JSONException {
+    if (Set.of(
+            ContextKey.ACCESS_TOKEN_ENCRYPTED,
+            ContextKey.ID_TOKEN_ENCRYPTED,
+            ContextKey.TOKEN_CODE_ENCRYPTED,
+            ContextKey.SSO_TOKEN_ENCRYPTED)
+        .contains(token)) {
+      extractClaimsFromString(cType, Context.get().get(token).toString(), true);
+    } else {
+      Assertions.assertThat(token)
+          .isIn(
+              ContextKey.TOKEN_CODE,
+              ContextKey.SIGNED_CHALLENGE,
+              ContextKey.ACCESS_TOKEN,
+              ContextKey.ID_TOKEN);
+      extractClaimsFromString(cType, Context.get().get(token).toString(), false);
     }
+  }
 
-    public JSONObject extractHeaderClaimsFromJWSString(final String token) throws JoseException {
-        final JsonWebSignature jsonWebSignature = new JsonWebSignature();
-        jsonWebSignature.setCompactSerialization(token);
-        final Headers headers = jsonWebSignature.getHeaders();
-        return new JSONObject(JsonUtil.parseJson(headers.getFullHeaderAsJsonString()));
+  public void assertDateFromClaimMatches(
+      final ClaimLocation claimLocation,
+      final String claimName,
+      final DateCompareMode compareMode,
+      final Duration duration)
+      throws JSONException {
+    final JSONObject claims;
+    final Map<String, Object> ctxt = Context.get().getMapForCurrentThread();
+    if (claimLocation == ClaimLocation.body) {
+      Assertions.assertThat(ctxt)
+          .containsKey(ContextKey.CLAIMS)
+          .doesNotContainEntry(ContextKey.CLAIMS, null);
+      claims = (JSONObject) ctxt.get(ContextKey.CLAIMS);
+    } else {
+      Assertions.assertThat(ctxt)
+          .containsKey(ContextKey.HEADER_CLAIMS)
+          .doesNotContainEntry(ContextKey.HEADER_CLAIMS, null);
+      claims = (JSONObject) ctxt.get(ContextKey.HEADER_CLAIMS);
     }
+    Assertions.assertThat(IteratorUtils.toArray(claims.keys())).contains(claimName);
 
-    @Step
-    public void iExtractTheClaims(final ClaimLocation type) throws Throwable {
-        extractClaimsFromString(type, Context.getCurrentResponse().getBody().asString(), false);
+    final ZonedDateTime d =
+        ZonedDateTime.ofInstant(Instant.ofEpochSecond(claims.getLong(claimName)), ZoneId.of("UTC"));
+
+    final ZonedDateTime expectedDate =
+        ZonedDateTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis()), ZoneId.of("UTC"))
+            .plus(duration);
+    switch (compareMode) {
+      case NOT_BEFORE:
+        Assertions.assertThat(d).isAfterOrEqualTo(expectedDate);
+        break;
+      case AFTER:
+        Assertions.assertThat(d).isAfter(expectedDate);
+        break;
+      case BEFORE:
+        Assertions.assertThat(d).isBefore(expectedDate);
+        break;
+      case NOT_AFTER:
+        Assertions.assertThat(d).isBeforeOrEqualTo(expectedDate);
+        break;
     }
+  }
 
-    @Step
-    public void iExtractTheClaimsFromResponseJsonField(final String jsonName, final ClaimLocation type)
-        throws Throwable {
-        final String jsoValue = new JSONObject(Context.getCurrentResponse().getBody().asString())
-            .getString(jsonName);
-        extractClaimsFromString(type, jsoValue, false);
+  @SneakyThrows
+  public JSONObject getClaims(final String jwt) throws InvalidJwtException {
+    final JwtConsumerBuilder jwtConsBuilder =
+        new JwtConsumerBuilder().setSkipDefaultAudienceValidation().setSkipSignatureVerification();
+    return new JSONObject(
+        mapNullsToJSON(jwtConsBuilder.build().process(jwt).getJwtClaims().getClaimsMap()));
+  }
+
+  protected void extractClaimsFromString(
+      final ClaimLocation cType, final String tokenAsCompactSerialization, final boolean jwe)
+      throws InvalidJwtException, JSONException, JoseException {
+    if (cType == ClaimLocation.body) {
+      Context.get().put(ContextKey.CLAIMS, getClaims(tokenAsCompactSerialization));
+      SerenityReportUtils.addCustomData(
+          "Body Claims", ((JSONObject) Context.get().get(ContextKey.CLAIMS)).toString(2));
+    } else {
+      final JSONObject json;
+      if (jwe) {
+        json = extractHeaderClaimsFromJWEString(tokenAsCompactSerialization);
+      } else {
+        json = extractHeaderClaimsFromJWSString(tokenAsCompactSerialization);
+      }
+      Context.get().put(ContextKey.HEADER_CLAIMS, json);
+      SerenityReportUtils.addCustomData("Header Claims", json.toString(2));
     }
-
-    @Step
-    public void extractClaimsFromToken(final ClaimLocation cType, final String token)
-        throws JoseException, InvalidJwtException, JSONException {
-        if (Set.of(ContextKey.ACCESS_TOKEN_ENCRYPTED, ContextKey.ID_TOKEN_ENCRYPTED,
-            ContextKey.TOKEN_CODE_ENCRYPTED, ContextKey.SSO_TOKEN_ENCRYPTED).contains(token)) {
-            extractClaimsFromString(cType, Context.get().get(token).toString(), true);
-        } else {
-            Assertions.assertThat(token)
-                .isIn(ContextKey.TOKEN_CODE, ContextKey.SIGNED_CHALLENGE, ContextKey.ACCESS_TOKEN,
-                    ContextKey.ID_TOKEN);
-            extractClaimsFromString(cType, Context.get().get(token).toString(), false);
-        }
-    }
-
-    public void assertDateFromClaimMatches(final ClaimLocation claimLocation, final String claimName,
-        final DateCompareMode compareMode,
-        final Duration duration) throws JSONException {
-        final JSONObject claims;
-        final Map<String, Object> ctxt = Context.get().getMapForCurrentThread();
-        if (claimLocation == ClaimLocation.body) {
-            Assertions.assertThat(ctxt).containsKey(ContextKey.CLAIMS).doesNotContainEntry(ContextKey.CLAIMS, null);
-            claims = (JSONObject) ctxt.get(ContextKey.CLAIMS);
-        } else {
-            Assertions.assertThat(ctxt).containsKey(ContextKey.HEADER_CLAIMS)
-                .doesNotContainEntry(ContextKey.HEADER_CLAIMS, null);
-            claims = (JSONObject) ctxt.get(ContextKey.HEADER_CLAIMS);
-        }
-        Assertions.assertThat(IteratorUtils.toArray(claims.keys())).contains(claimName);
-
-        final ZonedDateTime d = ZonedDateTime
-            .ofInstant(Instant.ofEpochSecond(claims.getLong(claimName)),
-                ZoneId.of("UTC"));
-
-        final ZonedDateTime expectedDate = ZonedDateTime
-            .ofInstant(Instant.ofEpochMilli(System.currentTimeMillis()), ZoneId.of("UTC")).plus(duration);
-        switch (compareMode) {
-            case NOT_BEFORE:
-                Assertions.assertThat(d).isAfterOrEqualTo(expectedDate);
-                break;
-            case AFTER:
-                Assertions.assertThat(d).isAfter(expectedDate);
-                break;
-            case BEFORE:
-                Assertions.assertThat(d).isBefore(expectedDate);
-                break;
-            case NOT_AFTER:
-                Assertions.assertThat(d).isBeforeOrEqualTo(expectedDate);
-                break;
-        }
-    }
-
-    @SneakyThrows
-    public JSONObject getClaims(final String jwt) throws InvalidJwtException {
-        final JwtConsumerBuilder jwtConsBuilder = new JwtConsumerBuilder()
-            .setSkipDefaultAudienceValidation()
-            .setSkipSignatureVerification();
-        return new JSONObject(mapNullsToJSON(jwtConsBuilder.build().process(jwt).getJwtClaims().getClaimsMap()));
-    }
-
-    public static Map<String, Object> mapNullsToJSON(final Map<String, Object> map) {
-        map.entrySet().stream().filter(entry -> entry.getValue() == null)
-            .forEach(entry -> entry.setValue(JSONObject.NULL));
-        return map;
-    }
-
-    protected void extractClaimsFromString(final ClaimLocation cType, final String tokenAsCompactSerialization,
-        final boolean jwe)
-        throws InvalidJwtException, JSONException, JoseException {
-        if (cType == ClaimLocation.body) {
-            Context.get().put(ContextKey.CLAIMS, getClaims(tokenAsCompactSerialization));
-            SerenityReportUtils
-                .addCustomData("Body Claims", ((JSONObject) Context.get().get(ContextKey.CLAIMS)).toString(2));
-        } else {
-            final JSONObject json;
-            if (jwe) {
-                json = extractHeaderClaimsFromJWEString(tokenAsCompactSerialization);
-            } else {
-                json = extractHeaderClaimsFromJWSString(tokenAsCompactSerialization);
-            }
-            Context.get().put(ContextKey.HEADER_CLAIMS, json);
-            SerenityReportUtils.addCustomData("Header Claims", json.toString(2));
-        }
-    }
+  }
 }

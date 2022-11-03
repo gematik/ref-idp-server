@@ -30,7 +30,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AuthenticationChallenge {
 
-    private JsonWebToken challenge;
-    @JsonProperty(value = "user_consent")
-    private UserConsent userConsent;
+  private JsonWebToken challenge;
+
+  @JsonProperty(value = "user_consent")
+  private UserConsent userConsent;
 }

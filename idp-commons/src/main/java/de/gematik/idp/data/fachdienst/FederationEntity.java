@@ -30,8 +30,7 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class FederationEntity {
 
-    private String name;
-    private String contacts;
-    private String homepageUri;
-
+  private String name;
+  private String contacts;
+  private String homepageUri;
 }

@@ -17,6 +17,7 @@
 package de.gematik.idp.authentication;
 
 import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
+
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.ChallengeExpiredException;
 import de.gematik.idp.exceptions.ChallengeSignatureInvalidException;
@@ -44,76 +45,85 @@ import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 @AllArgsConstructor
 public class AuthenticationChallengeVerifier {
 
-    private PkiIdentity serverIdentity;
+  private PkiIdentity serverIdentity;
 
-    public void verifyResponseAndThrowExceptionIfFail(final JsonWebToken authenticationResponse) {
-        final X509Certificate clientCertificate = extractClientCertificateFromChallenge(authenticationResponse)
+  public void verifyResponseAndThrowExceptionIfFail(final JsonWebToken authenticationResponse) {
+    final X509Certificate clientCertificate =
+        extractClientCertificateFromChallenge(authenticationResponse)
             .orElseThrow(
-                () -> new IdpJoseException("Could not extract client certificate from challenge response header"));
+                () ->
+                    new IdpJoseException(
+                        "Could not extract client certificate from challenge response header"));
 
-        performClientSignatureValidation(clientCertificate, authenticationResponse.getRawString());
-        performServerSignatureValidationOfNjwt(authenticationResponse);
-    }
+    performClientSignatureValidation(clientCertificate, authenticationResponse.getRawString());
+    performServerSignatureValidationOfNjwt(authenticationResponse);
+  }
 
-    public void verifyResponseWithCertAndThrowExceptionIfFail(final X509Certificate authCert,
-        final JsonWebToken authenticationResponse) {
-        performClientSignatureValidation(authCert, authenticationResponse.getRawString());
-    }
+  public void verifyResponseWithCertAndThrowExceptionIfFail(
+      final X509Certificate authCert, final JsonWebToken authenticationResponse) {
+    performClientSignatureValidation(authCert, authenticationResponse.getRawString());
+  }
 
-    public void verifyResponseWithPublicKeyAndThrowExceptionIfFail(final PublicKey publicKey,
-        final JsonWebToken authenticationResponse) {
-        performClientSignatureValidationWithKey(publicKey, authenticationResponse.getRawString());
-    }
+  public void verifyResponseWithPublicKeyAndThrowExceptionIfFail(
+      final PublicKey publicKey, final JsonWebToken authenticationResponse) {
+    performClientSignatureValidationWithKey(publicKey, authenticationResponse.getRawString());
+  }
 
-    private void performClientSignatureValidation(final X509Certificate clientCertificate,
-        final String authResponse) {
-        final JwtConsumer serverJwtConsumer = new JwtConsumerBuilder()
+  private void performClientSignatureValidation(
+      final X509Certificate clientCertificate, final String authResponse) {
+    final JwtConsumer serverJwtConsumer =
+        new JwtConsumerBuilder()
             .setVerificationKey(clientCertificate.getPublicKey())
             .setSkipDefaultAudienceValidation()
             .setJwsAlgorithmConstraints(
-                (new AlgorithmConstraints(ConstraintType.PERMIT, AlgorithmIdentifiers.RSA_PSS_USING_SHA256,
+                (new AlgorithmConstraints(
+                    ConstraintType.PERMIT,
+                    AlgorithmIdentifiers.RSA_PSS_USING_SHA256,
                     BRAINPOOL256_USING_SHA256)))
             .build();
-        try {
-            serverJwtConsumer.process(authResponse);
-        } catch (final Exception e) {
-            throw new ChallengeSignatureInvalidException(e);
-        }
+    try {
+      serverJwtConsumer.process(authResponse);
+    } catch (final Exception e) {
+      throw new ChallengeSignatureInvalidException(e);
     }
+  }
 
-    private void performClientSignatureValidationWithKey(final PublicKey publicKey,
-        final String authResponse) {
-        final JwtConsumer serverJwtConsumer = new JwtConsumerBuilder()
-            .setVerificationKey(publicKey)
-            .build();
-        try {
-            serverJwtConsumer.process(authResponse);
-        } catch (final InvalidJwtException e) {
-            throw new ChallengeSignatureInvalidException(e);
-        }
+  private void performClientSignatureValidationWithKey(
+      final PublicKey publicKey, final String authResponse) {
+    final JwtConsumer serverJwtConsumer =
+        new JwtConsumerBuilder().setVerificationKey(publicKey).build();
+    try {
+      serverJwtConsumer.process(authResponse);
+    } catch (final InvalidJwtException e) {
+      throw new ChallengeSignatureInvalidException(e);
     }
+  }
 
-    private void performServerSignatureValidationOfNjwt(final JsonWebToken authenticationResponse) {
-        final JsonWebToken serverChallenge = authenticationResponse.getBodyClaim(ClaimName.NESTED_JWT)
+  private void performServerSignatureValidationOfNjwt(final JsonWebToken authenticationResponse) {
+    final JsonWebToken serverChallenge =
+        authenticationResponse
+            .getBodyClaim(ClaimName.NESTED_JWT)
             .map(njwt -> new JsonWebToken(njwt.toString()))
             .orElseThrow(NoNestedJwtFoundException::new);
 
-        if (serverChallenge.getExpiresAt().isBefore(ZonedDateTime.now())
-            || serverChallenge.getExpiresAtBody().isBefore(ZonedDateTime.now())) {
-            throw new ChallengeExpiredException();
-        }
-        try {
-            serverChallenge.verify(serverIdentity.getCertificate().getPublicKey());
-        } catch (final Exception e) {
-            throw new ChallengeSignatureInvalidException();
-        }
+    if (serverChallenge.getExpiresAt().isBefore(ZonedDateTime.now())
+        || serverChallenge.getExpiresAtBody().isBefore(ZonedDateTime.now())) {
+      throw new ChallengeExpiredException();
     }
+    try {
+      serverChallenge.verify(serverIdentity.getCertificate().getPublicKey());
+    } catch (final Exception e) {
+      throw new ChallengeSignatureInvalidException();
+    }
+  }
 
-    public Optional<X509Certificate> extractClientCertificateFromChallenge(final JsonWebToken authenticationResponse) {
-        return authenticationResponse.getClientCertificateFromHeader();
-    }
+  public Optional<X509Certificate> extractClientCertificateFromChallenge(
+      final JsonWebToken authenticationResponse) {
+    return authenticationResponse.getClientCertificateFromHeader();
+  }
 
-    public Map<String, Object> extractClaimsFromSignedChallenge(final AuthenticationResponse authenticationResponse) {
-        return authenticationResponse.getSignedChallenge().getBodyClaims();
-    }
+  public Map<String, Object> extractClaimsFromSignedChallenge(
+      final AuthenticationResponse authenticationResponse) {
+    return authenticationResponse.getSignedChallenge().getBodyClaims();
+  }
 }

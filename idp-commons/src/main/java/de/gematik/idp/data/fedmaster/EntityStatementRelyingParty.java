@@ -16,7 +16,6 @@
 
 package de.gematik.idp.data.fedmaster;
 
-
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.gematik.idp.data.IdpJwksDocument;
@@ -25,9 +24,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Entity statement related to other services (relying parties) issued by Federation Master
- */
+/** Entity statement related to other services (relying parties) issued by Federation Master */
 @Data
 @Builder
 @NoArgsConstructor
@@ -35,10 +32,10 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class EntityStatementRelyingParty {
 
-    private String iss;
-    private String sub;
-    private String aud;
-    private long iat;
-    private long exp;
-    private IdpJwksDocument jwks;
+  private String iss;
+  private String sub;
+  private String aud;
+  private long iat;
+  private long exp;
+  private IdpJwksDocument jwks;
 }

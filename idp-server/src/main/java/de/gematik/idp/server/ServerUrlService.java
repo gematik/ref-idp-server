@@ -28,28 +28,28 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ServerUrlService {
 
-    private final IdpConfiguration idpConfiguration;
+  private final IdpConfiguration idpConfiguration;
 
-    public String determineServerUrl(final HttpServletRequest request) {
-        return getServerUrlOptional()
-            .orElse("http://" + request.getServerName() + ":" + request.getServerPort());
-    }
+  public String determineServerUrl(final HttpServletRequest request) {
+    return getServerUrlOptional()
+        .orElse("http://" + request.getServerName() + ":" + request.getServerPort());
+  }
 
-    public String determineServerUrl() {
-        return getServerUrlOptional()
-            .orElse(IdpConstants.DEFAULT_SERVER_URL);
-    }
+  public String determineServerUrl() {
+    return getServerUrlOptional().orElse(IdpConstants.DEFAULT_SERVER_URL);
+  }
 
-    public String getIssuerUrl() {
-        return Optional.ofNullable(idpConfiguration.getIssuerUrl())
-            .filter(StringUtils::isNotBlank)
-            .or(() -> Optional.ofNullable(idpConfiguration.getServerUrl())
-                .filter(StringUtils::isNotBlank))
-            .orElse(IdpConstants.DEFAULT_SERVER_URL);
-    }
+  public String getIssuerUrl() {
+    return Optional.ofNullable(idpConfiguration.getIssuerUrl())
+        .filter(StringUtils::isNotBlank)
+        .or(
+            () ->
+                Optional.ofNullable(idpConfiguration.getServerUrl())
+                    .filter(StringUtils::isNotBlank))
+        .orElse(IdpConstants.DEFAULT_SERVER_URL);
+  }
 
-    private Optional<String> getServerUrlOptional() {
-        return Optional.ofNullable(idpConfiguration.getServerUrl())
-            .filter(StringUtils::isNotBlank);
-    }
+  private Optional<String> getServerUrlOptional() {
+    return Optional.ofNullable(idpConfiguration.getServerUrl()).filter(StringUtils::isNotBlank);
+  }
 }

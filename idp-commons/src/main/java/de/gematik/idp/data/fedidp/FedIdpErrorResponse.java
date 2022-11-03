@@ -31,8 +31,7 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class FedIdpErrorResponse {
 
-    private long timestamp;
-    private String errorMessage;
-    @JsonIgnore
-    private int httpStatusCode;
+  private long timestamp;
+  private String errorMessage;
+  @JsonIgnore private int httpStatusCode;
 }

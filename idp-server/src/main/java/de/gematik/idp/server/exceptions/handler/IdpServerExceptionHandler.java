@@ -63,196 +63,231 @@ import org.springframework.web.util.UriUtils;
 @Slf4j
 public class IdpServerExceptionHandler {
 
-    private static final int MAX_HEADER_SIZE = 200;
-    private final ServerUrlService serverUrlService;
-    private final IdpKey idpEnc;
-    private final IdpConfiguration idpConfiguration;
+  private static final int MAX_HEADER_SIZE = 200;
+  private final ServerUrlService serverUrlService;
+  private final IdpKey idpEnc;
+  private final IdpConfiguration idpConfiguration;
 
-    @ExceptionHandler(IdpServerException.class)
-    public ResponseEntity<IdpErrorResponse> handleIdpServerException(final IdpServerException exc,
-        final WebRequest request, final HttpServletResponse response) {
-        final IdpErrorResponse body = getBody(exc);
-        if (!StringUtils.isEmpty(exc.getMessage())) {
-            body.setDetailMessage(exc.getMessage());
-        }
-        logEntry(body, exc);
-
-        if (exc.getStatus().is3xxRedirection()) {
-            return buildForwardingError(body, request, response, exc);
-        }
-        return new ResponseEntity<>(body, getHeader(), exc.getStatus());
+  @ExceptionHandler(IdpServerException.class)
+  public ResponseEntity<IdpErrorResponse> handleIdpServerException(
+      final IdpServerException exc, final WebRequest request, final HttpServletResponse response) {
+    final IdpErrorResponse body = getBody(exc);
+    if (!StringUtils.isEmpty(exc.getMessage())) {
+      body.setDetailMessage(exc.getMessage());
     }
+    logEntry(body, exc);
 
-    private ResponseEntity<IdpErrorResponse> buildForwardingError(final IdpErrorResponse errorResponse,
-        final WebRequest request, final HttpServletResponse response, final IdpServerException exc) {
-        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
-        response.setHeader(HttpHeaders.PRAGMA, "no-cache");
-        final UriBuilder uriBuilder = UriBuilder.fromPath(serverUrlService.determineServerUrl())
-            .queryParam("error", UriUtils.encodeQueryParam(
-                errorResponse.getError().getSerializationValue(), Charset.defaultCharset()))
-            .queryParam("gematik_code", UriUtils.encodeQueryParam(
-                errorResponse.getCode(), Charset.defaultCharset()))
+    if (exc.getStatus().is3xxRedirection()) {
+      return buildForwardingError(body, request, response, exc);
+    }
+    return new ResponseEntity<>(body, getHeader(), exc.getStatus());
+  }
+
+  private ResponseEntity<IdpErrorResponse> buildForwardingError(
+      final IdpErrorResponse errorResponse,
+      final WebRequest request,
+      final HttpServletResponse response,
+      final IdpServerException exc) {
+    response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
+    response.setHeader(HttpHeaders.PRAGMA, "no-cache");
+    final UriBuilder uriBuilder =
+        UriBuilder.fromPath(serverUrlService.determineServerUrl())
+            .queryParam(
+                "error",
+                UriUtils.encodeQueryParam(
+                    errorResponse.getError().getSerializationValue(), Charset.defaultCharset()))
+            .queryParam(
+                "gematik_code",
+                UriUtils.encodeQueryParam(errorResponse.getCode(), Charset.defaultCharset()))
             .queryParam("gematik_timestamp", errorResponse.getTimestamp())
-            .queryParam("gematik_uuid", UriUtils.encodeQueryParam(
-                errorResponse.getErrorUuid(), Charset.defaultCharset()))
-            .queryParam("gematik_error_text", UriUtils.encodeQueryParam(
-                errorResponse.getDetailMessage(), Charset.defaultCharset()));
-        addStateIfAvailable(uriBuilder, request);
-        addDescriptionIfAvailable(uriBuilder, exc);
-        final URI location = uriBuilder.build();
-        response.setHeader(HttpHeaders.LOCATION, location.toString());
+            .queryParam(
+                "gematik_uuid",
+                UriUtils.encodeQueryParam(errorResponse.getErrorUuid(), Charset.defaultCharset()))
+            .queryParam(
+                "gematik_error_text",
+                UriUtils.encodeQueryParam(
+                    errorResponse.getDetailMessage(), Charset.defaultCharset()));
+    addStateIfAvailable(uriBuilder, request);
+    addDescriptionIfAvailable(uriBuilder, exc);
+    final URI location = uriBuilder.build();
+    response.setHeader(HttpHeaders.LOCATION, location.toString());
 
-        return new ResponseEntity<>(HttpStatus.FOUND);
+    return new ResponseEntity<>(HttpStatus.FOUND);
+  }
+
+  private void addDescriptionIfAvailable(
+      final UriBuilder uriBuilder, final IdpServerException exc) {
+    try {
+      Optional.ofNullable(exc)
+          .filter(Objects::nonNull)
+          .map(IdpServerException::getMessage)
+          .filter(org.apache.commons.lang3.StringUtils::isNotEmpty)
+          .map(str -> str.substring(0, Math.min(str.length(), MAX_HEADER_SIZE)))
+          .map(value -> UriUtils.encodeQueryParam(value, StandardCharsets.UTF_8))
+          .ifPresent(descr -> uriBuilder.queryParam("error_description", descr));
+    } catch (final RuntimeException e) {
+      // swallow
     }
+  }
 
-    private void addDescriptionIfAvailable(final UriBuilder uriBuilder, final IdpServerException exc) {
-        try {
-            Optional.ofNullable(exc)
-                .filter(Objects::nonNull)
-                .map(IdpServerException::getMessage)
-                .filter(org.apache.commons.lang3.StringUtils::isNotEmpty)
-                .map(str -> str.substring(0, Math.min(str.length(), MAX_HEADER_SIZE)))
-                .map(value -> UriUtils.encodeQueryParam(value, StandardCharsets.UTF_8))
-                .ifPresent(descr -> uriBuilder.queryParam("error_description", descr));
-        } catch (final RuntimeException e) {
-            // swallow
-        }
+  private void addStateIfAvailable(final UriBuilder uriBuilder, final WebRequest request) {
+    try {
+      Optional.ofNullable(request.getParameter("signed_challenge"))
+          .filter(Objects::nonNull)
+          .map(IdpJwe::new)
+          .map(jwe -> jwe.decryptNestedJwt(idpEnc.getIdentity().getPrivateKey()))
+          .flatMap(jwt -> jwt.getStringBodyClaim(ClaimName.NESTED_JWT))
+          .map(JsonWebToken::new)
+          .flatMap(jwt -> jwt.getStringBodyClaim(ClaimName.STATE))
+          .map(str -> str.substring(0, Math.min(str.length(), MAX_HEADER_SIZE)))
+          .map(value -> UriUtils.encodeQueryParam(value, StandardCharsets.UTF_8))
+          .ifPresent(state -> uriBuilder.queryParam("state", state));
+    } catch (final RuntimeException e) {
+      // swallow
     }
+  }
 
-    private void addStateIfAvailable(final UriBuilder uriBuilder, final WebRequest request) {
-        try {
-            Optional.ofNullable(request.getParameter("signed_challenge"))
-                .filter(Objects::nonNull)
-                .map(IdpJwe::new)
-                .map(jwe -> jwe.decryptNestedJwt(idpEnc.getIdentity().getPrivateKey()))
-                .flatMap(jwt -> jwt.getStringBodyClaim(ClaimName.NESTED_JWT))
-                .map(JsonWebToken::new)
-                .flatMap(jwt -> jwt.getStringBodyClaim(ClaimName.STATE))
-                .map(str -> str.substring(0, Math.min(str.length(), MAX_HEADER_SIZE)))
-                .map(value -> UriUtils.encodeQueryParam(value, StandardCharsets.UTF_8))
-                .ifPresent(state -> uriBuilder.queryParam("state", state));
-        } catch (final RuntimeException e) {
-            // swallow
-        }
-    }
-
-    @ExceptionHandler({ConstraintViolationException.class, ValidationException.class,
-        MethodArgumentNotValidException.class, IdpJoseException.class})
-    public ResponseEntity<IdpErrorResponse> handleValidationException(final Exception exc,
-        final WebRequest request, final HttpServletResponse response) {
-        return handleIdpServerException(
-            (IdpServerException) ExceptionUtils.getThrowableList(exc)
-                .stream()
+  @ExceptionHandler({
+    ConstraintViolationException.class,
+    ValidationException.class,
+    MethodArgumentNotValidException.class,
+    IdpJoseException.class
+  })
+  public ResponseEntity<IdpErrorResponse> handleValidationException(
+      final Exception exc, final WebRequest request, final HttpServletResponse response) {
+    return handleIdpServerException(
+        (IdpServerException)
+            ExceptionUtils.getThrowableList(exc).stream()
                 .filter(IdpServerException.class::isInstance)
                 .findAny()
                 .or(() -> tryToExtractErrorCodeFromConstraintViolationAndConvertToIdpException(exc))
                 .or(() -> tryToExtractErrorCodeFromExceptionMessageAndConvertToIdpException(exc))
                 .or(() -> tryToMapJoseExceptionToIdpException(exc))
-                .orElseGet(() -> new IdpServerException("Ein Fehler ist aufgetreten", exc, IdpErrorType.SERVER_ERROR,
-                    HttpStatus.BAD_REQUEST)),
-            request, response);
-    }
+                .orElseGet(
+                    () ->
+                        new IdpServerException(
+                            "Ein Fehler ist aufgetreten",
+                            exc,
+                            IdpErrorType.SERVER_ERROR,
+                            HttpStatus.BAD_REQUEST)),
+        request,
+        response);
+  }
 
-    private Optional<IdpServerException> tryToExtractErrorCodeFromConstraintViolationAndConvertToIdpException(
-        final Exception exc) {
-        return Optional.of(exc)
-            .filter(ConstraintViolationException.class::isInstance)
-            .map(ConstraintViolationException.class::cast)
-            .map(ConstraintViolationException::getConstraintViolations)
-            .stream().flatMap(Set::stream)
-            .map(ConstraintViolation::getMessage)
-            .filter(NumberUtils::isParsable)
-            .map(Integer::parseInt)
-            .sorted()
-            .filter(idpConfiguration.getErrors().getErrorCodeMap()::containsKey)
-            .map(idpConfiguration.getErrors().getErrorCodeMap()::get)
-            .map(errorCode -> new IdpServerException(errorCode, exc))
-            .findFirst();
-    }
+  private Optional<IdpServerException>
+      tryToExtractErrorCodeFromConstraintViolationAndConvertToIdpException(final Exception exc) {
+    return Optional.of(exc)
+        .filter(ConstraintViolationException.class::isInstance)
+        .map(ConstraintViolationException.class::cast)
+        .map(ConstraintViolationException::getConstraintViolations)
+        .stream()
+        .flatMap(Set::stream)
+        .map(ConstraintViolation::getMessage)
+        .filter(NumberUtils::isParsable)
+        .map(Integer::parseInt)
+        .sorted()
+        .filter(idpConfiguration.getErrors().getErrorCodeMap()::containsKey)
+        .map(idpConfiguration.getErrors().getErrorCodeMap()::get)
+        .map(errorCode -> new IdpServerException(errorCode, exc))
+        .findFirst();
+  }
 
-    private Optional<IdpServerException> tryToExtractErrorCodeFromExceptionMessageAndConvertToIdpException(
-        final Exception exc) {
-        return Optional.of(exc)
-            .map(Exception::getMessage)
-            .filter(NumberUtils::isParsable)
-            .map(Integer::parseInt)
-            .filter(idpConfiguration.getErrors().getErrorCodeMap()::containsKey)
-            .map(idpConfiguration.getErrors().getErrorCodeMap()::get)
-            .map(errorCode -> new IdpServerException(errorCode, exc));
-    }
+  private Optional<IdpServerException>
+      tryToExtractErrorCodeFromExceptionMessageAndConvertToIdpException(final Exception exc) {
+    return Optional.of(exc)
+        .map(Exception::getMessage)
+        .filter(NumberUtils::isParsable)
+        .map(Integer::parseInt)
+        .filter(idpConfiguration.getErrors().getErrorCodeMap()::containsKey)
+        .map(idpConfiguration.getErrors().getErrorCodeMap()::get)
+        .map(errorCode -> new IdpServerException(errorCode, exc));
+  }
 
-    private Optional<IdpServerException> tryToMapJoseExceptionToIdpException(final Exception exc) {
-        return Optional.of(exc)
-            .map(Exception::getClass)
-            .map(Class::getSimpleName)
-            .filter(idpConfiguration.getErrors().getJoseExceptionMap()::containsKey)
-            .map(idpConfiguration.getErrors().getJoseExceptionMap()::get)
-            .map(errorCode -> new IdpServerException(errorCode, exc));
-    }
+  private Optional<IdpServerException> tryToMapJoseExceptionToIdpException(final Exception exc) {
+    return Optional.of(exc)
+        .map(Exception::getClass)
+        .map(Class::getSimpleName)
+        .filter(idpConfiguration.getErrors().getJoseExceptionMap()::containsKey)
+        .map(idpConfiguration.getErrors().getJoseExceptionMap()::get)
+        .map(errorCode -> new IdpServerException(errorCode, exc));
+  }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<IdpErrorResponse> handleRuntimeException(final Exception exc,
-        final WebRequest request, final HttpServletResponse response) {
-        return handleIdpServerException(
-            new IdpServerException("Invalid Request", exc, IdpErrorType.SERVER_ERROR,
-                HttpStatus.INTERNAL_SERVER_ERROR),
-            request, response);
-    }
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<IdpErrorResponse> handleRuntimeException(
+      final Exception exc, final WebRequest request, final HttpServletResponse response) {
+    return handleIdpServerException(
+        new IdpServerException(
+            "Invalid Request", exc, IdpErrorType.SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR),
+        request,
+        response);
+  }
 
-    @ExceptionHandler({HttpMediaTypeNotAcceptableException.class, HttpMediaTypeNotSupportedException.class})
-    public ResponseEntity<IdpErrorResponse> handleHttpMediaTypeNotAcceptableException(final Exception exc) {
-        log.debug("", exc);
-        return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
-    }
+  @ExceptionHandler({
+    HttpMediaTypeNotAcceptableException.class,
+    HttpMediaTypeNotSupportedException.class
+  })
+  public ResponseEntity<IdpErrorResponse> handleHttpMediaTypeNotAcceptableException(
+      final Exception exc) {
+    log.debug("", exc);
+    return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+  }
 
-    @ExceptionHandler(NonTransientDataAccessException.class)
-    public ResponseEntity<IdpErrorResponse> handleDbIntegrityError(final NonTransientDataAccessException exc,
-        final WebRequest request, final HttpServletResponse response) {
-        return handleIdpServerException(
-            new IdpServerException("Invalid Request", exc, IdpErrorType.INVALID_REQUEST,
-                HttpStatus.CONFLICT),
-            request, response);
-    }
+  @ExceptionHandler(NonTransientDataAccessException.class)
+  public ResponseEntity<IdpErrorResponse> handleDbIntegrityError(
+      final NonTransientDataAccessException exc,
+      final WebRequest request,
+      final HttpServletResponse response) {
+    return handleIdpServerException(
+        new IdpServerException(
+            "Invalid Request", exc, IdpErrorType.INVALID_REQUEST, HttpStatus.CONFLICT),
+        request,
+        response);
+  }
 
-    @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<IdpErrorResponse> handleMissingServletRequestParameter(
-        final MissingServletRequestParameterException ex, final WebRequest request,
-        final HttpServletResponse response) {
-        return handleIdpServerException(
-            Optional.ofNullable(idpConfiguration.getErrors().getGenericErrorMap().get(ex.getParameterName()))
-                .map(resp -> new IdpServerException(resp, ex))
-                .orElseGet(() -> new IdpServerException(ex.getMessage(), ex, IdpErrorType.INVALID_REQUEST,
-                    HttpStatus.BAD_REQUEST)),
-            request, response);
-    }
+  @ExceptionHandler(MissingServletRequestParameterException.class)
+  public ResponseEntity<IdpErrorResponse> handleMissingServletRequestParameter(
+      final MissingServletRequestParameterException ex,
+      final WebRequest request,
+      final HttpServletResponse response) {
+    return handleIdpServerException(
+        Optional.ofNullable(
+                idpConfiguration.getErrors().getGenericErrorMap().get(ex.getParameterName()))
+            .map(resp -> new IdpServerException(resp, ex))
+            .orElseGet(
+                () ->
+                    new IdpServerException(
+                        ex.getMessage(), ex, IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST)),
+        request,
+        response);
+  }
 
-    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<IdpErrorResponse> handleMethodNotSupported(
-        final HttpRequestMethodNotSupportedException ex) {
-        log.info("Returning error to client: {}", ex.getMessage());
-        return new ResponseEntity<>(getHeader(), HttpStatus.METHOD_NOT_ALLOWED);
-    }
+  @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+  public ResponseEntity<IdpErrorResponse> handleMethodNotSupported(
+      final HttpRequestMethodNotSupportedException ex) {
+    log.info("Returning error to client: {}", ex.getMessage());
+    return new ResponseEntity<>(getHeader(), HttpStatus.METHOD_NOT_ALLOWED);
+  }
 
-    private void logEntry(final IdpErrorResponse body, final Exception exc) {
-        log.info("Returning error to client: {}, error_id: {}", exc.getMessage(), body.getErrorUuid());
-        log.debug(body.toString(), exc);
-    }
+  private void logEntry(final IdpErrorResponse body, final Exception exc) {
+    log.info("Returning error to client: {}, error_id: {}", exc.getMessage(), body.getErrorUuid());
+    log.debug(body.toString(), exc);
+  }
 
-    private HttpHeaders getHeader() {
-        final HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.add(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8");
-        responseHeaders.remove(HttpHeaders.CACHE_CONTROL);
-        responseHeaders.remove(HttpHeaders.PRAGMA);
-        return responseHeaders;
-    }
+  private HttpHeaders getHeader() {
+    final HttpHeaders responseHeaders = new HttpHeaders();
+    responseHeaders.add(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8");
+    responseHeaders.remove(HttpHeaders.CACHE_CONTROL);
+    responseHeaders.remove(HttpHeaders.PRAGMA);
+    return responseHeaders;
+  }
 
-    private IdpErrorResponse getBody(final IdpServerException exception) {
-        return IdpErrorResponse.builder()
-            .code(exception.getErrorCode())
-            .error(exception.getErrorType())
-            .errorUuid(UUID.randomUUID().toString())
-            .timestamp(ZonedDateTime.now().toEpochSecond())
-            .detailMessage(exception.getMessage())
-            .build();
-    }
+  private IdpErrorResponse getBody(final IdpServerException exception) {
+    return IdpErrorResponse.builder()
+        .code(exception.getErrorCode())
+        .error(exception.getErrorType())
+        .errorUuid(UUID.randomUUID().toString())
+        .timestamp(ZonedDateTime.now().toEpochSecond())
+        .detailMessage(exception.getMessage())
+        .build();
+  }
 }

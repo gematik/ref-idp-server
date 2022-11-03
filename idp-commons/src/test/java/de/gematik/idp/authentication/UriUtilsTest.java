@@ -18,27 +18,28 @@ package de.gematik.idp.authentication;
 
 import static de.gematik.idp.authentication.UriUtils.extractParameterValue;
 import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.Test;
 
 class UriUtilsTest {
 
-    @Test
-    void extractParameterValueSingle() {
-        final String uri = "https://example.org/?a=1";
-        assertThat(extractParameterValue(uri, "a")).isEqualTo("1");
-    }
+  @Test
+  void extractParameterValueSingle() {
+    final String uri = "https://example.org/?a=1";
+    assertThat(extractParameterValue(uri, "a")).isEqualTo("1");
+  }
 
-    @Test
-    void extractParameterValueSeveral() {
-        final String uri = "https://example.org/?a=1&b=2&c=3";
-        assertThat(extractParameterValue(uri, "a")).isEqualTo("1");
-        assertThat(extractParameterValue(uri, "b")).isEqualTo("2");
-        assertThat(extractParameterValue(uri, "c")).isEqualTo("3");
-    }
+  @Test
+  void extractParameterValueSeveral() {
+    final String uri = "https://example.org/?a=1&b=2&c=3";
+    assertThat(extractParameterValue(uri, "a")).isEqualTo("1");
+    assertThat(extractParameterValue(uri, "b")).isEqualTo("2");
+    assertThat(extractParameterValue(uri, "c")).isEqualTo("3");
+  }
 
-    @Test
-    void extractParameterValueEncoding() {
-        final String uri = "https://build.top.local/sonar/dashboard?id=de.gematik.idp%3Aidp-global";
-        assertThat(extractParameterValue(uri, "id")).isEqualTo("de.gematik.idp:idp-global");
-    }
+  @Test
+  void extractParameterValueEncoding() {
+    final String uri = "https://build.top.local/sonar/dashboard?id=de.gematik.idp%3Aidp-global";
+    assertThat(extractParameterValue(uri, "id")).isEqualTo("de.gematik.idp:idp-global");
+  }
 }

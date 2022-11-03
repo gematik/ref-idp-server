@@ -18,6 +18,7 @@ package de.gematik.idp.server;
 
 import static de.gematik.idp.IdpConstants.APPLIST_ENDPOINT;
 import static org.assertj.core.api.Assertions.assertThat;
+
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
@@ -32,24 +33,22 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class AppListTest {
 
-    @LocalServerPort
-    private int localServerPort;
-    private String testHostUrl;
+  @LocalServerPort private int localServerPort;
+  private String testHostUrl;
 
-    @BeforeEach
-    public void setUpLocalHostUrl() {
-        testHostUrl = "http://localhost:" + localServerPort;
-    }
+  @BeforeEach
+  public void setUpLocalHostUrl() {
+    testHostUrl = "http://localhost:" + localServerPort;
+  }
 
-    @Test
-    void testGetAppList() throws UnirestException {
-        final HttpResponse httpResponse = retrieveAppList();
+  @Test
+  void testGetAppList() throws UnirestException {
+    final HttpResponse httpResponse = retrieveAppList();
 
-        assertThat(httpResponse.isSuccess()).isTrue();
-    }
+    assertThat(httpResponse.isSuccess()).isTrue();
+  }
 
-    private HttpResponse<String> retrieveAppList() {
-        return Unirest.get(testHostUrl + APPLIST_ENDPOINT)
-            .asString();
-    }
+  private HttpResponse<String> retrieveAppList() {
+    return Unirest.get(testHostUrl + APPLIST_ENDPOINT).asString();
+  }
 }

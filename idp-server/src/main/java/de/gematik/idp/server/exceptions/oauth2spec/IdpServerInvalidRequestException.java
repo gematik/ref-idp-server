@@ -22,11 +22,11 @@ import org.springframework.http.HttpStatus;
 
 public class IdpServerInvalidRequestException extends IdpServerException {
 
-    public IdpServerInvalidRequestException(final String message, final Exception e) {
-        super(message, e, IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
-    }
+  public IdpServerInvalidRequestException(final String message, final Exception e) {
+    super(message, e, IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+  }
 
-    public IdpServerInvalidRequestException(final String s) {
-        super(s, IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
-    }
+  public IdpServerInvalidRequestException(final String s) {
+    super(s, IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+  }
 }

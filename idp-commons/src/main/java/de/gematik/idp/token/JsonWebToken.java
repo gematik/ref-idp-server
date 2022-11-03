@@ -45,75 +45,74 @@ import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 @JsonDeserialize(using = JsonWebToken.Deserializer.class)
 public class JsonWebToken extends IdpJoseObject {
 
-    public JsonWebToken(final String rawString) {
-        super(rawString);
-    }
+  public JsonWebToken(final String rawString) {
+    super(rawString);
+  }
 
-    public void verify(final PublicKey publicKey) {
-        final JwtConsumer jwtConsumer = new JwtConsumerBuilder()
+  public void verify(final PublicKey publicKey) {
+    final JwtConsumer jwtConsumer =
+        new JwtConsumerBuilder()
             .setVerificationKey(publicKey)
             .setSkipDefaultAudienceValidation()
             .build();
 
+    try {
+      jwtConsumer.process(getRawString());
+    } catch (final InvalidJwtException e) {
+      if (e.getErrorDetails().stream()
+          .anyMatch(error -> error.getErrorCode() == ErrorCodes.EXPIRED)) {
+        throw new IdpJwtExpiredException(e);
+      }
+      if (e.getErrorDetails().stream()
+          .anyMatch(error -> error.getErrorCode() == ErrorCodes.SIGNATURE_INVALID)) {
+        throw new IdpJwtSignatureInvalidException(e);
+      }
+      throw new IdpJoseException("Invalid JWT encountered", e);
+    }
+  }
+
+  public JwtBuilder toJwtDescription() {
+    return new JwtBuilder().addAllBodyClaims(getBodyClaims()).addAllHeaderClaims(getHeaderClaims());
+  }
+
+  public IdpJwe encrypt(final Key key) {
+    return IdpJwe.createWithPayloadAndExpiryAndEncryptWithKey(
+        "{\"njwt\":\"" + getRawString() + "\"}", findExpClaimInNestedJwts(), key, "NJWT");
+  }
+
+  public Optional<ZonedDateTime> findExpClaimInNestedJwts() {
+    final Optional<ZonedDateTime> expClaim = getBodyDateTimeClaim(ClaimName.EXPIRES_AT);
+    if (expClaim.isPresent()) {
+      return expClaim;
+    } else {
+      final Optional<Object> njwtClaim = getBodyClaim(ClaimName.NESTED_JWT);
+      if (njwtClaim.isPresent()) {
         try {
-            jwtConsumer.process(getRawString());
-        } catch (final InvalidJwtException e) {
-            if (e.getErrorDetails().stream()
-                .anyMatch(error -> error.getErrorCode() == ErrorCodes.EXPIRED)) {
-                throw new IdpJwtExpiredException(e);
-            }
-            if (e.getErrorDetails().stream()
-                .anyMatch(error -> error.getErrorCode() == ErrorCodes.SIGNATURE_INVALID)) {
-                throw new IdpJwtSignatureInvalidException(e);
-            }
-            throw new IdpJoseException("Invalid JWT encountered", e);
+          return new JsonWebToken(njwtClaim.get().toString()).findExpClaimInNestedJwts();
+        } catch (final Exception e) {
+          return Optional.empty();
         }
+      }
+      return Optional.empty();
     }
+  }
 
-    public JwtBuilder toJwtDescription() {
-        return new JwtBuilder()
-            .addAllBodyClaims(getBodyClaims())
-            .addAllHeaderClaims(getHeaderClaims());
-    }
+  @Override
+  public Map<String, Object> extractHeaderClaims() {
+    return TokenClaimExtraction.extractClaimsFromJwtHeader(getRawString());
+  }
 
-    public IdpJwe encrypt(final Key key) {
-        return IdpJwe.createWithPayloadAndExpiryAndEncryptWithKey("{\"njwt\":\"" + getRawString() + "\"}",
-            findExpClaimInNestedJwts(), key, "NJWT");
-    }
+  @Override
+  public Map<String, Object> extractBodyClaims() {
+    return TokenClaimExtraction.extractClaimsFromJwtBody(getRawString());
+  }
 
-    public Optional<ZonedDateTime> findExpClaimInNestedJwts() {
-        final Optional<ZonedDateTime> expClaim = getBodyDateTimeClaim(ClaimName.EXPIRES_AT);
-        if (expClaim.isPresent()) {
-            return expClaim;
-        } else {
-            final Optional<Object> njwtClaim = getBodyClaim(ClaimName.NESTED_JWT);
-            if (njwtClaim.isPresent()) {
-                try {
-                    return new JsonWebToken(njwtClaim.get().toString())
-                        .findExpClaimInNestedJwts();
-                } catch (final Exception e) {
-                    return Optional.empty();
-                }
-            }
-            return Optional.empty();
-        }
-    }
+  public static class Deserializer extends JsonDeserializer<IdpJoseObject> {
 
     @Override
-    public Map<String, Object> extractHeaderClaims() {
-        return TokenClaimExtraction.extractClaimsFromJwtHeader(getRawString());
+    public IdpJoseObject deserialize(final JsonParser p, final DeserializationContext ctxt)
+        throws IOException {
+      return new JsonWebToken(ctxt.readValue(p, String.class));
     }
-
-    @Override
-    public Map<String, Object> extractBodyClaims() {
-        return TokenClaimExtraction.extractClaimsFromJwtBody(getRawString());
-    }
-
-    public static class Deserializer extends JsonDeserializer<IdpJoseObject> {
-
-        @Override
-        public IdpJoseObject deserialize(final JsonParser p, final DeserializationContext ctxt) throws IOException {
-            return new JsonWebToken(ctxt.readValue(p, String.class));
-        }
-    }
+  }
 }

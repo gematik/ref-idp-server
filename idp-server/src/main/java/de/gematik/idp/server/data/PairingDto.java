@@ -30,8 +30,8 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class PairingDto {
 
-    private String name;
-    private String signedPairingData;
-    private long creationTime;
-    private String pairingEntryVersion;
+  private String name;
+  private String signedPairingData;
+  private long creationTime;
+  private String pairingEntryVersion;
 }

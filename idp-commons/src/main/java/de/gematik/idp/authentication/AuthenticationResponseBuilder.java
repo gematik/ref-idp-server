@@ -19,6 +19,7 @@ package de.gematik.idp.authentication;
 import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
 import static de.gematik.idp.crypto.KeyAnalysis.isEcKey;
 import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
+
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.IdpRuntimeException;
 import de.gematik.idp.field.ClaimName;
@@ -35,33 +36,33 @@ import org.jose4j.lang.JoseException;
 @AllArgsConstructor
 public class AuthenticationResponseBuilder {
 
-    public AuthenticationResponse buildResponseForChallenge(
-        final AuthenticationChallenge authenticationChallenge,
-        final PkiIdentity clientIdentity) {
-        final JwtClaims claims = new JwtClaims();
-        claims.setClaim(ClaimName.NESTED_JWT.getJoseName(), authenticationChallenge.getChallenge().getRawString());
+  public AuthenticationResponse buildResponseForChallenge(
+      final AuthenticationChallenge authenticationChallenge, final PkiIdentity clientIdentity) {
+    final JwtClaims claims = new JwtClaims();
+    claims.setClaim(
+        ClaimName.NESTED_JWT.getJoseName(), authenticationChallenge.getChallenge().getRawString());
 
-        final JsonWebSignature jsonWebSignature = new JsonWebSignature();
-        jsonWebSignature.setPayload(claims.toJson());
+    final JsonWebSignature jsonWebSignature = new JsonWebSignature();
+    jsonWebSignature.setPayload(claims.toJson());
 
-        if (isEcKey(clientIdentity.getCertificate().getPublicKey())) {
-            jsonWebSignature.setAlgorithmHeaderValue(BRAINPOOL256_USING_SHA256);
-        } else {
-            jsonWebSignature.setAlgorithmHeaderValue(RSA_PSS_USING_SHA256);
-        }
-        jsonWebSignature.setKey(clientIdentity.getPrivateKey());
-
-        jsonWebSignature.setHeader("typ", "JWT");
-        jsonWebSignature.setHeader("cty", "NJWT");
-        jsonWebSignature.setCertificateChainHeaderValue(clientIdentity.getCertificate());
-
-        try {
-            final String compactSerialization = jsonWebSignature.getCompactSerialization();
-            return AuthenticationResponse.builder()
-                .signedChallenge(new JsonWebToken(compactSerialization))
-                .build();
-        } catch (final JoseException e) {
-            throw new IdpRuntimeException(e);
-        }
+    if (isEcKey(clientIdentity.getCertificate().getPublicKey())) {
+      jsonWebSignature.setAlgorithmHeaderValue(BRAINPOOL256_USING_SHA256);
+    } else {
+      jsonWebSignature.setAlgorithmHeaderValue(RSA_PSS_USING_SHA256);
     }
+    jsonWebSignature.setKey(clientIdentity.getPrivateKey());
+
+    jsonWebSignature.setHeader("typ", "JWT");
+    jsonWebSignature.setHeader("cty", "NJWT");
+    jsonWebSignature.setCertificateChainHeaderValue(clientIdentity.getCertificate());
+
+    try {
+      final String compactSerialization = jsonWebSignature.getCompactSerialization();
+      return AuthenticationResponse.builder()
+          .signedChallenge(new JsonWebToken(compactSerialization))
+          .build();
+    } catch (final JoseException e) {
+      throw new IdpRuntimeException(e);
+    }
+  }
 }

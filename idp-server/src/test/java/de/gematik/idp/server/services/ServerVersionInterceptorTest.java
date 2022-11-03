@@ -17,6 +17,7 @@
 package de.gematik.idp.server.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import kong.unirest.Unirest;
@@ -28,15 +29,19 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ServerVersionInterceptorTest {
 
-    @LocalServerPort
-    private int localServerPort;
-    @Autowired
-    private IdpConfiguration idpConfiguration;
+  @LocalServerPort private int localServerPort;
+  @Autowired private IdpConfiguration idpConfiguration;
 
-    @Test
-    void getDiscoveryDocument_shouldHaveVersionHeader() {
-        assertThat(Unirest.get("http://localhost:" + localServerPort + IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT)
-            .asString().getHeaders().get("Version"))
-            .containsExactly(idpConfiguration.getVersion());
-    }
+  @Test
+  void getDiscoveryDocument_shouldHaveVersionHeader() {
+    assertThat(
+            Unirest.get(
+                    "http://localhost:"
+                        + localServerPort
+                        + IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT)
+                .asString()
+                .getHeaders()
+                .get("Version"))
+        .containsExactly(idpConfiguration.getVersion());
+  }
 }

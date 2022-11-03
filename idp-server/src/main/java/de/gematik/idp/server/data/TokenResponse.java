@@ -30,9 +30,9 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class TokenResponse {
 
-    private int expiresIn;
-    // TODO what do we need this for?
-    private String tokenType;
-    private String idToken;
-    private String accessToken;
+  private int expiresIn;
+  // TODO what do we need this for?
+  private String tokenType;
+  private String idToken;
+  private String accessToken;
 }

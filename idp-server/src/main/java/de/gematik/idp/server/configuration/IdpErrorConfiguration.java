@@ -29,7 +29,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class IdpErrorConfiguration {
 
-    private Map<String, IdpErrorResponse> genericErrorMap;
-    private Map<Integer, IdpErrorResponse> errorCodeMap;
-    private Map<String, IdpErrorResponse> joseExceptionMap;
+  private Map<String, IdpErrorResponse> genericErrorMap;
+  private Map<Integer, IdpErrorResponse> errorCodeMap;
+  private Map<String, IdpErrorResponse> joseExceptionMap;
 }

@@ -16,7 +16,14 @@
 
 package de.gematik.idp.server.devicevalidation;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,21 +37,27 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class DeviceValidationData {
 
-    @Id
-    @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column(name = "manufacturer")
-    private String manufacturer;
-    @Column(name = "product")
-    private String product;
-    @Column(name = "model")
-    private String model;
-    @Column(name = "os")
-    private String os;
-    @Column(name = "os_version")
-    private String osVersion;
-    @Column(name = "state")
-    @Enumerated(EnumType.STRING)
-    private DeviceValidationState state;
+  @Id
+  @Column(name = "id")
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+  @Column(name = "manufacturer")
+  private String manufacturer;
+
+  @Column(name = "product")
+  private String product;
+
+  @Column(name = "model")
+  private String model;
+
+  @Column(name = "os")
+  private String os;
+
+  @Column(name = "os_version")
+  private String osVersion;
+
+  @Column(name = "state")
+  @Enumerated(EnumType.STRING)
+  private DeviceValidationState state;
 }

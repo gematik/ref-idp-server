@@ -30,9 +30,7 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DeviceInformation {
 
-    @Builder.Default
-    private String name = "idpClient";
-    @Builder.Default
-    private String deviceInformationDataVersion = "1.0";
-    private DeviceType deviceType;
+  @Builder.Default private String name = "idpClient";
+  @Builder.Default private String deviceInformationDataVersion = "1.0";
+  private DeviceType deviceType;
 }

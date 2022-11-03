@@ -44,58 +44,64 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Slf4j
 public class AccessTokenInterceptor implements HandlerInterceptor, WebMvcConfigurer {
 
-    private final IdpJwtProcessor jwtProcessor;
-    private final RequestAccessToken requestAccessToken;
-    private final IdpKey idpEnc;
+  private final IdpJwtProcessor jwtProcessor;
+  private final RequestAccessToken requestAccessToken;
+  private final IdpKey idpEnc;
 
-    @Override
-    public void addInterceptors(final InterceptorRegistry registry) {
-        registry.addInterceptor(this).addPathPatterns("/**");
+  @Override
+  public void addInterceptors(final InterceptorRegistry registry) {
+    registry.addInterceptor(this).addPathPatterns("/**");
+  }
+
+  @Override
+  public boolean preHandle(
+      final HttpServletRequest request, final HttpServletResponse response, final Object handler) {
+    if (!doesTargetMethodHaveValidationAnnotation(handler)) {
+      return true;
     }
 
-    @Override
-    public boolean preHandle(final HttpServletRequest request, final HttpServletResponse response,
-        final Object handler) {
-        if (!doesTargetMethodHaveValidationAnnotation(handler)) {
-            return true;
-        }
-
-        final IdpJwe encryptedAccessToken = Optional.ofNullable(request.getHeader(HttpHeaders.AUTHORIZATION))
+    final IdpJwe encryptedAccessToken =
+        Optional.ofNullable(request.getHeader(HttpHeaders.AUTHORIZATION))
             .filter(StringUtils::isNotEmpty)
             .filter(authorizationHeader -> authorizationHeader.startsWith("Bearer "))
             .map(authorizationHeader -> authorizationHeader.split("Bearer ")[1])
             .map(IdpJwe::new)
-            .orElseThrow(() -> new IdpServerAccessDeniedException("No authorization-Header with Bearer-Token given"));
-        final JsonWebToken accessToken;
-        try {
-            accessToken = encryptedAccessToken.decryptNestedJwt(idpEnc.getIdentity().getPrivateKey());
-        } catch (final RuntimeException e) {
-            throw new IdpServerAccessDeniedException("Error while decrypting Access-Token");
-        }
-
-        try {
-            jwtProcessor.verifyAndThrowExceptionIfFail(accessToken);
-        } catch (final RuntimeException e) {
-            throw new IdpServerAccessDeniedException("Error while verifying Access-Token");
-        }
-
-        if (!accessToken.getScopesBodyClaim().contains(IdpScope.PAIRING)) {
-            throw new IdpServerException(IdpServerException.ERROR_ID_ACCESS_DENIED, IdpErrorType.ACCESS_DENIED,
-                "Scope missing: " + IdpScope.PAIRING.getJwtValue(),
-                HttpStatus.FORBIDDEN);
-        }
-
-        requestAccessToken.setAccessToken(accessToken);
-
-        return true;
+            .orElseThrow(
+                () ->
+                    new IdpServerAccessDeniedException(
+                        "No authorization-Header with Bearer-Token given"));
+    final JsonWebToken accessToken;
+    try {
+      accessToken = encryptedAccessToken.decryptNestedJwt(idpEnc.getIdentity().getPrivateKey());
+    } catch (final RuntimeException e) {
+      throw new IdpServerAccessDeniedException("Error while decrypting Access-Token");
     }
 
-    private boolean doesTargetMethodHaveValidationAnnotation(final Object handler) {
-        return Optional.ofNullable(handler)
-            .filter(HandlerMethod.class::isInstance)
-            .map(HandlerMethod.class::cast)
-            .filter(handlerMethod -> handlerMethod.hasMethodAnnotation(ValidateAccessToken.class))
-            .map(handlerMethod -> handlerMethod.getMethodAnnotation(ValidateAccessToken.class))
-            .isPresent();
+    try {
+      jwtProcessor.verifyAndThrowExceptionIfFail(accessToken);
+    } catch (final RuntimeException e) {
+      throw new IdpServerAccessDeniedException("Error while verifying Access-Token");
     }
+
+    if (!accessToken.getScopesBodyClaim().contains(IdpScope.PAIRING)) {
+      throw new IdpServerException(
+          IdpServerException.ERROR_ID_ACCESS_DENIED,
+          IdpErrorType.ACCESS_DENIED,
+          "Scope missing: " + IdpScope.PAIRING.getJwtValue(),
+          HttpStatus.FORBIDDEN);
+    }
+
+    requestAccessToken.setAccessToken(accessToken);
+
+    return true;
+  }
+
+  private boolean doesTargetMethodHaveValidationAnnotation(final Object handler) {
+    return Optional.ofNullable(handler)
+        .filter(HandlerMethod.class::isInstance)
+        .map(HandlerMethod.class::cast)
+        .filter(handlerMethod -> handlerMethod.hasMethodAnnotation(ValidateAccessToken.class))
+        .map(handlerMethod -> handlerMethod.getMethodAnnotation(ValidateAccessToken.class))
+        .isPresent();
+  }
 }

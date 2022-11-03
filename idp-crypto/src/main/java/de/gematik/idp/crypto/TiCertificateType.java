@@ -19,12 +19,12 @@ package de.gematik.idp.crypto;
 import java.security.cert.X509Certificate;
 
 public enum TiCertificateType {
-    HBA,
-    EGK,
-    SMCB,
-    UNKNOWN;
+  HBA,
+  EGK,
+  SMCB,
+  UNKNOWN;
 
-    public static TiCertificateType determineCertificateType(X509Certificate certificate) {
-        return CertificateAnalysis.determineCertificateType(certificate);
-    }
+  public static TiCertificateType determineCertificateType(X509Certificate certificate) {
+    return CertificateAnalysis.determineCertificateType(certificate);
+  }
 }

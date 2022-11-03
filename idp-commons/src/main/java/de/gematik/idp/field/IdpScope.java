@@ -16,23 +16,25 @@
 
 package de.gematik.idp.field;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
 import java.util.Optional;
 import java.util.stream.Stream;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter
 public enum IdpScope {
-    OPENID("openid"), EREZEPT("e-rezept"), PAIRING("pairing"), EREZEPTDEV("e-rezept-dev"),
-    AUTHENTICATORDEV("authenticator-dev");
+  OPENID("openid"),
+  EREZEPT("e-rezept"),
+  PAIRING("pairing"),
+  EREZEPTDEV("e-rezept-dev"),
+  AUTHENTICATORDEV("authenticator-dev");
 
-    private final String jwtValue;
+  private final String jwtValue;
 
-    public static Optional<IdpScope> fromJwtValue(final String jwtValue) {
-        return Stream.of(IdpScope.values())
-                .filter(candidate -> candidate.getJwtValue().equals(jwtValue))
-                .findAny();
-    }
+  public static Optional<IdpScope> fromJwtValue(final String jwtValue) {
+    return Stream.of(IdpScope.values())
+        .filter(candidate -> candidate.getJwtValue().equals(jwtValue))
+        .findAny();
+  }
 }

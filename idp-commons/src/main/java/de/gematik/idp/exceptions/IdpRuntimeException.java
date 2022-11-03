@@ -18,17 +18,17 @@ package de.gematik.idp.exceptions;
 
 public class IdpRuntimeException extends RuntimeException {
 
-    private static final long serialVersionUID = 4956462897121513838L;
+  private static final long serialVersionUID = 4956462897121513838L;
 
-    public IdpRuntimeException(final Exception e) {
-        super(e);
-    }
+  public IdpRuntimeException(final Exception e) {
+    super(e);
+  }
 
-    public IdpRuntimeException(final String s) {
-        super(s);
-    }
+  public IdpRuntimeException(final String s) {
+    super(s);
+  }
 
-    public IdpRuntimeException(final String s, final Exception e) {
-        super(s, e);
-    }
+  public IdpRuntimeException(final String s, final Exception e) {
+    super(s, e);
+  }
 }

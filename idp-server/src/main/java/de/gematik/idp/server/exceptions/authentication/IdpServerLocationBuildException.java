@@ -22,10 +22,11 @@ import org.springframework.http.HttpStatus;
 
 public class IdpServerLocationBuildException extends IdpServerException {
 
-    private static final long serialVersionUID = -4036426792758314390L;
-    private static final String URI_BUILDER_ERROR = "Error during authentication building the token-location URL";
+  private static final long serialVersionUID = -4036426792758314390L;
+  private static final String URI_BUILDER_ERROR =
+      "Error during authentication building the token-location URL";
 
-    public IdpServerLocationBuildException(final Exception e) {
-        super(URI_BUILDER_ERROR, e, IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
-    }
+  public IdpServerLocationBuildException(final Exception e) {
+    super(URI_BUILDER_ERROR, e, IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+  }
 }

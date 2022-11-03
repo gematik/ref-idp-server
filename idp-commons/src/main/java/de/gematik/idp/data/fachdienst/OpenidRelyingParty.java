@@ -30,20 +30,19 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class OpenidRelyingParty {
 
-    private String signedJwksUri;
-    private String organizationName;
-    private String clientName;
-    private String logoUri;
-    private String[] redirectUris;
-    private String[] responseTypes;
-    private String[] clientRegistrationTypes;
-    private String[] grantTypes;
-    private boolean requirePushedAuthorizationRequests;
-    private String tokenEndpointAuthMethod;
-    private String tokenEndpointAuthSigningAlg;
-    private String idTokenSignedResponseAlg;
-    private String idTokenEncryptedResponseAlg;
-    private String idTokenEncryptedResponseEnc;
-    private String scope;
-
+  private String signedJwksUri;
+  private String organizationName;
+  private String clientName;
+  private String logoUri;
+  private String[] redirectUris;
+  private String[] responseTypes;
+  private String[] clientRegistrationTypes;
+  private String[] grantTypes;
+  private boolean requirePushedAuthorizationRequests;
+  private String tokenEndpointAuthMethod;
+  private String tokenEndpointAuthSigningAlg;
+  private String idTokenSignedResponseAlg;
+  private String idTokenEncryptedResponseAlg;
+  private String idTokenEncryptedResponseEnc;
+  private String scope;
 }

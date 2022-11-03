@@ -27,6 +27,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class IdpClientConfiguration {
 
-    private String redirectUri;
-    private boolean returnSsoToken;
+  private String redirectUri;
+  private boolean returnSsoToken;
 }
