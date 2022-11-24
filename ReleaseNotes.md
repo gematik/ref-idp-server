@@ -1,3 +1,10 @@
+# Release 21.0.16
+
+- fix invalid certificates
+- fix location in 302 error message
+- refactoring nonce generation
+- update dependencies
+
 # Release 21.0.14
 
 - reformat code: spotless-maven-plugin, style: GOOGLE

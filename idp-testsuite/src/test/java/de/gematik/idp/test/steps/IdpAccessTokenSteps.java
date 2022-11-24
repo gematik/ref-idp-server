@@ -105,7 +105,7 @@ public class IdpAccessTokenSteps extends IdpStepsBase {
     params.put("code", params.remove("token_code"));
 
     // create/encrypt key_verifier
-    final byte[] tokenKeyBytes = Nonce.randomAlphanumeric(256 / 8).getBytes();
+    final byte[] tokenKeyBytes = Nonce.randomBytes(256 / 8);
     final SecretKey tokenKey = new SecretKeySpec(tokenKeyBytes, "AES");
     if (IdpTestEnvironmentConfigurator.isRbelLoggerActive()) {
       TigerDirector.getTigerTestEnvMgr()

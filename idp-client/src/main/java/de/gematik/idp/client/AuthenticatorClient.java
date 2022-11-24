@@ -267,7 +267,7 @@ public class AuthenticatorClient {
       final TokenRequest tokenRequest,
       final UnaryOperator<MultipartBody> beforeTokenCallback,
       final Consumer<HttpResponse<JsonNode>> afterTokenCallback) {
-    final byte[] tokenKeyBytes = Nonce.randomAlphanumeric(256 / 8).getBytes();
+    final byte[] tokenKeyBytes = Nonce.randomBytes(256 / 8);
     final SecretKey tokenKey = new SecretKeySpec(tokenKeyBytes, "AES");
     final IdpJwe keyVerifierToken =
         buildKeyVerifierToken(

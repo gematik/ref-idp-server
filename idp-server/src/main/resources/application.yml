@@ -140,6 +140,7 @@ idp:
         detailMessage: "nonce ist ungültig"
         error: INVALID_REQUEST
         code: 2007
+        httpStatusCode: 302
       2008:
         detailMessage: "code_challenge_method ist ungültig"
         error: INVALID_REQUEST

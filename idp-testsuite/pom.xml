@@ -7,12 +7,12 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>21.0.14</version>
+    <version>21.0.16</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>idp-testsuite</artifactId>
-  <version>21.0.14</version>
+  <version>21.0.16</version>
   <packaging>jar</packaging>
 
   <properties>
@@ -69,13 +69,13 @@
     <dependency>
       <groupId>io.cucumber</groupId>
       <artifactId>datatable</artifactId>
-      <version>7.8.1</version>
+      <version>7.9.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.cucumber</groupId>
       <artifactId>datatable-matchers</artifactId>
-      <version>7.8.1</version>
+      <version>7.9.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>

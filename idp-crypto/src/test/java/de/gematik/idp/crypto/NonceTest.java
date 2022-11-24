@@ -52,13 +52,20 @@ class NonceTest {
 
   @Test
   void checkExactNonceLength() {
-    final int BYTE_AMOUNT = 256;
+    final int BYTE_AMOUNT = 24;
     final String nonce = Nonce.getNonceAsBase64UrlEncodedString(BYTE_AMOUNT);
     assertThat(Base64.getUrlDecoder().decode(nonce)).hasSize(BYTE_AMOUNT);
 
     final int HEXSTR_LEN = 10;
     final String hexStr = Nonce.getNonceAsHex(HEXSTR_LEN);
     assertThat(hexStr).hasSize(HEXSTR_LEN);
+  }
+
+  @Test
+  void checkResultingBase64NonceLength() {
+    final int BYTE_AMOUNT = 24;
+    final String nonce = Nonce.getNonceAsBase64UrlEncodedString(BYTE_AMOUNT);
+    assertThat(nonce).hasSize(4 * BYTE_AMOUNT / 3);
   }
 
   @Test
@@ -83,12 +90,5 @@ class NonceTest {
     assertThatThrownBy(() -> Nonce.getNonceAsHex(13))
         .isInstanceOf(IdpCryptoException.class)
         .hasMessageContaining("string length is expected to be even");
-  }
-
-  @Test
-  void checkAlphaNum() {
-    final int nonceLen = 62;
-    final String alphaNumStr = Nonce.randomAlphanumeric(nonceLen);
-    assertThat(alphaNumStr).hasSize(nonceLen).matches("[A-Za-z0-9]*");
   }
 }

@@ -92,7 +92,8 @@ public class AuthenticationTokenBuilder {
     claimsMap.put(ISSUED_AT.getJoseName(), issueingTime.toEpochSecond());
     claimsMap.put(TOKEN_TYPE.getJoseName(), "code");
     claimsMap.put(AUTH_TIME.getJoseName(), issueingTime.toEpochSecond());
-    claimsMap.put(SERVER_NONCE.getJoseName(), Nonce.randomAlphanumeric(20));
+    claimsMap.put(SERVER_NONCE.getJoseName(), Nonce.getNonceAsBase64UrlEncodedString(24));
+
     claimsMap.put(JWT_ID.getJoseName(), Nonce.getNonceAsHex(IdpConstants.JTI_LENGTH));
     claimsMap.put(
         AUTHENTICATION_METHODS_REFERENCE.getJoseName(),
@@ -163,7 +164,7 @@ public class AuthenticationTokenBuilder {
         RESPONSE_TYPE.getJoseName(), extractClaimFromChallengeToken(challengeToken, RESPONSE_TYPE));
     claimsMap.put(TOKEN_TYPE.getJoseName(), "code");
     claimsMap.put(AUTH_TIME.getJoseName(), ZonedDateTime.now().toEpochSecond());
-    claimsMap.put(SERVER_NONCE.getJoseName(), Nonce.randomAlphanumeric(20));
+    claimsMap.put(SERVER_NONCE.getJoseName(), Nonce.getNonceAsBase64UrlEncodedString(24));
     claimsMap.put(ISSUER.getJoseName(), extractClaimFromChallengeToken(challengeToken, ISSUER));
     claimsMap.put(JWT_ID.getJoseName(), Nonce.getNonceAsHex(IdpConstants.JTI_LENGTH));
 
@@ -206,7 +207,7 @@ public class AuthenticationTokenBuilder {
     claimsMap.put(RESPONSE_TYPE.getJoseName(), sessionData.get(RESPONSE_TYPE.getJoseName()));
     claimsMap.put(TOKEN_TYPE.getJoseName(), "code");
     claimsMap.put(AUTH_TIME.getJoseName(), ZonedDateTime.now().toEpochSecond());
-    claimsMap.put(SERVER_NONCE.getJoseName(), Nonce.randomAlphanumeric(20));
+    claimsMap.put(SERVER_NONCE.getJoseName(), Nonce.getNonceAsBase64UrlEncodedString(24));
     claimsMap.put(ISSUER.getJoseName(), issuerUrl);
     claimsMap.put(JWT_ID.getJoseName(), Nonce.getNonceAsHex(IdpConstants.JTI_LENGTH));
     claimsMap.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), List.of(AMR_FAST_TRACK));

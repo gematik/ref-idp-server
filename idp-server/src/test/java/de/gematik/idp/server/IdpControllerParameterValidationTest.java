@@ -205,7 +205,7 @@ class IdpControllerParameterValidationTest {
 
   @Test
   void getAuthenticationChallenge_emptyNonce_shouldGiveError() {
-    assertErrorResponseMatches(
+    assertForwardErrorResponseMatches(
         buildGetChallengeRequest(getInvalidationFunction("nonce", "")),
         2007,
         INVALID_REQUEST,

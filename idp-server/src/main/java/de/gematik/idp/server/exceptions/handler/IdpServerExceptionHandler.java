@@ -90,29 +90,38 @@ public class IdpServerExceptionHandler {
       final IdpServerException exc) {
     response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
     response.setHeader(HttpHeaders.PRAGMA, "no-cache");
-    final UriBuilder uriBuilder =
-        UriBuilder.fromPath(serverUrlService.determineServerUrl())
-            .queryParam(
-                "error",
-                UriUtils.encodeQueryParam(
-                    errorResponse.getError().getSerializationValue(), Charset.defaultCharset()))
-            .queryParam(
-                "gematik_code",
-                UriUtils.encodeQueryParam(errorResponse.getCode(), Charset.defaultCharset()))
-            .queryParam("gematik_timestamp", errorResponse.getTimestamp())
-            .queryParam(
-                "gematik_uuid",
-                UriUtils.encodeQueryParam(errorResponse.getErrorUuid(), Charset.defaultCharset()))
-            .queryParam(
-                "gematik_error_text",
-                UriUtils.encodeQueryParam(
-                    errorResponse.getDetailMessage(), Charset.defaultCharset()));
-    addStateIfAvailable(uriBuilder, request);
-    addDescriptionIfAvailable(uriBuilder, exc);
-    final URI location = uriBuilder.build();
-    response.setHeader(HttpHeaders.LOCATION, location.toString());
+    String redirectUri = request.getParameter("redirect_uri");
+    if (redirectUri == null) {
+      final IdpErrorResponse body = getBody(exc);
+      if (!StringUtils.isEmpty(exc.getMessage())) {
+        body.setDetailMessage(exc.getMessage());
+      }
+      return new ResponseEntity<>(body, getHeader(), HttpStatus.BAD_REQUEST);
+    } else {
+      final UriBuilder uriBuilder =
+          UriBuilder.fromPath(redirectUri)
+              .queryParam(
+                  "error",
+                  UriUtils.encodeQueryParam(
+                      errorResponse.getError().getSerializationValue(), Charset.defaultCharset()))
+              .queryParam(
+                  "gematik_code",
+                  UriUtils.encodeQueryParam(errorResponse.getCode(), Charset.defaultCharset()))
+              .queryParam("gematik_timestamp", errorResponse.getTimestamp())
+              .queryParam(
+                  "gematik_uuid",
+                  UriUtils.encodeQueryParam(errorResponse.getErrorUuid(), Charset.defaultCharset()))
+              .queryParam(
+                  "gematik_error_text",
+                  UriUtils.encodeQueryParam(
+                      errorResponse.getDetailMessage(), Charset.defaultCharset()));
+      addStateIfAvailable(uriBuilder, request);
+      addDescriptionIfAvailable(uriBuilder, exc);
+      final URI location = uriBuilder.build();
+      response.setHeader(HttpHeaders.LOCATION, location.toString());
 
-    return new ResponseEntity<>(HttpStatus.FOUND);
+      return new ResponseEntity<>(HttpStatus.FOUND);
+    }
   }
 
   private void addDescriptionIfAvailable(

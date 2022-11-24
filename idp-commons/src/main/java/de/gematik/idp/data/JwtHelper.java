@@ -76,7 +76,7 @@ public final class JwtHelper {
                     identity -> {
                       final IdpKeyDescriptor keyDesc =
                           IdpKeyDescriptor.constructFromX509Certificate(
-                              identity.getCertificate(), identity.getKeyId(), true);
+                              identity.getCertificate(), identity.getKeyId(), false);
                       keyDesc.setPublicKeyUse(identity.getUse().orElse(null));
                       return keyDesc;
                     })

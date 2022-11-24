@@ -17,6 +17,7 @@
 package de.gematik.idp.crypto;
 
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 import lombok.AccessLevel;
@@ -40,9 +41,7 @@ public final class Nonce {
               + NONCE_BYTE_AMOUNT_MAX);
     }
 
-    final SecureRandom random = new SecureRandom();
-    final byte[] randomArray = new byte[randomByteAmount];
-    random.nextBytes(randomArray);
+    final byte[] randomArray = randomBytes(randomByteAmount);
     return new String(Base64.getUrlEncoder().withoutPadding().encode(randomArray));
   }
 
@@ -57,19 +56,17 @@ public final class Nonce {
     if (strlen % 2 != 0) {
       throw new IdpCryptoException("Requested string length is expected to be even.");
     }
-    final SecureRandom random = new SecureRandom();
-    final byte[] randomArray = new byte[strlen / 2];
-    random.nextBytes(randomArray);
+    final byte[] randomArray = randomBytes(strlen / 2);
     return Hex.toHexString(randomArray);
   }
 
-  public static String randomAlphanumeric(final int strlen) {
-    final String aplhaNumSource = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    StringBuilder sb = new StringBuilder(strlen);
-    SecureRandom secureRandom = new SecureRandom();
-    for (int i = 0; i < strlen; i++) {
-      sb.append(aplhaNumSource.charAt(secureRandom.nextInt(aplhaNumSource.length())));
+  public static byte[] randomBytes(final int numberOfBytes) {
+    byte[] bytes = new byte[numberOfBytes];
+    try {
+      SecureRandom.getInstanceStrong().nextBytes(bytes);
+    } catch (NoSuchAlgorithmException e) {
+      throw new IdpCryptoException("Error while generating random bytes", e);
     }
-    return sb.toString();
+    return bytes;
   }
 }

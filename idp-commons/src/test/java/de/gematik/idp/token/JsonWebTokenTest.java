@@ -56,7 +56,7 @@ class JsonWebTokenTest {
   @BeforeEach
   public void setup(@PkiKeyResolver.Filename("ecc") final PkiIdentity identity) {
     idpJwtProcessor = new IdpJwtProcessor(identity);
-    aesKey = new SecretKeySpec(Nonce.randomAlphanumeric(256 / 8).getBytes(), "AES");
+    aesKey = new SecretKeySpec(Nonce.randomBytes(256 / 8), "AES");
     this.identity = identity;
   }
 

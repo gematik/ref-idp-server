@@ -200,10 +200,10 @@ public class IdpClient implements IIdpClient {
     assertThatClientIsInitialized();
 
     final String codeVerifier = ClientUtilities.generateCodeVerifier();
-    final String nonce = Nonce.randomAlphanumeric(20);
+    final String nonce = Nonce.getNonceAsBase64UrlEncodedString(24);
 
     // Authorization
-    final String state = Nonce.randomAlphanumeric(20);
+    final String state = Nonce.getNonceAsBase64UrlEncodedString(24);
     LOGGER.debug(
         "Performing Authorization with remote-URL '{}'",
         discoveryDocumentResponse.getAuthorizationEndpoint());
@@ -273,10 +273,10 @@ public class IdpClient implements IIdpClient {
     assertThatClientIsInitialized();
 
     final String codeVerifier = ClientUtilities.generateCodeVerifier();
-    final String nonce = Nonce.randomAlphanumeric(20);
+    final String nonce = Nonce.getNonceAsBase64UrlEncodedString(24);
 
     // Authorization
-    final String state = Nonce.randomAlphanumeric(20);
+    final String state = Nonce.getNonceAsBase64UrlEncodedString(24);
     LOGGER.debug(
         "Performing Authorization with remote-URL '{}'",
         discoveryDocumentResponse.getAuthorizationEndpoint());
@@ -340,10 +340,10 @@ public class IdpClient implements IIdpClient {
     assertThatClientIsInitialized();
 
     final String codeVerifier = ClientUtilities.generateCodeVerifier();
-    final String nonce = Nonce.randomAlphanumeric(20);
+    final String nonce = Nonce.getNonceAsBase64UrlEncodedString(24);
 
     // Authorization
-    final String state = Nonce.randomAlphanumeric(20);
+    final String state = Nonce.getNonceAsBase64UrlEncodedString(24);
     LOGGER.debug(
         "Performing Authorization with remote-URL '{}'",
         discoveryDocumentResponse.getAuthorizationEndpoint());
