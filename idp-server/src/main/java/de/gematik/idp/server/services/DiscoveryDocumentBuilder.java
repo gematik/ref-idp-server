@@ -36,9 +36,10 @@ public class DiscoveryDocumentBuilder {
 
   private IdpKey idpEnc;
   private IdpKey idpSig;
+  private ScopeService scopeService;
 
   public IdpDiscoveryDocument buildDiscoveryDocument(
-      final String serverUrl, final String issuerUrl) {
+      final String serverUrl, final String issuerUrl, final String[] scopes) {
     final ZonedDateTime currentTime = ZonedDateTime.now();
     return IdpDiscoveryDocument.builder()
         .authorizationEndpoint(serverUrl + BASIC_AUTHORIZATION_ENDPOINT)
@@ -48,21 +49,21 @@ public class DiscoveryDocumentBuilder {
         .ssoEndpoint(serverUrl + SSO_ENDPOINT)
         .uriPair(serverUrl + PAIRING_ENDPOINT)
         .thirdPartyAuthorizationEndpoint(serverUrl + THIRD_PARTY_ENDPOINT)
-        .grantTypesSupported(new String[] {"authorization_code"})
-        .idTokenSigningAlgValuesSupported(new String[] {"BP256R1"})
-        .scopesSupported(new String[] {"openid", "e-rezept", "pairing", "authenticator-dev"})
-        .responseTypesSupported(new String[] {"code"})
-        .subjectTypesSupported(new String[] {"pairwise"})
-        .tokenEndpointAuthMethodsSupported(new String[] {"none"})
-        .acrValuesSupported(new String[] {"gematik-ehealth-loa-high"})
-        .responseModesSupported(new String[] {"query"})
+        .grantTypesSupported(new String[]{"authorization_code"})
+        .idTokenSigningAlgValuesSupported(new String[]{"BP256R1"})
+        .scopesSupported(scopes)
+        .responseTypesSupported(new String[]{"code"})
+        .subjectTypesSupported(new String[]{"pairwise"})
+        .tokenEndpointAuthMethodsSupported(new String[]{"none"})
+        .acrValuesSupported(new String[]{"gematik-ehealth-loa-high"})
+        .responseModesSupported(new String[]{"query"})
         .issuer(issuerUrl)
         .jwksUri(serverUrl + "/jwks")
         .exp(currentTime.plusHours(24).toEpochSecond())
         .iat(currentTime.toEpochSecond())
         .uriPukIdpEnc(serverUrl + KeyInformationController.PUK_URI_ENC)
         .uriPukIdpSig(serverUrl + KeyInformationController.PUK_URI_SIG)
-        .codeChallengeMethodsSupported(new String[] {"S256"})
+        .codeChallengeMethodsSupported(new String[]{"S256"})
         .kkAppListUri(serverUrl + APPLIST_ENDPOINT)
         .build();
   }

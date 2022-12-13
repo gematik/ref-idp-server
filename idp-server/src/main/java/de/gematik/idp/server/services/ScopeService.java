@@ -14,27 +14,26 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.field;
+package de.gematik.idp.server.services;
 
+import de.gematik.idp.data.ScopeConfiguration;
+import de.gematik.idp.server.configuration.IdpConfiguration;
 import java.util.Optional;
-import java.util.stream.Stream;
-import lombok.Getter;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+@Service
 @RequiredArgsConstructor
-@Getter
-public enum IdpScope {
-  OPENID("openid"),
-  EREZEPT("e-rezept"),
-  PAIRING("pairing"),
-  EREZEPTDEV("e-rezept-dev"),
-  AUTHENTICATORDEV("authenticator-dev");
+public class ScopeService {
 
-  private final String jwtValue;
+  final IdpConfiguration idpConfiguration;
 
-  public static Optional<IdpScope> fromJwtValue(final String jwtValue) {
-    return Stream.of(IdpScope.values())
-        .filter(candidate -> candidate.getJwtValue().equals(jwtValue))
-        .findAny();
+  public Optional<ScopeConfiguration> getScopeConfiguration(final String scope) {
+    return Optional.ofNullable(idpConfiguration.getScopesConfiguration().get(scope));
+  }
+
+  public Set<String> getScopes() {
+    return idpConfiguration.getScopesConfiguration().keySet();
   }
 }

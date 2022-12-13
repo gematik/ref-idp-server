@@ -20,26 +20,32 @@ idp:
     - "blocked_user_agent"
   userConsent:
     descriptionTexts:
-      scopes:
-        OPENID: "Zugriff auf den ID-Token."
-        EREZEPT: "Zugriff auf die E-Rezept-Funktionalität."
-        PAIRING: "Zugriff auf die Daten für die biometrischer Authentisierung."
-        AUTHENTICATORDEV: "Zugriff auf Mock-RP für Authenticator Entwicklung"
       claims:
         GIVEN_NAME: "Zustimmung zur Verarbeitung des Vornamens"
         PROFESSION_OID: "Zustimmung zur Verarbeitung der Rolle"
         ORGANIZATION_NAME: "Zustimmung zur Verarbeitung der Organisationszugehörigkeit"
         FAMILY_NAME: "Zustimmung zur Verarbeitung des Nachnamens"
         ID_NUMBER: "Zustimmung zur Verarbeitung der Id (z.B. Krankenversichertennummer, Telematik-Id)"
-    claimsToBeIncluded:
-      EREZEPT: [ GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER ]
-      PAIRING: [ ID_NUMBER ]
-      AUTHENTICATORDEV: [ GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER ]
   productTypeDisplayString: "IDP"
-  scopeAudienceUrls:
-    e-rezept: "https://erp-test.zentral.erp.splitdns.ti-dienste.de/"
-    pairing: "https://idp-pairing-test.zentral.idp.splitdns.ti-dienste.de"
-    authenticator-dev: "https://authenticator-dev.ti-dienste.de"
+  scopesConfiguration:
+    openid:
+      description: "Zugriff auf den ID-Token."
+    e-rezept:
+      description: "Zugriff auf die E-Rezept-Funktionalität."
+      audienceUrl: "https://erp-test.zentral.erp.splitdns.ti-dienste.de/"
+      claimsToBeIncluded: [ GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER ]
+    pairing:
+      description: "Zugriff auf die Daten für die biometrischer Authentisierung."
+      audienceUrl: "https://idp-pairing-test.zentral.idp.splitdns.ti-dienste.de"
+      claimsToBeIncluded: [ ID_NUMBER ]
+    authenticator-dev:
+      description: "Zugriff auf Mock-RP für Authenticator Entwicklung"
+      audienceUrl: "https://authenticator-dev.ti-dienste.de"
+      claimsToBeIncluded: [ GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER ]
+    scope-template:
+      description: "123 Test"
+      audienceUrl: "https://template.audience.de"
+      claimsToBeIncluded: [ ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER ]
   registeredClient:
     eRezeptApp:
       redirectUri: http://redirect.gematik.de/erezept

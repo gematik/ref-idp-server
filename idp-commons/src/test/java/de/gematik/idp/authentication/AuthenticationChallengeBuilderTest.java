@@ -18,6 +18,8 @@ package de.gematik.idp.authentication;
 
 import static de.gematik.idp.field.ClaimName.CODE_CHALLENGE_METHOD;
 import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
+import static de.gematik.idp.field.ClaimName.FAMILY_NAME;
+import static de.gematik.idp.field.ClaimName.GIVEN_NAME;
 import static de.gematik.idp.field.ClaimName.ISSUED_AT;
 import static de.gematik.idp.field.ClaimName.JWT_ID;
 import static de.gematik.idp.field.ClaimName.KEY_ID;
@@ -26,9 +28,9 @@ import static de.gematik.idp.field.ClaimName.TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import de.gematik.idp.crypto.model.PkiIdentity;
+import de.gematik.idp.data.ScopeConfiguration;
 import de.gematik.idp.data.UserConsentConfiguration;
 import de.gematik.idp.data.UserConsentDescriptionTexts;
-import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.tests.Remark;
@@ -54,33 +56,26 @@ class AuthenticationChallengeBuilderTest {
 
   @BeforeEach
   public void init(@PkiKeyResolver.Filename("rsa") final PkiIdentity serverIdentity) {
+    ScopeConfiguration openidConfig =
+        ScopeConfiguration.builder().description("openid desc").build();
+    ScopeConfiguration pairingConfig =
+        ScopeConfiguration.builder()
+            .audienceUrl("erplala")
+            .description("erp desc")
+            .claimsToBeIncluded(List.of(GIVEN_NAME, FAMILY_NAME))
+            .build();
     serverIdentity.setKeyId(Optional.of(SERVER_KEY_IDENTITY));
     authenticationChallengeBuilder =
         AuthenticationChallengeBuilder.builder()
             .serverSigner(new IdpJwtProcessor(serverIdentity))
             .userConsentConfiguration(
                 UserConsentConfiguration.builder()
-                    .claimsToBeIncluded(
-                        Map.of(
-                            IdpScope.OPENID,
-                            List.of(),
-                            IdpScope.EREZEPT,
-                            List.of(),
-                            IdpScope.PAIRING,
-                            List.of()))
                     .descriptionTexts(
                         UserConsentDescriptionTexts.builder()
                             .claims(Collections.emptyMap())
-                            .scopes(
-                                Map.of(
-                                    IdpScope.OPENID,
-                                    "openid",
-                                    IdpScope.PAIRING,
-                                    "pairing",
-                                    IdpScope.EREZEPT,
-                                    "erezept"))
                             .build())
                     .build())
+            .scopesConfiguration(Map.of("openid", openidConfig, "pairing", pairingConfig))
             .build();
   }
 

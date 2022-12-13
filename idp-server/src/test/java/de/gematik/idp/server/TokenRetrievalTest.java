@@ -16,6 +16,9 @@
 
 package de.gematik.idp.server;
 
+import static de.gematik.idp.IdpConstants.EREZEPT;
+import static de.gematik.idp.IdpConstants.OPENID;
+import static de.gematik.idp.IdpConstants.PAIRING;
 import static de.gematik.idp.TestConstants.REDIRECT_URI_E_REZEPT_APP;
 import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
 import static de.gematik.idp.client.AuthenticatorClient.getAllHeaderElementsAsMap;
@@ -34,7 +37,6 @@ import de.gematik.idp.client.data.AuthorizationResponse;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.field.ClaimName;
-import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.tests.Afo;
@@ -475,7 +477,7 @@ class TokenRetrievalTest {
 
   @Test
   void scopeWithoutErezept_shouldGiveServerError() throws UnirestException {
-    idpClient.setScopes(Set.of(IdpScope.OPENID));
+    idpClient.setScopes(Set.of(OPENID));
 
     assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
         .isInstanceOf(IdpClientRuntimeException.class)
@@ -532,7 +534,7 @@ class TokenRetrievalTest {
 
   @Test
   void scopeWithoutOpenid_shouldGiveException() throws UnirestException {
-    idpClient.setScopes(Set.of(IdpScope.EREZEPT));
+    idpClient.setScopes(Set.of(EREZEPT));
 
     assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
         .isInstanceOf(IdpClientRuntimeException.class)
@@ -588,11 +590,11 @@ class TokenRetrievalTest {
 
   @Test
   void scopeOpenIdAndPairing_shouldGiveAccessToken() throws UnirestException {
-    idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
+    idpClient.setScopes(Set.of(OPENID, PAIRING));
     final IdpTokenResult loginResult = idpClient.login(egkUserIdentity);
 
     assertThat(loginResult.getAccessToken().getScopesBodyClaim())
-        .containsExactlyInAnyOrder(IdpScope.OPENID, IdpScope.PAIRING);
+        .containsExactlyInAnyOrder(OPENID, PAIRING);
   }
 
   @Test

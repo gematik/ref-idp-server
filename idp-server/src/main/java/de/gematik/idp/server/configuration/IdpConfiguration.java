@@ -16,6 +16,7 @@
 
 package de.gematik.idp.server.configuration;
 
+import de.gematik.idp.data.ScopeConfiguration;
 import de.gematik.idp.data.UserConsentConfiguration;
 import de.gematik.idp.server.data.IdpClientConfiguration;
 import java.util.List;
@@ -49,7 +50,7 @@ public class IdpConfiguration {
   private String productTypeDisplayString;
   private Locale defaultLocale;
   private Map<String, IdpClientConfiguration> registeredClient;
-  private Map<String, String> scopeAudienceUrls;
   private UserConsentConfiguration userConsent;
   private IdpErrorConfiguration errors;
+  private Map<String, ScopeConfiguration> scopesConfiguration;
 }

@@ -17,16 +17,19 @@
 package de.gematik.idp.server.validation.parameterConstraints;
 
 import de.gematik.idp.error.IdpErrorType;
-import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.server.exceptions.IdpServerException;
-import java.util.Optional;
+import de.gematik.idp.server.services.ScopeService;
 import java.util.stream.Stream;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 
+@RequiredArgsConstructor
 public class ScopeValidator implements ConstraintValidator<CheckScope, String> {
+
+  final ScopeService scopeService;
 
   @Override
   public boolean isValid(final String rawScopes, final ConstraintValidatorContext context) {
@@ -37,9 +40,9 @@ public class ScopeValidator implements ConstraintValidator<CheckScope, String> {
 
     final String[] scopes = rawScopes.split(" ");
     final long numberOfValidScopes =
-        Stream.of(scopes).map(IdpScope::fromJwtValue).filter(Optional::isPresent).count();
+        Stream.of(scopes).filter(scope -> scopeService.getScopes().contains(scope)).count();
 
-    if (!rawScopes.contains(IdpScope.OPENID.getJwtValue()) || (scopes.length < 2)) {
+    if (!rawScopes.contains("openid") || (scopes.length < 2)) {
       throw new IdpServerException(
           1022, IdpErrorType.INVALID_SCOPE, "scope ist ungültig", HttpStatus.FOUND);
     }

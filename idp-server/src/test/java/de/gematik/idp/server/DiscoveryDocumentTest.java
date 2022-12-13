@@ -53,10 +53,13 @@ class DiscoveryDocumentTest {
 
   private static final String CONFIGURED_SERVER_URL = "foobarschmar";
   private static final String CONFIGURED_ISSUER_URL = "issuerUrl";
-  @LocalServerPort private int localServerPort;
+  @LocalServerPort
+  private int localServerPort;
   private String testHostUrl;
-  @Autowired private IdpKey discSig;
-  @MockBean private ServerUrlService serverUrlService;
+  @Autowired
+  private IdpKey discSig;
+  @MockBean
+  private ServerUrlService serverUrlService;
 
   @BeforeEach
   public void setUpLocalHostUrl() {
@@ -76,7 +79,7 @@ class DiscoveryDocumentTest {
   void testHttpCacheHeader() throws UnirestException {
     final HttpResponse httpResponse = retrieveDiscoveryDocument();
     assertThat(httpResponse.getHeaders().get("Cache-Control"))
-        .isEqualTo(Arrays.asList("max-age=300"));
+        .isEqualTo(List.of("max-age=300"));
   }
 
   @Afo("A_20458")
@@ -143,7 +146,8 @@ class DiscoveryDocumentTest {
     final List<String> scopesSupported =
         (List) extractClaimMapFromResponse(retrieveDiscoveryDocument()).get("scopes_supported");
     assertThat(scopesSupported)
-        .containsExactlyInAnyOrder("openid", "e-rezept", "pairing", "authenticator-dev");
+        .containsExactlyInAnyOrder("openid", "e-rezept", "pairing", "authenticator-dev",
+            "scope-template");
   }
 
   @Test

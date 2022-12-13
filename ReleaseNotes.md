@@ -1,3 +1,8 @@
+# Release 21.0.20
+
+- replace a certificate in the testsuite that is going to expire soon
+- configuration of scopes for idp-server via application.yml
+
 # Release 21.0.16
 
 - fix invalid certificates

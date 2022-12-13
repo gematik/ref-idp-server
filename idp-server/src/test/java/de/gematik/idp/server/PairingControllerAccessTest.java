@@ -16,6 +16,8 @@
 
 package de.gematik.idp.server;
 
+import static de.gematik.idp.IdpConstants.OPENID;
+import static de.gematik.idp.IdpConstants.PAIRING;
 import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
 import static de.gematik.idp.crypto.KeyAnalysis.isEcKey;
 import static de.gematik.idp.field.ClaimName.AUTHORITY_INFO_ACCESS;
@@ -37,7 +39,6 @@ import de.gematik.idp.TestConstants;
 import de.gematik.idp.client.IdpClient;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.IdpJoseException;
-import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.data.DeviceInformation;
 import de.gematik.idp.server.data.DeviceType;
@@ -156,7 +157,7 @@ class PairingControllerAccessTest {
 
   @Test
   void listPairings_correctToken_expect200() throws UnirestException {
-    idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
+    idpClient.setScopes(Set.of(OPENID, PAIRING));
     accessToken = idpClient.login(egkUserIdentity).getAccessToken();
 
     assertThat(
@@ -171,7 +172,7 @@ class PairingControllerAccessTest {
   @Test
   void insertPairing_correctToken_expect200()
       throws UnirestException, CertificateEncodingException {
-    idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
+    idpClient.setScopes(Set.of(OPENID, PAIRING));
     accessToken = idpClient.login(egkUserIdentity).getAccessToken();
     assertThat(
             Unirest.post("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
@@ -198,7 +199,7 @@ class PairingControllerAccessTest {
   @Test
   void insertPairing_AlreadyInDb_expect409Conflict()
       throws UnirestException, CertificateEncodingException {
-    idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
+    idpClient.setScopes(Set.of(OPENID, PAIRING));
     accessToken = idpClient.login(egkUserIdentity).getAccessToken();
 
     Unirest.post("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)
@@ -230,7 +231,7 @@ class PairingControllerAccessTest {
   @Test
   void insertPairing_missingData_expect4xxAndValidIdpError()
       throws UnirestException, CertificateEncodingException {
-    idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
+    idpClient.setScopes(Set.of(OPENID, PAIRING));
     accessToken = idpClient.login(egkUserIdentity).getAccessToken();
 
     final RegistrationData registrationData = createValidRegistrationData("abc");
@@ -253,7 +254,7 @@ class PairingControllerAccessTest {
   @Test
   void insertPairing_missmatchKvnr_expect400()
       throws UnirestException, CertificateEncodingException {
-    idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
+    idpClient.setScopes(Set.of(OPENID, PAIRING));
     accessToken = idpClient.login(rsaUserIdentity).getAccessToken();
 
     final HttpResponse<String> httpResponse =
@@ -270,7 +271,7 @@ class PairingControllerAccessTest {
 
   @Test
   void deletePairing_valid_expect400() throws UnirestException, CertificateEncodingException {
-    idpClient.setScopes(Set.of(IdpScope.OPENID, IdpScope.PAIRING));
+    idpClient.setScopes(Set.of(OPENID, PAIRING));
     accessToken = idpClient.login(egkUserIdentity).getAccessToken();
 
     Unirest.post("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT)

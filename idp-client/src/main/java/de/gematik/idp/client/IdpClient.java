@@ -16,6 +16,8 @@
 
 package de.gematik.idp.client;
 
+import static de.gematik.idp.IdpConstants.EREZEPT;
+import static de.gematik.idp.IdpConstants.OPENID;
 import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
 import static de.gematik.idp.crypto.KeyAnalysis.isEcKey;
 import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
@@ -39,7 +41,6 @@ import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.field.ClientUtilities;
 import de.gematik.idp.field.CodeChallengeMethod;
-import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
 import java.io.IOException;
@@ -92,7 +93,7 @@ public class IdpClient implements IIdpClient {
   private final String redirectUrl;
   private final String discoveryDocumentUrl;
   private final boolean shouldVerifyState;
-  @Builder.Default private Set<IdpScope> scopes = Set.of(IdpScope.OPENID, IdpScope.EREZEPT);
+  @Builder.Default private Set<String> scopes = Set.of(OPENID, EREZEPT);
 
   @Builder.Default
   private UnaryOperator<GetRequest> beforeAuthorizationMapper = UnaryOperator.identity();

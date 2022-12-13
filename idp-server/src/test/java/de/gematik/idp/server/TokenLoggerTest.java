@@ -16,6 +16,10 @@
 
 package de.gematik.idp.server;
 
+import static de.gematik.idp.IdpConstants.EREZEPT;
+import static de.gematik.idp.IdpConstants.OPENID;
+import static de.gematik.idp.IdpConstants.PAIRING;
+
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.RbelWiremockCapture;
 import de.gematik.idp.TestConstants;
@@ -24,7 +28,6 @@ import de.gematik.idp.client.BiometrieClient;
 import de.gematik.idp.client.IdpClient;
 import de.gematik.idp.client.data.RegistrationData;
 import de.gematik.idp.crypto.model.PkiIdentity;
-import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.rbellogger.RbelLogger;
@@ -544,7 +547,7 @@ class TokenLoggerTest {
         () -> {
           patchIdpUrls(idpClient);
           idpClient.initialize();
-          idpClient.setScopes(Set.of(IdpScope.PAIRING, IdpScope.OPENID));
+          idpClient.setScopes(Set.of(PAIRING, OPENID));
 
           final BiometrieClient biometrieClient =
               BiometrieClient.builder()
@@ -560,7 +563,7 @@ class TokenLoggerTest {
 
           biometrieClient.getAllPairings();
 
-          idpClient.setScopes(Set.of(IdpScope.EREZEPT, IdpScope.OPENID));
+          idpClient.setScopes(Set.of(EREZEPT, OPENID));
 
           idpClient.loginWithAltAuth(registrationData, smcbIdentity.getPrivateKey());
         },

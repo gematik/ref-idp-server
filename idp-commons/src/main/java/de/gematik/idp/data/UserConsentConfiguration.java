@@ -16,10 +16,6 @@
 
 package de.gematik.idp.data;
 
-import de.gematik.idp.field.ClaimName;
-import de.gematik.idp.field.IdpScope;
-import java.util.List;
-import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,6 +27,5 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UserConsentConfiguration {
 
-  private Map<IdpScope, List<ClaimName>> claimsToBeIncluded;
   private UserConsentDescriptionTexts descriptionTexts;
 }

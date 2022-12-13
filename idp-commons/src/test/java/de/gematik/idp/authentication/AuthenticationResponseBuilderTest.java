@@ -16,6 +16,8 @@
 
 package de.gematik.idp.authentication;
 
+import static de.gematik.idp.field.ClaimName.FAMILY_NAME;
+import static de.gematik.idp.field.ClaimName.GIVEN_NAME;
 import static de.gematik.idp.field.ClaimName.NESTED_JWT;
 import static de.gematik.idp.field.ClaimName.X509_CERTIFICATE_CHAIN;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,11 +25,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import de.gematik.idp.crypto.model.PkiIdentity;
+import de.gematik.idp.data.ScopeConfiguration;
 import de.gematik.idp.data.UserConsentConfiguration;
 import de.gematik.idp.data.UserConsentDescriptionTexts;
 import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.field.ClaimName;
-import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.JsonWebToken;
 import java.security.PublicKey;
@@ -68,33 +70,26 @@ class AuthenticationResponseBuilderTest {
       @PkiKeyResolver.Filename("c.ch.aut-ecc") final PkiIdentity clientIdentity) {
     this.clientIdentity = clientIdentity;
     this.serverIdentity = serverIdentity;
+    ScopeConfiguration openidConfig =
+        ScopeConfiguration.builder().description("openid desc").build();
+    ScopeConfiguration pairingConfig =
+        ScopeConfiguration.builder()
+            .audienceUrl("erplala")
+            .description("erp desc")
+            .claimsToBeIncluded(List.of(GIVEN_NAME, FAMILY_NAME))
+            .build();
 
     final AuthenticationChallengeBuilder authenticationChallengeBuilder =
         AuthenticationChallengeBuilder.builder()
             .serverSigner(new IdpJwtProcessor(serverIdentity))
             .userConsentConfiguration(
                 UserConsentConfiguration.builder()
-                    .claimsToBeIncluded(
-                        Map.of(
-                            IdpScope.OPENID,
-                            List.of(),
-                            IdpScope.EREZEPT,
-                            List.of(),
-                            IdpScope.PAIRING,
-                            List.of()))
                     .descriptionTexts(
                         UserConsentDescriptionTexts.builder()
                             .claims(Collections.emptyMap())
-                            .scopes(
-                                Map.of(
-                                    IdpScope.OPENID,
-                                    "openid",
-                                    IdpScope.PAIRING,
-                                    "pairing",
-                                    IdpScope.EREZEPT,
-                                    "erezept"))
                             .build())
                     .build())
+            .scopesConfiguration(Map.of("openid", openidConfig, "pairing", pairingConfig))
             .build();
     authenticationResponseBuilder = AuthenticationResponseBuilder.builder().build();
     serverJwtConsumer =

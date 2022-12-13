@@ -48,7 +48,6 @@ import de.gematik.idp.crypto.EcKeyUtility;
 import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.data.IdpErrorResponse;
 import de.gematik.idp.error.IdpErrorType;
-import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
 import java.net.URI;
@@ -112,10 +111,7 @@ public class AuthenticatorClient {
       final AuthorizationRequest authorizationRequest,
       final UnaryOperator<GetRequest> beforeCallback,
       final Consumer<HttpResponse<AuthenticationChallenge>> afterCallback) {
-    final String scope =
-        authorizationRequest.getScopes().stream()
-            .map(IdpScope::getJwtValue)
-            .collect(Collectors.joining(" "));
+    final String scope = String.join(" ", authorizationRequest.getScopes());
 
     final GetRequest request =
         Unirest.get(authorizationRequest.getLink())

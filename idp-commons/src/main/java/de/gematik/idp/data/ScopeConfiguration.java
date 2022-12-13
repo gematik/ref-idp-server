@@ -17,7 +17,7 @@
 package de.gematik.idp.data;
 
 import de.gematik.idp.field.ClaimName;
-import java.util.Map;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,7 +27,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserConsentDescriptionTexts {
+public class ScopeConfiguration {
 
-  private Map<ClaimName, String> claims;
+  private String description;
+  private String audienceUrl;
+  private List<ClaimName> claimsToBeIncluded;
 }

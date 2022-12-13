@@ -27,7 +27,6 @@ import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
 import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
 import de.gematik.idp.authentication.IdpJwtProcessor;
-import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.data.KkAppList;
@@ -44,7 +43,7 @@ import de.gematik.pki.gemlibpki.tsl.TspService;
 import eu.europa.esig.trustedlist.jaxb.tsl.TrustStatusListType;
 import java.io.IOException;
 import java.security.Key;
-import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -76,13 +75,10 @@ public class FlowBeanCreation {
 
   @Bean
   public AccessTokenBuilder accessTokenBuilder() {
-    final EnumMap<IdpScope, String> scopeToAudienceUrls = new EnumMap<>(IdpScope.class);
-    idpConfiguration
-        .getScopeAudienceUrls()
+    final HashMap<String, String> scopeToAudienceUrls = new HashMap<>();
+    idpConfiguration.getScopesConfiguration().entrySet().stream()
         .forEach(
-            (scopeName, audienceUrl) ->
-                scopeToAudienceUrls.put(
-                    IdpScope.fromJwtValue(scopeName).orElseThrow(), audienceUrl));
+            entry -> scopeToAudienceUrls.put(entry.getKey(), entry.getValue().getAudienceUrl()));
     return new AccessTokenBuilder(
         idpSigProcessor,
         serverUrlService.determineServerUrl(),
@@ -113,6 +109,7 @@ public class FlowBeanCreation {
         .serverSigner(idpSigProcessor)
         .uriIdpServer(serverUrlService.determineServerUrl())
         .userConsentConfiguration(idpConfiguration.getUserConsent())
+        .scopesConfiguration(idpConfiguration.getScopesConfiguration())
         .build();
   }
 

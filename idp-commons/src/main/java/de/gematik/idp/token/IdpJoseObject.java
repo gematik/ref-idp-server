@@ -27,7 +27,6 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.field.ClaimName;
-import de.gematik.idp.field.IdpScope;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
@@ -88,15 +87,12 @@ public abstract class IdpJoseObject {
         .findAny();
   }
 
-  public Set<IdpScope> getScopesBodyClaim() {
+  public Set<String> getScopesBodyClaim() {
     return Optional.ofNullable(getBodyClaims().get(SCOPE.getJoseName()))
         .filter(String.class::isInstance)
         .map(String.class::cast)
         .stream()
         .flatMap(value -> Stream.of(value.split(" ")))
-        .map(IdpScope::fromJwtValue)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
         .collect(Collectors.toSet());
   }
 

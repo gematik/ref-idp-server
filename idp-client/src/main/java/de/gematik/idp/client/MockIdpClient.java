@@ -16,6 +16,14 @@
 
 package de.gematik.idp.client;
 
+import static de.gematik.idp.IdpConstants.EREZEPT;
+import static de.gematik.idp.IdpConstants.OPENID;
+import static de.gematik.idp.field.ClaimName.FAMILY_NAME;
+import static de.gematik.idp.field.ClaimName.GIVEN_NAME;
+import static de.gematik.idp.field.ClaimName.ID_NUMBER;
+import static de.gematik.idp.field.ClaimName.ORGANIZATION_NAME;
+import static de.gematik.idp.field.ClaimName.PROFESSION_OID;
+
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
@@ -27,10 +35,10 @@ import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
 import de.gematik.idp.crypto.model.PkiIdentity;
+import de.gematik.idp.data.ScopeConfiguration;
 import de.gematik.idp.data.UserConsentConfiguration;
 import de.gematik.idp.data.UserConsentDescriptionTexts;
 import de.gematik.idp.field.ClaimName;
-import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.token.AccessTokenBuilder;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
@@ -39,7 +47,7 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -74,7 +82,7 @@ public class MockIdpClient implements IIdpClient {
   private final boolean produceTokensWithInvalidSignature;
   private final boolean produceOnlyExpiredTokens;
   @Builder.Default private final String uriIdpServer = IdpConstants.DEFAULT_SERVER_URL;
-  private final EnumMap<IdpScope, String> scopeToAudienceUrls = new EnumMap<>(IdpScope.class);
+  private final HashMap<String, String> scopeToAudienceUrls = new HashMap<>();
   private AccessTokenBuilder accessTokenBuilder;
   private AuthenticationResponseBuilder authenticationResponseBuilder;
   private AuthenticationTokenBuilder authenticationTokenBuilder;
@@ -95,12 +103,7 @@ public class MockIdpClient implements IIdpClient {
   private JsonWebToken buildAccessToken(final PkiIdentity clientIdentity) {
     final AuthenticationChallenge challenge =
         authenticationChallengeBuilder.buildAuthenticationChallenge(
-            clientId,
-            "placeholderValue",
-            "foo",
-            "foo",
-            IdpScope.OPENID.getJwtValue() + " " + IdpScope.EREZEPT.getJwtValue(),
-            "nonceValue");
+            clientId, "placeholderValue", "foo", "foo", OPENID + " " + EREZEPT, "nonceValue");
     final AuthenticationResponse authenticationResponse =
         authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
     final IdpJwe authenticationToken =
@@ -149,10 +152,25 @@ public class MockIdpClient implements IIdpClient {
 
   @Override
   public MockIdpClient initialize() {
+    scopeToAudienceUrls.put("e-rezept", "https://erp-test.zentral.erp.splitdns.ti-dienste.de/");
     scopeToAudienceUrls.put(
-        IdpScope.EREZEPT, "https://erp-test.zentral.erp.splitdns.ti-dienste.de/");
-    scopeToAudienceUrls.put(
-        IdpScope.PAIRING, "https://idp-pairing-test.zentral.idp.splitdns.ti-dienste.de");
+        "pairing", "https://idp-pairing-test.zentral.idp.splitdns.ti-dienste.de");
+
+    ScopeConfiguration openidConfig =
+        ScopeConfiguration.builder().description("Zugriff auf den ID-Token.").build();
+    ScopeConfiguration pairingConfig =
+        ScopeConfiguration.builder()
+            .audienceUrl("https://idp-pairing-test.zentral.idp.splitdns.ti-dienste.de")
+            .description("Zugriff auf die Daten für die biometrischer Authentisierung.")
+            .claimsToBeIncluded(List.of(ID_NUMBER))
+            .build();
+    ScopeConfiguration erezeptConfig =
+        ScopeConfiguration.builder()
+            .audienceUrl("https://erp-test.zentral.erp.splitdns.ti-dienste.de/")
+            .description("Zugriff auf die E-Rezept-Funktionalität.")
+            .claimsToBeIncluded(
+                List.of(GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER))
+            .build();
 
     serverIdentity.setKeyId(Optional.of("puk_idp_sig"));
     serverIdentity.setUse(Optional.of("sig"));
@@ -165,27 +183,13 @@ public class MockIdpClient implements IIdpClient {
             .uriIdpServer(uriIdpServer)
             .userConsentConfiguration(
                 UserConsentConfiguration.builder()
-                    .claimsToBeIncluded(
-                        Map.of(
-                            IdpScope.OPENID,
-                            List.of(),
-                            IdpScope.EREZEPT,
-                            List.of(),
-                            IdpScope.PAIRING,
-                            List.of()))
                     .descriptionTexts(
                         UserConsentDescriptionTexts.builder()
                             .claims(Collections.emptyMap())
-                            .scopes(
-                                Map.of(
-                                    IdpScope.OPENID,
-                                    "openid",
-                                    IdpScope.PAIRING,
-                                    "pairing",
-                                    IdpScope.EREZEPT,
-                                    "erezept"))
                             .build())
                     .build())
+            .scopesConfiguration(
+                Map.of("openid", openidConfig, "erezept", erezeptConfig, "pairing", pairingConfig))
             .build();
     authenticationResponseBuilder = new AuthenticationResponseBuilder();
     encryptionKey = new SecretKeySpec(DigestUtils.sha256("fdsa"), "AES");

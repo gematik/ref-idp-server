@@ -16,6 +16,9 @@
 
 package de.gematik.idp.token;
 
+import static de.gematik.idp.IdpConstants.EREZEPT;
+import static de.gematik.idp.IdpConstants.OPENID;
+import static de.gematik.idp.IdpConstants.PAIRING;
 import static de.gematik.idp.field.ClaimName.ACCESS_TOKEN_HASH;
 import static de.gematik.idp.field.ClaimName.ALGORITHM;
 import static de.gematik.idp.field.ClaimName.AUDIENCE;
@@ -39,7 +42,6 @@ import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.crypto.model.PkiIdentity;
-import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.tests.Rfc;
@@ -77,8 +79,7 @@ class IdTokenBuilderTest {
     bodyClaims.put(JWKS_URI.getJoseName(), "jwks_uri");
     bodyClaims.put(NONCE.getJoseName(), NONCE_VALUE);
     bodyClaims.put(CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP);
-    bodyClaims.put(
-        SCOPE.getJoseName(), IdpScope.EREZEPT.getJwtValue() + " " + IdpScope.OPENID.getJwtValue());
+    bodyClaims.put(SCOPE.getJoseName(), EREZEPT + " " + OPENID);
     createIdTokenBuilder(bodyClaims);
   }
 
@@ -162,7 +163,7 @@ class IdTokenBuilderTest {
     bodyClaims.put(NONCE.getJoseName(), NONCE_VALUE);
     bodyClaims.put(CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP);
     bodyClaims.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), List.of("foo", "bar"));
-    bodyClaims.put(SCOPE.getJoseName(), IdpScope.EREZEPT.getJwtValue());
+    bodyClaims.put(SCOPE.getJoseName(), EREZEPT);
     authenticationToken =
         new JwtBuilder()
             .replaceAllHeaderClaims(Map.of("headerNotCopy", "headerNotCopy"))
@@ -194,7 +195,7 @@ class IdTokenBuilderTest {
     final Map<String, Object> bodyClaims = new HashMap<>();
     bodyClaims.put(ID_NUMBER.getJoseName(), "id_number");
     bodyClaims.put(CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP);
-    bodyClaims.put(SCOPE.getJoseName(), IdpScope.EREZEPT.getJwtValue());
+    bodyClaims.put(SCOPE.getJoseName(), EREZEPT);
     bodyClaims.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), List.of("foo", "bar"));
     createIdTokenBuilder(bodyClaims);
     final JsonWebToken idToken =
@@ -210,7 +211,7 @@ class IdTokenBuilderTest {
     final Map<String, Object> bodyClaims = new HashMap<>();
     bodyClaims.put(ID_NUMBER.getJoseName(), "id_number");
     bodyClaims.put(CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP);
-    bodyClaims.put(SCOPE.getJoseName(), IdpScope.PAIRING.getJwtValue());
+    bodyClaims.put(SCOPE.getJoseName(), PAIRING);
     bodyClaims.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), List.of("foo", "bar"));
     createIdTokenBuilder(bodyClaims);
     final JsonWebToken idToken =

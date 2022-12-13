@@ -34,15 +34,14 @@ import static de.gematik.idp.field.ClaimName.TYPE;
 
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.crypto.Nonce;
+import de.gematik.idp.data.ScopeConfiguration;
 import de.gematik.idp.data.UserConsent;
 import de.gematik.idp.data.UserConsentConfiguration;
-import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.token.JsonWebToken;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
@@ -60,6 +59,7 @@ public class AuthenticationChallengeBuilder {
   private final IdpJwtProcessor serverSigner;
   private final String uriIdpServer;
   private final UserConsentConfiguration userConsentConfiguration;
+  private final Map<String, ScopeConfiguration> scopesConfiguration;
 
   public AuthenticationChallenge buildAuthenticationChallenge(
       final String clientId,
@@ -102,24 +102,19 @@ public class AuthenticationChallengeBuilder {
   }
 
   private UserConsent getUserConsent(final String scopes) {
-    final List<IdpScope> requestedScopes =
+    final List<String> requestedScopes =
         Stream.of(scopes.split(" "))
-            .map(IdpScope::fromJwtValue)
-            .filter(Optional::isPresent)
-            .map(Optional::get)
+            .filter(scopesConfiguration::containsKey)
             .collect(Collectors.toList());
     final Map<String, String> scopeMap =
         requestedScopes.stream()
-            .map(
-                s ->
-                    Pair.of(
-                        s.getJwtValue(),
-                        userConsentConfiguration.getDescriptionTexts().getScopes().get(s)))
+            .map(s -> Pair.of(s, scopesConfiguration.get(s).getDescription()))
             .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+
     final Map<String, String> clientMap =
         requestedScopes.stream()
-            .filter(id -> userConsentConfiguration.getClaimsToBeIncluded().containsKey(id))
-            .map(id -> userConsentConfiguration.getClaimsToBeIncluded().get(id))
+            .filter(id -> scopesConfiguration.get(id).getClaimsToBeIncluded() != null)
+            .map(id -> scopesConfiguration.get(id).getClaimsToBeIncluded())
             .flatMap(List::stream)
             .distinct()
             .map(
@@ -128,6 +123,7 @@ public class AuthenticationChallengeBuilder {
                         s.getJoseName(),
                         userConsentConfiguration.getDescriptionTexts().getClaims().get(s)))
             .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+
     return UserConsent.builder().requestedScopes(scopeMap).requestedClaims(clientMap).build();
   }
 

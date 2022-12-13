@@ -17,7 +17,6 @@
 package de.gematik.idp.client.data;
 
 import de.gematik.idp.field.CodeChallengeMethod;
-import de.gematik.idp.field.IdpScope;
 import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
@@ -32,6 +31,6 @@ public class AuthorizationRequest {
   private final CodeChallengeMethod codeChallengeMethod;
   private final String redirectUri;
   private final String state;
-  private final Set<IdpScope> scopes;
+  private final Set<String> scopes;
   private final String nonce;
 }

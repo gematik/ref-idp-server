@@ -16,6 +16,9 @@
 
 package de.gematik.idp.token;
 
+import static de.gematik.idp.IdpConstants.EREZEPT;
+import static de.gematik.idp.IdpConstants.OPENID;
+import static de.gematik.idp.IdpConstants.PAIRING;
 import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
 import static de.gematik.idp.field.ClaimName.ALGORITHM;
 import static de.gematik.idp.field.ClaimName.AUDIENCE;
@@ -41,7 +44,6 @@ import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.RequiredClaimException;
 import de.gematik.idp.field.ClaimName;
-import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
 import java.security.Security;
@@ -92,7 +94,7 @@ class AccessTokenBuilderTest {
             serverTokenProcessor,
             URI_IDP_SERVER,
             "saltValue",
-            Map.of(IdpScope.EREZEPT, EREZEPT_AUDIENCE, IdpScope.PAIRING, PAIRING_AUDIENCE));
+            Map.of("e-rezept", EREZEPT_AUDIENCE, "pairing", PAIRING_AUDIENCE));
     encryptionKey = new SecretKeySpec(DigestUtils.sha256("fdsa"), "AES");
     pkiIdentity = clientIdentity;
 
@@ -113,7 +115,7 @@ class AccessTokenBuilderTest {
             CLIENT_ID.getJoseName(),
             TestConstants.CLIENT_ID_E_REZEPT_APP,
             SCOPE.getJoseName(),
-            IdpScope.EREZEPT.getJwtValue()));
+            EREZEPT));
   }
 
   private void createAuthenticationTokenByBodyClaims(final Map<String, Object> map) {
@@ -130,11 +132,7 @@ class AccessTokenBuilderTest {
         serverTokenProcessor.buildJwt(
             new JwtBuilder()
                 .addAllBodyClaims(
-                    Map.of(
-                        PROFESSION_OID.getJoseName(),
-                        "foo",
-                        SCOPE.getJoseName(),
-                        IdpScope.EREZEPT.getJwtValue()))
+                    Map.of(PROFESSION_OID.getJoseName(), "foo", SCOPE.getJoseName(), EREZEPT))
                 .expiresAt(ZonedDateTime.now().plusMinutes(100)));
     assertThat(jsonWebToken).isNotNull();
 
@@ -198,7 +196,7 @@ class AccessTokenBuilderTest {
             CLIENT_ID.getJoseName(),
             TestConstants.CLIENT_ID_E_REZEPT_APP,
             SCOPE.getJoseName(),
-            IdpScope.OPENID.getJwtValue() + " " + IdpScope.EREZEPT.getJwtValue()));
+            OPENID + " " + EREZEPT));
     final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);
     assertThat(accessToken.getBodyClaim(AUDIENCE)).get().isEqualTo(EREZEPT_AUDIENCE);
   }
@@ -210,7 +208,7 @@ class AccessTokenBuilderTest {
             CLIENT_ID.getJoseName(),
             TestConstants.CLIENT_ID_E_REZEPT_APP,
             SCOPE.getJoseName(),
-            IdpScope.OPENID.getJwtValue() + " " + IdpScope.PAIRING.getJwtValue()));
+            OPENID + " " + PAIRING));
     final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);
     assertThat(accessToken.getBodyClaim(AUDIENCE)).get().isEqualTo(PAIRING_AUDIENCE);
   }

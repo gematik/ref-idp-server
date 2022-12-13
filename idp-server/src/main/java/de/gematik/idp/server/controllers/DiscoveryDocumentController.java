@@ -29,6 +29,7 @@ import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.server.ServerUrlService;
 import de.gematik.idp.server.exceptions.IdpServerException;
 import de.gematik.idp.server.services.DiscoveryDocumentBuilder;
+import de.gematik.idp.server.services.ScopeService;
 import de.gematik.idp.server.validation.clientSystem.ValidateClientSystem;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +39,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import net.dracoblue.spring.web.mvc.method.annotation.HttpResponseHeader;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -52,6 +54,9 @@ public class DiscoveryDocumentController {
   private final ServerUrlService serverUrlService;
   private final DiscoveryDocumentBuilder discoveryDocumentBuilder;
   private IdpJwtProcessor jwtProcessor;
+
+  @Autowired
+  private ScopeService scopeService;
 
   @PostConstruct
   public void setUp() {
@@ -85,9 +90,9 @@ public class DiscoveryDocumentController {
 
   @GetMapping(
       value = {
-        DISCOVERY_DOCUMENT_ENDPOINT,
-        "/discoveryDocument",
-        "auth/realms/idp/.well-known/openid-configuration"
+          DISCOVERY_DOCUMENT_ENDPOINT,
+          "/discoveryDocument",
+          "auth/realms/idp/.well-known/openid-configuration"
       },
       produces = "application/jwt;charset=UTF-8")
   @ValidateClientSystem
@@ -96,9 +101,10 @@ public class DiscoveryDocumentController {
       value = "#{environment.getProperty('caching.discoveryDocument.cacheControl')}",
       valueExpression = true)
   public String getDiscoveryDocument(final HttpServletRequest request) {
+    String[] scopes = scopeService.getScopes().toArray(new String[0]);
     return signDiscoveryDocument(
         discoveryDocumentBuilder.buildDiscoveryDocument(
-            serverUrlService.determineServerUrl(request), serverUrlService.getIssuerUrl()));
+            serverUrlService.determineServerUrl(request), serverUrlService.getIssuerUrl(), scopes));
   }
 
   private String signDiscoveryDocument(final IdpDiscoveryDocument discoveryDocument) {

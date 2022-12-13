@@ -12,7 +12,7 @@
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-global</artifactId>
-  <version>21.0.16</version>
+  <version>21.0.20</version>
   <packaging>pom</packaging>
 
   <description>IDP</description>
@@ -117,7 +117,7 @@
     <version.rest-assured>5.3.0</version.rest-assured>
     <version.serenity.core>3.2.4</version.serenity.core>
     <version.tiger>1.0.0</version.tiger>
-    <version.unirest>3.13.12</version.unirest>
+    <version.unirest>3.14.1</version.unirest>
 
     <version.build-helper-maven-plugin>3.3.0</version.build-helper-maven-plugin>
     <version.docker-maven-plugin>0.40.2</version.docker-maven-plugin>
@@ -140,7 +140,7 @@
     <version.maven-surefire-plugin>3.0.0-M7</version.maven-surefire-plugin>
     <version.nexus-staging-maven-plugin>1.6.13</version.nexus-staging-maven-plugin>
     <version.sonar-maven-plugin>3.9.1.2184</version.sonar-maven-plugin>
-    <version.spotless-maven-plugin>2.27.2</version.spotless-maven-plugin>
+    <version.spotless-maven-plugin>2.28.0</version.spotless-maven-plugin>
     <version.spotless.google-java-format>1.15.0</version.spotless.google-java-format>
     <version.spring-boot-maven-plugin>2.7.5</version.spring-boot-maven-plugin>
     <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>

@@ -57,7 +57,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     Examples: GetToken - Zertifikate zur Signatur der Challenge
       | cert                                                 |
       | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12  |
-      | /certs/valid/80276883110000018680-C_CH_AUT_R2048.p12 |
+      | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12 |
 
 
   #noinspection NonAsciiCharacters
@@ -121,7 +121,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     Examples: GetToken - Zertifikate zur Signatur der Challenge
       | cert                                                        | professionOID      | idNumber                          | organisationName                                            | family_name | given_name                |
       | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12         | 1.2.276.0.76.4.49  | X110411675                        | Test GKV-SVNOT-VALID                                        | Bödefeld    | Darius Michael Brian Ubbo |
-      | /certs/valid/80276883110000018680-C_CH_AUT_R2048.p12        | 1.2.276.0.76.4.49  | X110411675                        | Test GKV-SVNOT-VALID                                        | Bödefeld    | Darius Michael Brian Ubbo |
+      | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12        | 1.2.276.0.76.4.49  | X110471380                        | Test GKV-SVNOT-VALID                                        | Burgund     | Ulrich Hans Johann von    |
       | /certs/valid/80276883110000129068-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.54  | 3-SMC-B-Testkarte-883110000129068 | Apotheke am SportzentrumTEST-ONLY                           | Blankenberg | Dominik-Peter             |
       | /certs/valid/80276883110000129071-C_SMCB_HCI_AUT_E256.p12   | 1.2.276.0.76.4.53  | 5-SMC-B-Testkarte-883110000129071 | Universitätsklinik MitteTEST-ONLY                           | $NULL       | $NULL                     |
       | /certs/valid/80276883110000129074-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.52  | 1-SMC-B-Testkarte-883110000129074 | Psychotherapeutische Praxis Norbert Graf AngermännTEST-ONLY | Angermänn   | Norbert                   |
@@ -197,7 +197,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     Examples: GetToken - Zertifikate zur Signatur der Challenge
       | cert                                                 |
       | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12  |
-      | /certs/valid/80276883110000018680-C_CH_AUT_R2048.p12 |
+      | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12 |
 
   @TCID:IDP_REF_TOK_004 @PRIO:1
   @Approval @Ready
@@ -309,7 +309,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     Examples: GetToken - Zertifikate zur Signatur der Challenge
       | cert                                                 |
       | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12  |
-      | /certs/valid/80276883110000018680-C_CH_AUT_R2048.p12 |
+      | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12 |
 
   @TCID:IDP_REF_TOK_008 @PRIO:1
     @Afo:A_20327
@@ -333,7 +333,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     Examples: GetToken - Zertifikate zur Signatur der Challenge
       | cert                                                 |
       | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12  |
-      | /certs/valid/80276883110000018680-C_CH_AUT_R2048.p12 |
+      | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12 |
 
 
   @TCID:IDP_REF_TOK_009 @PRIO:2

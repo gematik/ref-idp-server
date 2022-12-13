@@ -53,4 +53,10 @@ public final class IdpConstants {
   public static final int FACHDIENST_STATE_LENGTH = 32;
 
   public static final String ENTITY_STATEMENT_TYP = "entity-statement+jwt";
+
+  public static final String OPENID = "openid";
+  public static final String EREZEPT = "e-rezept";
+  public static final String PAIRING = "pairing";
+  public static final String EREZEPTDEV = "e-rezept-dev";
+  public static final String AUTHENTICATORDEV = "authenticator-dev";
 }

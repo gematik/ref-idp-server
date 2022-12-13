@@ -16,9 +16,10 @@
 
 package de.gematik.idp.server.validation.accessToken;
 
+import static de.gematik.idp.IdpConstants.PAIRING;
+
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.error.IdpErrorType;
-import de.gematik.idp.field.IdpScope;
 import de.gematik.idp.server.RequestAccessToken;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.exceptions.IdpServerException;
@@ -83,11 +84,11 @@ public class AccessTokenInterceptor implements HandlerInterceptor, WebMvcConfigu
       throw new IdpServerAccessDeniedException("Error while verifying Access-Token");
     }
 
-    if (!accessToken.getScopesBodyClaim().contains(IdpScope.PAIRING)) {
+    if (!accessToken.getScopesBodyClaim().contains(PAIRING)) {
       throw new IdpServerException(
           IdpServerException.ERROR_ID_ACCESS_DENIED,
           IdpErrorType.ACCESS_DENIED,
-          "Scope missing: " + IdpScope.PAIRING.getJwtValue(),
+          "Scope missing: " + PAIRING,
           HttpStatus.FORBIDDEN);
     }
 

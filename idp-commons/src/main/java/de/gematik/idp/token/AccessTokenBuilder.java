@@ -16,6 +16,8 @@
 
 package de.gematik.idp.token;
 
+import static de.gematik.idp.IdpConstants.OPENID;
+import static de.gematik.idp.IdpConstants.PAIRING;
 import static de.gematik.idp.field.ClaimName.AUDIENCE;
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_CLASS_REFERENCE;
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
@@ -43,7 +45,6 @@ import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.exceptions.IdpRuntimeException;
 import de.gematik.idp.exceptions.RequiredClaimException;
 import de.gematik.idp.field.ClaimName;
-import de.gematik.idp.field.IdpScope;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -72,7 +73,7 @@ public class AccessTokenBuilder {
   private final IdpJwtProcessor jwtProcessor;
   private final String issuerUrl;
   private final String serverSubjectSalt;
-  private final Map<IdpScope, String> scopeToAudienceUrl;
+  private final Map<String, String> scopeToAudienceUrl;
 
   private final ClaimName[] nonPairingClaims =
       new ClaimName[] {PROFESSION_OID, GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME};
@@ -95,7 +96,7 @@ public class AccessTokenBuilder {
                     pair.getKey().getJoseName(),
                     pair.getValue().isPresent() ? pair.getValue().get() : null));
     // for pairing scope remove user consent claims (except for id nummer)
-    if (authenticationToken.getScopesBodyClaim().contains(IdpScope.PAIRING)) {
+    if (authenticationToken.getScopesBodyClaim().contains(PAIRING)) {
       Arrays.stream(nonPairingClaims).forEach(claim -> claimsMap.remove(claim.getJoseName()));
     }
     claimsMap.put(ISSUED_AT.getJoseName(), now.toEpochSecond());
@@ -131,10 +132,10 @@ public class AccessTokenBuilder {
         new JwtBuilder().replaceAllBodyClaims(claimsMap).replaceAllHeaderClaims(headerClaimsMap));
   }
 
-  private String determineAudienceBasedOnScope(final Set<IdpScope> scopesBodyClaim) {
+  private String determineAudienceBasedOnScope(final Set<String> scopesBodyClaim) {
     final List<String> audienceUrls =
         scopesBodyClaim.stream()
-            .filter(scope -> scope != IdpScope.OPENID)
+            .filter(scope -> !scope.equals(OPENID))
             .filter(scopeToAudienceUrl::containsKey)
             .map(scopeToAudienceUrl::get)
             .collect(Collectors.toList());
