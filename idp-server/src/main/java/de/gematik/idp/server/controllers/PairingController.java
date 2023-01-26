@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,10 @@ import de.gematik.idp.server.services.PairingService;
 import de.gematik.idp.server.validation.accessToken.ValidateAccessToken;
 import de.gematik.idp.server.validation.clientSystem.ValidateClientSystem;
 import de.gematik.idp.token.IdpJwe;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import net.dracoblue.spring.web.mvc.method.annotation.HttpResponseHeader;
-import net.dracoblue.spring.web.mvc.method.annotation.HttpResponseHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,10 +44,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Transactional
 @Valid
-@HttpResponseHeaders({
-  @HttpResponseHeader(name = "Cache-Control", value = "no-store"),
-  @HttpResponseHeader(name = "Pragma", value = "no-cache")
-})
 public class PairingController {
 
   private final PairingService pairingService;
@@ -57,18 +52,21 @@ public class PairingController {
   @GetMapping(value = PAIRING_ENDPOINT, produces = MediaType.APPLICATION_JSON_VALUE)
   @ValidateClientSystem
   @ValidateAccessToken
-  public PairingList getAllPairingsForKvnr() {
+  public PairingList getAllPairingsForKvnr(final HttpServletResponse response) {
+    setNoCacheHeader(response);
     return new PairingList(
         pairingService.validateTokenAndGetPairingList(requestAccessToken.getAccessToken()));
   }
 
-  @DeleteMapping(value = PAIRING_ENDPOINT + "/{key_identifier}")
+  @DeleteMapping(
+      value = {PAIRING_ENDPOINT, PAIRING_ENDPOINT + "/", PAIRING_ENDPOINT + "/{key_identifier}"})
   @ValidateAccessToken
   @ValidateClientSystem
   @ResponseStatus(value = HttpStatus.NO_CONTENT)
   public void deleteSinglePairing(
-      @PathVariable(value = "key_identifier") @NotNull(message = "4001")
-          final String keyIdentifier) {
+      final HttpServletResponse response,
+      @PathVariable(value = "key_identifier") final String keyIdentifier) {
+    setNoCacheHeader(response);
     pairingService.validateTokenAndDeleteSelectedPairing(
         requestAccessToken.getAccessToken(), keyIdentifier);
   }
@@ -80,9 +78,16 @@ public class PairingController {
   @ValidateAccessToken
   @ValidateClientSystem
   public PairingDto insertPairing(
+      final HttpServletResponse response,
       @RequestParam(value = "encrypted_registration_data", required = false) @NotNull
           final IdpJwe registrationData) {
+    setNoCacheHeader(response);
     return pairingService.validatePairingData(
         requestAccessToken.getAccessToken(), registrationData);
+  }
+
+  private static void setNoCacheHeader(final HttpServletResponse response) {
+    response.setHeader("Cache-Control", "no-store");
+    response.setHeader("Pragma", "no-cache");
   }
 }

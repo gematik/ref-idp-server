@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 gematik GmbH
+# Copyright (c) 2023 gematik GmbH
 # 
 # Licensed under the Apache License, Version 2.0 (the License);
 # you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ Feature: IDP Liste am Fachdienst abrufen
         """
           { iss:                   'http.*',
             iat:                   "${json-unit.ignore}",
-            idp_entity:       [{"organization_name":"IDP_SEKTORAL","iss":".*","user_type_supported":"IP","logo_uri":"todo-logo"}],
+            idp_entity:       [{"organization_name":"IDP_SEKTORAL","iss":".*","user_type_supported":"IP","logo_uri":"https://todo-logo"}],
             exp:                   "${json-unit.ignore}"
           }
         """

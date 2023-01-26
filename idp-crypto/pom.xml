@@ -6,28 +6,18 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>21.0.20</version>
+    <version>21.0.22</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>idp-crypto</artifactId>
-  <version>21.0.20</version>
+  <version>21.0.22</version>
 
   <dependencies>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.logging.log4j</groupId>
-          <artifactId>log4j-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.logging.log4j</groupId>
-          <artifactId>log4j-to-slf4j</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -24,25 +24,33 @@ import static org.mockito.Mockito.when;
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.UriUtils;
+import de.gematik.idp.data.IdpErrorResponse;
 import de.gematik.idp.error.IdpErrorType;
+import de.gematik.idp.server.configuration.IdpConfiguration;
+import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.exceptions.IdpServerException;
+import de.gematik.idp.server.exceptions.handler.IdpServerExceptionHandler;
 import de.gematik.idp.server.services.IdpAuthenticator;
 import de.gematik.idp.tests.PkiKeyResolver;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 import kong.unirest.json.JSONObject;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 
 @ExtendWith(SpringExtension.class)
 @ExtendWith(PkiKeyResolver.class)
@@ -51,6 +59,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 class IdpControllerExceptionHandlerTest {
 
   private static final String EXCEPTION_TEXT = "exception text";
+  @Autowired private IdpKey discSig;
+  @Autowired private ServerUrlService serverUrlService;
+  @Autowired private IdpConfiguration idpConfiguration;
+  private IdpServerExceptionHandler idpServerExceptionHandler;
 
   @LocalServerPort private int port;
   @MockBean private IdpAuthenticator idpAuthenticator;
@@ -61,6 +73,8 @@ class IdpControllerExceptionHandlerTest {
     serverUrl = "http://localhost:" + port;
     Unirest.config().reset();
     Unirest.config().followRedirects(false);
+    idpServerExceptionHandler =
+        new IdpServerExceptionHandler(serverUrlService, discSig, idpConfiguration);
   }
 
   @Test
@@ -93,7 +107,7 @@ class IdpControllerExceptionHandlerTest {
   @Test
   void testIdpServerInvalidLengthNonceException() {
 
-    String nonceToLong = "fdsalkfdksalfdsawertzuiopasdfghdd";
+    final String nonceToLong = "fdsalkfdksalfdsawertzuiopasdfghdd";
     final HttpResponse<JsonNode> response =
         Unirest.get(serverUrl + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
             .queryString("signed_challenge", "signed_challenge")
@@ -118,8 +132,8 @@ class IdpControllerExceptionHandlerTest {
   @Test
   void testIdpServerInvalidLengthStateException() {
 
-    String nonceCorrectLength = "dsalkfdksalfdsawertzuiopasdfghdd";
-    String stateToLong = "fdsalkfdksalfdsawertzuiopasdfghdd";
+    final String nonceCorrectLength = "dsalkfdksalfdsawertzuiopasdfghdd";
+    final String stateToLong = "fdsalkfdksalfdsawertzuiopasdfghdd";
     final HttpResponse<JsonNode> response =
         Unirest.get(serverUrl + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
             .queryString("signed_challenge", "signed_challenge")
@@ -160,7 +174,7 @@ class IdpControllerExceptionHandlerTest {
             .asEmpty();
 
     assertThat(response.getStatus()).isEqualTo(HttpStatus.FOUND.value());
-    String uri = response.getHeaders().getFirst(HttpHeaders.LOCATION);
+    final String uri = response.getHeaders().getFirst(HttpHeaders.LOCATION);
     assertThat(uri).startsWith(redirectUri);
     assertThat(UriUtils.extractParameterMap(uri))
         .containsEntry("error", "invalid_request")
@@ -213,5 +227,13 @@ class IdpControllerExceptionHandlerTest {
     assertThat(errorObject.getString("error")).isEqualTo("server_error");
     assertThat(errorObject.get("gematik_uuid")).isNotNull();
     assertThat(errorObject.get("gematik_timestamp")).isNotNull();
+  }
+
+  @Test
+  void testMissingServletRequestParameterException() {
+    final ResponseEntity<IdpErrorResponse> resp =
+        idpServerExceptionHandler.handleMissingServletRequestParameter(
+            new MissingServletRequestParameterException("anyParam", "anyType"), null, null);
+    AssertionsForClassTypes.assertThat(resp.toString()).isNotEmpty();
   }
 }

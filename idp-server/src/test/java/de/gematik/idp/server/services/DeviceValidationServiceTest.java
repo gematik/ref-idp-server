@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import de.gematik.idp.server.data.DeviceType;
 import de.gematik.idp.server.devicevalidation.DeviceValidationData;
 import de.gematik.idp.server.devicevalidation.DeviceValidationRepository;
 import de.gematik.idp.server.devicevalidation.DeviceValidationState;
+import jakarta.transaction.Transactional;
 import java.util.Optional;
-import javax.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

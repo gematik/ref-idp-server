@@ -150,13 +150,13 @@ Bei der Testausführung wird es meistens sinnvoll sein, zu filtern.
 Einen bestimmten Integrationstest ausführen:
 
 ```console
-$ mvn clean verify -Dskip.unittests=true -Dcucumber.filter.tags="@TCID:FEDIDP_ENTITY_STATEMENT_003"
+$ mvn verify -Dskip.unittests=true -Dcucumber.filter.tags="@TCID:FEDIDP_ENTITY_STATEMENT_003"
 ```
 
 Alle (in allen Teilprojekten) Zulassungstests ausführen, die u.a. nicht auf "work in progress" stehen.
 
 ```console
-$ mvn clean verify -Dskip.unittests=true -Dcucumber.filter.tags="@Approval and not @OpenBug and not @WiP and not @LongRunning"  
+$ mvn verify -Dskip.unittests=true -Dcucumber.filter.tags="@Approval and not @OpenBug and not @WiP and not @LongRunning"  
 ```     
 
 Integrationstests können mit `-Dskip.inttests` disabled werden.
@@ -169,7 +169,7 @@ Einen bestimmten Integrationstest gegen einen existierenden Idp-Server ausführe
 ```console
 $ export IDP_SERVER=http://localhost:8080/auth/realms/idp/.well-known/openid-configuration
 $ export GEMATIK_TESTCONFIG=default
-$ mvn clean verify -Dskip.unittests=true -Dcucumber.filter.tags="@TCID:IDP_REF_DISC_001"
+$ mvn verify -Dskip.unittests=true -Dcucumber.filter.tags="@TCID:IDP_REF_DISC_001"
 ```
 
 ### Testfall der Testsuite in Intellij ausführen/debuggen

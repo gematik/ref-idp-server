@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@
 package de.gematik.idp.server.services;
 
 import de.gematik.idp.server.configuration.IdpConfiguration;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.AsyncHandlerInterceptor;
@@ -30,9 +28,10 @@ public class ServerVersionInterceptor implements AsyncHandlerInterceptor {
   private final IdpConfiguration idpConfiguration;
 
   @Override
-  public final boolean preHandle(
-      final HttpServletRequest request, final HttpServletResponse response, final Object handler)
-      throws Exception {
+  public boolean preHandle(
+      final jakarta.servlet.http.HttpServletRequest request,
+      final jakarta.servlet.http.HttpServletResponse response,
+      final Object handler) {
 
     response.setHeader("Version", idpConfiguration.getVersion());
 

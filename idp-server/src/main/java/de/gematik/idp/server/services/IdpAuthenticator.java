@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -139,8 +139,8 @@ public class IdpAuthenticator {
 
   public void verifyExpInChallengeEqualsExpInSignedChallenge(
       final IdpJwe signedChallenge, final JsonWebToken decryptedChallenge) {
-    Long expInEncHeader = (Long) signedChallenge.getHeaderClaim(EXPIRES_AT).orElseThrow();
-    Long expInChallenge =
+    final Long expInEncHeader = (Long) signedChallenge.getHeaderClaim(EXPIRES_AT).orElseThrow();
+    final Long expInChallenge =
         (Long)
             decryptedChallenge
                 .getStringBodyClaim(NESTED_JWT)

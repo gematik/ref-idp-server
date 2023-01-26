@@ -24,5 +24,6 @@ ARG GROUPID=10000
 USER $USERID:$GROUPID
 
 COPY --chown=$USERID:$GROUPID idp-server*.jar /app/idp-server.jar
+WORKDIR /app
 
 CMD ["java", "-jar", "/app/idp-server.jar"]

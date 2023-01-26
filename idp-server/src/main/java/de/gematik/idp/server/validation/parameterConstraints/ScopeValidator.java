@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ package de.gematik.idp.server.validation.parameterConstraints;
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.server.exceptions.IdpServerException;
 import de.gematik.idp.server.services.ScopeService;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import java.util.stream.Stream;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.tuple.Pair;
@@ -138,7 +137,7 @@ public class AccessTokenBuilder {
             .filter(scope -> !scope.equals(OPENID))
             .filter(scopeToAudienceUrl::containsKey)
             .map(scopeToAudienceUrl::get)
-            .collect(Collectors.toList());
+            .toList();
     if (audienceUrls.size() == 1) {
       return audienceUrls.get(0);
     } else {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.security.auth.x500.X500Principal;
 import lombok.AccessLevel;
@@ -147,7 +146,7 @@ public class X509ClaimExtraction {
         .filter(attributeTypeAndValue -> attributeTypeAndValue.getType().equals(field))
         .map(AttributeTypeAndValue::getValue)
         .map(Objects::toString)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private static Optional<ASN1ObjectIdentifier> getProfessionOid(

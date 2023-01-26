@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import de.gematik.idp.tests.Rfc;
 import de.gematik.idp.token.JsonWebToken;
 import de.gematik.idp.token.TokenClaimExtraction;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import kong.unirest.HttpResponse;
@@ -53,13 +52,10 @@ class DiscoveryDocumentTest {
 
   private static final String CONFIGURED_SERVER_URL = "foobarschmar";
   private static final String CONFIGURED_ISSUER_URL = "issuerUrl";
-  @LocalServerPort
-  private int localServerPort;
+  @LocalServerPort private int localServerPort;
   private String testHostUrl;
-  @Autowired
-  private IdpKey discSig;
-  @MockBean
-  private ServerUrlService serverUrlService;
+  @Autowired private IdpKey discSig;
+  @MockBean private ServerUrlService serverUrlService;
 
   @BeforeEach
   public void setUpLocalHostUrl() {
@@ -78,8 +74,7 @@ class DiscoveryDocumentTest {
   @Test
   void testHttpCacheHeader() throws UnirestException {
     final HttpResponse httpResponse = retrieveDiscoveryDocument();
-    assertThat(httpResponse.getHeaders().get("Cache-Control"))
-        .isEqualTo(List.of("max-age=300"));
+    assertThat(httpResponse.getHeaders().get("Cache-Control")).isEqualTo(List.of("max-age=300"));
   }
 
   @Afo("A_20458")
@@ -146,8 +141,8 @@ class DiscoveryDocumentTest {
     final List<String> scopesSupported =
         (List) extractClaimMapFromResponse(retrieveDiscoveryDocument()).get("scopes_supported");
     assertThat(scopesSupported)
-        .containsExactlyInAnyOrder("openid", "e-rezept", "pairing", "authenticator-dev",
-            "scope-template");
+        .containsExactlyInAnyOrder(
+            "openid", "e-rezept", "pairing", "authenticator-dev", "scope-template");
   }
 
   @Test

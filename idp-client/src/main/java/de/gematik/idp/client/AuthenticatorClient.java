@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ import de.gematik.idp.data.IdpErrorResponse;
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
+import jakarta.ws.rs.core.HttpHeaders;
 import java.net.URI;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -65,7 +66,6 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import javax.ws.rs.core.HttpHeaders;
 import kong.unirest.BodyPart;
 import kong.unirest.GetRequest;
 import kong.unirest.Header;

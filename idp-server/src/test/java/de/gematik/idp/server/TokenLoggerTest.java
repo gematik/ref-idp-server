@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@
 
 package de.gematik.idp.server;
 
-import static de.gematik.idp.IdpConstants.EREZEPT;
-import static de.gematik.idp.IdpConstants.OPENID;
-import static de.gematik.idp.IdpConstants.PAIRING;
+import static de.gematik.idp.IdpConstants.*;
 
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.RbelWiremockCapture;
@@ -476,7 +474,8 @@ class TokenLoggerTest {
   }
 
   private void initializeWiremockCapture() throws MalformedURLException {
-    rbelLogger.getMessageHistory().clear();
+    rbelLogger.clearAllMessages();
+    ;
 
     wiremockCapture =
         RbelWiremockCapture.builder()

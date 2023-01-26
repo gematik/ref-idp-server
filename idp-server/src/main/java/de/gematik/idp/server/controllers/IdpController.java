@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -42,22 +42,20 @@ import de.gematik.idp.server.validation.parameterConstraints.CheckClientId;
 import de.gematik.idp.server.validation.parameterConstraints.CheckScope;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import java.net.URISyntaxException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.dracoblue.spring.web.mvc.method.annotation.HttpResponseHeader;
-import net.dracoblue.spring.web.mvc.method.annotation.HttpResponseHeaders;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.springframework.http.HttpHeaders;
@@ -72,10 +70,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Validated
 @RequiredArgsConstructor
-@HttpResponseHeaders({
-  @HttpResponseHeader(name = "Cache-Control", value = "no-store"),
-  @HttpResponseHeader(name = "Pragma", value = "no-cache")
-})
 @Slf4j
 public class IdpController {
 
@@ -292,7 +286,7 @@ public class IdpController {
             .field("code_verifier", ftSession.getIdpCodeVerifier())
             .field("redirect_uri", kkAppUri)
             .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-            .header(javax.ws.rs.core.HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
             .asJson();
 
     log.info("id_token: {}", sektoralTokenResponse.getBody().getObject().getString("id_token"));
@@ -317,11 +311,9 @@ public class IdpController {
     log.info(
         "Get location of idp-sektoral from environment. Identifier \"{}\" is not used.",
         sekIdpIdentifier);
-    return new StringBuilder()
-        .append(getSystemProperty("IDP_SEKTORAL").orElse("http://127.0.0.1"))
-        .append(":")
-        .append(getSystemProperty("IDP_SEKTORAL_PORT").orElseThrow())
-        .toString();
+    return getSystemProperty("IDP_SEKTORAL").orElse("http://127.0.0.1")
+        + ":"
+        + getSystemProperty("IDP_SEKTORAL_PORT").orElseThrow();
   }
 
   private void setNoCacheHeader(final HttpServletResponse response) {

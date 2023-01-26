@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -156,12 +156,12 @@ class TokenRetrievalTest {
             rsaEgkIdentity.getCertificate(),
             tbsData -> {
               try {
-                Signature rsaSign =
+                final Signature rsaSign =
                     Signature.getInstance("SHA256withRSAandMGF1", new BouncyCastleProvider());
                 rsaSign.initSign(rsaEgkIdentity.getPrivateKey());
                 rsaSign.update(tbsData, 0, tbsData.length);
                 return rsaSign.sign();
-              } catch (Exception e) {
+              } catch (final Exception e) {
                 throw new RuntimeException(e);
               }
             });
@@ -830,7 +830,7 @@ class TokenRetrievalTest {
             jsonObject -> {
               try {
                 jsonObject.put("cty", "fdsjakfld");
-              } catch (JSONException e) {
+              } catch (final JSONException e) {
                 throw new RuntimeException(e);
               }
             }));
@@ -857,7 +857,7 @@ class TokenRetrievalTest {
                         .put("x", "azaX-pGFbJaHmnOWF-aeBpOnFYG7SkqZc9FmN5aLQDc")
                         .put("y", "dQy03va33Kps2u3fVKXAgOcqkN-8zwHgYOMbtp2iA-0")
                         .put("crv", "P-256"));
-              } catch (JSONException e) {
+              } catch (final JSONException e) {
                 throw new RuntimeException(e);
               }
             }));
@@ -869,10 +869,10 @@ class TokenRetrievalTest {
         .hasMessageContaining("EPK-Typ fehlerhaft");
   }
 
-  private UnaryOperator<MultipartBody> patchJweHeader(Consumer<JSONObject> patcher) {
+  private UnaryOperator<MultipartBody> patchJweHeader(final Consumer<JSONObject> patcher) {
     return body -> {
       try {
-        String[] jwe =
+        final String[] jwe =
             body.multiParts().stream()
                 .filter(part -> part.getName().equals("signed_challenge"))
                 .findAny()
@@ -884,7 +884,7 @@ class TokenRetrievalTest {
             new JSONObject(new JSONTokener(new String(Base64.getDecoder().decode(jwe[0]))));
         patcher.accept(jsonObject);
 
-        String newJwe =
+        final String newJwe =
             Base64.getUrlEncoder().withoutPadding().encodeToString(jsonObject.toString().getBytes())
                 + ".."
                 + jwe[2]
@@ -895,8 +895,8 @@ class TokenRetrievalTest {
         return Unirest.post(body.getUrl())
             .field("signed_challenge", newJwe)
             .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-            .header(javax.ws.rs.core.HttpHeaders.USER_AGENT, "fds");
-      } catch (Exception e) {
+            .header(HttpHeaders.USER_AGENT, "fds");
+      } catch (final Exception e) {
         throw new RuntimeException(e);
       }
     };

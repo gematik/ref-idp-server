@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.tests.Afo;
-import javax.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.HttpHeaders;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import org.junit.jupiter.api.AfterAll;

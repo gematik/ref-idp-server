@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -51,11 +51,11 @@ import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.tests.PkiKeyResolver.Filename;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.core.HttpHeaders;
 import java.security.cert.CertificateEncodingException;
 import java.util.Base64;
 import java.util.Set;
-import javax.transaction.Transactional;
-import javax.ws.rs.core.HttpHeaders;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
@@ -290,6 +290,19 @@ class PairingControllerAccessTest {
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString();
     assertThat(httpResponse.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+  }
+
+  @Test
+  void deletePairing_noKeyIdentifier_expect500() throws UnirestException {
+    idpClient.setScopes(Set.of(OPENID, PAIRING));
+    accessToken = idpClient.login(egkUserIdentity).getAccessToken();
+
+    final HttpResponse<String> httpResponse =
+        Unirest.delete("http://localhost:" + localServerPort + IdpConstants.PAIRING_ENDPOINT + "")
+            .header(HttpHeaders.AUTHORIZATION, buildAccessTokenString())
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+            .asString();
+    assertThat(httpResponse.getStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
   }
 
   private String createIdpJweFromRegistrationData(final RegistrationData registrationData) {

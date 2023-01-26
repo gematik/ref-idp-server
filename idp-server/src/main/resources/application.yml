@@ -54,7 +54,7 @@ idp:
       redirectUri: http://test-ps.gematik.de/erezept
       returnSsoToken: false
     AuthenticatorDevLocal:
-      redirectUri: http://localhost:8090/callback
+      redirectUri: http://localhost:3500/callback
       returnSsoToken: true
     AuthenticatorDevRemote:
       redirectUri: http://hidden/callback
@@ -122,6 +122,11 @@ idp:
         detailMessage: "redirect_uri ist ungültig"
         error: INVALID_REQUEST
         code: 1020
+      1500:
+        detailMessage: "Allgemeiner Serverfehler"
+        error: INVALID_REQUEST
+        code: 1500
+        httpStatusCode: 500
       2002:
         detailMessage: "state wurde nicht übermittelt"
         error: INVALID_REQUEST
@@ -223,12 +228,6 @@ idp:
 caching:
   discoveryDocument:
     cacheControl: "max-age=300"
-logging:
-  level:
-    org.springframework.web.filter.CommonsRequestLoggingFilter: INFO
-    de.gematik: INFO
-  file:
-    name: logs/idp-server-application.log
 server:
   port: ${SERVER_PORT:8080}
 management:
@@ -247,19 +246,15 @@ management:
     logfile:
       enabled: true
 spring:
-  liquibase:
-    enabled: true
-    change-log: "classpath:db/changelog/idp-changelog-master.xml"
   datasource:
     url: "jdbc:h2:mem:idp;INIT=CREATE SCHEMA IF NOT EXISTS IDP;"
     driver-class-name: org.h2.Driver
     username: root
     password: idp
-    liquibaseSchemaName: IDP
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
   h2:
     console:
       enabled: true

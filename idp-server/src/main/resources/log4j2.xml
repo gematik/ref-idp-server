@@ -1,0 +1,34 @@
+<Configuration>
+
+  <Properties>
+    <Property name="l4j.level">info</Property>
+    <Property name="l4j.additivity">false</Property>
+    <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] %c{1}:%L - %msg%n
+    </Property>
+  </Properties>
+
+  <Appenders>
+    <Console name="CONSOLE" target="SYSTEM_OUT">
+      <PatternLayout>
+        <Pattern>${LOG_PATTERN}</Pattern>
+      </PatternLayout>
+    </Console>
+  </Appenders>
+
+  <Loggers>
+    <Root level="error" additivity="{l4j.additivity}">
+      <AppenderRef ref="CONSOLE"/>
+    </Root>
+
+    <logger name="de.gematik" level="${l4j.level}" additivity="{l4j.additivity}">
+      <AppenderRef ref="CONSOLE"/>
+    </logger>
+
+    <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="${l4j.level}"
+      additivity="{l4j.additivity}">
+      <AppenderRef ref="CONSOLE"/>
+    </logger>
+
+  </Loggers>
+
+</Configuration>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,8 @@ import de.gematik.idp.server.exceptions.IdpServerException;
 import de.gematik.idp.server.exceptions.oauth2spec.IdpServerAccessDeniedException;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
+import jakarta.ws.rs.core.HttpHeaders;
 import java.util.Optional;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.HttpHeaders;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -56,7 +54,9 @@ public class AccessTokenInterceptor implements HandlerInterceptor, WebMvcConfigu
 
   @Override
   public boolean preHandle(
-      final HttpServletRequest request, final HttpServletResponse response, final Object handler) {
+      final jakarta.servlet.http.HttpServletRequest request,
+      final jakarta.servlet.http.HttpServletResponse response,
+      final Object handler) {
     if (!doesTargetMethodHaveValidationAnnotation(handler)) {
       return true;
     }

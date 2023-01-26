@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import de.gematik.idp.exceptions.IdpRuntimeException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -36,7 +35,7 @@ public final class JwtHelper {
       final IdpJwtProcessor jwtProcessor,
       final ObjectMapper objectMapper,
       final Object object,
-      String typ) {
+      final String typ) {
     try {
       return jwtProcessor
           .buildJws(
@@ -61,7 +60,7 @@ public final class JwtHelper {
                       keyDesc.setPublicKeyUse(identity.getUse().orElse(null));
                       return keyDesc;
                     })
-                .collect(Collectors.toList()))
+                .toList())
         .build();
   }
 
@@ -80,7 +79,7 @@ public final class JwtHelper {
                       keyDesc.setPublicKeyUse(identity.getUse().orElse(null));
                       return keyDesc;
                     })
-                .collect(Collectors.toList()))
+                .toList())
         .build();
   }
 }

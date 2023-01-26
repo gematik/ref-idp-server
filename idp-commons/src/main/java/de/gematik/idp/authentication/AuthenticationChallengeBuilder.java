@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -103,9 +103,7 @@ public class AuthenticationChallengeBuilder {
 
   private UserConsent getUserConsent(final String scopes) {
     final List<String> requestedScopes =
-        Stream.of(scopes.split(" "))
-            .filter(scopesConfiguration::containsKey)
-            .collect(Collectors.toList());
+        Stream.of(scopes.split(" ")).filter(scopesConfiguration::containsKey).toList();
     final Map<String, String> scopeMap =
         requestedScopes.stream()
             .map(s -> Pair.of(s, scopesConfiguration.get(s).getDescription()))

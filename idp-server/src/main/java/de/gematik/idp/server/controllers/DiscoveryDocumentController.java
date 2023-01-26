@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -31,14 +31,13 @@ import de.gematik.idp.server.exceptions.IdpServerException;
 import de.gematik.idp.server.services.DiscoveryDocumentBuilder;
 import de.gematik.idp.server.services.ScopeService;
 import de.gematik.idp.server.validation.clientSystem.ValidateClientSystem;
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import net.dracoblue.spring.web.mvc.method.annotation.HttpResponseHeader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -55,8 +54,9 @@ public class DiscoveryDocumentController {
   private final DiscoveryDocumentBuilder discoveryDocumentBuilder;
   private IdpJwtProcessor jwtProcessor;
 
-  @Autowired
-  private ScopeService scopeService;
+  private final String cacheControlDiscDoc;
+
+  @Autowired private ScopeService scopeService;
 
   @PostConstruct
   public void setUp() {
@@ -84,24 +84,22 @@ public class DiscoveryDocumentController {
                       keyDesc.setPublicKeyUse(identity.getUse().orElse(null));
                       return keyDesc;
                     })
-                .collect(Collectors.toList()))
+                .toList())
         .build();
   }
 
   @GetMapping(
       value = {
-          DISCOVERY_DOCUMENT_ENDPOINT,
-          "/discoveryDocument",
-          "auth/realms/idp/.well-known/openid-configuration"
+        DISCOVERY_DOCUMENT_ENDPOINT,
+        "/discoveryDocument",
+        "auth/realms/idp/.well-known/openid-configuration"
       },
       produces = "application/jwt;charset=UTF-8")
   @ValidateClientSystem
-  @HttpResponseHeader(
-      name = "Cache-Control",
-      value = "#{environment.getProperty('caching.discoveryDocument.cacheControl')}",
-      valueExpression = true)
-  public String getDiscoveryDocument(final HttpServletRequest request) {
-    String[] scopes = scopeService.getScopes().toArray(new String[0]);
+  public String getDiscoveryDocument(
+      final HttpServletRequest request, final HttpServletResponse response) {
+    final String[] scopes = scopeService.getScopes().toArray(new String[0]);
+    setNoCacheHeader(response);
     return signDiscoveryDocument(
         discoveryDocumentBuilder.buildDiscoveryDocument(
             serverUrlService.determineServerUrl(request), serverUrlService.getIssuerUrl(), scopes));
@@ -119,5 +117,9 @@ public class DiscoveryDocumentController {
       throw new IdpServerException(
           2100, IdpErrorType.SERVER_ERROR, "Ein Fehler ist aufgetreten", e);
     }
+  }
+
+  private void setNoCacheHeader(final HttpServletResponse response) {
+    response.setHeader("Cache-Control", cacheControlDiscDoc);
   }
 }

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 gematik GmbH
+# Copyright (c) 2023 gematik GmbH
 # 
 # Licensed under the Apache License, Version 2.0 (the License);
 # you may not use this file except in compliance with the License.
@@ -112,7 +112,7 @@ Feature: EntityStatements abrufen
       grant_types: ["authorization_code"],
       require_pushed_authorization_requests: true,
       token_endpoint_auth_method: "private_key_jwt",
-      token_endpoint_auth_signing_alg: "ES256",
+      default_acr_values: "gematik-ehealth-loa-high",
       id_token_signed_response_alg: "ES256",
       id_token_encrypted_response_alg: "ECDH-ES",
       id_token_encrypted_response_enc: "A256GCM",
@@ -311,17 +311,13 @@ Feature: EntityStatements abrufen
       grant_types_supported: ["authorization_code"],
       require_pushed_authorization_requests: true,
       token_endpoint_auth_methods_supported: ["private_key_jwt"],
-      token_endpoint_auth_signing_alg_values_supported: ["ES256"],
       request_authentication_methods_supported: {
         ar: ["none"],
         par: ["private_key_jwt"]
       },
-      request_object_signing_alg_values_supported: ["ES256"],
       id_token_signing_alg_values_supported: ["ES256"],
       id_token_encryption_alg_values_supported: ["ECDH-ES"],
       id_token_encryption_enc_values_supported: ["A256GCM"],
-      claims_supported: ["TODO"],
-      claims_parameter_supported: ["TODO"],
       user_type_supported: "IP"
     },
     federation_entity: {

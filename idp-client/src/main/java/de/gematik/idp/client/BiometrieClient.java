@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,10 @@ import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
+import jakarta.ws.rs.core.HttpHeaders;
 import java.security.KeyPair;
 import java.util.Base64;
 import java.util.List;
-import javax.ws.rs.core.HttpHeaders;
 import kong.unirest.GenericType;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;

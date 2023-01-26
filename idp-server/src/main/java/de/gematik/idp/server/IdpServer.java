@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,12 @@ package de.gematik.idp.server;
 
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.services.ServerVersionInterceptor;
+import jakarta.annotation.PostConstruct;
 import java.security.Security;
 import java.util.Locale;
-import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import net.dracoblue.spring.web.mvc.method.annotation.HttpResponseHeaderHandlerInterceptor;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.actuate.trace.http.HttpTraceRepository;
-import org.springframework.boot.actuate.trace.http.InMemoryHttpTraceRepository;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -35,7 +32,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
-@SpringBootApplication(scanBasePackages = {"de.gematik.idp", "net.dracoblue"})
+@SpringBootApplication(scanBasePackages = {"de.gematik.idp"})
 @RequiredArgsConstructor
 public class IdpServer implements WebMvcConfigurer {
 
@@ -45,7 +42,6 @@ public class IdpServer implements WebMvcConfigurer {
   }
 
   private final IdpConfiguration idpConfiguration;
-  private final HttpResponseHeaderHandlerInterceptor httpResponsHeaderHandlerInterceptor;
   private final ServerVersionInterceptor serverVersionInterceptor;
 
   @SuppressWarnings("java:S4823")
@@ -81,14 +77,8 @@ public class IdpServer implements WebMvcConfigurer {
     return new WebMvcConfigurer() {
       @Override
       public void addInterceptors(final InterceptorRegistry registry) {
-        registry.addInterceptor(httpResponsHeaderHandlerInterceptor);
         registry.addInterceptor(serverVersionInterceptor);
       }
     };
-  }
-
-  @Bean
-  public HttpTraceRepository httpTraceRepository() {
-    return new InMemoryHttpTraceRepository();
   }
 }

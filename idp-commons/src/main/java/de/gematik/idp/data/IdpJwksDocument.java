@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package de.gematik.idp.data;
 
 import de.gematik.idp.crypto.model.PkiIdentity;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -41,7 +40,7 @@ public class IdpJwksDocument {
                     identity ->
                         IdpKeyDescriptor.constructFromX509Certificate(
                             identity.getCertificate(), identity.getKeyId(), true))
-                .collect(Collectors.toList()))
+                .toList())
         .build();
   }
 }

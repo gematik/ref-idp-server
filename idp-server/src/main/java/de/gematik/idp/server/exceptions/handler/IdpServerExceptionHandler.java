@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,11 @@ import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.exceptions.IdpServerException;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.ValidationException;
+import jakarta.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -34,11 +39,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.validation.ValidationException;
-import javax.ws.rs.core.UriBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -52,6 +52,7 @@ import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -77,10 +78,10 @@ public class IdpServerExceptionHandler {
     }
     logEntry(body, exc);
 
-    if (exc.getStatus().is3xxRedirection()) {
+    if (exc.getStatusCode().is3xxRedirection()) {
       return buildForwardingError(body, request, response, exc);
     }
-    return new ResponseEntity<>(body, getHeader(), exc.getStatus());
+    return new ResponseEntity<>(body, getHeader(), exc.getStatusCode());
   }
 
   private ResponseEntity<IdpErrorResponse> buildForwardingError(
@@ -90,7 +91,7 @@ public class IdpServerExceptionHandler {
       final IdpServerException exc) {
     response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
     response.setHeader(HttpHeaders.PRAGMA, "no-cache");
-    String redirectUri = request.getParameter("redirect_uri");
+    final String redirectUri = request.getParameter("redirect_uri");
     if (redirectUri == null) {
       final IdpErrorResponse body = getBody(exc);
       if (!StringUtils.isEmpty(exc.getMessage())) {
@@ -275,6 +276,22 @@ public class IdpServerExceptionHandler {
       final HttpRequestMethodNotSupportedException ex) {
     log.info("Returning error to client: {}", ex.getMessage());
     return new ResponseEntity<>(getHeader(), HttpStatus.METHOD_NOT_ALLOWED);
+  }
+
+  @ExceptionHandler(MissingPathVariableException.class)
+  public ResponseEntity<IdpErrorResponse> handleMissingPathVariableException(
+      final MissingPathVariableException ex,
+      final WebRequest request,
+      final HttpServletResponse response) {
+    return handleIdpServerException(
+        Optional.ofNullable(idpConfiguration.getErrors().getErrorCodeMap().get(1500))
+            .map(resp -> new IdpServerException(resp, ex))
+            .orElseGet(
+                () ->
+                    new IdpServerException(
+                        ex.getMessage(), ex, IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST)),
+        request,
+        response);
   }
 
   private void logEntry(final IdpErrorResponse body, final Exception exc) {

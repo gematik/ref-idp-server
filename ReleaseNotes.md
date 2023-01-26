@@ -1,3 +1,10 @@
+# Release 21.0.22
+
+- update dependencies
+- spring boot 3.0.2
+- log4j2 (without FILE logger) instead of logback
+- minor fixes
+
 # Release 21.0.20
 
 - replace a certificate in the testsuite that is going to expire soon

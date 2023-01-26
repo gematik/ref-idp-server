@@ -7,16 +7,18 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>21.0.20</version>
+    <version>21.0.22</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>idp-server</artifactId>
-  <version>21.0.20</version>
+  <version>21.0.22</version>
   <packaging>jar</packaging>
 
   <properties>
     <commit_hash>undefined</commit_hash>
+    <version.jaxb-api>2.4.0-b180830.0359</version.jaxb-api>
+    <version.jaxb-impl>2.3.6</version.jaxb-impl>
   </properties>
 
   <dependencies>
@@ -29,16 +31,6 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.logging.log4j</groupId>
-          <artifactId>log4j-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.logging.log4j</groupId>
-          <artifactId>log4j-to-slf4j</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -63,7 +55,17 @@
         </exclusion>
       </exclusions>
     </dependency>
-
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <version>${version.jaxb-api}</version>
+    </dependency>
+    <!-- old JAXB implementation for non jakarta binding -->
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-impl</artifactId>
+      <version>${version.jaxb-impl}</version>
+    </dependency>
     <dependency>
       <groupId>de.gematik.idp</groupId>
       <artifactId>idp-commons</artifactId>
@@ -102,7 +104,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
@@ -110,10 +111,6 @@
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.liquibase</groupId>
-      <artifactId>liquibase-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -128,21 +125,16 @@
     <dependency>
       <groupId>org.modelmapper</groupId>
       <artifactId>modelmapper</artifactId>
-      <version>3.1.0</version>
+      <version>3.1.1</version>
     </dependency>
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
     </dependency>
     <dependency>
-      <groupId>net.dracoblue.spring</groupId>
-      <artifactId>http-response-headers</artifactId>
-      <version>0.2.0</version>
-    </dependency>
-    <dependency>
       <groupId>com.github.tomakehurst</groupId>
       <artifactId>wiremock</artifactId>
-      <version>2.27.2</version>
+      <version>3.0.0-beta-2</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -194,6 +186,26 @@
           <artifactId>groovy</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.validation</groupId>
+      <artifactId>jakarta.validation-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j2-impl</artifactId>
     </dependency>
   </dependencies>
 

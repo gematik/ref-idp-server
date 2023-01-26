@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 gematik GmbH
+# Copyright (c) 2023 gematik GmbH
 # 
 # Licensed under the Apache License, Version 2.0 (the License);
 # you may not use this file except in compliance with the License.
@@ -181,9 +181,16 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
   Scenario: Biometrie Deregister - Lösche Pairing fehlender key identifier in der Anfrage
     Given IDP I request an pairing access token via SSO token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     When IDP I deregister the device with '$REMOVE'
-    Then the response status is 405
-    And IDP the response should match
+    Then the response status is 500
+    And IDP the JSON response should match
         """
+        {
+          ____error:          "invalid_request",
+          gematik_code:       "1500",
+          gematik_timestamp:  "${json-unit.ignore}",
+          gematik_uuid:       ".*",
+          gematik_error_text: "Allgemeiner Serverfehler"
+        }
         """
 
   @Approval

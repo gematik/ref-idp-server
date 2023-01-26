@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public class OpenidRelyingParty {
   private String[] grantTypes;
   private boolean requirePushedAuthorizationRequests;
   private String tokenEndpointAuthMethod;
-  private String tokenEndpointAuthSigningAlg;
+  private String defaultAcrValues;
   private String idTokenSignedResponseAlg;
   private String idTokenEncryptedResponseAlg;
   private String idTokenEncryptedResponseEnc;

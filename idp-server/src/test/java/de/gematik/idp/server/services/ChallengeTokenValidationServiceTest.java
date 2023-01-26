@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -46,10 +46,10 @@ import de.gematik.idp.server.pairing.PairingData;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.tests.PkiKeyResolver.Filename;
 import de.gematik.idp.token.JsonWebToken;
+import jakarta.transaction.Transactional;
 import java.security.cert.CertificateEncodingException;
 import java.time.ZonedDateTime;
 import java.util.Map;
-import javax.transaction.Transactional;
 import lombok.SneakyThrows;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -45,13 +45,9 @@ public class OpenidProvider {
   private String[] grantTypesSupported;
   private boolean requirePushedAuthorizationRequests;
   private String[] tokenEndpointAuthMethodsSupported;
-  private String[] tokenEndpointAuthSigningAlgValuesSupported;
   private RequestAuthenticationMethodsSupported requestAuthenticationMethodsSupported;
-  private String[] requestObjectSigningAlgValuesSupported;
   private String[] idTokenSigningAlgValuesSupported;
   private String[] idTokenEncryptionAlgValuesSupported;
   private String[] idTokenEncryptionEncValuesSupported;
-  private String[] claimsSupported;
-  private String[] claimsParameterSupported;
   private String userTypeSupported;
 }

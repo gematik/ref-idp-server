@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import de.gematik.idp.server.data.DeviceType;
 import de.gematik.idp.server.devicevalidation.DeviceValidationData;
 import de.gematik.idp.server.devicevalidation.DeviceValidationRepository;
 import de.gematik.idp.server.devicevalidation.DeviceValidationState;
+import jakarta.annotation.PostConstruct;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,64 @@ import org.springframework.stereotype.Service;
 public class DeviceValidationService {
 
   private final DeviceValidationRepository deviceValidationRepository;
+
+  @PostConstruct
+  public void intDbWithDevices() {
+    deviceValidationRepository.save(
+        DeviceValidationData.builder()
+            .manufacturer("Samsung")
+            .product("Galaxy-8")
+            .model("SM-950F")
+            .os("Android")
+            .osVersion("4.0.3")
+            .state(DeviceValidationState.ALLOW)
+            .build());
+    deviceValidationRepository.save(
+        DeviceValidationData.builder()
+            .manufacturer("Samsung")
+            .product("Galaxy-S3")
+            .model("GT-I9300")
+            .os("Android")
+            .osVersion("2.2")
+            .state(DeviceValidationState.ALLOW)
+            .build());
+    deviceValidationRepository.save(
+        DeviceValidationData.builder()
+            .manufacturer("Apple")
+            .product("iPhone")
+            .model("iPhone Xs")
+            .os("iOS")
+            .osVersion("14.4.2")
+            .state(DeviceValidationState.ALLOW)
+            .build());
+    deviceValidationRepository.save(
+        DeviceValidationData.builder()
+            .manufacturer("Google")
+            .product("Pixel 2")
+            .model("Pixel 2")
+            .os("Android")
+            .osVersion("11.0.0")
+            .state(DeviceValidationState.BLOCK)
+            .build());
+    deviceValidationRepository.save(
+        DeviceValidationData.builder()
+            .manufacturer("Google")
+            .product("Pixel 2")
+            .model("Pixel 2 XL")
+            .os("Android")
+            .osVersion("10.0.0")
+            .state(DeviceValidationState.BLOCK)
+            .build());
+    deviceValidationRepository.save(
+        DeviceValidationData.builder()
+            .manufacturer("Apple")
+            .product("iPhone")
+            .model("iPhone 3G")
+            .os("iOS")
+            .osVersion("6.1.6")
+            .state(DeviceValidationState.BLOCK)
+            .build());
+  }
 
   public DeviceValidationState assess(final DeviceType deviceType) {
     final Optional<DeviceValidationData> deviceValidation = getDeviceValidation(deviceType);

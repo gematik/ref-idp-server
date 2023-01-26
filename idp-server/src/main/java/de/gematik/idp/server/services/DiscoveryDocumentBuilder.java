@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -49,21 +49,21 @@ public class DiscoveryDocumentBuilder {
         .ssoEndpoint(serverUrl + SSO_ENDPOINT)
         .uriPair(serverUrl + PAIRING_ENDPOINT)
         .thirdPartyAuthorizationEndpoint(serverUrl + THIRD_PARTY_ENDPOINT)
-        .grantTypesSupported(new String[]{"authorization_code"})
-        .idTokenSigningAlgValuesSupported(new String[]{"BP256R1"})
+        .grantTypesSupported(new String[] {"authorization_code"})
+        .idTokenSigningAlgValuesSupported(new String[] {"BP256R1"})
         .scopesSupported(scopes)
-        .responseTypesSupported(new String[]{"code"})
-        .subjectTypesSupported(new String[]{"pairwise"})
-        .tokenEndpointAuthMethodsSupported(new String[]{"none"})
-        .acrValuesSupported(new String[]{"gematik-ehealth-loa-high"})
-        .responseModesSupported(new String[]{"query"})
+        .responseTypesSupported(new String[] {"code"})
+        .subjectTypesSupported(new String[] {"pairwise"})
+        .tokenEndpointAuthMethodsSupported(new String[] {"none"})
+        .acrValuesSupported(new String[] {"gematik-ehealth-loa-high"})
+        .responseModesSupported(new String[] {"query"})
         .issuer(issuerUrl)
         .jwksUri(serverUrl + "/jwks")
         .exp(currentTime.plusHours(24).toEpochSecond())
         .iat(currentTime.toEpochSecond())
         .uriPukIdpEnc(serverUrl + KeyInformationController.PUK_URI_ENC)
         .uriPukIdpSig(serverUrl + KeyInformationController.PUK_URI_SIG)
-        .codeChallengeMethodsSupported(new String[]{"S256"})
+        .codeChallengeMethodsSupported(new String[] {"S256"})
         .kkAppListUri(serverUrl + APPLIST_ENDPOINT)
         .build();
   }

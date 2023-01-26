@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,8 @@ import de.gematik.idp.server.pairing.PairingData;
 import de.gematik.idp.server.pairing.PairingRepository;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
 import java.util.Base64;
@@ -52,9 +54,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -83,7 +82,7 @@ public class PairingService {
     validateAccessTokenClaims(accessToken);
     final List<PairingData> pairingDataList =
         getPairingList(retrieveIdNumberFromAccessToken(accessToken));
-    return pairingDataList.stream().map(this::convertToDto).collect(Collectors.toList());
+    return pairingDataList.stream().map(this::convertToDto).toList();
   }
 
   public List<PairingData> getPairingList(final String idNumber) {

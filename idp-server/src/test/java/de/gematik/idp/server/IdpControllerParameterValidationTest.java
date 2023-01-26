@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 gematik GmbH
+ * Copyright (c) 2023 gematik GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -55,6 +55,7 @@ import kong.unirest.MultipartBody;
 import kong.unirest.Unirest;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.tuple.Pair;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.jose4j.jwt.JwtClaims;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,6 +63,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
@@ -418,6 +421,22 @@ class IdpControllerParameterValidationTest {
         .forEach(entry -> getRequest.queryString(entry.getKey(), entry.getValue()));
 
     return getRequest;
+  }
+
+  /** Sonar satisfaction */
+  @Test
+  void testSekIdpLocationNotFound() {
+    final HttpResponse<String> response =
+        Unirest.post("http://localhost:" + port + IdpConstants.THIRD_PARTY_ENDPOINT)
+            .header(
+                org.springframework.http.HttpHeaders.CONTENT_TYPE,
+                MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+            .field("state", "unknownState")
+            .field("code", "todoCode")
+            .field("kk_app_redirect_uri", "todoUri")
+            .asString();
+    AssertionsForClassTypes.assertThat(response.getStatus())
+        .isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
   }
 
   private GetRequest buildGetThirdPartyAuthorizationRequest(
