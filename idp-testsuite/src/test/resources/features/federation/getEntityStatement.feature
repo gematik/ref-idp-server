@@ -304,17 +304,18 @@ Feature: EntityStatements abrufen
       token_endpoint: 'http.*/token',
       pushed_authorization_request_endpoint: 'http.*/PAR_Auth',
       client_registration_types_supported: ["automatic"],
-      subject_types_supported: ["public"],
+      subject_types_supported: ["pairwise"],
       response_types_supported: ["code"],
-      scopes_supported: ["openid","urn:telematik:geburtsdatum","urn:telematik:alter","urn:telematik:display_name","urn:telematik:geschlecht","email","urn:telematik:versicherter"],
+      scopes_supported: ["urn:telematik:given_name","urn:telematik:geburtsdatum","urn:telematik:alter","urn:telematik:display_name","urn:telematik:geschlecht","urn:telematik:email","urn:telematik:versicherter"],
       response_modes_supported: ["query"],
       grant_types_supported: ["authorization_code"],
       require_pushed_authorization_requests: true,
-      token_endpoint_auth_methods_supported: ["private_key_jwt"],
+      token_endpoint_auth_methods_supported: ["self_signed_tls_client_auth"],
       request_authentication_methods_supported: {
         ar: ["none"],
-        par: ["private_key_jwt"]
+        par: ["self_signed_tls_client_auth"]
       },
+      request_object_signing_alg_values_supported: ["ES256"],
       id_token_signing_alg_values_supported: ["ES256"],
       id_token_encryption_alg_values_supported: ["ECDH-ES"],
       id_token_encryption_enc_values_supported: ["A256GCM"],

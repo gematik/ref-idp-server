@@ -1,3 +1,9 @@
+# Release 21.0.23
+
+- update tsl
+- fix entity statement of idp-sektoral
+- update dependencies
+
 # Release 21.0.22
 
 - update dependencies

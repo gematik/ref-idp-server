@@ -12,7 +12,7 @@
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-global</artifactId>
-  <version>21.0.22</version>
+  <version>21.0.23</version>
   <packaging>pom</packaging>
 
   <description>IDP</description>
@@ -117,14 +117,14 @@
     <version.unirest>3.14.1</version.unirest>
 
     <version.build-helper-maven-plugin>3.3.0</version.build-helper-maven-plugin>
-    <version.docker-maven-plugin>0.40.3</version.docker-maven-plugin>
+    <version.docker-maven-plugin>0.41.0</version.docker-maven-plugin>
     <version.copy-rename-maven-plugin>1.0.1</version.copy-rename-maven-plugin>
     <version.jacoco-maven-plugin>0.8.8</version.jacoco-maven-plugin>
     <version.jakarta.ws.rs-api>3.1.0</version.jakarta.ws.rs-api>
     <version.maven>3.8.6</version.maven>
     <version.maven-clean-plugin>3.2.0</version.maven-clean-plugin>
     <version.maven-compiler-plugin>3.10.1</version.maven-compiler-plugin>
-    <version.maven-enforcer-plugin>3.1.0</version.maven-enforcer-plugin>
+    <version.maven-enforcer-plugin>3.2.1</version.maven-enforcer-plugin>
     <version.maven-failsafe-plugin>3.0.0-M8</version.maven-failsafe-plugin>
     <version.maven-gpg-plugin>3.0.1</version.maven-gpg-plugin>
     <version.maven-jar-plugin>3.3.0</version.maven-jar-plugin>
@@ -138,7 +138,7 @@
     <version.maven-surefire-plugin>3.0.0-M8</version.maven-surefire-plugin>
     <version.nexus-staging-maven-plugin>1.6.13</version.nexus-staging-maven-plugin>
     <version.sonar-maven-plugin>3.9.1.2184</version.sonar-maven-plugin>
-    <version.spotless-maven-plugin>2.30.0</version.spotless-maven-plugin>
+    <version.spotless-maven-plugin>2.32.0</version.spotless-maven-plugin>
     <version.spotless.google-java-format>1.15.0</version.spotless.google-java-format>
     <version.spring-boot-maven-plugin>3.0.2</version.spring-boot-maven-plugin>
     <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
