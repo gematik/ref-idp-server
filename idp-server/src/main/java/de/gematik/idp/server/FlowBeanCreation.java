@@ -76,9 +76,9 @@ public class FlowBeanCreation {
   @Bean
   public AccessTokenBuilder accessTokenBuilder() {
     final HashMap<String, String> scopeToAudienceUrls = new HashMap<>();
-    idpConfiguration.getScopesConfiguration().entrySet().stream()
-        .forEach(
-            entry -> scopeToAudienceUrls.put(entry.getKey(), entry.getValue().getAudienceUrl()));
+    idpConfiguration
+        .getScopesConfiguration()
+        .forEach((key, value) -> scopeToAudienceUrls.put(key, value.getAudienceUrl()));
     return new AccessTokenBuilder(
         idpSigProcessor,
         serverUrlService.determineServerUrl(),
@@ -131,7 +131,7 @@ public class FlowBeanCreation {
                   FlowBeanCreation.class.getClassLoader().getResourceAsStream("TSL_default.xml"),
                   "Resource unavailable.")
               .readAllBytes();
-      final TrustStatusListType tsl = TslConverter.bytesToTsl(tslBytes).orElseThrow();
+      final TrustStatusListType tsl = TslConverter.bytesToTsl(tslBytes);
       final List<TspService> tspServiceTypeList = new TslInformationProvider(tsl).getTspServices();
 
       return TucPki018Verifier.builder()

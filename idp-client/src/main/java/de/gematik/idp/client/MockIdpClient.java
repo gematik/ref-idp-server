@@ -51,7 +51,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.AllArgsConstructor;
@@ -156,15 +155,15 @@ public class MockIdpClient implements IIdpClient {
     scopeToAudienceUrls.put(
         "pairing", "https://idp-pairing-test.zentral.idp.splitdns.ti-dienste.de");
 
-    ScopeConfiguration openidConfig =
+    final ScopeConfiguration openidConfig =
         ScopeConfiguration.builder().description("Zugriff auf den ID-Token.").build();
-    ScopeConfiguration pairingConfig =
+    final ScopeConfiguration pairingConfig =
         ScopeConfiguration.builder()
             .audienceUrl("https://idp-pairing-test.zentral.idp.splitdns.ti-dienste.de")
             .description("Zugriff auf die Daten für die biometrischer Authentisierung.")
             .claimsToBeIncluded(List.of(ID_NUMBER))
             .build();
-    ScopeConfiguration erezeptConfig =
+    final ScopeConfiguration erezeptConfig =
         ScopeConfiguration.builder()
             .audienceUrl("https://erp-test.zentral.erp.splitdns.ti-dienste.de/")
             .description("Zugriff auf die E-Rezept-Funktionalität.")
@@ -172,14 +171,14 @@ public class MockIdpClient implements IIdpClient {
                 List.of(GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER))
             .build();
 
-    serverIdentity.setKeyId(Optional.of("puk_idp_sig"));
-    serverIdentity.setUse(Optional.of("sig"));
-    jwtProcessor = new IdpJwtProcessor(serverIdentity);
+    //    serverIdentity.setUse(Optional.of("sig"));
+    final java.util.Optional<String> keyId = java.util.Optional.of("puk_idp_sig");
+    jwtProcessor = new IdpJwtProcessor(serverIdentity, keyId);
     accessTokenBuilder =
         new AccessTokenBuilder(jwtProcessor, uriIdpServer, SERVER_SUB_SALT, scopeToAudienceUrls);
     authenticationChallengeBuilder =
         AuthenticationChallengeBuilder.builder()
-            .serverSigner(new IdpJwtProcessor(serverIdentity))
+            .serverSigner(new IdpJwtProcessor(serverIdentity, keyId))
             .uriIdpServer(uriIdpServer)
             .userConsentConfiguration(
                 UserConsentConfiguration.builder()

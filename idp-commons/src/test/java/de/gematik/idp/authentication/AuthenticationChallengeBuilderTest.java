@@ -56,18 +56,17 @@ class AuthenticationChallengeBuilderTest {
 
   @BeforeEach
   public void init(@PkiKeyResolver.Filename("rsa") final PkiIdentity serverIdentity) {
-    ScopeConfiguration openidConfig =
+    final ScopeConfiguration openidConfig =
         ScopeConfiguration.builder().description("openid desc").build();
-    ScopeConfiguration pairingConfig =
+    final ScopeConfiguration pairingConfig =
         ScopeConfiguration.builder()
             .audienceUrl("erplala")
             .description("erp desc")
             .claimsToBeIncluded(List.of(GIVEN_NAME, FAMILY_NAME))
             .build();
-    serverIdentity.setKeyId(Optional.of(SERVER_KEY_IDENTITY));
     authenticationChallengeBuilder =
         AuthenticationChallengeBuilder.builder()
-            .serverSigner(new IdpJwtProcessor(serverIdentity))
+            .serverSigner(new IdpJwtProcessor(serverIdentity, Optional.of(SERVER_KEY_IDENTITY)))
             .userConsentConfiguration(
                 UserConsentConfiguration.builder()
                     .descriptionTexts(

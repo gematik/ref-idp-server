@@ -29,7 +29,6 @@ import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.JsonWebToken;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
@@ -84,7 +83,6 @@ class MockIdpClientTokenSynchronTest {
 
     this.clientIdentity = clientIdentity;
     this.serverIdentity = serverIdentity;
-    serverIdentity.setKeyId(Optional.of("idpSig"));
     mockIdpClient =
         MockIdpClient.builder()
             .serverIdentity(serverIdentity)

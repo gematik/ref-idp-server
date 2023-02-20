@@ -6,7 +6,7 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>21.0.23</version>
+    <version>21.0.25</version>
   </parent>
   <artifactId>idp-report</artifactId>
 

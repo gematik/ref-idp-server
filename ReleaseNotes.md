@@ -1,3 +1,8 @@
+# Release 21.0.25
+
+- refactor KeyConfiguration, PkiIdentity
+- update dependencies
+
 # Release 21.0.23
 
 - update tsl

@@ -34,7 +34,6 @@ import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Enumeration;
-import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -87,7 +86,7 @@ public class CryptoLoader {
         final String alias = e.nextElement();
         final X509Certificate certificate = (X509Certificate) p12.getCertificate(alias);
         final PrivateKey privateKey = (PrivateKey) p12.getKey(alias, p12Password.toCharArray());
-        return new PkiIdentity(certificate, privateKey, Optional.empty(), null);
+        return new PkiIdentity(certificate, privateKey);
       }
     } catch (final IOException
         | KeyStoreException

@@ -4,10 +4,12 @@ idp:
     fileName: classpath:idp_sig.p12
     keyId: puk_idp_sig
     use: sig
+    x5cInJwks: true
   idpEnc:
     fileName: classpath:idp_enc.p12
     keyId: puk_idp_enc
     use: enc
+    x5cInJwks: false
   discSig:
     fileName: classpath:disc_sig.p12
     keyId: puk_disc_sig

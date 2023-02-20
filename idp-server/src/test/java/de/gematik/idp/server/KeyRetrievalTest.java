@@ -136,8 +136,7 @@ class KeyRetrievalTest {
     assertThat(keySet.getJsonWebKeys()).hasSize(2);
     assertThat(
             keySet.getJsonWebKeys().stream().map(JsonWebKey::getKeyId).collect(Collectors.toList()))
-        .containsExactlyInAnyOrder(
-            idpSig.getIdentity().getKeyId().get(), idpEnc.getIdentity().getKeyId().get());
+        .containsExactlyInAnyOrder(idpSig.getKeyId().get(), idpEnc.getKeyId().get());
   }
 
   @Test

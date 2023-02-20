@@ -14,29 +14,26 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.data;
+package de.gematik.idp.data.fedidp;
 
-import de.gematik.idp.crypto.model.PkiIdentity;
-import java.util.Optional;
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @RequiredArgsConstructor
-@Getter
-@Setter
-public class FederationPrivKey {
+public enum Oauth2ErrorCode {
+  INVALID_REQUEST("invalid_request"),
+  INVALID_CLIENT("invalid_client"),
+  INVALID_GRANT("invalid_grant"),
+  UNAUTHORIZED_CLIENT("unauthorized_client"),
+  UNSUPPORTED_GRANT_TYPE("unsupported_grant_type");
 
-  private final PkiIdentity identity;
-  private Optional<Boolean> addX5c;
-  private Optional<String> keyId;
-  private Optional<String> use;
+  private final String serializationValue;
 
-  public IdpKeyDescriptor buildJwk() {
-    final IdpKeyDescriptor keyDesc =
-        IdpKeyDescriptor.constructFromX509Certificate(
-            identity.getCertificate(), keyId, addX5c.orElse(false));
-    keyDesc.setPublicKeyUse(use.orElse(null));
-    return keyDesc;
+  @JsonValue
+  public String getSerializationValue() {
+    return serializationValue;
   }
 }

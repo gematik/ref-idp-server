@@ -90,10 +90,6 @@ class IdpJwtProcessorTest {
 
   private IdpJwtProcessor jwtProcessor;
 
-  {
-    Security.addProvider(new BouncyCastleProvider());
-  }
-
   @Test
   void build_rsa(final PkiIdentity rsa) {
     final JsonWebToken jwt = createJwt(rsa);
@@ -112,7 +108,7 @@ class IdpJwtProcessorTest {
     jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
     // delete first character
     final String jwtJasonInvalid = jwt.getRawString().substring(1);
-    JsonWebToken jsonWebToken = new JsonWebToken(jwtJasonInvalid);
+    final JsonWebToken jsonWebToken = new JsonWebToken(jwtJasonInvalid);
     assertThatThrownBy(() -> jwtProcessor.verifyAndThrowExceptionIfFail(jsonWebToken))
         .isInstanceOf(RuntimeException.class);
   }
@@ -122,7 +118,7 @@ class IdpJwtProcessorTest {
     final JsonWebToken jwt = createJwt(ecc);
     // delete last character
     final String jwtJasonInvalid = jwt.getRawString().substring(0, jwt.getRawString().length() - 1);
-    JsonWebToken jsonWebToken = new JsonWebToken(jwtJasonInvalid);
+    final JsonWebToken jsonWebToken = new JsonWebToken(jwtJasonInvalid);
     assertThat(jsonWebToken).isNotNull();
     assertThatThrownBy(() -> jwtProcessor.verifyAndThrowExceptionIfFail(jsonWebToken))
         .isInstanceOf(RuntimeException.class);
@@ -132,23 +128,23 @@ class IdpJwtProcessorTest {
   void verifySignAlgo_ecc(final PkiIdentity ecc) {
     final JsonWebToken jwt = createJwt(ecc);
     jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
-    assertThat(jwtProcessor.getHeaderDecoded(jwt))
+    assertThat(IdpJwtProcessor.getHeaderDecoded(jwt))
         .contains(BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256);
-    assertThat(jwtProcessor.getHeaderDecoded(jwt)).doesNotContain("RS256");
+    assertThat(IdpJwtProcessor.getHeaderDecoded(jwt)).doesNotContain("RS256");
   }
 
   @Test
   void verifyHeaderElementsComplete_ecc(final PkiIdentity ecc) {
     final JsonWebToken jwt = createJwt(ecc);
     jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
-    assertThat(jwtProcessor.getHeaderDecoded(jwt)).contains(ALGORITHM.getJoseName());
+    assertThat(IdpJwtProcessor.getHeaderDecoded(jwt)).contains(ALGORITHM.getJoseName());
   }
 
   @Test
   void verifyPayloadElementsComplete_ecc(final PkiIdentity ecc) {
     final JsonWebToken jwt = createJwt(ecc);
     jwtProcessor.verifyAndThrowExceptionIfFail(jwt);
-    final String payloadAsString = jwtProcessor.getPayloadDecoded(jwt);
+    final String payloadAsString = IdpJwtProcessor.getPayloadDecoded(jwt);
     assertThat(payloadAsString)
         .contains(RESPONSE_TYPE.getJoseName())
         .contains(SCOPE.getJoseName())
@@ -164,7 +160,7 @@ class IdpJwtProcessorTest {
   void verifyPayloadMeetsJwtDescription_ecc(final PkiIdentity ecc) {
     final JsonWebToken jwtAsBase64 = createJwt(ecc);
     jwtProcessor.verifyAndThrowExceptionIfFail(jwtAsBase64);
-    final String payloadAsString = jwtProcessor.getPayloadDecoded(jwtAsBase64);
+    final String payloadAsString = IdpJwtProcessor.getPayloadDecoded(jwtAsBase64);
     jwtBuilder.getClaims().forEach((key, value) -> assertThat(payloadAsString).contains(key));
     jwtBuilder
         .getClaims()

@@ -43,10 +43,16 @@ public class IdpJwtProcessor {
   private Optional<String> keyId;
   private PrivateKey privateKey;
 
+  public IdpJwtProcessor(@NonNull final PkiIdentity identity, final Optional<String> keyId) {
+    this(identity.getCertificate());
+    privateKey = identity.getPrivateKey();
+    this.keyId = keyId;
+  }
+
   public IdpJwtProcessor(@NonNull final PkiIdentity identity) {
     this(identity.getCertificate());
     privateKey = identity.getPrivateKey();
-    keyId = identity.getKeyId();
+    this.keyId = Optional.empty();
   }
 
   public IdpJwtProcessor(@NonNull final X509Certificate certificate) {
@@ -104,11 +110,11 @@ public class IdpJwtProcessor {
     jwt.verify(certificate.getPublicKey());
   }
 
-  public String getHeaderDecoded(@NonNull final JsonWebToken jwt) {
+  public static String getHeaderDecoded(@NonNull final JsonWebToken jwt) {
     return jwt.getHeaderDecoded();
   }
 
-  public String getPayloadDecoded(@NonNull final JsonWebToken jwt) {
+  public static String getPayloadDecoded(@NonNull final JsonWebToken jwt) {
     return jwt.getPayloadDecoded();
   }
 }

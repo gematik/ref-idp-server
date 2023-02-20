@@ -30,4 +30,5 @@ public class KeyConfig {
   private String fileName;
   private String keyId;
   private String use;
+  private boolean x5cInJwks;
 }

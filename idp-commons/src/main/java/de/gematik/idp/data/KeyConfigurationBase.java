@@ -16,17 +16,17 @@
 
 package de.gematik.idp.data;
 
-import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import de.gematik.idp.crypto.model.PkiIdentity;
+import java.util.Optional;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-@Data
-public class IdpJwksDocument {
+public interface KeyConfigurationBase {
 
-  private List<IdpKeyDescriptor> keys;
+  default FederationPrivKey getFederationPrivKey(
+      final KeyConfig keyConfiguration, final PkiIdentity pkiIdentity) {
+    final FederationPrivKey federationPrivKey = new FederationPrivKey(pkiIdentity);
+    federationPrivKey.setKeyId(Optional.ofNullable(keyConfiguration.getKeyId()));
+    federationPrivKey.setUse(Optional.ofNullable(keyConfiguration.getUse()));
+    federationPrivKey.setAddX5c(Optional.of(keyConfiguration.isX5cInJwks()));
+    return federationPrivKey;
+  }
 }

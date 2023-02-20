@@ -19,11 +19,10 @@ package de.gematik.idp.data;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.authentication.IdpJwtProcessor;
-import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.IdpRuntimeException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -46,18 +45,18 @@ public final class JwtHelper {
     }
   }
 
-  public static IdpJwksDocument getJwks(final FederationPrivKey federationKey) {
-    final List<PkiIdentity> identities = new ArrayList<>();
-    identities.add(federationKey.getIdentity());
+  public static IdpJwksDocument getJwks(final FederationPrivKey... federationPrivKeys) {
     return IdpJwksDocument.builder()
         .keys(
-            identities.stream()
+            Arrays.stream(federationPrivKeys)
                 .map(
-                    identity -> {
+                    federationPrivKey -> {
                       final IdpKeyDescriptor keyDesc =
                           IdpKeyDescriptor.constructFromX509Certificate(
-                              identity.getCertificate(), identity.getKeyId(), false);
-                      keyDesc.setPublicKeyUse(identity.getUse().orElse(null));
+                              federationPrivKey.getIdentity().getCertificate(),
+                              federationPrivKey.getKeyId(),
+                              federationPrivKey.getAddX5c().orElse(false));
+                      keyDesc.setPublicKeyUse(federationPrivKey.getUse().orElse(null));
                       return keyDesc;
                     })
                 .toList())
@@ -65,18 +64,18 @@ public final class JwtHelper {
   }
 
   // TODO: IDP-740
-  public static IdpJwksDocument getJwks(@NonNull final FederationPubKey federationPubKey) {
-    final List<PkiIdentity> identities = new ArrayList<>();
-    identities.add(federationPubKey.getIdentity());
+  public static IdpJwksDocument getJwks(@NonNull final FederationPubKey... federationPubKeys) {
     return IdpJwksDocument.builder()
         .keys(
-            identities.stream()
+            Stream.of(federationPubKeys)
                 .map(
-                    identity -> {
+                    federationPubKey -> {
                       final IdpKeyDescriptor keyDesc =
                           IdpKeyDescriptor.constructFromX509Certificate(
-                              identity.getCertificate(), identity.getKeyId(), false);
-                      keyDesc.setPublicKeyUse(identity.getUse().orElse(null));
+                              federationPubKey.getIdentity().getCertificate(),
+                              federationPubKey.getKeyId(),
+                              federationPubKey.getAddX5c().orElse(false));
+                      keyDesc.setPublicKeyUse(federationPubKey.getUse().orElse(null));
                       return keyDesc;
                     })
                 .toList())

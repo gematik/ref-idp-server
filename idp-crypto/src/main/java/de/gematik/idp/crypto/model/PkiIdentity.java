@@ -18,7 +18,6 @@ package de.gematik.idp.crypto.model;
 
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
-import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,6 +31,4 @@ public class PkiIdentity {
 
   private X509Certificate certificate;
   private PrivateKey privateKey;
-  private Optional<String> keyId;
-  private Optional<String> use;
 }

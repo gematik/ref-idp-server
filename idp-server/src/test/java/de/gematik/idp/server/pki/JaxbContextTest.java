@@ -34,7 +34,7 @@ class JaxbContextTest {
   @Test
   void convertTsl() throws IOException, URISyntaxException {
     final byte[] tslBytes = getTslFromResources();
-    final TrustStatusListType tsl = TslConverter.bytesToTsl(tslBytes).orElseThrow();
+    final TrustStatusListType tsl = TslConverter.bytesToTsl(tslBytes);
     assertThat(tsl.getId()).isNotEmpty();
   }
 

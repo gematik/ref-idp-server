@@ -34,12 +34,12 @@ public class KeyInformationController {
   @GetMapping(PUK_URI_SIG)
   @ValidateClientSystem
   public IdpKeyDescriptor getAuthJwk() {
-    return idpSig.buildJwk(true);
+    return idpSig.buildJwk();
   }
 
   @GetMapping(PUK_URI_ENC)
   @ValidateClientSystem
   public IdpKeyDescriptor getTokenJwk() {
-    return idpEnc.buildJwk(false);
+    return idpEnc.buildJwk();
   }
 }

@@ -26,17 +26,12 @@ import static de.gematik.idp.IdpConstants.THIRD_PARTY_ENDPOINT;
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
 
 import de.gematik.idp.data.IdpDiscoveryDocument;
-import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.controllers.KeyInformationController;
 import java.time.ZonedDateTime;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class DiscoveryDocumentBuilder {
-
-  private IdpKey idpEnc;
-  private IdpKey idpSig;
-  private ScopeService scopeService;
 
   public IdpDiscoveryDocument buildDiscoveryDocument(
       final String serverUrl, final String issuerUrl, final String[] scopes) {

@@ -66,7 +66,7 @@ public class KeyConfiguration {
 
   @Bean
   public IdpJwtProcessor idpSigProcessor() {
-    return new IdpJwtProcessor(idpSig().getIdentity());
+    return new IdpJwtProcessor(idpSig().getIdentity(), idpSig().getKeyId());
   }
 
   private IdpKey getIdpKey(final IdpKeyConfiguration keyConfiguration) {
@@ -74,10 +74,11 @@ public class KeyConfiguration {
     try (final InputStream inputStream = resource.getInputStream()) {
       final PkiIdentity pkiIdentity =
           CryptoLoader.getIdentityFromP12(StreamUtils.copyToByteArray(inputStream), "00");
-
-      pkiIdentity.setKeyId(Optional.ofNullable(keyConfiguration.getKeyId()));
-      pkiIdentity.setUse(Optional.ofNullable(keyConfiguration.getUse()));
-      return new IdpKey(pkiIdentity);
+      final IdpKey idpKey = new IdpKey(pkiIdentity);
+      idpKey.setKeyId(Optional.ofNullable(keyConfiguration.getKeyId()));
+      idpKey.setUse(Optional.ofNullable(keyConfiguration.getUse()));
+      idpKey.setAddX5c(Optional.ofNullable(keyConfiguration.isX5cInJwks()));
+      return idpKey;
     } catch (final IOException e) {
       throw new IdpServerStartupException(
           "Error while loading Key from resource '" + keyConfiguration.getFileName() + "'", e);

@@ -81,22 +81,22 @@ class SignedChallengeValidationTest {
   public void init(
       final PkiIdentity ecc,
       @Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity) {
-    idpSig.getIdentity().setKeyId(Optional.of(SERVER_KEY_IDENTITY));
+    idpSig.setKeyId(Optional.of(SERVER_KEY_IDENTITY));
     this.egkIdentity =
         PkiIdentity.builder()
             .certificate(egkIdentity.getCertificate())
             .privateKey(egkIdentity.getPrivateKey())
             .build();
-    ScopeConfiguration openidConfig =
+    final ScopeConfiguration openidConfig =
         ScopeConfiguration.builder().description("openid desc").build();
-    ScopeConfiguration pairingConfig =
+    final ScopeConfiguration pairingConfig =
         ScopeConfiguration.builder()
             .audienceUrl("erplala")
             .description("erp desc")
             .claimsToBeIncluded(List.of(GIVEN_NAME, FAMILY_NAME))
             .build();
 
-    AuthenticationChallengeBuilder authenticationChallengeBuilder =
+    final AuthenticationChallengeBuilder authenticationChallengeBuilder =
         AuthenticationChallengeBuilder.builder()
             .serverSigner(new IdpJwtProcessor(idpSig.getIdentity()))
             .userConsentConfiguration(
@@ -117,7 +117,7 @@ class SignedChallengeValidationTest {
 
   @Test
   void getBasicFlowTokenLocationTest_ExpectNoError() {
-    IdpJwe encryptedChallenge =
+    final IdpJwe encryptedChallenge =
         getSignedChallenge().encrypt(idpEnc.getIdentity().getCertificate().getPublicKey());
     assertThat(idpAuthenticator.getBasicFlowTokenLocation(encryptedChallenge)).contains("code=");
   }
@@ -125,8 +125,8 @@ class SignedChallengeValidationTest {
   @SneakyThrows
   @Test
   void getBasicFlowTokenLocationTest_InvalidExpInJwe() {
-    JsonWebToken signedChallenge = getSignedChallenge();
-    IdpJwe encryptedChallenge =
+    final JsonWebToken signedChallenge = getSignedChallenge();
+    final IdpJwe encryptedChallenge =
         createWithPayloadAndExpiryAndEncryptWithKey(
             "{\"njwt\":\"" + signedChallenge.getRawString() + "\"}",
             Optional.of(ZonedDateTime.now().plusMinutes(4)),
@@ -139,8 +139,8 @@ class SignedChallengeValidationTest {
   @SneakyThrows
   @Test
   void getBasicFlowTokenLocationTest_ExpiredExpInJwe() {
-    JsonWebToken signedChallenge = getSignedChallenge();
-    IdpJwe encryptedChallenge =
+    final JsonWebToken signedChallenge = getSignedChallenge();
+    final IdpJwe encryptedChallenge =
         createWithPayloadAndExpiryAndEncryptWithKey(
             "{\"njwt\":\"" + signedChallenge.getRawString() + "\"}",
             Optional.of(ZonedDateTime.now().minusMinutes(1)),
@@ -207,7 +207,7 @@ class SignedChallengeValidationTest {
   private byte[] getSignatureBytes(
       final UnaryOperator<byte[]> contentSigner,
       final JsonWebSignature jsonWebSignature,
-      UnaryOperator<byte[]> signatureStripper) {
+      final UnaryOperator<byte[]> signatureStripper) {
     return signatureStripper.apply(
         contentSigner.apply(
             (jsonWebSignature.getHeaders().getEncodedHeader()

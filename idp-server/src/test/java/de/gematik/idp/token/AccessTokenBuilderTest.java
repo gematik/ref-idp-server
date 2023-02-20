@@ -87,8 +87,7 @@ class AccessTokenBuilderTest {
           final PkiIdentity clientIdentity,
       @PkiKeyResolver.Filename("ecc") final PkiIdentity serverIdentity) {
 
-    serverIdentity.setKeyId(Optional.of(KEY_ID));
-    serverTokenProcessor = new IdpJwtProcessor(serverIdentity);
+    serverTokenProcessor = new IdpJwtProcessor(serverIdentity, Optional.of(KEY_ID));
     accessTokenBuilder =
         new AccessTokenBuilder(
             serverTokenProcessor,
@@ -128,7 +127,7 @@ class AccessTokenBuilderTest {
   @Afo("A_20524")
   @Test
   void requiredFieldMissingFromAuthenticationToken_ShouldThrowRequiredClaimException() {
-    JsonWebToken jsonWebToken =
+    final JsonWebToken jsonWebToken =
         serverTokenProcessor.buildJwt(
             new JwtBuilder()
                 .addAllBodyClaims(

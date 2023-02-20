@@ -17,6 +17,7 @@
 package de.gematik.idp.data;
 
 import de.gematik.idp.crypto.model.PkiIdentity;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -30,13 +31,16 @@ public class FederationPubKey {
   private final PkiIdentity identity;
   private final String issuer;
   private final String type;
+  @Setter private Optional<Boolean> addX5c;
+  @Setter private Optional<String> keyId;
+  @Setter private Optional<String> use;
   @Setter private String url;
 
-  public IdpKeyDescriptor buildJwk(final boolean addX5C) {
+  public IdpKeyDescriptor buildJwk() {
     final IdpKeyDescriptor keyDesc =
         IdpKeyDescriptor.constructFromX509Certificate(
-            identity.getCertificate(), identity.getKeyId(), addX5C);
-    keyDesc.setPublicKeyUse(identity.getUse().orElse(null));
+            identity.getCertificate(), keyId, addX5c.orElse(false));
+    keyDesc.setPublicKeyUse(use.orElse(null));
     return keyDesc;
   }
 }

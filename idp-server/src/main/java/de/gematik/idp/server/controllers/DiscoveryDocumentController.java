@@ -21,7 +21,6 @@ import static de.gematik.idp.IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.authentication.IdpJwtProcessor;
-import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.data.IdpDiscoveryDocument;
 import de.gematik.idp.data.IdpJwksDocument;
 import de.gematik.idp.data.IdpKeyDescriptor;
@@ -60,14 +59,14 @@ public class DiscoveryDocumentController {
 
   @PostConstruct
   public void setUp() {
-    jwtProcessor = new IdpJwtProcessor(discSig.getIdentity());
+    jwtProcessor = new IdpJwtProcessor(discSig.getIdentity(), discSig.getKeyId());
   }
 
   @GetMapping("/jwks")
   public IdpJwksDocument getJwks() {
-    final List<PkiIdentity> identities = new ArrayList<>();
-    identities.add(idpSig.getIdentity());
-    identities.add(idpEnc.getIdentity());
+    final List<IdpKey> identities = new ArrayList<>();
+    identities.add(idpSig);
+    identities.add(idpEnc);
     return IdpJwksDocument.builder()
         .keys(
             identities.stream()
@@ -75,7 +74,7 @@ public class DiscoveryDocumentController {
                     identity -> {
                       final IdpKeyDescriptor keyDesc =
                           IdpKeyDescriptor.constructFromX509Certificate(
-                              identity.getCertificate(),
+                              identity.getIdentity().getCertificate(),
                               identity.getKeyId(),
                               identity
                                   .getKeyId()

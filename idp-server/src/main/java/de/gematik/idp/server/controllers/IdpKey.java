@@ -18,8 +18,10 @@ package de.gematik.idp.server.controllers;
 
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.data.IdpKeyDescriptor;
+import java.util.Optional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 @RequiredArgsConstructor
 @Getter
@@ -27,11 +29,15 @@ public class IdpKey {
 
   private final PkiIdentity identity;
 
-  public IdpKeyDescriptor buildJwk(final boolean addX5C) {
+  @Setter private Optional<Boolean> addX5c;
+  @Setter private Optional<String> keyId;
+  @Setter private Optional<String> use;
+
+  public IdpKeyDescriptor buildJwk() {
     final IdpKeyDescriptor keyDesc =
         IdpKeyDescriptor.constructFromX509Certificate(
-            identity.getCertificate(), identity.getKeyId(), addX5C);
-    keyDesc.setPublicKeyUse(identity.getUse().orElse(null));
+            identity.getCertificate(), keyId, addX5c.orElse(false));
+    keyDesc.setPublicKeyUse(use.orElse(null));
     return keyDesc;
   }
 }

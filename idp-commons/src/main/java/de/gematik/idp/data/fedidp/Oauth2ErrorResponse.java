@@ -16,7 +16,6 @@
 
 package de.gematik.idp.data.fedidp;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
@@ -29,9 +28,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class FedIdpErrorResponse {
-
-  private long timestamp;
-  private String errorMessage;
-  @JsonIgnore private int httpStatusCode;
+public class Oauth2ErrorResponse {
+  private String status;
+  private Oauth2ErrorCode error;
+  private String errorDescription;
+  private String errorUri;
 }
