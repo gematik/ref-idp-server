@@ -42,14 +42,14 @@ $ mvn clean install -pl idp-server -am -Dskip.unittests -Dskip.inttests -Dcommit
 #### Start container
 
 ```console 
-$ docker run --rm -it -p 8571:8080 eu.gcr.io/gematik-all-infra-prod/idp/idp-server:21.0.25
+$ docker run --rm -it -p 8571:8080 gematik1/idp-server
 ```
 
 or use docker compose:
 
 ```console
 $ mvn clean install -pl idp-server -am -Dskip.unittests -Dskip.inttests
-$ export appVersion=21.0.25-SNAPSHOT
+$ export appVersion=21.0.30
 $ docker-compose --project-name myidp -f docker-compose-ref.yml up -d
 ```
 

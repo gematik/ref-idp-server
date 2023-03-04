@@ -99,14 +99,14 @@ Feature: EntityStatements abrufen
       }
     ]
   },
-  authority_hints: ["todo Bezeichnung des Federation Master"],
+  authority_hints: "${json-unit.ignore}",
   metadata: {
     openid_relying_party: {
       signed_jwks_uri: 'http.*/jws.json',
       organization_name: "Fachdienst007 des FedIdp POCs",
       client_name: "Fachdienst007",
       logo_uri: 'http.*',
-      redirect_uris: ["https://Fachdienst007.de/client"],
+      redirect_uris: ["https://Fachdienst007.de/client","https://redirect.testsuite.gsi"],
       response_types: ["code"],
       client_registration_types: ["automatic"],
       grant_types: ["authorization_code"],
@@ -116,7 +116,7 @@ Feature: EntityStatements abrufen
       id_token_signed_response_alg: "ES256",
       id_token_encrypted_response_alg: "ECDH-ES",
       id_token_encrypted_response_enc: "A256GCM",
-      scope: "profile telematik openid"
+      scope: "urn:telematik:display_name urn:telematik:versicherter openid"
     },
     federation_entity: {
       name: "Fachdienst007",
@@ -315,7 +315,6 @@ Feature: EntityStatements abrufen
         ar: ["none"],
         par: ["self_signed_tls_client_auth"]
       },
-      request_object_signing_alg_values_supported: ["ES256"],
       id_token_signing_alg_values_supported: ["ES256"],
       id_token_encryption_alg_values_supported: ["ECDH-ES"],
       id_token_encryption_enc_values_supported: ["A256GCM"],

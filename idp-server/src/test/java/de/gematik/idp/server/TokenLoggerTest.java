@@ -16,7 +16,9 @@
 
 package de.gematik.idp.server;
 
-import static de.gematik.idp.IdpConstants.*;
+import static de.gematik.idp.IdpConstants.EREZEPT;
+import static de.gematik.idp.IdpConstants.OPENID;
+import static de.gematik.idp.IdpConstants.PAIRING;
 
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.RbelWiremockCapture;
@@ -61,7 +63,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(SpringExtension.class)
 @ExtendWith(PkiKeyResolver.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    classes = IdpServer.class,
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Slf4j
 class TokenLoggerTest {
 
@@ -475,7 +479,6 @@ class TokenLoggerTest {
 
   private void initializeWiremockCapture() throws MalformedURLException {
     rbelLogger.clearAllMessages();
-    ;
 
     wiremockCapture =
         RbelWiremockCapture.builder()

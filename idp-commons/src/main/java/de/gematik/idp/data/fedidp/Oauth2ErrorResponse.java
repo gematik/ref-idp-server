@@ -29,8 +29,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class Oauth2ErrorResponse {
-  private String status;
   private Oauth2ErrorCode error;
   private String errorDescription;
-  private String errorUri;
 }

@@ -1,3 +1,7 @@
+# Release 21.0.30
+
+- change entity statement of federation
+
 # Release 21.0.25
 
 - refactor KeyConfiguration, PkiIdentity
