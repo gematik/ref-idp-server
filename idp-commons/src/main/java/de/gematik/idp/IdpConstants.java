@@ -46,6 +46,11 @@ public final class IdpConstants {
   public static final String FD_API_ENDPOINT = "/api";
   public static final String SEKTORAL_IDP_AUTHORIZATION_ENDPOINT = "/authorization";
   public static final String ENTITY_STATEMENT_ENDPOINT = "/.well-known/openid-federation";
+
+  public static final String ENTITY_STATEMENT_EXPIRED_ENDPOINT = "/expired_entity_statement";
+
+  public static final String ENTITY_STATEMENT_INVALID_SIG_ENDPOINT =
+      "/invalid_sig_entity_statement";
   public static final String IDP_LIST_ENDPOINT = "/.well-known/idp_list";
   public static final String FEDIDP_PAR_AUTH_ENDPOINT = "/PAR_Auth";
 
@@ -57,6 +62,4 @@ public final class IdpConstants {
   public static final String OPENID = "openid";
   public static final String EREZEPT = "e-rezept";
   public static final String PAIRING = "pairing";
-  public static final String EREZEPTDEV = "e-rezept-dev";
-  public static final String AUTHENTICATORDEV = "authenticator-dev";
 }

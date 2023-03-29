@@ -1,3 +1,7 @@
+# Release 21.0.31
+
+- add invalid_scope to OAuth2ErrorClass
+
 # Release 21.0.30
 
 - change entity statement of federation

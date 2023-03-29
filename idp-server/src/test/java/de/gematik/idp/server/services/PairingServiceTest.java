@@ -27,13 +27,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ExtendWith(PkiKeyResolver.class)
 @Transactional
-@TestPropertySource(properties = {"spring.jpa.hibernate.ddl-auto=validate"})
 class PairingServiceTest {
 
   private static final String testIdNumber = "X114428530";

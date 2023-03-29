@@ -13,9 +13,17 @@ class Oauth2ErrorCodeTest {
 
   @SneakyThrows
   @Test
-  void constructFromStringValid() {
+  void constructInvalidGrantFromStringValid() {
     final Oauth2ErrorCode oauth2ErrorCode =
         new ObjectMapper().readValue("\"invalid_grant\"", Oauth2ErrorCode.class);
+    assertThat(oauth2ErrorCode).isNotNull();
+  }
+
+  @SneakyThrows
+  @Test
+  void constructInvalidScopeFromStringValid() {
+    final Oauth2ErrorCode oauth2ErrorCode =
+        new ObjectMapper().readValue("\"invalid_scope\"", Oauth2ErrorCode.class);
     assertThat(oauth2ErrorCode).isNotNull();
   }
 

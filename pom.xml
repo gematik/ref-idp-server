@@ -7,12 +7,12 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.0.3</version>
+    <version>3.0.5</version>
   </parent>
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-global</artifactId>
-  <version>21.0.30</version>
+  <version>21.0.31</version>
   <packaging>pom</packaging>
 
   <description>IDP</description>

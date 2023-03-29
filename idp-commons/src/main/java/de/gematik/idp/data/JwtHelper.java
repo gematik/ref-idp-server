@@ -45,6 +45,14 @@ public final class JwtHelper {
     }
   }
 
+  public static String invalidateJsonSignature(final String jwsRawString) {
+    final String invalidSignatureValue =
+        "Is8Ag-3Z0DwWS7RXCSRDPy1_m3bZatBB12PFOmTa8cBw0WrzixE23VL6xFeBFAFowlez-QQKU_WRhyPkX18-wQ";
+    final String[] splitJws = jwsRawString.split("\\.");
+    splitJws[2] = invalidSignatureValue;
+    return String.join(".", splitJws);
+  }
+
   public static IdpJwksDocument getJwks(final FederationPrivKey... federationPrivKeys) {
     return IdpJwksDocument.builder()
         .keys(
