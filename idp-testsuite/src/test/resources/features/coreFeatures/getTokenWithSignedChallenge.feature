@@ -119,20 +119,21 @@ Feature: Fordere Access Token mit einer signierten Challenge an
           }
         """
     Examples: GetToken - Zertifikate zur Signatur der Challenge
-      | cert                                                        | professionOID      | idNumber                          | organisationName                                            | family_name | given_name                |
-      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12         | 1.2.276.0.76.4.49  | X110411675                        | Test GKV-SVNOT-VALID                                        | Bödefeld    | Darius Michael Brian Ubbo |
-      | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12        | 1.2.276.0.76.4.49  | X110471380                        | Test GKV-SVNOT-VALID                                        | Burgund     | Ulrich Hans Johann von    |
-      | /certs/valid/80276883110000129068-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.54  | 3-SMC-B-Testkarte-883110000129068 | Apotheke am SportzentrumTEST-ONLY                           | Blankenberg | Dominik-Peter             |
-      | /certs/valid/80276883110000129071-C_SMCB_HCI_AUT_E256.p12   | 1.2.276.0.76.4.53  | 5-SMC-B-Testkarte-883110000129071 | Universitätsklinik MitteTEST-ONLY                           | $NULL       | $NULL                     |
-      | /certs/valid/80276883110000129074-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.52  | 1-SMC-B-Testkarte-883110000129074 | Psychotherapeutische Praxis Norbert Graf AngermännTEST-ONLY | Angermänn   | Norbert                   |
-      | /certs/valid/80276883110000129077-C_SMCB_HCI_AUT_E256.p12   | 1.2.276.0.76.4.50  | 1-SMC-B-Testkarte-883110000129077 | Praxis Rainer Graf d' AgóstinoTEST-ONLY                     | Agóstino    | Rainer                    |
-      | /certs/valid/80276883110000129080-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.51  | 2-SMC-B-Testkarte-883110000129080 | Zahnarztpraxis Dr. Hillbert TangerðalTEST-ONLY              | $NULL       | $NULL                     |
-      | /certs/valid/80276883110000129083-C_HP_AUT_E256.p12         | 1.2.276.0.76.4.30  | 1-HBA-Testkarte-883110000129083   | $NULL                                                       | MaiÞer      | Roland                    |
-      | /certs/valid/80276883110000129086-C_HP_AUT_R2048.p12        | 1.2.276.0.76.4.31  | 2-HBA-Testkarte-883110000129086   | $NULL                                                       | Szczyrbel   | Gustav Freiherr           |
-      | /certs/valid/80276001011699802001-C_HP_AUT_E256.p12         | 1.2.276.0.76.4.233 | 9-1-AP-AaronAal01                 | $NULL                                                       | Aal         | Aaron                     |
-      | /certs/valid/80276001011699802002-C_HP_AUT_R2048.p12        | 1.2.276.0.76.4.32  | 3-1-APO-BeaBiene02                | $NULL                                                       | Biene       | Bea                       |
-      | /certs/valid/80276001011699802003-C_HP_AUT_E256.p12         | 1.2.276.0.76.4.46  | 4-1-PSY-DianaDorsch03             | $NULL                                                       | Dorsch      | Diana                     |
-      | /certs/valid/80276001011699802004-C_HP_AUT_R2048.p12        | 1.2.276.0.76.4.235 | 9-1-HBM-EllaElster04              | $NULL                                                       | Elster      | Ella                      |
+      | cert                                                        | professionOID      | idNumber                          | organisationName                                                 | family_name | given_name                |
+      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12         | 1.2.276.0.76.4.49  | X110411675                        | Test GKV-SVNOT-VALID                                             | Bödefeld    | Darius Michael Brian Ubbo |
+      | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12        | 1.2.276.0.76.4.49  | X110471380                        | Test GKV-SVNOT-VALID                                             | Burgund     | Ulrich Hans Johann von    |
+      | /certs/valid/80276883110000129068-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.54  | 3-SMC-B-Testkarte-883110000129068 | Apotheke am SportzentrumTEST-ONLY                                | Blankenberg | Dominik-Peter             |
+      | /certs/valid/80276883110000129071-C_SMCB_HCI_AUT_E256.p12   | 1.2.276.0.76.4.53  | 5-SMC-B-Testkarte-883110000129071 | Universitätsklinik MitteTEST-ONLY                                | $NULL       | $NULL                     |
+      | /certs/valid/80276883110000129074-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.52  | 1-SMC-B-Testkarte-883110000129074 | Psychotherapeutische Praxis Norbert Graf AngermännTEST-ONLY      | Angermänn   | Norbert                   |
+      | /certs/valid/80276883110000129077-C_SMCB_HCI_AUT_E256.p12   | 1.2.276.0.76.4.50  | 1-SMC-B-Testkarte-883110000129077 | Praxis Rainer Graf d' AgóstinoTEST-ONLY                          | Agóstino    | Rainer                    |
+      | /certs/valid/80276883110000129080-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.51  | 2-SMC-B-Testkarte-883110000129080 | Zahnarztpraxis Dr. Hillbert TangerðalTEST-ONLY                   | $NULL       | $NULL                     |
+      | /certs/valid/80276883110000129083-C_HP_AUT_E256.p12         | 1.2.276.0.76.4.30  | 1-HBA-Testkarte-883110000129083   | $NULL                                                            | MaiÞer      | Roland                    |
+      | /certs/valid/80276883110000129086-C_HP_AUT_R2048.p12        | 1.2.276.0.76.4.31  | 2-HBA-Testkarte-883110000129086   | $NULL                                                            | Szczyrbel   | Gustav Freiherr           |
+      | /certs/valid/80276001011699802001-C_HP_AUT_E256.p12         | 1.2.276.0.76.4.233 | 9-1-AP-AaronAal01                 | $NULL                                                            | Aal         | Aaron                     |
+      | /certs/valid/80276001011699802002-C_HP_AUT_R2048.p12        | 1.2.276.0.76.4.32  | 3-1-APO-BeaBiene02                | $NULL                                                            | Biene       | Bea                       |
+      | /certs/valid/80276001011699802003-C_HP_AUT_E256.p12         | 1.2.276.0.76.4.46  | 4-1-PSY-DianaDorsch03             | $NULL                                                            | Dorsch      | Diana                     |
+      | /certs/valid/80276001011699802004-C_HP_AUT_R2048.p12        | 1.2.276.0.76.4.235 | 9-1-HBM-EllaElster04              | $NULL                                                            | Elster      | Ella                      |
+      | /certs/valid/80276001011699901340-C_SMCB_AUT_E256_X509.p12  | 1.2.276.0.76.4.53  | 5-2-KHAUS-KOMMA-20230327          | Tolles kleines Krankenhaus, am ruhigen,erholsamen Park TEST-ONLY | $NULL       | $NULL                     |
 
 
   @TCID:IDP_REF_TOK_003 @PRIO:1

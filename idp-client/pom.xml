@@ -7,13 +7,13 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>21.0.31</version>
+    <version>21.0.33</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-client</artifactId>
 
-  <version>21.0.31</version>
+  <version>21.0.33</version>
   <packaging>jar</packaging>
 
   <dependencies>
@@ -141,6 +141,13 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>${maven-deploy-plugin.version}</version>
+      </plugin>
+
     </plugins>
   </build>
 </project>
