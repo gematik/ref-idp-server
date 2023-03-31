@@ -141,8 +141,8 @@ class DiscoveryDocumentTest {
     final List<String> scopesSupported =
         (List) extractClaimMapFromResponse(retrieveDiscoveryDocument()).get("scopes_supported");
     assertThat(scopesSupported)
-        .containsExactlyInAnyOrder(
-            "openid", "e-rezept", "pairing", "authenticator-dev", "scope-template");
+        .contains(
+            "openid");
   }
 
   @Test

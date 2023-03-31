@@ -1,3 +1,7 @@
+# Release 22.0.1
+
+- change userTypesSupported in OpenidProvider to String[]
+
 # Release 21.0.33
 
 - add invalid_scope to OAuth2ErrorClass

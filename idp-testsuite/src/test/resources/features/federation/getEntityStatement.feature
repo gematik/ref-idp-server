@@ -318,7 +318,7 @@ Feature: EntityStatements abrufen
       id_token_signing_alg_values_supported: ["ES256"],
       id_token_encryption_alg_values_supported: ["ECDH-ES"],
       id_token_encryption_enc_values_supported: ["A256GCM"],
-      user_type_supported: "IP"
+      user_type_supported: ["IP"]
     },
     federation_entity: {
       name: "idp4711",

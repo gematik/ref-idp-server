@@ -58,9 +58,6 @@ idp:
     AuthenticatorDevLocal:
       redirectUri: http://localhost:3500/callback
       returnSsoToken: true
-    AuthenticatorDevRemote:
-      redirectUri: http://hidden/callback
-      returnSsoToken: true
     GematikNotificationGateway:
       redirectUri: http://localhost:9042/notification-gateway/callback
       returnSsoToken: true

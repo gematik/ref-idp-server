@@ -49,5 +49,5 @@ public class OpenidProvider {
   private String[] idTokenSigningAlgValuesSupported;
   private String[] idTokenEncryptionAlgValuesSupported;
   private String[] idTokenEncryptionEncValuesSupported;
-  private String userTypeSupported;
+  private String[] userTypeSupported;
 }
