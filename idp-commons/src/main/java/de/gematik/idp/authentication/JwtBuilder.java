@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
@@ -132,7 +133,14 @@ public class JwtBuilder {
 
   private String determineAlgorithm() {
     if (signerKey instanceof ECPrivateKey) {
-      return BRAINPOOL256_USING_SHA256;
+      if (((ECPrivateKey) signerKey).getParams() instanceof ECNamedCurveSpec
+          && ((ECNamedCurveSpec) ((ECPrivateKey) signerKey).getParams())
+              .getName()
+              .equals("prime256v1")) {
+        return AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256;
+      } else {
+        return BRAINPOOL256_USING_SHA256;
+      }
     } else if (signerKey instanceof RSAPrivateKey) {
       return AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
     } else {

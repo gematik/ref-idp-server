@@ -1,3 +1,8 @@
+# Release 22.0.3
+
+- JwtBuilder supports NIST curves
+- refresh certificates
+
 # Release 22.0.1
 
 - change userTypesSupported in OpenidProvider to String[]

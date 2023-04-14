@@ -51,13 +51,18 @@ class JsonWebTokenTest {
 
   private IdpJwtProcessor idpJwtProcessor;
   private SecretKeySpec aesKey;
-  private PkiIdentity identity;
+  private PkiIdentity identityBrainpool;
+
+  private PkiIdentity identityNist;
 
   @BeforeEach
-  public void setup(@PkiKeyResolver.Filename("ecc") final PkiIdentity identity) {
-    idpJwtProcessor = new IdpJwtProcessor(identity);
+  public void setup(
+      @PkiKeyResolver.Filename("ecc") final PkiIdentity identityBrainpool,
+      @PkiKeyResolver.Filename("nist") final PkiIdentity identityNist) {
+    idpJwtProcessor = new IdpJwtProcessor(identityBrainpool);
     aesKey = new SecretKeySpec(Nonce.randomBytes(256 / 8), "AES");
-    this.identity = identity;
+    this.identityBrainpool = identityBrainpool;
+    this.identityNist = identityNist;
   }
 
   @Test
@@ -91,6 +96,20 @@ class JsonWebTokenTest {
     assertThat(jsonWebToken.getHeaderClaims())
         .containsEntry("foo", "bar")
         .containsEntry("alg", "BP256R1");
+  }
+
+  @Test
+  void getAlgHeaderClaimForNist_shouldMatch() {
+    final IdpJwtProcessor idpJwtProcessorNist = new IdpJwtProcessor(identityNist);
+    final JsonWebToken jsonWebToken =
+        idpJwtProcessorNist.buildJwt(
+            new JwtBuilder()
+                .addAllHeaderClaims(new HashMap<>(Map.of("foo", "bar")))
+                .expiresAt(ZonedDateTime.now().plusMinutes(5)));
+
+    assertThat(jsonWebToken.getHeaderClaims())
+        .containsEntry("foo", "bar")
+        .containsEntry("alg", "ES256");
   }
 
   @Test
@@ -188,7 +207,7 @@ class JsonWebTokenTest {
 
   @Test
   void encryptJwt_shouldHaveExpClaimForNestedJwt() {
-    final long expValue = 1234567l;
+    final long expValue = 1234567L;
     final Optional<Object> expHeaderClaim =
         idpJwtProcessor
             .buildJwt(new JwtBuilder().addAllBodyClaims(Map.of(EXPIRES_AT.getJoseName(), expValue)))
@@ -200,7 +219,7 @@ class JsonWebTokenTest {
 
   @Test
   void encryptJwt_shouldHaveExpClaimForNestedNestedJwt() {
-    final long expValue = 1234567l;
+    final long expValue = 1234567L;
     final JsonWebToken innerJwt =
         idpJwtProcessor.buildJwt(
             new JwtBuilder().addAllBodyClaims(Map.of(EXPIRES_AT.getJoseName(), expValue)));

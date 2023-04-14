@@ -140,9 +140,7 @@ class DiscoveryDocumentTest {
   void testValueForScopesSupported() throws UnirestException {
     final List<String> scopesSupported =
         (List) extractClaimMapFromResponse(retrieveDiscoveryDocument()).get("scopes_supported");
-    assertThat(scopesSupported)
-        .contains(
-            "openid");
+    assertThat(scopesSupported).contains("openid");
   }
 
   @Test

@@ -56,7 +56,7 @@ public final class IdpConstants {
 
   public static final String FEDMASTER_FEDERATION_FETCH_ENDPOINT = "/federation_fetch_endpoint";
   public static final int FACHDIENST_STATE_LENGTH = 32;
-
+  public static final int FACHDIENST_NONCE_LENGTH = 32;
   public static final String ENTITY_STATEMENT_TYP = "entity-statement+jwt";
 
   public static final String OPENID = "openid";

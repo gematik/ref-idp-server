@@ -33,7 +33,6 @@ import static de.gematik.idp.field.ClaimName.JWT_ID;
 import static de.gematik.idp.field.ClaimName.NONCE;
 import static de.gematik.idp.field.ClaimName.ORGANIZATION_NAME;
 import static de.gematik.idp.field.ClaimName.PROFESSION_OID;
-import static de.gematik.idp.field.ClaimName.SCOPE;
 import static de.gematik.idp.field.ClaimName.SUBJECT;
 import static de.gematik.idp.field.ClaimName.TYPE;
 import static de.gematik.idp.token.TokenBuilderUtil.buildSubjectClaim;
@@ -49,9 +48,6 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.Data;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -61,19 +57,6 @@ import org.jose4j.jwt.NumericDate;
 @Data
 public class IdTokenBuilder {
 
-  private static final Set<String> requiredClaims =
-      Stream.of(
-              PROFESSION_OID,
-              GIVEN_NAME,
-              FAMILY_NAME,
-              ORGANIZATION_NAME,
-              ID_NUMBER,
-              AUTHENTICATION_CLASS_REFERENCE,
-              CLIENT_ID,
-              SCOPE,
-              AUTH_TIME)
-          .map(ClaimName::getJoseName)
-          .collect(Collectors.toSet());
   private static final List<ClaimName> CLAIMS_TO_TAKE_FROM_AUTHENTICATION_TOKEN =
       List.of(
           GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER, AUTH_TIME, NONCE);
@@ -95,7 +78,6 @@ public class IdTokenBuilder {
                 ArrayUtils.subarray(DigestUtils.sha256(accessToken.getRawString()), 0, 16));
 
     claimsMap.put(ISSUER.getJoseName(), issuerUrl);
-    claimsMap.put(SUBJECT.getJoseName(), clientId);
     claimsMap.put(AUDIENCE.getJoseName(), clientId);
     claimsMap.put(ISSUED_AT.getJoseName(), now.toEpochSecond());
 
