@@ -7,12 +7,12 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>22.0.3</version>
+    <version>22.0.4</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>idp-server</artifactId>
-  <version>22.0.3</version>
+  <version>22.0.4</version>
   <packaging>jar</packaging>
 
   <properties>
@@ -134,7 +134,7 @@
     <dependency>
       <groupId>com.github.tomakehurst</groupId>
       <artifactId>wiremock</artifactId>
-      <version>3.0.0-beta-2</version>
+      <version>3.0.0-beta-8</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>

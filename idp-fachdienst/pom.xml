@@ -7,18 +7,15 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>22.0.3</version>
+    <version>22.0.4</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>idp-fachdienst</artifactId>
-  <version>22.0.3</version>
+  <version>22.0.4</version>
   <packaging>jar</packaging>
 
   <properties>
-    <node.version>v16.14.0</node.version>
-    <npm.version>8.3.1</npm.version>
-    <frontend-maven-plugin.version>1.12.1</frontend-maven-plugin.version>
     <commit_hash>undefined</commit_hash>
   </properties>
 
@@ -161,22 +158,6 @@
               </resources>
             </configuration>
           </execution>
-          <execution>
-            <id>Copy Vue frontend into Spring Boot target static folder</id>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <phase>process-resources</phase>
-            <configuration>
-              <outputDirectory>target/classes/static</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>src/frontend/authweb2app/dist</directory>
-                  <filtering>true</filtering>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
         </executions>
       </plugin>
       <plugin>
@@ -206,53 +187,6 @@
               <goal>build</goal>
             </goals>
             <phase>package</phase>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>com.github.eirslett</groupId>
-        <artifactId>frontend-maven-plugin</artifactId>
-        <version>${frontend-maven-plugin.version}</version>
-        <configuration>
-          <nodeVersion>${node.version}</nodeVersion>
-          <workingDirectory>src/frontend/authweb2app</workingDirectory>
-        </configuration>
-
-        <executions>
-          <execution>
-            <id>Install node and npm</id>
-            <goals>
-              <goal>install-node-and-npm</goal>
-            </goals>
-            <phase>generate-resources</phase>
-            <configuration>
-              <!-- https://github.com/eirslett/frontend-maven-plugin#proxy-settings -->
-              <npmInheritsProxyConfigFromMaven>false</npmInheritsProxyConfigFromMaven>
-              <nodeVersion>${node.version}</nodeVersion>
-              <npmVersion>${npm.version}</npmVersion>
-            </configuration>
-          </execution>
-
-          <execution>
-            <id>npm install</id>
-            <goals>
-              <goal>npm</goal>
-            </goals>
-            <phase>generate-resources</phase>
-            <configuration>
-              <arguments>install</arguments>
-            </configuration>
-          </execution>
-
-          <execution>
-            <id>npm build</id>
-            <goals>
-              <goal>npm</goal>
-            </goals>
-            <phase>generate-resources</phase>
-            <configuration>
-              <arguments>run build</arguments>
-            </configuration>
           </execution>
         </executions>
       </plugin>

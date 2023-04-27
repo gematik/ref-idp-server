@@ -107,7 +107,8 @@ class IdpControllerExceptionHandlerTest {
   @Test
   void testIdpServerInvalidLengthNonceException() {
 
-    final String nonceToLong = "fdsalkfdksalfdsawertzuiopasdfghdd";
+    final String nonceToLong =
+        "d76ae6c3a23ef5cda33f12826e99b643463a2f0796b232880e93d55f55d820ebdc202e7e4d2486f7374d6a2778fda6dbcf33ae3499a58a8411ee44ff0c56246cfa81970cf3865af63a971e96fbaa9559d223b5e405f009f230644750734423c81c27013c61e492cfb7fa380458be9958f1d8e6405c6ec760e53e6eac35133a2baf305f0909098130a0e12d973a7d773d3e027ffa4d3dba2f28f5cb845517eb832b5b293a5120c2e21fbb3e643ab783170a695707ebe264d610ab135d18131f08e654a082c08a2dd645fb8a3a9faa2f81002117258f36b3e9791912ffd9a42b6253d542e13326602e7e9fce47f873a83f406ed26e8dd9c2942c02ecef6de265a000";
     final HttpResponse<JsonNode> response =
         Unirest.get(serverUrl + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
             .queryString("signed_challenge", "signed_challenge")
@@ -132,8 +133,10 @@ class IdpControllerExceptionHandlerTest {
   @Test
   void testIdpServerInvalidLengthStateException() {
 
-    final String nonceCorrectLength = "dsalkfdksalfdsawertzuiopasdfghdd";
-    final String stateToLong = "fdsalkfdksalfdsawertzuiopasdfghdd";
+    final String nonceCorrectLength =
+        "d76ae6c3a23ef5cda33f12826e99b643463a2f0796b232880e93d55f55d820ebdc202e7e4d2486f7374d6a2778fda6dbcf33ae3499a58a8411ee44ff0c56246cfa81970cf3865af63a971e96fbaa9559d223b5e405f009f230644750734423c81c27013c61e492cfb7fa380458be9958f1d8e6405c6ec760e53e6eac35133a2baf305f0909098130a0e12d973a7d773d3e027ffa4d3dba2f28f5cb845517eb832b5b293a5120c2e21fbb3e643ab783170a695707ebe264d610ab135d18131f08e654a082c08a2dd645fb8a3a9faa2f81002117258f36b3e9791912ffd9a42b6253d542e13326602e7e9fce47f873a83f406ed26e8dd9c2942c02ecef6de265a0";
+    final String stateToLong =
+        "d76ae6c3a23ef5cda33f12826e99b643463a2f0796b232880e93d55f55d820ebdc202e7e4d2486f7374d6a2778fda6dbcf33ae3499a58a8411ee44ff0c56246cfa81970cf3865af63a971e96fbaa9559d223b5e405f009f230644750734423c81c27013c61e492cfb7fa380458be9958f1d8e6405c6ec760e53e6eac35133a2baf305f0909098130a0e12d973a7d773d3e027ffa4d3dba2f28f5cb845517eb832b5b293a5120c2e21fbb3e643ab783170a695707ebe264d610ab135d18131f08e654a082c08a2dd645fb8a3a9faa2f81002117258f36b3e9791912ffd9a42b6253d542e13326602e7e9fce47f873a83f406ed26e8dd9c2942c02ecef6de265a00";
     final HttpResponse<JsonNode> response =
         Unirest.get(serverUrl + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
             .queryString("signed_challenge", "signed_challenge")

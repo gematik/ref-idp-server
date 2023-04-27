@@ -61,10 +61,10 @@ public final class Nonce {
   }
 
   public static byte[] randomBytes(final int numberOfBytes) {
-    byte[] bytes = new byte[numberOfBytes];
+    final byte[] bytes = new byte[numberOfBytes];
     try {
       SecureRandom.getInstanceStrong().nextBytes(bytes);
-    } catch (NoSuchAlgorithmException e) {
+    } catch (final NoSuchAlgorithmException e) {
       throw new IdpCryptoException("Error while generating random bytes", e);
     }
     return bytes;

@@ -96,6 +96,23 @@ Feature: EntityStatements abrufen
         crv: "P-256",
         x: "${json-unit.ignore}",
         y: "${json-unit.ignore}"
+      },
+      {
+        use: "enc",
+        kid: "puk_fachdienst_enc",
+        kty: "EC",
+        crv: "P-256",
+        x: "${json-unit.ignore}",
+        y: "${json-unit.ignore}"
+      },
+      {
+        x5c: "${json-unit.ignore}",
+        use: "sig",
+        kid: "puk_tls_sig",
+        kty: "EC",
+        crv: "P-256",
+        x: "${json-unit.ignore}",
+        y: "${json-unit.ignore}"
       }
     ]
   },

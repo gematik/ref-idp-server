@@ -16,14 +16,14 @@
 
 package de.gematik.idp.field;
 
+import de.gematik.idp.crypto.Nonce;
 import java.util.Base64;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class ClientUtilities {
+public final class ClientUtilities {
 
   public static String generateCodeChallenge(final String codeVerifier) {
     // see https://tools.ietf.org/html/rfc7636#section-4.2
@@ -31,10 +31,11 @@ public class ClientUtilities {
         Base64.getUrlEncoder().withoutPadding().encode(DigestUtils.sha256(codeVerifier)));
   }
 
-  @SuppressWarnings("java:S2245")
   public static String generateCodeVerifier() {
-    return Base64.getUrlEncoder()
-        .withoutPadding()
-        .encodeToString(DigestUtils.sha256(RandomStringUtils.random(123)));
+    return generateCodeVerifier(Nonce.randomBytes(32));
+  }
+
+  public static String generateCodeVerifier(final byte[] randomOctets) {
+    return Base64.getUrlEncoder().withoutPadding().encodeToString(randomOctets);
   }
 }

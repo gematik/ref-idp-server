@@ -77,6 +77,9 @@ public class IdpController {
   private static final int MAX_FASTTRACK_SESSION_AMOUNT = 10000;
   private static final int FASTTRACK_IDP_STATE_LENGTH = 32;
   private static final int FASTTRACK_IDP_NONCE_LENGTH = 32;
+  private static final int NONCE_LENGTH_MAX = 512;
+  private static final int STATE_LENGTH_MAX = 512;
+
   private final ServerUrlService serverUrlService;
   private final AuthenticationChallengeBuilder authenticationChallengeBuilder;
   private final IdpAuthenticator idpAuthenticator;
@@ -98,11 +101,11 @@ public class IdpController {
           final String clientId,
       @RequestParam(name = "state")
           @NotEmpty(message = "2002")
-          @Pattern(regexp = "^[_\\-a-zA-Z0-9]{1,32}$", message = "2006")
+          @Pattern(regexp = "^[_\\-a-zA-Z0-9]{1," + STATE_LENGTH_MAX + "}$", message = "2006")
           final String state,
       @RequestParam(name = "redirect_uri") @NotNull(message = "1004") final String redirectUri,
       @RequestParam(name = "nonce", required = false)
-          @Pattern(regexp = "^[_\\-a-zA-Z0-9]{1,32}$", message = "2007")
+          @Pattern(regexp = "^[_\\-a-zA-Z0-9]{1," + NONCE_LENGTH_MAX + "}$", message = "2007")
           final String nonce,
       @RequestParam(name = "response_type")
           @NotEmpty(message = "2004")

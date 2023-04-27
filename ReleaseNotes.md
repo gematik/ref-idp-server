@@ -1,3 +1,9 @@
+# Release 22.0.4
+
+- change code_verifier length to 32 bytes
+- extend API for generation of code_verifier
+- max length of nonce increased
+
 # Release 22.0.3
 
 - JwtBuilder supports NIST curves
