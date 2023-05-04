@@ -27,8 +27,7 @@ services:
   db:
     image: mysql:8.0.22
     container_name: idp-mysql
-    <<: *service-network-ref
-    <<: *service-setup-ref
+    <<: [*service-network-ref, *service-setup-ref]
     environment:
       MYSQL_ROOT_USER: root
       MYSQL_ROOT_PASSWORD: idp
@@ -49,8 +48,7 @@ services:
     image: eu.gcr.io/gematik-all-infra-prod/idp/idp-server:${appVersion}
     user: 10000:10000
     container_name: idp-server
-    <<: *service-network-ref
-    <<: *service-setup-ref
+    <<: [*service-network-ref, *service-setup-ref]
     environment:
       SPRING_DATASOURCE_URL: "jdbc:mysql://db:3306/IDP"
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: "com.mysql.cj.jdbc.Driver"
