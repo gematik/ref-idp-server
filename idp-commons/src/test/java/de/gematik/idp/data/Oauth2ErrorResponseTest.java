@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.PropertyBindingException;
-import de.gematik.idp.data.fedidp.Oauth2ErrorResponse;
 import java.util.HashMap;
 import java.util.List;
 import lombok.SneakyThrows;

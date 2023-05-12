@@ -537,13 +537,6 @@ public class StepsGlue {
         idpEndpointType, cucumberValuesConverter.getMapFromDatatable(params), HttpStatus.NOCHECK);
   }
 
-  @When("IDP I send an authorization code to fachdienst with")
-  @SneakyThrows
-  public void iSendAuthorizationCodeWith(final DataTable params) {
-    auth.sendAuthorizationCode(
-        cucumberValuesConverter.getMapFromDatatable(params), HttpStatus.NOCHECK);
-  }
-
   // =================================================================================================================
   //
   // A U T H O R I Z A T I O N

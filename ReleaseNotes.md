@@ -1,3 +1,9 @@
+# Release 23.0.1
+
+- remove federation from repository (keep fedmaster)
+- idp-sektoral with fasttrack functionality only (not published on github)
+- external pull request for docker-compose integrated
+
 # Release 22.0.4
 
 - change code_verifier length to 32 bytes

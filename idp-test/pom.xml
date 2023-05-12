@@ -6,18 +6,18 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>22.0.4</version>
+    <version>23.0.1</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>idp-test</artifactId>
-  <version>22.0.4</version>
+  <version>23.0.1</version>
 
   <dependencies>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <!--version depends on spring-boot-->
       <artifactId>junit-jupiter-engine</artifactId>
-      <version>5.9.2</version>
+      <version>5.9.3</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>

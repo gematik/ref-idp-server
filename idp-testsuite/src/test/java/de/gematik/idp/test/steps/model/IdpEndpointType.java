@@ -22,13 +22,10 @@ public enum IdpEndpointType {
   Fasttrack_Sektoral_IDP,
   Fed_Sektoral_IDP,
   Fed_Sektoral_IDP_APP,
-  Smartcard_IDP,
-  Fachdienst,
-  Fedmaster;
+  Smartcard_IDP;
 
   public static final String CUCUMBER_REGEX =
-      "(fasttrack sektoral idp|fed sektoral idp|fed sektoral idp app|smartcard"
-          + " idp|fachdienst|fedmaster)";
+      "(fasttrack sektoral idp|fed sektoral idp|fed sektoral idp app|smartcard" + " idp)";
 
   private final String value;
 

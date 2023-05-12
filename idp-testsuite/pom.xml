@@ -7,20 +7,18 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>22.0.4</version>
+    <version>23.0.1</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>idp-testsuite</artifactId>
-  <version>22.0.4</version>
+  <version>23.0.1</version>
   <packaging>jar</packaging>
 
   <properties>
     <idp-server.spring.profile>idp</idp-server.spring.profile>
     <sektoral-idp.spring.profile>sektoralIdp</sektoral-idp.spring.profile>
-    <fedmaster-idp.spring.profile>federationMaster</fedmaster-idp.spring.profile>
-    <fachdienst-idp.spring.profile>fachdienst</fachdienst-idp.spring.profile>
-    <version.datatable>7.11.2</version.datatable>
+    <version.datatable>7.12.0</version.datatable>
   </properties>
 
   <dependencies>
@@ -156,7 +154,7 @@
     <dependency>
       <groupId>org.junit.vintage</groupId>
       <artifactId>junit-vintage-engine</artifactId>
-      <version>5.9.2</version>
+      <version>5.9.3</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -479,7 +477,7 @@
   <profiles>
     <profile>
       <id>local-idp-server</id>
-      <!-- Profile to reserve ports and start IDP-Server, Sektoral-IDP, FederationMaster and Fachdienst for Integration Tests-->
+      <!-- Profile to reserve ports, start IDP-Server and Sektoral-IDP for Integration Tests-->
       <activation>
         <property>
           <name>!env.IDP_SERVER</name>
@@ -520,34 +518,6 @@
                   </sourceFile>
                   <destinationFile>
                     target/test-classes/application-${sektoral-idp.spring.profile}.yml
-                  </destinationFile>
-                </configuration>
-              </execution>
-              <execution>
-                <id>copy-fedmaster-config</id>
-                <goals>
-                  <goal>copy</goal>
-                </goals>
-                <phase>prepare-package</phase>
-                <configuration>
-                  <sourceFile>${basedir}/../idp-fedmaster/src/main/resources/application.yml
-                  </sourceFile>
-                  <destinationFile>
-                    target/test-classes/application-${fedmaster-idp.spring.profile}.yml
-                  </destinationFile>
-                </configuration>
-              </execution>
-              <execution>
-                <id>copy-fachdienst-config</id>
-                <goals>
-                  <goal>copy</goal>
-                </goals>
-                <phase>prepare-package</phase>
-                <configuration>
-                  <sourceFile>${basedir}/../idp-fachdienst/src/main/resources/application.yml
-                  </sourceFile>
-                  <destinationFile>
-                    target/test-classes/application-${fachdienst-idp.spring.profile}.yml
                   </destinationFile>
                 </configuration>
               </execution>

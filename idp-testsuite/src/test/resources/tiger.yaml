@@ -4,8 +4,6 @@ idp:
 ports:
   idp: ${free.port.100}
   idpsektoral: ${free.port.101}
-  idpfedmaster: ${free.port.102}
-  idpfachdienst: ${free.port.103}
 
 tigerProxy:
   adminPort: ${free.port.201}
@@ -32,40 +30,8 @@ servers:
     externalJarOptions:
       arguments:
         - --server.port=${tiger.ports.idpsektoral}
-      options:
-        - -DIDP_FEDMASTER_PORT=${tiger.ports.idpfedmaster}
       workingDir: ../idp-sektoral/target
     source:
       - local://idp-sektoral-${tiger.idp.version}.jar
-    startupTimeoutSec: 60
-    active: true
-
-  idpfedmaster:
-    type: externalJar
-    healthcheckUrl: http://127.0.0.1:${tiger.ports.idpfedmaster}
-    externalJarOptions:
-      arguments:
-        - --server.port=${tiger.ports.idpfedmaster}
-      options:
-        - -DIDP_SEKTORAL_PORT=${tiger.ports.idpsektoral}
-        - -DIDP_FACHDIENST_PORT=${tiger.ports.idpfachdienst}
-      workingDir: ../idp-fedmaster/target
-    source:
-      - local://idp-fedmaster-${tiger.idp.version}.jar
-    startupTimeoutSec: 60
-    active: true
-
-
-  idpfachdienst:
-    type: externalJar
-    healthcheckUrl: http://127.0.0.1:${tiger.ports.idpfachdienst}
-    externalJarOptions:
-      arguments:
-        - --server.port=${tiger.ports.idpfachdienst}
-      options:
-        - -DIDP_FEDMASTER_PORT=${tiger.ports.idpfedmaster}
-      workingDir: ../idp-fachdienst/target
-    source:
-      - local://idp-fachdienst-${tiger.idp.version}.jar
     startupTimeoutSec: 60
     active: true

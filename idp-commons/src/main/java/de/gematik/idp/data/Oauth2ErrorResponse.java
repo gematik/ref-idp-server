@@ -14,25 +14,21 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.data.fachdienst;
+package de.gematik.idp.data;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import de.gematik.idp.data.IdpJwksDocument;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** Entity statement related to Fachdienst issued by Fachdienst */
 @Data
-@Builder
-@NoArgsConstructor
+@Builder(toBuilder = true)
 @AllArgsConstructor
+@NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class SignedJwks {
-
-  private String iss;
-  private long iat;
-  private IdpJwksDocument jwks;
+public class Oauth2ErrorResponse {
+  private Oauth2ErrorCode error;
+  private String errorDescription;
 }

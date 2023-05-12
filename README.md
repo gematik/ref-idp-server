@@ -10,9 +10,8 @@ Das Projekt **IDP-Global** setzt sich aus verschiedenen Teilprojekten zusammen. 
 
   <br>
 
-* **IDP-Sektoral:** PoC für einen sektoralen IDP im Kontext Fast Track/föderierte IDPs
+* **IDP-Sektoral:** PoC für einen sektoralen IDP im Kontext Fast Track
 * **IDP-Fedmaster:** PoC für einen Föderationsmaster im Kontext föderierte IDPs
-* **IDP-Fachdienst:** PoC für den Auth Server eines Fachdienstes im Kontext föderierte IDPs
 
 Die letzten 3 Teilprojekte in o.s. Liste sind nicht Teil der
 Referenzimplementierung/Veröffentlichung auf github.
@@ -49,7 +48,7 @@ or use docker compose:
 
 ```console
 $ mvn clean install -pl idp-server -am -Dskip.unittests -Dskip.inttests
-$ export appVersion=22.0.4
+$ export appVersion=23.0.1
 $ docker-compose --project-name myidp -f docker-compose-ref.yml up -d
 ```
 

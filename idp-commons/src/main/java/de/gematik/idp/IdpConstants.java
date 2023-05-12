@@ -30,33 +30,23 @@ public final class IdpConstants {
   public static final String TOKEN_ENDPOINT = "/token";
   public static final String PAIRING_ENDPOINT = "/pairings";
   public static final String THIRD_PARTY_ENDPOINT = "/extauth";
-  public static final String DEVICE_VALIDATION_ENDPOINT = "/device_validation";
   public static final String DEFAULT_SERVER_URL = "https://idp.zentral.idp.splitdns.ti-dienste.de";
   public static final String EIDAS_LOA_HIGH = "gematik-ehealth-loa-high";
   public static final int JTI_LENGTH = 16;
   public static final String AMR_FAST_TRACK = "mfa";
 
-  public static final String FED_SIGNED_JWKS_ENDPOINT = "/jws.json";
   public static final String FED_AUTH_ENDPOINT = "/auth";
   public static final String FED_AUTH_APP_ENDPOINT = "/auth/app";
 
   public static final String FED_LIST_ENDPOINT = "/federation_list";
 
-  public static final String FD_LOGIN_ENDPOINT = "/login";
-  public static final String FD_API_ENDPOINT = "/api";
   public static final String SEKTORAL_IDP_AUTHORIZATION_ENDPOINT = "/authorization";
   public static final String ENTITY_STATEMENT_ENDPOINT = "/.well-known/openid-federation";
 
-  public static final String ENTITY_STATEMENT_EXPIRED_ENDPOINT = "/expired_entity_statement";
-
-  public static final String ENTITY_STATEMENT_INVALID_SIG_ENDPOINT =
-      "/invalid_sig_entity_statement";
   public static final String IDP_LIST_ENDPOINT = "/.well-known/idp_list";
-  public static final String FEDIDP_PAR_AUTH_ENDPOINT = "/PAR_Auth";
 
   public static final String FEDMASTER_FEDERATION_FETCH_ENDPOINT = "/federation_fetch_endpoint";
-  public static final int FACHDIENST_STATE_LENGTH = 32;
-  public static final int FACHDIENST_NONCE_LENGTH = 32;
+
   public static final String ENTITY_STATEMENT_TYP = "entity-statement+jwt";
 
   public static final String OPENID = "openid";

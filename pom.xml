@@ -12,7 +12,7 @@
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-global</artifactId>
-  <version>22.0.4</version>
+  <version>23.0.1</version>
   <packaging>pom</packaging>
 
   <description>IDP</description>
@@ -46,7 +46,6 @@
     <module>idp-client</module>
     <module>idp-sektoral</module>
     <module>idp-fedmaster</module>
-    <module>idp-fachdienst</module>
     <module>idp-server</module>
     <module>idp-testsuite</module>
     <module>idp-report</module>
@@ -108,7 +107,7 @@
     <version.build-helper-maven-plugin>3.3.0</version.build-helper-maven-plugin>
     <version.docker-maven-plugin>0.42.1</version.docker-maven-plugin>
     <version.copy-rename-maven-plugin>1.0.1</version.copy-rename-maven-plugin>
-    <version.jacoco-maven-plugin>0.8.9</version.jacoco-maven-plugin>
+    <version.jacoco-maven-plugin>0.8.10</version.jacoco-maven-plugin>
     <version.jakarta.ws.rs-api>3.1.0</version.jakarta.ws.rs-api>
     <version.maven>3.8.6</version.maven>
     <version.maven-clean-plugin>3.2.0</version.maven-clean-plugin>
@@ -116,7 +115,7 @@
     <!-- Overwrite Version from Parent -->
     <maven-deploy-plugin.version>3.1.1</maven-deploy-plugin.version>
     <version.maven-enforcer-plugin>3.3.0</version.maven-enforcer-plugin>
-    <version.maven-failsafe-plugin>3.0.0</version.maven-failsafe-plugin>
+    <version.maven-failsafe-plugin>3.1.0</version.maven-failsafe-plugin>
     <version.maven-gpg-plugin>3.0.1</version.maven-gpg-plugin>
     <version.maven-jar-plugin>3.3.0</version.maven-jar-plugin>
     <version.maven-javadoc-plugin>3.5.0</version.maven-javadoc-plugin>
@@ -126,7 +125,7 @@
     <version.maven-site-plugin>3.12.1</version.maven-site-plugin>
     <!-- settings for upload to sonar server -->
     <version.maven-source-plugin>3.2.1</version.maven-source-plugin>
-    <version.maven-surefire-plugin>3.0.0</version.maven-surefire-plugin>
+    <version.maven-surefire-plugin>3.1.0</version.maven-surefire-plugin>
     <version.nexus-staging-maven-plugin>1.6.13</version.nexus-staging-maven-plugin>
     <version.sonar-maven-plugin>3.9.1.2184</version.sonar-maven-plugin>
     <version.spotless-maven-plugin>2.36.0</version.spotless-maven-plugin>

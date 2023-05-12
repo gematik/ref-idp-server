@@ -4,11 +4,15 @@
 
 Die Gematik-IDP-Zulassungstestsuite dient zur Pr&uuml;fung des zentralen IDP Dienstes (IDP Server).
 Zusätzlich enthät die Testsuite Tests für den Fast Track und die Föderierten IDPs.
-Alle Zulassungstests sind - im Sinne von maven - "Integrationstests". Diese Tests befinden sich in *.feature Dateien.
+Alle Zulassungstests sind - im Sinne von maven - "Integrationstests". Diese Tests befinden sich in *
+.feature Dateien.
 
-Ein Integrationstest kann entweder gegen eine lokale Instanz eines IDP Servers, oder gegen einen remote verfügbaren
-Server durchgeführt werden. Durch Setzen der Umgebungsvariable `IDP_SERVER` wird die Testsuite angewiesen, gegen den in
-der Variable definierten Host/URL zu testen. Existiert diese Umgebungsvariable nicht, so wird von der Testsuite eine
+Ein Integrationstest kann entweder gegen eine lokale Instanz eines IDP Servers, oder gegen einen
+remote verfügbaren
+Server durchgeführt werden. Durch Setzen der Umgebungsvariable `IDP_SERVER` wird die Testsuite
+angewiesen, gegen den in
+der Variable definierten Host/URL zu testen. Existiert diese Umgebungsvariable nicht, so wird von
+der Testsuite eine
 lokale Instanz des IDP Servers für die Integrationstests verwendet.
 
 ## Informationen zum IDP Dienst
@@ -25,19 +29,27 @@ Folgende Endpunkte sind von einem IDP Dienst zur Verfügung zu stellen:
 
 #### Relevante RFCs
 
-* [RFC6749](https://tools.ietf.org/html/rfc6749) ist der allgemeine OAuth 2.0 RFC. Hier werden die Endpunkte (
+* [RFC6749](https://tools.ietf.org/html/rfc6749) ist der allgemeine OAuth 2.0 RFC. Hier werden die
+  Endpunkte (
   Authorization-Endpoint, Token-Endpoint, ...) beschrieben
-* [RFC7636](https://tools.ietf.org/html/rfc7636) beschreibt einen Schutzmechanismus gegen das Abfangen von Authorization
-  Codes. Es wird mit code_verifier gearbeitet und die damit verbundenen Änderungen am Authorization-Request finden sich
+* [RFC7636](https://tools.ietf.org/html/rfc7636) beschreibt einen Schutzmechanismus gegen das
+  Abfangen von Authorization
+  Codes. Es wird mit code_verifier gearbeitet und die damit verbundenen Änderungen am
+  Authorization-Request finden sich
   in diesem RFC
-* [RFC8252](https://tools.ietf.org/html/rfc8252) beschreibt, wie Native Apps OAuth 2.0 machen sollen.
-* [RFC8414](https://tools.ietf.org/html/rfc8414) beschreibt, wie man über einen Discovery-Endpunkt die relevanten
+* [RFC8252](https://tools.ietf.org/html/rfc8252) beschreibt, wie Native Apps OAuth 2.0 machen
+  sollen.
+* [RFC8414](https://tools.ietf.org/html/rfc8414) beschreibt, wie man über einen Discovery-Endpunkt
+  die relevanten
   Endpunkte ermittelt.
-* [RFC7519 Appendix A.2](https://tools.ietf.org/html/rfc7519#appendix-A.2) beschreibt, wie das Challenge-Token zu
+* [RFC7519 Appendix A.2](https://tools.ietf.org/html/rfc7519#appendix-A.2) beschreibt, wie das
+  Challenge-Token zu
   signieren und verschlüsseln ist (Nested JWT).
-* [RFC7515 Ssection 3](https://tools.ietf.org/html/rfc7515#section-3) beschreibt die zu verwendende Form der Signatur (
+* [RFC7515 Ssection 3](https://tools.ietf.org/html/rfc7515#section-3) beschreibt die zu verwendende
+  Form der Signatur (
   JSON Web Signature)
-* [RFC7516 Section 3](https://tools.ietf.org/html/rfc7516#section-3) beschreibt die zu verwendende Form der
+* [RFC7516 Section 3](https://tools.ietf.org/html/rfc7516#section-3) beschreibt die zu verwendende
+  Form der
   Verschlüsslung (JSON Web Encryption)
 
 ## Testüberdeckung
@@ -45,20 +57,26 @@ Folgende Endpunkte sind von einem IDP Dienst zur Verfügung zu stellen:
 mit dem aktuellen Release sind folgende Testszenarien abgedeckt:
 
 * Discovery Endpunkt
-    * Tests über Erreichbarkeit des Endpunkts, Struktur der Antwort, Inhalte der Claims, Signaturen, zeitliche
+    * Tests über Erreichbarkeit des Endpunkts, Struktur der Antwort, Inhalte der Claims, Signaturen,
+      zeitliche
       Gültigkeit, Token Verschlüsselung
 * Authorization Endpunkt - Anforderung Challenge Token
-    * Tests über Erreichbarkeit des Endpunkts, Eingangsparameter, Struktur der Antwort, Inhalte der Claims, Signaturen,
+    * Tests über Erreichbarkeit des Endpunkts, Eingangsparameter, Struktur der Antwort, Inhalte der
+      Claims, Signaturen,
       Negativtests auf Parameter, Fehlermeldungen, zeitliche Gültigkeit, Token Verschlüsselung
 * Authorization Endpunkt - Anforderung Tokencode
-    * Tests über Erreichbarkeit des Endpunkts, Eingangsparameter, beide Flows (signed challenge, sso token), Signaturen,
-      Negativtests auf Parameter, Fehlermeldungen, zeitliche Gültigkeit, ungültige Zertifikate, Token Verschlüsselung
+    * Tests über Erreichbarkeit des Endpunkts, Eingangsparameter, beide Flows (signed challenge, sso
+      token), Signaturen,
+      Negativtests auf Parameter, Fehlermeldungen, zeitliche Gültigkeit, ungültige Zertifikate,
+      Token Verschlüsselung
     * _Abzuklären: Struktur der Antwort, Inhalte der Claims_
     * _In Arbeit: Fehlermeldungen_
     * _Noch nicht realisiert: ungültiger SSO Token_
 * Token Endpunkt - Anforderung Access Token
-    * Tests über Erreichbarkeit des Endpunkts, Eingangsparameter, beide Flows (signed challenge, sso token),
-      Signaturen (ID Token), Negativtests auf Parameter, zeitliche Gültigkeit, Ungültige Zertifikate, Token
+    * Tests über Erreichbarkeit des Endpunkts, Eingangsparameter, beide Flows (signed challenge, sso
+      token),
+      Signaturen (ID Token), Negativtests auf Parameter, zeitliche Gültigkeit, Ungültige
+      Zertifikate, Token
       Verschlüsselung
     * _In Arbeit: Fehlermeldungen_
     * _Noch nicht realisiert: kartenspezifische Szenarien_
@@ -100,7 +118,8 @@ Es startet eine Instanz auf localhost:8080.
 
 * Projekt in Intellij öffnen
 
-![Anmerkung](doc/images/emblem-generic.png) Beim ersten Mal kann es einige Zeit dauern, bis alle Projektabhängigkeiten
+![Anmerkung](doc/images/emblem-generic.png) Beim ersten Mal kann es einige Zeit dauern, bis alle
+Projektabhängigkeiten
 von Internet/Gematik Nexus Repos gezogen wurden.
 
 * Compile: ![](doc/images/IntellijBuild.PNG)
@@ -115,7 +134,8 @@ Im Run Fenster sind die Logs des gestarteten Servers sichtbar:
 
 ![IntellijServerLogs](doc/images/IntellijServerLogs.PNG)
 
-Der IdpServer kann für Analysetätigkeiten statt Run auch mit Debug gestartet werden. Dadurch können im IdpServer code
+Der IdpServer kann für Analysetätigkeiten statt Run auch mit Debug gestartet werden. Dadurch können
+im IdpServer code
 breakpoints gesetzt und Code schrittweise ausgeführt werden.
 
 Ein Beispiel für den Abruf des Discovery Documents an der lokalen Instanz wäre:
@@ -129,7 +149,8 @@ eyJhbGciOiJCUDI1NlIxIiwidHlwIjoiSldUIiwia2lkIjoicHVrX2Rpc2Nfc2lnIiwieDVjIjpbIk1J
 
 ### Gesamte Testsuite via Maven in Git Bash ausführen
 
-Die Integrationstests umfassen alle 3 Teilprojekte. Die feature Dateien sind dementsprechend gruppiert. "biometrics"
+Die Integrationstests umfassen alle 3 Teilprojekte. Die feature Dateien sind dementsprechend
+gruppiert. "biometrics"
 und "coreFeatures" testen den Idp-Server.
 
 ```console
@@ -143,7 +164,6 @@ und "coreFeatures" testen den Idp-Server.
    |-----------biometrics
    |-----------coreFeatures
    |-----------fastTrack
-   |-----------federation
 ```
 
 Bei der Testausführung wird es meistens sinnvoll sein, zu filtern.
@@ -153,7 +173,8 @@ Einen bestimmten Integrationstest ausführen:
 $ mvn verify -Dskip.unittests=true -Dcucumber.filter.tags="@TCID:FEDIDP_ENTITY_STATEMENT_003"
 ```
 
-Alle (in allen Teilprojekten) Zulassungstests ausführen, die u.a. nicht auf "work in progress" stehen.
+Alle (in allen Teilprojekten) Zulassungstests ausführen, die u.a. nicht auf "work in progress"
+stehen.
 
 ```console
 $ mvn verify -Dskip.unittests=true -Dcucumber.filter.tags="@Approval and not @OpenBug and not @WiP and not @LongRunning"  
@@ -161,7 +182,8 @@ $ mvn verify -Dskip.unittests=true -Dcucumber.filter.tags="@Approval and not @Op
 
 Integrationstests können mit `-Dskip.inttests` disabled werden.
 
-![Anmerkung](doc/images/emblem-generic.png) Die Testsuite startet mehrere Server um alle Testfälle der Teilprojekte
+![Anmerkung](doc/images/emblem-generic.png) Die Testsuite startet mehrere Server um alle Testfälle
+der Teilprojekte
 testen zu können. Das Verhalten kann in der tiger.yaml konfiguriert werden.
 
 Einen bestimmten Integrationstest gegen einen existierenden Idp-Server ausführen:
@@ -180,12 +202,14 @@ $ mvn verify -Dskip.unittests=true -Dcucumber.filter.tags="@TCID:IDP_REF_DISC_00
 * Klick "Modify Run Configuration"
   ![DebugTestcase2](doc/images/DebugTestcase2.PNG)
 * Main Class setzen auf: ```de.gematik.test.tiger.TigerCucumberRunner```
-* Glue setzen auf: ```de.gematik.test.tiger.glue net.serenitybdd.cucumber.actors de.gematik.idp.test.steps```
+* Glue setzen
+  auf: ```de.gematik.test.tiger.glue net.serenitybdd.cucumber.actors de.gematik.idp.test.steps```
   ![DebugTestcase3](doc/images/DebugTestcase3.PNG)
 * Test Result
   ![DebugTestcase4](doc/images/DebugTestcase4.PNG)
 * Testbericht bei Ausführung mit maven: ```./idp-testsuite/target/site/serenity/index.html```
-* Testbericht bei Ausführung in Intellij: ```./idp-testsuite/target/site/serenity/downloadable/...html```
+* Testbericht bei Ausführung in
+  Intellij: ```./idp-testsuite/target/site/serenity/downloadable/...html```
 
 ## Serenity Testbericht
 
@@ -205,21 +229,29 @@ Zeigt eine Liste aller Features die gefunden/getestet wurden.
 
 ##### Tags
 
-Hier sind alle in den Feature Dateien verwendeten Tags aufgelistet. Für uns vor allem interessant ist die Afo Sektion wo
-alle eingetragenen Afos und die Issue Sektion wo alle mit Jira verlinkten Tickets gelistet sind. Ein Klick auf den
-konkreten Tag zeigt die zugehörige Übersichtsseite. Ein Klick auf Test Results zeigt dann alle verlinkten Szenarien.
+Hier sind alle in den Feature Dateien verwendeten Tags aufgelistet. Für uns vor allem interessant
+ist die Afo Sektion wo
+alle eingetragenen Afos und die Issue Sektion wo alle mit Jira verlinkten Tickets gelistet sind. Ein
+Klick auf den
+konkreten Tag zeigt die zugehörige Übersichtsseite. Ein Klick auf Test Results zeigt dann alle
+verlinkten Szenarien.
 
-![Anmerkung](doc/images/emblem-generic.png) Um in der Feature Ansicht die Testfälle zu sehen muss oben "Test Results"
-ausgewählt werden. Um das konkrete Szenario im Detail zu sehen, dann in der Liste in der Spalte "SCENARIO" klicken!
+![Anmerkung](doc/images/emblem-generic.png) Um in der Feature Ansicht die Testfälle zu sehen muss
+oben "Test Results"
+ausgewählt werden. Um das konkrete Szenario im Detail zu sehen, dann in der Liste in der Spalte "
+SCENARIO" klicken!
 
 #### Testschrittdetails
 
-Durch Klicken auf die links angezeigten "+" icons können weiterführende Details zu den Testschritten aufgeklappt werden.
+Durch Klicken auf die links angezeigten "+" icons können weiterführende Details zu den Testschritten
+aufgeklappt werden.
 
 ![Serenity05](doc/images/SerenityReport005.png)
 
-Für HTTP Anfragen wird neben dem **"REST Query"** Knopf der von Serenity erstellt wird und die ausgeführten REST Abfrage
-detailliert darstellt auch ein **"cURL"** Knopf dargestellt, welcher einen ausführbaren REST Query mit Curl erlaubt um
+Für HTTP Anfragen wird neben dem **"REST Query"** Knopf der von Serenity erstellt wird und die
+ausgeführten REST Abfrage
+detailliert darstellt auch ein **"cURL"** Knopf dargestellt, welcher einen ausführbaren REST Query
+mit Curl erlaubt um
 etwaige Fehler nachzustellen.
 
 ![Serenity06](doc/images/SerenityReport006.png)
@@ -230,11 +262,14 @@ Für Stacktrace Informationen gibt es rechts in den Details auch den **"More Det
 
 ### Nutzung / Anpassung von Testumgebungsvariablen
 
-In der durch die Umgebungsvariable GEMATIK_TESTCONFIG definierten testsuite_config.${env.GEMATIK_TESTCONFIG}.properties
-sind ein Set von mit TESTENV beginnenden Variablen definiert, welche in der Testsuite bei der Übergabe von String Werten
+In der durch die Umgebungsvariable GEMATIK_TESTCONFIG definierten
+testsuite_config.${env.GEMATIK_TESTCONFIG}.properties
+sind ein Set von mit TESTENV beginnenden Variablen definiert, welche in der Testsuite bei der
+Übergabe von String Werten
 durch Angabe von ${TESTENV.variablenname} genutzt werden können.
 
-Das für die symmetrische Verschlüsselung von Challenge und Token zu verwendende Passwort wird in den folgenden Einträgen
+Das für die symmetrische Verschlüsselung von Challenge und Token zu verwendende Passwort wird in den
+folgenden Einträgen
 gesetzt:
 
 ```

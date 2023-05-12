@@ -20,7 +20,7 @@ x-service-setup: &service-setup-ref
 # Common Network
 x-service-network: &service-network-ref
   networks:
-    idp-federation:
+    idp-reference:
 
 services:
   # Database
@@ -70,5 +70,5 @@ volumes:
     name: idp-data-db
 
 networks:
-  idp-federation:
-    name: idp-federation
+  idp-reference:
+    name: idp-reference

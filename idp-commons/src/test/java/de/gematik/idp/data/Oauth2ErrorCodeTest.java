@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import de.gematik.idp.data.fedidp.Oauth2ErrorCode;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 

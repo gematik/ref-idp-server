@@ -14,29 +14,27 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.data.fedidp;
+package de.gematik.idp.data;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import de.gematik.idp.data.IdpJwksDocument;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
-/** Entity statement related to sektoralem (federated) IDP issued by sektoralem (federated) IDP */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class EntityStatement {
+@RequiredArgsConstructor
+public enum Oauth2ErrorCode {
+  INVALID_REQUEST("invalid_request"),
+  INVALID_CLIENT("invalid_client"),
+  INVALID_GRANT("invalid_grant"),
+  UNAUTHORIZED_CLIENT("unauthorized_client"),
+  INVALID_SCOPE("invalid_scope"),
+  UNSUPPORTED_GRANT_TYPE("unsupported_grant_type");
 
-  private String iss;
-  private String sub;
-  private long iat;
-  private long exp;
-  private IdpJwksDocument jwks;
-  private String[] authorityHints;
-  private Metadata metadata;
+  private final String serializationValue;
+
+  @JsonValue
+  public String getSerializationValue() {
+    return serializationValue;
+  }
 }

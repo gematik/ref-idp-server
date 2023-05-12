@@ -83,21 +83,11 @@ public class IdpAuthenticationSteps extends IdpStepsBase {
     final Map<String, Object> ctxt = de.gematik.test.bdd.Context.get().getMapForCurrentThread();
     mapParsedParams = applyIfRedirect(mapParsedParams);
     updateContext(idpEndpointType, ctxt, mapParsedParams);
-    updateMap(idpEndpointType, mapParsedParams);
     final String url = getAuthUrl(idpEndpointType);
 
     ctxt.put(
         ContextKey.RESPONSE,
         requestResponseAndAssertStatus(url, null, HttpMethods.GET, mapParsedParams, null, status));
-  }
-
-  public void sendAuthorizationCode(Map<String, String> mapParsedParams, final HttpStatus status) {
-    mapParsedParams = applyIfRedirect(mapParsedParams);
-    final Map<String, Object> ctxt = de.gematik.test.bdd.Context.get().getMapForCurrentThread();
-    final String url = getAuthUrl(IdpEndpointType.Fachdienst);
-    ctxt.put(
-        ContextKey.RESPONSE,
-        requestResponseAndAssertStatus(url, null, HttpMethods.POST, mapParsedParams, null, status));
   }
 
   @NotNull
@@ -135,9 +125,6 @@ public class IdpAuthenticationSteps extends IdpStepsBase {
       case Fed_Sektoral_IDP_APP:
         url = Context.get().getString(ContextKey.ISS_IDP_SEKTORAL) + FED_AUTH_APP_ENDPOINT;
         break;
-      case Fachdienst:
-        url = Context.get().getString(ContextKey.FACHDIENST_URL) + FED_AUTH_ENDPOINT;
-        break;
       case Smartcard_IDP:
         url = Context.getDiscoveryDocument().getThirdPartyEndpoint();
         break;
@@ -147,19 +134,10 @@ public class IdpAuthenticationSteps extends IdpStepsBase {
     return url;
   }
 
-  private void updateMap(
-      final IdpEndpointType idpEndpointType, Map<String, String> mapParsedParams) {
-    if (idpEndpointType == IdpEndpointType.Fachdienst) {
-      if (!mapParsedParams.containsKey("idp_iss")) {
-        mapParsedParams.put("idp_iss", Context.get().getString(ContextKey.ISS_IDP_SEKTORAL));
-      }
-    }
-  }
-
   private void updateContext(
       final IdpEndpointType idpEndpointType,
-      Map<String, Object> ctxt,
-      Map<String, String> mapParsedParams) {
+      final Map<String, Object> ctxt,
+      final Map<String, String> mapParsedParams) {
     if (idpEndpointType == IdpEndpointType.Smartcard_IDP) {
       if (mapParsedParams.containsKey("client_id")) {
         final String cid = mapParsedParams.get("client_id");
