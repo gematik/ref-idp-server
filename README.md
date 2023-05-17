@@ -48,7 +48,7 @@ or use docker compose:
 
 ```console
 $ mvn clean install -pl idp-server -am -Dskip.unittests -Dskip.inttests
-$ export appVersion=23.0.1
+$ export appVersion=23.0.2
 $ docker-compose --project-name myidp -f docker-compose-ref.yml up -d
 ```
 

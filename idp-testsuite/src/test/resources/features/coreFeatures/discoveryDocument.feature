@@ -271,7 +271,7 @@ Feature: Fordere Discovery Dokument an
     When IDP I request the uri from claim "<claim>" with method GET and status 200
     And TGR find request to path "/.well-known/openid-configuration"
     And TGR find next request to path ".*"
-    Then TGR current response at "$.body.keys.[?($.kid.content == 'puk_idp_enc')]" matches as JSON:
+    Then TGR current response at "$.body.keys.[?(@.kid.content == 'puk_idp_enc')]" matches as JSON:
     """
     {
                 kid:  "puk_idp_enc",
@@ -282,7 +282,7 @@ Feature: Fordere Discovery Dokument an
                 y:    "${json-unit.ignore}"
     }
     """
-    And TGR current response at "$.body.keys.[?($.kid.content == 'puk_idp_sig')]" matches as JSON:
+    And TGR current response at "$.body.keys.[?(@.kid.content == 'puk_idp_sig')]" matches as JSON:
     """
     {
                 kid:  "puk_idp_sig",

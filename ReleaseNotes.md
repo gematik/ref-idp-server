@@ -1,3 +1,9 @@
+# Release 23.0.2
+
+- add ParResponse, used in sektoral IDPs and Authorization servers
+- application.yaml of idp-client deleted
+- update dependencies
+
 # Release 23.0.1
 
 - remove federation from repository (keep fedmaster)

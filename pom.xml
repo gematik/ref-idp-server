@@ -12,7 +12,7 @@
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-global</artifactId>
-  <version>23.0.1</version>
+  <version>23.0.2</version>
   <packaging>pom</packaging>
 
   <description>IDP</description>
@@ -101,10 +101,10 @@
     <version.plexus-utils>3.4.2</version.plexus-utils>
     <version.rest-assured>5.3.0</version.rest-assured>
     <version.serenity.core>3.2.4</version.serenity.core>
-    <version.tiger>1.3.2</version.tiger>
+    <version.tiger>2.0.0</version.tiger>
     <version.unirest>3.14.2</version.unirest>
 
-    <version.build-helper-maven-plugin>3.3.0</version.build-helper-maven-plugin>
+    <version.build-helper-maven-plugin>3.4.0</version.build-helper-maven-plugin>
     <version.docker-maven-plugin>0.42.1</version.docker-maven-plugin>
     <version.copy-rename-maven-plugin>1.0.1</version.copy-rename-maven-plugin>
     <version.jacoco-maven-plugin>0.8.10</version.jacoco-maven-plugin>
