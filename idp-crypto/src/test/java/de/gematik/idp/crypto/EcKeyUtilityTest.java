@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2023 gematik GmbH
- * 
- * Licensed under the Apache License, Version 2.0 (the License);
+ *  Copyright 2023 gematik GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an 'AS IS' BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -38,22 +38,22 @@ class EcKeyUtilityTest {
 
   @Test
   void genPublicKey() {
-    ECPoint ecPoint =
+    final ECPoint ecPoint =
         new ECPoint(
-            new BigInteger(Base64.getDecoder().decode((String) X_BASE_64)),
-            new BigInteger(Base64.getDecoder().decode((String) Y_BASE_64)));
+            new BigInteger(Base64.getDecoder().decode(X_BASE_64)),
+            new BigInteger(Base64.getDecoder().decode(Y_BASE_64)));
     final PublicKey publicKey = EcKeyUtility.genPublicKey(CRV, ecPoint);
     assertThat(publicKey).isNotNull();
   }
 
   @Test
   void ecPoints() {
-    ECPoint ecPoint1 =
+    final ECPoint ecPoint1 =
         new ECPoint(
-            new BigInteger(1, Base64.getDecoder().decode((String) X_BASE_64)),
-            new BigInteger(1, Base64.getDecoder().decode((String) Y_BASE_64)));
+            new BigInteger(1, Base64.getDecoder().decode(X_BASE_64)),
+            new BigInteger(1, Base64.getDecoder().decode(Y_BASE_64)));
 
-    ECPoint ecPoint2 = new ECPoint(new BigInteger(X_DEC), new BigInteger(Y_DEC));
+    final ECPoint ecPoint2 = new ECPoint(new BigInteger(X_DEC), new BigInteger(Y_DEC));
 
     assertThat(ecPoint1).isEqualTo(ecPoint2);
   }

@@ -7,12 +7,12 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.0.6</version>
+    <version>3.1.0</version>
   </parent>
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-global</artifactId>
-  <version>23.0.2</version>
+  <version>23.0.4</version>
   <packaging>pom</packaging>
 
   <description>IDP</description>
@@ -93,7 +93,7 @@
     <version.aforeporter>1.2.1</version.aforeporter>
     <version.assertj>3.24.2</version.assertj>
     <version.bouncycastle.bcpkix>1.73</version.bouncycastle.bcpkix>
-    <version.commons-io>2.11.0</version.commons-io>
+    <version.commons-io>2.12.0</version.commons-io>
     <version.gemLibPki>0.11.0</version.gemLibPki>
     <version.h2>2.1.214</version.h2>
     <version.json>20230227</version.json>
@@ -105,7 +105,7 @@
     <version.unirest>3.14.2</version.unirest>
 
     <version.build-helper-maven-plugin>3.4.0</version.build-helper-maven-plugin>
-    <version.docker-maven-plugin>0.42.1</version.docker-maven-plugin>
+    <version.docker-maven-plugin>0.43.0</version.docker-maven-plugin>
     <version.copy-rename-maven-plugin>1.0.1</version.copy-rename-maven-plugin>
     <version.jacoco-maven-plugin>0.8.10</version.jacoco-maven-plugin>
     <version.jakarta.ws.rs-api>3.1.0</version.jakarta.ws.rs-api>
@@ -116,21 +116,21 @@
     <maven-deploy-plugin.version>3.1.1</maven-deploy-plugin.version>
     <version.maven-enforcer-plugin>3.3.0</version.maven-enforcer-plugin>
     <version.maven-failsafe-plugin>3.1.0</version.maven-failsafe-plugin>
-    <version.maven-gpg-plugin>3.0.1</version.maven-gpg-plugin>
+    <version.maven-gpg-plugin>3.1.0</version.maven-gpg-plugin>
     <version.maven-jar-plugin>3.3.0</version.maven-jar-plugin>
     <version.maven-javadoc-plugin>3.5.0</version.maven-javadoc-plugin>
-    <version.maven-project-info-reports-plugin>3.4.3</version.maven-project-info-reports-plugin>
+    <version.maven-project-info-reports-plugin>3.4.4</version.maven-project-info-reports-plugin>
     <!-- only needed for mvn site to avoid stack traces flooding the console -->
     <version.maven-resources-plugin>3.3.1</version.maven-resources-plugin>
     <version.maven-site-plugin>3.12.1</version.maven-site-plugin>
     <!-- settings for upload to sonar server -->
-    <version.maven-source-plugin>3.2.1</version.maven-source-plugin>
+    <version.maven-source-plugin>3.3.0</version.maven-source-plugin>
     <version.maven-surefire-plugin>3.1.0</version.maven-surefire-plugin>
     <version.nexus-staging-maven-plugin>1.6.13</version.nexus-staging-maven-plugin>
     <version.sonar-maven-plugin>3.9.1.2184</version.sonar-maven-plugin>
-    <version.spotless-maven-plugin>2.36.0</version.spotless-maven-plugin>
+    <version.spotless-maven-plugin>2.37.0</version.spotless-maven-plugin>
     <version.spotless.google-java-format>1.15.0</version.spotless.google-java-format>
-    <version.spring-boot-maven-plugin>3.0.6</version.spring-boot-maven-plugin>
+    <version.spring-boot-maven-plugin>3.1.0</version.spring-boot-maven-plugin>
     <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
   </properties>
 
