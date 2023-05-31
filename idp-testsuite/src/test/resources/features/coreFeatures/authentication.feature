@@ -1,14 +1,14 @@
 #
-# Copyright (c) 2023 gematik GmbH
-# 
-# Licensed under the Apache License, Version 2.0 (the License);
+# Copyright 2023 gematik GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
-#     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an 'AS IS' BASIS,
+# distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
@@ -293,7 +293,7 @@ Feature: Authentifiziere Anwendung am IDP Server
 
       #bei diesem Test sind keine Afos verlinkt, weil es dazu keine Afos/RFCs gibt. Die Vorgabe kommt aus dem Umsetzungskonzept von RISE
   @TCID:IDP_REF_AUTH_009 @PRIO:2 @Negative
-  @Approval @Ready
+    @Approval @Ready
   Scenario Outline: Auth - Parameter state und nonce zu lang - More
 
   ```
@@ -310,9 +310,9 @@ Feature: Authentifiziere Anwendung am IDP Server
     And IDP the response is an <http_code> error with gematik code <err_id> and error '<err>'
 
     Examples: Auth - Fehlende Parameter Beispiele
-      | http_code | err_id | err             | state                             | nonce                             |
-      | 302       | 2006   | invalid_request | 0d76ae6c3a23ef5cda33f12826e99b643463a2f0796b232880e93d55f55d820ebdc202e7e4d2486f7374d6a2778fda6dbcf33ae3499a58a8411ee44ff0c56246cfa81970cf3865af63a971e96fbaa9559d223b5e405f009f230644750734423c81c27013c61e492cfb7fa380458be9958f1d8e6405c6ec760e53e6eac35133a2baf305f0909098130a0e12d973a7d773d3e027ffa4d3dba2f28f5cb845517eb832b5b293a5120c2e21fbb3e643ab783170a695707ebe264d610ab135d18131f08e654a082c08a2dd645fb8a3a9faa2f81002117258f36b3e9791912ffd9a42b6253d542e13326602e7e9fce47f873a83f406ed26e8dd9c2942c02ecef6de265a0 | 123456789                         |
-      | 302       | 2007   | invalid_request | xxxstatexxx                       | 0d76ae6c3a23ef5cda33f12826e99b643463a2f0796b232880e93d55f55d820ebdc202e7e4d2486f7374d6a2778fda6dbcf33ae3499a58a8411ee44ff0c56246cfa81970cf3865af63a971e96fbaa9559d223b5e405f009f230644750734423c81c27013c61e492cfb7fa380458be9958f1d8e6405c6ec760e53e6eac35133a2baf305f0909098130a0e12d973a7d773d3e027ffa4d3dba2f28f5cb845517eb832b5b293a5120c2e21fbb3e643ab783170a695707ebe264d610ab135d18131f08e654a082c08a2dd645fb8a3a9faa2f81002117258f36b3e9791912ffd9a42b6253d542e13326602e7e9fce47f873a83f406ed26e8dd9c2942c02ecef6de265a0 |
+      | http_code | err_id | err             | state                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | nonce                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+      | 302       | 2006   | invalid_request | 0d76ae6c3a23ef5cda33f12826e99b643463a2f0796b232880e93d55f55d820ebdc202e7e4d2486f7374d6a2778fda6dbcf33ae3499a58a8411ee44ff0c56246cfa81970cf3865af63a971e96fbaa9559d223b5e405f009f230644750734423c81c27013c61e492cfb7fa380458be9958f1d8e6405c6ec760e53e6eac35133a2baf305f0909098130a0e12d973a7d773d3e027ffa4d3dba2f28f5cb845517eb832b5b293a5120c2e21fbb3e643ab783170a695707ebe264d610ab135d18131f08e654a082c08a2dd645fb8a3a9faa2f81002117258f36b3e9791912ffd9a42b6253d542e13326602e7e9fce47f873a83f406ed26e8dd9c2942c02ecef6de265a0 | 123456789                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+      | 302       | 2007   | invalid_request | xxxstatexxx                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | 0d76ae6c3a23ef5cda33f12826e99b643463a2f0796b232880e93d55f55d820ebdc202e7e4d2486f7374d6a2778fda6dbcf33ae3499a58a8411ee44ff0c56246cfa81970cf3865af63a971e96fbaa9559d223b5e405f009f230644750734423c81c27013c61e492cfb7fa380458be9958f1d8e6405c6ec760e53e6eac35133a2baf305f0909098130a0e12d973a7d773d3e027ffa4d3dba2f28f5cb845517eb832b5b293a5120c2e21fbb3e643ab783170a695707ebe264d610ab135d18131f08e654a082c08a2dd645fb8a3a9faa2f81002117258f36b3e9791912ffd9a42b6253d542e13326602e7e9fce47f873a83f406ed26e8dd9c2942c02ecef6de265a0 |
 
   @TCID:IDP_REF_AUTH_010 @PRIO:1
   @Approval @Ready
@@ -327,7 +327,7 @@ Feature: Authentifiziere Anwendung am IDP Server
 
     Given IDP I choose code verifier 'zdrfcvz3iw47fgderuzbq834werb3q84wgrb3zercb8q3wbd834wefb348ch3rq9e8fd9sac'
     And IDP I request a challenge with
-      | client_id            | scope                      | code_challenge                              | code_challenge_method | redirect_uri            | state       | nonce     | response_type |
+      | client_id            | scope                      | code_challenge                              | code_challenge_method | redirect_uri            | state                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | nonce                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | state_a23ef5cda33f12826e99b643463a2f0796b232880e93d55f55d820ebdc202e7e4d2486f7374d6a2778fda6dbcf33ae3499a58a8411ee44ff0c56246cfa81970cf3865af63a971e96fbaa9559d223b5e405f009f230644750734423c81c27013c61e492cfb7fa380458be9958f1d8e6405c6ec760e53e6eac35133a2baf305f0909098130a0e12d973a7d773d3e027ffa4d3dba2f28f5cb845517eb832b5b293a5120c2e21fbb3e643ab783170a695707ebe264d610ab135d18131f08e654a082c08a2dd645fb8a3a9faa2f81002117258f36b3e9791912ffd9a42b6253d542e13326602e7e9fce47f873a83f406ed26e8dd9c2942c02ecef6de265a032 | nonce_3a23ef5cda33f12826e99b643463a2f0796b232880e93d55f55d820ebdc202e7e4d2486f7374d6a2778fda6dbcf33ae3499a58a8411ee44ff0c56246cfa81970cf3865af63a971e96fbaa9559d223b5e405f009f230644750734423c81c27013c61e492cfb7fa380458be9958f1d8e6405c6ec760e53e6eac35133a2baf305f0909098130a0e12d973a7d773d3e027ffa4d3dba2f28f5cb845517eb832b5b293a5120c2e21fbb3e643ab783170a695707ebe264d610ab135d18131f08e654a082c08a2dd645fb8a3a9faa2f81002117258f36b3e9791912ffd9a42b6253d542e13326602e7e9fce47f873a83f406ed26e8dd9c2942c02ecef6de265a0d | code          |
 
     When IDP I extract the header claims from response field challenge

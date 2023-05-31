@@ -55,7 +55,7 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: idp
       SPRING_DATASOURCE_INITIALIZATION_MODE: always
-      SPRING_JPA_DATABASE_PLATFORM: "org.hibernate.dialect.MySQL5Dialect"
+      SPRING_JPA_DATABASE_PLATFORM: "org.hibernate.dialect.MySQLDialect"
       SPRING_H2_CONSOLE_ENABLED: "false"
       IDP_SERVERURL: ""
       MANAGEMENT_PORT: 8180 # Spring Actuator Port

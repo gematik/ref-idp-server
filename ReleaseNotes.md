@@ -1,3 +1,10 @@
+# Release 23.0.4
+
+- fix MySQLDialect in docker compose file (required for update of spring-boot-starter-parent to
+  3.1.0)
+- update dependencies
+- update copyright
+
 # Release 23.0.2
 
 - add ParResponse, used in sektoral IDPs and Authorization servers
