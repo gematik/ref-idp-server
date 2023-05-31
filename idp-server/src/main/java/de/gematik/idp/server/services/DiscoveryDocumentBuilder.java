@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2023 gematik GmbH
- * 
- * Licensed under the Apache License, Version 2.0 (the License);
+ *  Copyright 2023 gematik GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an 'AS IS' BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -20,6 +20,8 @@ import static de.gematik.idp.IdpConstants.ALTERNATIVE_AUTHORIZATION_ENDPOINT;
 import static de.gematik.idp.IdpConstants.APPLIST_ENDPOINT;
 import static de.gematik.idp.IdpConstants.BASIC_AUTHORIZATION_ENDPOINT;
 import static de.gematik.idp.IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT;
+import static de.gematik.idp.IdpConstants.FEDIDP_LIST_ENDPOINT;
+import static de.gematik.idp.IdpConstants.FED_AUTH_ENDPOINT;
 import static de.gematik.idp.IdpConstants.PAIRING_ENDPOINT;
 import static de.gematik.idp.IdpConstants.SSO_ENDPOINT;
 import static de.gematik.idp.IdpConstants.THIRD_PARTY_ENDPOINT;
@@ -44,6 +46,7 @@ public class DiscoveryDocumentBuilder {
         .ssoEndpoint(serverUrl + SSO_ENDPOINT)
         .uriPair(serverUrl + PAIRING_ENDPOINT)
         .thirdPartyAuthorizationEndpoint(serverUrl + THIRD_PARTY_ENDPOINT)
+        .federationAuthorizationEndpoint(serverUrl + FED_AUTH_ENDPOINT)
         .grantTypesSupported(new String[] {"authorization_code"})
         .idTokenSigningAlgValuesSupported(new String[] {"BP256R1"})
         .scopesSupported(scopes)
@@ -60,6 +63,7 @@ public class DiscoveryDocumentBuilder {
         .uriPukIdpSig(serverUrl + KeyInformationController.PUK_URI_SIG)
         .codeChallengeMethodsSupported(new String[] {"S256"})
         .kkAppListUri(serverUrl + APPLIST_ENDPOINT)
+        .fedIdpListUri(serverUrl + FEDIDP_LIST_ENDPOINT)
         .build();
   }
 }
