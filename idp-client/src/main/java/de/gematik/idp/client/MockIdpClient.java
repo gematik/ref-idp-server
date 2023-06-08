@@ -27,7 +27,6 @@ import static de.gematik.idp.field.ClaimName.PROFESSION_OID;
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
-import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
 import de.gematik.idp.authentication.AuthenticationResponse;
 import de.gematik.idp.authentication.AuthenticationResponseBuilder;
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
@@ -195,7 +194,6 @@ public class MockIdpClient implements IIdpClient {
     authenticationTokenBuilder =
         AuthenticationTokenBuilder.builder()
             .jwtProcessor(jwtProcessor)
-            .authenticationChallengeVerifier(new AuthenticationChallengeVerifier(serverIdentity))
             .encryptionKey(encryptionKey)
             .build();
     return this;

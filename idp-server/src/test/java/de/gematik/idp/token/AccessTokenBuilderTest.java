@@ -34,10 +34,8 @@ import static de.gematik.idp.field.ClaimName.PROFESSION_OID;
 import static de.gematik.idp.field.ClaimName.SCOPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
 
 import de.gematik.idp.TestConstants;
-import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
 import de.gematik.idp.authentication.AuthenticationTokenBuilder;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtBuilder;
@@ -100,7 +98,6 @@ class AccessTokenBuilderTest {
     authenticationTokenBuilder =
         AuthenticationTokenBuilder.builder()
             .jwtProcessor(serverTokenProcessor)
-            .authenticationChallengeVerifier(mock(AuthenticationChallengeVerifier.class))
             .encryptionKey(encryptionKey)
             .build();
   }

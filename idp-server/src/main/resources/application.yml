@@ -15,6 +15,7 @@ idp:
     keyId: puk_disc_sig
   symmetricEncryptionKey: "geheimerSchluesselDerNochGehashtWird"
   defaultLocale: US
+  fedAuthEndpoint : "https://idpfadi.dev.gematik.solutions/auth"
   debug:
     requestLogging: true
   subjectSaltValue: fkdlsjaviaen4evdsnavaew4vcxo

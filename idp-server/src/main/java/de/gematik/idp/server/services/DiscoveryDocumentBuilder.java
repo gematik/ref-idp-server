@@ -21,7 +21,6 @@ import static de.gematik.idp.IdpConstants.APPLIST_ENDPOINT;
 import static de.gematik.idp.IdpConstants.BASIC_AUTHORIZATION_ENDPOINT;
 import static de.gematik.idp.IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT;
 import static de.gematik.idp.IdpConstants.FEDIDP_LIST_ENDPOINT;
-import static de.gematik.idp.IdpConstants.FED_AUTH_ENDPOINT;
 import static de.gematik.idp.IdpConstants.PAIRING_ENDPOINT;
 import static de.gematik.idp.IdpConstants.SSO_ENDPOINT;
 import static de.gematik.idp.IdpConstants.THIRD_PARTY_ENDPOINT;
@@ -36,7 +35,10 @@ import lombok.RequiredArgsConstructor;
 public class DiscoveryDocumentBuilder {
 
   public IdpDiscoveryDocument buildDiscoveryDocument(
-      final String serverUrl, final String issuerUrl, final String[] scopes) {
+      final String serverUrl,
+      final String issuerUrl,
+      final String[] scopes,
+      final String fedAuthEndpoint) {
     final ZonedDateTime currentTime = ZonedDateTime.now();
     return IdpDiscoveryDocument.builder()
         .authorizationEndpoint(serverUrl + BASIC_AUTHORIZATION_ENDPOINT)
@@ -46,7 +48,7 @@ public class DiscoveryDocumentBuilder {
         .ssoEndpoint(serverUrl + SSO_ENDPOINT)
         .uriPair(serverUrl + PAIRING_ENDPOINT)
         .thirdPartyAuthorizationEndpoint(serverUrl + THIRD_PARTY_ENDPOINT)
-        .federationAuthorizationEndpoint(serverUrl + FED_AUTH_ENDPOINT)
+        .federationAuthorizationEndpoint(fedAuthEndpoint)
         .grantTypesSupported(new String[] {"authorization_code"})
         .idTokenSigningAlgValuesSupported(new String[] {"BP256R1"})
         .scopesSupported(scopes)

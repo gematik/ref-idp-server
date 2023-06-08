@@ -26,6 +26,7 @@ import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,10 +36,16 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class FederationIdpListTest {
+class FederationIdpListControllerTest {
 
   @LocalServerPort private int localServerPort;
   private String testHostUrl;
+
+  @BeforeAll
+  public static void beforeAll() {
+    Unirest.config().reset();
+    Unirest.config().followRedirects(false);
+  }
 
   @BeforeEach
   public void setUpLocalHostUrl() {
