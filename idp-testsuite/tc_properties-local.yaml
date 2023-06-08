@@ -1,0 +1,12 @@
+clientid: eRezeptApp
+
+redirectUri: https://redirect.testsuite.gsi
+
+scope: urn:telematik:display_name urn:telematik:versicherter openid
+
+idpIss: https://gematik.de
+
+codeVerifier: drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj
+
+codeChallenge: Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg
+

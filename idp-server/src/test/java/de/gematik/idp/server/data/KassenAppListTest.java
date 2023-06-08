@@ -1,12 +1,12 @@
 /*
  *  Copyright 2023 gematik GmbH
- *  
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *  
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- *  
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,9 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
 class KassenAppListTest {
 
   @Test
@@ -48,6 +46,8 @@ class KassenAppListTest {
 
     assertThat(objectMapper.writeValueAsString(kassenAppList))
         .isEqualTo(
-            "{\"kk_app_list\":[{\"kk_app_name\":\"Gematik KK\",\"kk_app_id\":\"id1\"},{\"kk_app_name\":\"meine krankenkasse\",\"kk_app_id\":\"id2\"}]}");
+            "{\"kk_app_list\":[{\"kk_app_name\":\"Gematik"
+                + " KK\",\"kk_app_id\":\"id1\"},{\"kk_app_name\":\"meine"
+                + " krankenkasse\",\"kk_app_id\":\"id2\"}]}");
   }
 }

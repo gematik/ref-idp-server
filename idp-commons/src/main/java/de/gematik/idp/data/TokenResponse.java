@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.server.data;
+package de.gematik.idp.data;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -31,7 +31,6 @@ import lombok.NoArgsConstructor;
 public class TokenResponse {
 
   private int expiresIn;
-  // TODO what do we need this for?
   private String tokenType;
   private String idToken;
   private String accessToken;

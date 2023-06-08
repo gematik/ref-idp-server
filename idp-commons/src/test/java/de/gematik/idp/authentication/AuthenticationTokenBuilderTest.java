@@ -24,7 +24,6 @@ import static de.gematik.idp.field.ClaimName.ISSUED_AT;
 import static de.gematik.idp.field.ClaimName.PROFESSION_OID;
 import static de.gematik.idp.field.ClaimName.TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.Afo;
@@ -63,7 +62,6 @@ class AuthenticationTokenBuilderTest {
     authenticationTokenBuilder =
         AuthenticationTokenBuilder.builder()
             .jwtProcessor(new IdpJwtProcessor(ecc))
-            .authenticationChallengeVerifier(mock(AuthenticationChallengeVerifier.class))
             .encryptionKey(encryptionKey)
             .build();
 

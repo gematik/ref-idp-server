@@ -1,3 +1,9 @@
+# Release 24.0.0
+
+- api breaking change: remove unused property from AuthenticationTokenBuilder
+- api breaking change: implement new endpoint and add to discovery document (fed_idp_list_uri)
+- update dependencies
+
 # Release 23.0.4
 
 - fix MySQLDialect in docker compose file (required for update of spring-boot-starter-parent to

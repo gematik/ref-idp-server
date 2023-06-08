@@ -51,6 +51,7 @@ public class DiscoveryDocumentController {
   private final ObjectMapper objectMapper;
   private final ServerUrlService serverUrlService;
   private final DiscoveryDocumentBuilder discoveryDocumentBuilder;
+  private final String fedAuthEndpoint;
   private IdpJwtProcessor jwtProcessor;
 
   private final String cacheControlDiscDoc;
@@ -101,7 +102,10 @@ public class DiscoveryDocumentController {
     setNoCacheHeader(response);
     return signDiscoveryDocument(
         discoveryDocumentBuilder.buildDiscoveryDocument(
-            serverUrlService.determineServerUrl(request), serverUrlService.getIssuerUrl(), scopes));
+            serverUrlService.determineServerUrl(request),
+            serverUrlService.getIssuerUrl(),
+            scopes,
+            fedAuthEndpoint));
   }
 
   private String signDiscoveryDocument(final IdpDiscoveryDocument discoveryDocument) {

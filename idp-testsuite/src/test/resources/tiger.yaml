@@ -9,6 +9,10 @@ tigerProxy:
   adminPort: ${free.port.201}
   proxyPort: ${free.port.200}
 
+additionalYamls:
+  - filename: tc_properties-local.yaml
+    baseKey: fed
+
 servers:
   idp:
     type: externalJar

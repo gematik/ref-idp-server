@@ -41,6 +41,7 @@ public class IdpConfiguration {
   private IdpKeyConfiguration idpEnc;
   private IdpKeyConfiguration discSig;
   private String symmetricEncryptionKey;
+  private String fedAuthEndpoint;
   private String serverUrl;
   private String issuerUrl;
   private String version;

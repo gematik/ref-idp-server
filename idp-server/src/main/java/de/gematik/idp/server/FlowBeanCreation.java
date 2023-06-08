@@ -69,10 +69,7 @@ public class FlowBeanCreation {
   @Bean
   public AuthenticationTokenBuilder authenticationTokenBuilder() {
     return new AuthenticationTokenBuilder(
-        idpSigProcessor,
-        symmetricEncryptionKey,
-        authenticationChallengeVerifier(),
-        serverUrlService.getIssuerUrl());
+        idpSigProcessor, symmetricEncryptionKey, serverUrlService.getIssuerUrl());
   }
 
   @Bean
@@ -186,6 +183,11 @@ public class FlowBeanCreation {
             .idpLogo("")
             .build());
     return theFederationIdpList;
+  }
+
+  @Bean
+  public String fedAuthEndpoint() {
+    return idpConfiguration.getFedAuthEndpoint();
   }
 
   private String getSubjectSaltValue() {

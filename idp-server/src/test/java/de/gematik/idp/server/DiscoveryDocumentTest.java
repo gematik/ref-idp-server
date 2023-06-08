@@ -18,6 +18,7 @@ package de.gematik.idp.server;
 
 import static de.gematik.idp.IdpConstants.BASIC_AUTHORIZATION_ENDPOINT;
 import static de.gematik.idp.IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT;
+import static de.gematik.idp.IdpConstants.FED_AUTH_ENDPOINT;
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -286,6 +287,16 @@ class DiscoveryDocumentTest {
   void postShouldGive405() throws UnirestException {
     assertThat(Unirest.post(testHostUrl + DISCOVERY_DOCUMENT_ENDPOINT).asString().getStatus())
         .isEqualTo(HttpStatus.SC_METHOD_NOT_ALLOWED);
+  }
+
+  @Test
+  void testValueForFederationAuthorizationEndpoint() throws UnirestException {
+    final String tokenEndpointValue =
+        extractClaimMapFromResponse(retrieveDiscoveryDocument())
+            .get("federation_authorization_endpoint")
+            .toString();
+    assertThat(tokenEndpointValue)
+        .isEqualTo("https://idpfadi.dev.gematik.solutions" + FED_AUTH_ENDPOINT);
   }
 
   private Map<String, Object> extractClaimMapFromResponse(final HttpResponse<String> httpResponse) {
