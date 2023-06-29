@@ -177,9 +177,9 @@ public class FlowBeanCreation {
     final FederationIdpList theFederationIdpList = new FederationIdpList();
     theFederationIdpList.add(
         FedIdpListEntry.builder()
-            .idpIss("idp iss")
-            .idpName("idp name")
-            .idpSek2("idp sek 2")
+            .idpIssId("https://idpfadi.dev.gematik.solutions")
+            .idpName("gematik reference authorization server")
+            .idpSek2(true)
             .idpLogo("")
             .build());
     return theFederationIdpList;

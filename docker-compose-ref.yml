@@ -58,6 +58,7 @@ services:
       SPRING_JPA_DATABASE_PLATFORM: "org.hibernate.dialect.MySQLDialect"
       SPRING_H2_CONSOLE_ENABLED: "false"
       IDP_SERVERURL: ""
+      idp.loglevel: ${serverLoglevel:-info}
       MANAGEMENT_PORT: 8180 # Spring Actuator Port
       <<: *environment-timezone-ref
     ports:

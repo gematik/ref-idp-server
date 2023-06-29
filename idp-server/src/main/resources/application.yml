@@ -237,7 +237,7 @@ management:
     web:
       exposure:
         include: "health"
-    enabled-by-default: true
+    enabled-by-default: false
   endpoint:
     health:
       enabled: true
@@ -260,10 +260,3 @@ spring:
       enabled: true
       settings:
         web-allow-others: true
-springdoc:
-  show-actuator: true
-  swagger-ui:
-    enabled: true
-    path: /swagger-ui.html
-  api-docs:
-    enabled: true

@@ -1,20 +1,25 @@
+## Disclaimer
+
+This software is not developed for productive use. It was developed to check the feasibility of the
+specification.
+
 ## Overview
 
-Das Projekt **IDP-Global** setzt sich aus verschiedenen Teilprojekten zusammen. Diese sind
+The **IDP-Global** project consists of various sub-projects. These are
 
-* **IDP-Server:** Referenzentwicklung des zentralen IDPs
-* **IDP-Client:** Client zur Beantragung von ACCESS_TOKEN mit SMC-B-Aut- oder HBA-Aut-Schlüsseln
-  beim zentralen IDP
-* **IDP-Testsuite:** Zulassungstestsuite für einen zentralen IDP, enthält auch Tests für Fast Track
-  und föderierte IDPs
+* **IDP-Server:** Reference development of the central IDP
+* **IDP-Client:** Client to request ACCESS_TOKEN with SMC-B-Aut or HBA-Aut keys
+  at the central IDP
+* **IDP-Testsuite:** Approval test suite for a central IDP, also includes tests for Fast Track
+  and federated IDPs
 
   <br>
 
-* **IDP-Sektoral:** PoC für einen sektoralen IDP im Kontext Fast Track
-* **IDP-Fedmaster:** PoC für einen Föderationsmaster im Kontext föderierte IDPs
+* **IDP-Sektoral:** PoC for a sectoral IDP in the Fast Track context
+* **IDP-Fedmaster:** PoC for a federation master in the context of federated IDPs
 
-Die letzten 3 Teilprojekte in o.s. Liste sind nicht Teil der
-Referenzimplementierung/Veröffentlichung auf github.
+The last 2 sub-projects in the list above are not part of the reference implementation published on
+github.
 
 ### Idp-Server as docker image
 
@@ -48,7 +53,8 @@ or use docker compose:
 
 ```console
 $ mvn clean install -pl idp-server -am -Dskip.unittests -Dskip.inttests
-$ export appVersion=24.0.0
+$ export appVersion=24.0.3
+$ export serverLoglevel=info (default)
 $ docker-compose --project-name myidp -f docker-compose-ref.yml up -d
 ```
 
@@ -67,7 +73,7 @@ modify entries in the scopesConfiguration section of the idp-server's applicatio
 
 disable: `-Dskip.unittests`
 
-### Integrationstests/Zulassungstests
+### Integration Testing/Approval Testing
 
 disable: `-Dskip.inttests`
 
@@ -84,4 +90,7 @@ Call all build targets always from project root ("idp-global").
 * [TokenFlow EGK](https://gematik.github.io/ref-idp-server/tokenFlowEgk.html)
 * [TokenFlow PS](https://gematik.github.io/ref-idp-server/tokenFlowPs.html)
 * [TokenFlow SSO](https://gematik.github.io/ref-idp-server/tokenFlowSso.html)
-   
+
+## Swagger
+
+find generated API at: /swagger-ui/index.html
