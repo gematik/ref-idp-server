@@ -7,12 +7,12 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>24.0.0</version>
+    <version>24.0.4</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>idp-sektoral</artifactId>
-  <version>24.0.0</version>
+  <version>24.0.4</version>
   <packaging>jar</packaging>
 
   <properties>

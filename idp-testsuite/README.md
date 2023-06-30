@@ -109,7 +109,7 @@ Es startet eine Instanz auf localhost:8080.
 
 ```console
 $ mvn clean package -pl idp-server -am
-$ java -jar ./idp-server/target/idp-server*.jar
+$ java -jar ./idp-server/target/idp-server-*.jar --idp.loglevel=debug
 ```
 
 Es startet eine Instanz auf localhost:8080.
