@@ -72,9 +72,9 @@ Feature: Fed Idp List Endpoint
     Then TGR current response at "$.body.body.fed_idp_list.0" matches as JSON:
             """
             {
-              "idp_name": "idp name",
-              "idp_iss": "idp iss",
+              "idp_name": "gematik reference authorization server",
+              "idp_iss_id": "https://idpfadi.dev.gematik.solutions",
               "idp_logo": "",
-              "idp_sek_2": "idp sek 2"
+              "idp_sek_2": true
             }
         """

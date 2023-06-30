@@ -46,6 +46,7 @@ public class IdpConfiguration {
   private String issuerUrl;
   private String version;
   private String redirectUri;
+  private String loglevel;
   private String subjectSaltValue;
   private List<String> blockedClientSystems;
   private String productTypeDisplayString;
