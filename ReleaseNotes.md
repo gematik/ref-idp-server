@@ -1,3 +1,8 @@
+# Release 24.1.0
+
+- method JsonWebToken#encrypt(Key) is deprecated
+- refactor creating an IdpJwe in JsonWebToken.class
+
 # Release 24.0.4
 
 - add security policy and disclaimer

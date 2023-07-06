@@ -118,7 +118,7 @@ class SignedChallengeValidationTest {
   @Test
   void getBasicFlowTokenLocationTest_ExpectNoError() {
     final IdpJwe encryptedChallenge =
-        getSignedChallenge().encrypt(idpEnc.getIdentity().getCertificate().getPublicKey());
+        getSignedChallenge().encryptAsNjwt(idpEnc.getIdentity().getCertificate().getPublicKey());
     assertThat(idpAuthenticator.getBasicFlowTokenLocation(encryptedChallenge)).contains("code=");
   }
 

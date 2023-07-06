@@ -32,8 +32,11 @@ import java.security.PublicKey;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.jose4j.jwe.JsonWebEncryption;
+import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwt.consumer.ErrorCodes;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
@@ -75,9 +78,43 @@ public class JsonWebToken extends IdpJoseObject {
     return new JwtBuilder().addAllBodyClaims(getBodyClaims()).addAllHeaderClaims(getHeaderClaims());
   }
 
+  /**
+   * @deprecated This method will be renamed in the next release.
+   *     <p>Use {@link #encryptAsNjwt(Key)} instead.
+   */
+  @Deprecated(since = "24.1.0", forRemoval = true)
   public IdpJwe encrypt(final Key key) {
-    return IdpJwe.createWithPayloadAndExpiryAndEncryptWithKey(
-        "{\"njwt\":\"" + getRawString() + "\"}", findExpClaimInNestedJwts(), key, "NJWT");
+    return encryptAsNjwt(key);
+  }
+
+  /**
+   * @param key encryption key
+   * @return encrypted nested JWT
+   */
+  public IdpJwe encryptAsNjwt(final Key key) {
+    final Consumer<JsonWebEncryption> setContentTypeAndExp =
+        jwe -> {
+          jwe.setHeader(ClaimName.CONTENT_TYPE.getJoseName(), "NJWT");
+          findExpClaimInNestedJwts()
+              .map(TokenClaimExtraction::zonedDateTimeToClaim)
+              .ifPresent(expValue -> jwe.setHeader(ClaimName.EXPIRES_AT.getJoseName(), expValue));
+        };
+    return IdpJwe.createJweWithPayloadAndHeaders(
+        "{\"njwt\":\"" + getRawString() + "\"}", key, setContentTypeAndExp);
+  }
+
+  /**
+   * @param key encryption key as JSON
+   * @return encrypted JWT
+   */
+  public IdpJwe encryptAsJwt(final JsonWebKey key) {
+    final Consumer<JsonWebEncryption> setContentTypeAndKid =
+        jwe -> {
+          jwe.setHeader(ClaimName.CONTENT_TYPE.getJoseName(), "JWT");
+          jwe.setHeader(ClaimName.KEY_ID.getJoseName(), key.getKeyId());
+        };
+    return IdpJwe.createJweWithPayloadAndHeaders(
+        getRawString(), key.getKey(), setContentTypeAndKid);
   }
 
   public Optional<ZonedDateTime> findExpClaimInNestedJwts() {
@@ -87,11 +124,7 @@ public class JsonWebToken extends IdpJoseObject {
     } else {
       final Optional<Object> njwtClaim = getBodyClaim(ClaimName.NESTED_JWT);
       if (njwtClaim.isPresent()) {
-        try {
-          return new JsonWebToken(njwtClaim.get().toString()).findExpClaimInNestedJwts();
-        } catch (final Exception e) {
-          return Optional.empty();
-        }
+        return new JsonWebToken(njwtClaim.get().toString()).findExpClaimInNestedJwts();
       }
       return Optional.empty();
     }

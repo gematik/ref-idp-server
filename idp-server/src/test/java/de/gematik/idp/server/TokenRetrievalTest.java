@@ -698,7 +698,7 @@ class TokenRetrievalTest {
                   .expiresAt(ZonedDateTime.now().minusSeconds(1))
                   .setSignerKey(idpSig.getIdentity().getPrivateKey())
                   .buildJwt()
-                  .encrypt(symmetricEncryptionKey);
+                  .encryptAsNjwt(symmetricEncryptionKey);
           return AuthenticationResponse.builder()
               .code(expiredAuthToken.getRawString())
               .location(authResponse.getLocation())
@@ -725,7 +725,7 @@ class TokenRetrievalTest {
             .expiresAt(ZonedDateTime.now().minusMinutes(10))
             .setSignerKey(idpSig.getIdentity().getPrivateKey())
             .buildJwt()
-            .encrypt(symmetricEncryptionKey);
+            .encryptAsNjwt(symmetricEncryptionKey);
 
     assertThatThrownBy(() -> idpClient.loginWithSsoToken(expiredSsoToken))
         .isInstanceOf(IdpClientRuntimeException.class)

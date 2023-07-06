@@ -104,11 +104,11 @@ public class TokenService {
     return TokenResponse.builder()
         .tokenType("Bearer")
         .expiresIn(300)
-        .accessToken(accessToken.encrypt(tokenKey).getRawString())
+        .accessToken(accessToken.encryptAsNjwt(tokenKey).getRawString())
         .idToken(
             idTokenBuilder
                 .buildIdToken(clientId, authenticationToken, accessToken)
-                .encrypt(tokenKey)
+                .encryptAsNjwt(tokenKey)
                 .getRawString())
         .build();
   }

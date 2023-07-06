@@ -193,7 +193,9 @@ class PairingControllerAccessTest {
 
   private String buildAccessTokenString() {
     return "Bearer "
-        + accessToken.encrypt(idpEnc.getIdentity().getCertificate().getPublicKey()).getRawString();
+        + accessToken
+            .encryptAsNjwt(idpEnc.getIdentity().getCertificate().getPublicKey())
+            .getRawString();
   }
 
   @Test

@@ -74,7 +74,7 @@ public class SsoTokenBuilder {
                 .addAllHeaderClaims(headerClaimsMap)
                 .addAllBodyClaims(bodyClaimsMap)
                 .expiresAt(issuingTime.plusHours(12)))
-        .encrypt(tokenEncryptionKey);
+        .encryptAsNjwt(tokenEncryptionKey);
   }
 
   public IdpJwe buildSsoTokenFromSektoralIdToken(
@@ -105,6 +105,6 @@ public class SsoTokenBuilder {
                 .addAllHeaderClaims(headerClaimsMap)
                 .addAllBodyClaims(bodyClaimsMap)
                 .expiresAt(issueingTime.plusHours(12)))
-        .encrypt(tokenEncryptionKey);
+        .encryptAsNjwt(tokenEncryptionKey);
   }
 }

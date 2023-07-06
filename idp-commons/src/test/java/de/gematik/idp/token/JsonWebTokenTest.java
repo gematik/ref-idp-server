@@ -35,8 +35,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.crypto.spec.SecretKeySpec;
+import lombok.SneakyThrows;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.jose4j.jwk.PublicJsonWebKey;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,6 +56,12 @@ class JsonWebTokenTest {
   private PkiIdentity identityBrainpool;
 
   private PkiIdentity identityNist;
+
+  // key from idp\idp-commons\src\test\resources\sig-nist.p12
+  private static final String JWK_AS_STRING =
+      "{\"use\": \"enc\",\"kid\": \"ref_puk_fd_enc\",\"kty\": \"EC\",\"crv\": \"P-256\",\"x\":"
+          + " \"Mq933FT_V8xd1TkfB0pH02d6cx2bmUS-bxHuBtA1yfs\",\"y\":"
+          + " \"5uwf8phUbWIi92CqgglM94ft-FC4MHH836khswo6ppo\"}";
 
   @BeforeEach
   public void setup(
@@ -142,7 +150,7 @@ class JsonWebTokenTest {
 
     assertThat(
             jsonWebToken
-                .encrypt(id.getCertificate().getPublicKey())
+                .encryptAsNjwt(id.getCertificate().getPublicKey())
                 .decryptNestedJwt(id.getPrivateKey())
                 .getBodyClaim(CONFIRMATION))
         .get()
@@ -156,7 +164,7 @@ class JsonWebTokenTest {
             new JwtBuilder()
                 .addAllBodyClaims(Map.of(CONFIRMATION.getJoseName(), ZonedDateTime.now())));
 
-    assertThat(jsonWebToken.encrypt(aesKey).getRawString())
+    assertThat(jsonWebToken.encryptAsNjwt(aesKey).getRawString())
         .matches("(?:.*\\.){4}.*"); // 5 Teile Base64
   }
 
@@ -167,7 +175,7 @@ class JsonWebTokenTest {
             new JwtBuilder()
                 .addAllBodyClaims(Map.of(CONFIRMATION.getJoseName(), ZonedDateTime.now())));
 
-    assertThat(jsonWebToken.encrypt(aesKey).getHeaderClaim(ENCRYPTION_ALGORITHM))
+    assertThat(jsonWebToken.encryptAsNjwt(aesKey).getHeaderClaim(ENCRYPTION_ALGORITHM))
         .get()
         .isEqualTo("A256GCM");
   }
@@ -179,7 +187,9 @@ class JsonWebTokenTest {
             new JwtBuilder()
                 .addAllBodyClaims(Map.of(CONFIRMATION.getJoseName(), ZonedDateTime.now())));
 
-    assertThat(jsonWebToken.encrypt(aesKey).getHeaderClaim(CONTENT_TYPE)).get().isEqualTo("NJWT");
+    assertThat(jsonWebToken.encryptAsNjwt(aesKey).getHeaderClaim(CONTENT_TYPE))
+        .get()
+        .isEqualTo("NJWT");
   }
 
   @Test
@@ -188,7 +198,8 @@ class JsonWebTokenTest {
         idpJwtProcessor.buildJwt(
             new JwtBuilder().addAllBodyClaims(Map.of(CONFIRMATION.getJoseName(), "foobarschmar")));
 
-    assertThat(jsonWebToken.encrypt(aesKey).decryptNestedJwt(aesKey).getBodyClaim(CONFIRMATION))
+    assertThat(
+            jsonWebToken.encryptAsNjwt(aesKey).decryptNestedJwt(aesKey).getBodyClaim(CONFIRMATION))
         .get()
         .isEqualTo("foobarschmar");
   }
@@ -198,7 +209,7 @@ class JsonWebTokenTest {
     final Map<String, Object> bodyClaims =
         idpJwtProcessor
             .buildJwt(new JwtBuilder().addAllBodyClaims(Map.of("foo", "bar")))
-            .encrypt(aesKey)
+            .encryptAsNjwt(aesKey)
             .setDecryptionKey(aesKey)
             .extractBodyClaims();
 
@@ -211,7 +222,7 @@ class JsonWebTokenTest {
     final Optional<Object> expHeaderClaim =
         idpJwtProcessor
             .buildJwt(new JwtBuilder().addAllBodyClaims(Map.of(EXPIRES_AT.getJoseName(), expValue)))
-            .encrypt(aesKey)
+            .encryptAsNjwt(aesKey)
             .getHeaderClaim(EXPIRES_AT);
 
     assertThat(expHeaderClaim).isPresent().get().isEqualTo(expValue);
@@ -228,9 +239,37 @@ class JsonWebTokenTest {
             .buildJwt(
                 new JwtBuilder()
                     .addAllBodyClaims(Map.of(NESTED_JWT.getJoseName(), innerJwt.getRawString())))
-            .encrypt(aesKey)
+            .encryptAsNjwt(aesKey)
             .getHeaderClaim(EXPIRES_AT);
 
     assertThat(expHeaderClaim).isPresent().get().isEqualTo(expValue);
+  }
+
+  @SneakyThrows
+  @Test
+  void encryptAsJwt_checkEncryptionHeaders() {
+    final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(JWK_AS_STRING);
+    final JsonWebToken jsonWebToken =
+        idpJwtProcessor.buildJwt(
+            new JwtBuilder().addAllBodyClaims(Map.of(CONFIRMATION.getJoseName(), "foobarschmar")));
+
+    final IdpJwe idpJwe = jsonWebToken.encryptAsJwt(jwk);
+
+    assertThat(idpJwe.getHeaderClaims().keySet()).contains("kid", "cty");
+    assertThat(idpJwe.getHeaderClaim(CONTENT_TYPE).get()).isEqualTo("JWT");
+  }
+
+  @SneakyThrows
+  @Test
+  void encryptAsJwt_checkDecryption() {
+    final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(JWK_AS_STRING);
+    final JsonWebToken jsonWebToken =
+        idpJwtProcessor.buildJwt(
+            new JwtBuilder().addAllBodyClaims(Map.of(CONFIRMATION.getJoseName(), "my plaintext")));
+
+    final IdpJwe idpJwe = jsonWebToken.encryptAsJwt(jwk);
+    final JsonWebToken plainToken = idpJwe.decryptJwt(identityNist.getPrivateKey());
+
+    assertThat(plainToken.getBodyClaim(CONFIRMATION)).contains("my plaintext");
   }
 }

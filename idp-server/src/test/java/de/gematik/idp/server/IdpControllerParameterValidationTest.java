@@ -322,7 +322,7 @@ class IdpControllerParameterValidationTest {
             .addBodyClaim(KEY_ID, "bar")
             .setSignerKey(idpSig.getIdentity().getPrivateKey())
             .buildJwt()
-            .encrypt(symmetricEncryptionKey)
+            .encryptAsNjwt(symmetricEncryptionKey)
             .getRawString();
     assertErrorResponseMatches(
         buildGetAccessTokenRequest(getInvalidationFunction("code", alteredAuthToken)),
