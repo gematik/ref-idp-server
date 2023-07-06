@@ -166,7 +166,7 @@ public class IdpClient implements IIdpClient {
                           }
                         }));
     return new JsonWebToken(signedJwt)
-        .encrypt(discoveryDocumentResponse.getIdpEnc())
+        .encryptAsNjwt(discoveryDocumentResponse.getIdpEnc())
         .getRawString();
   }
 
@@ -421,7 +421,8 @@ public class IdpClient implements IIdpClient {
                 AuthenticationRequest.builder()
                     .authenticationEndpointUrl(discoveryDocumentResponse.getAuthPairEndpoint())
                     .encryptedSignedAuthenticationData(
-                        signedAuthenticationData.encrypt(discoveryDocumentResponse.getIdpEnc()))
+                        signedAuthenticationData.encryptAsNjwt(
+                            discoveryDocumentResponse.getIdpEnc()))
                     .build(),
                 beforeAuthenticationMapper,
                 afterAuthenticationCallback));

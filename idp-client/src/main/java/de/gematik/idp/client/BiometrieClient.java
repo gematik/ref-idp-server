@@ -117,7 +117,7 @@ public class BiometrieClient {
   }
 
   private String buildAuthorizationHeader() {
-    return BEARER + accessToken.encrypt(discoveryDocumentResponse.getIdpEnc()).getRawString();
+    return BEARER + accessToken.encryptAsNjwt(discoveryDocumentResponse.getIdpEnc()).getRawString();
   }
 
   private String getPairingEndpoint() {

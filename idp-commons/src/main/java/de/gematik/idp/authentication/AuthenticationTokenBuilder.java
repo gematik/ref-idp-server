@@ -108,7 +108,7 @@ public class AuthenticationTokenBuilder {
                 .addAllBodyClaims(claimsMap)
                 .addAllHeaderClaims(headerMap)
                 .expiresAt(issueingTime.plusMinutes(1)))
-        .encrypt(encryptionKey);
+        .encryptAsNjwt(encryptionKey);
   }
 
   private Map<String, Object> extractClaimsFromCertificate(
@@ -176,7 +176,7 @@ public class AuthenticationTokenBuilder {
                 .replaceAllHeaderClaims(headerClaims)
                 .replaceAllBodyClaims(claimsMap)
                 .expiresAt(ZonedDateTime.now().plusHours(1)))
-        .encrypt(encryptionKey);
+        .encryptAsNjwt(encryptionKey);
   }
 
   public IdpJwe buildAuthenticationTokenFromSektoralIdToken(
@@ -220,7 +220,7 @@ public class AuthenticationTokenBuilder {
                 .addAllHeaderClaims(headerMap)
                 .addAllBodyClaims(claimsMap)
                 .expiresAt(ZonedDateTime.now().plusHours(1)))
-        .encrypt(encryptionKey);
+        .encryptAsNjwt(encryptionKey);
   }
 
   private Object extractClaimFromChallengeToken(

@@ -104,7 +104,7 @@ class SsoTokenValidatorTest {
                 .addAllHeaderClaims(generateHeaderClaims())
                 .addAllBodyClaims(generateBodyClaims())
                 .expiresAt(ZonedDateTime.now().minusMinutes(1)))
-        .encrypt(tokenEncryptionKey);
+        .encryptAsNjwt(tokenEncryptionKey);
   }
 
   private IdpJwe generateInvalidSsoToken() {
@@ -115,7 +115,7 @@ class SsoTokenValidatorTest {
                 .addAllHeaderClaims(generateHeaderClaims())
                 .addAllBodyClaims(generateBodyClaims())
                 .expiresAt(ZonedDateTime.now().plusMinutes(5)))
-        .encrypt(tokenEncryptionKey);
+        .encryptAsNjwt(tokenEncryptionKey);
   }
 
   private Map<String, Object> generateHeaderClaims() {

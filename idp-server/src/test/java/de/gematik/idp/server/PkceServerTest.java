@@ -142,7 +142,7 @@ class PkceServerTest {
                         .addBodyClaim(ClaimName.CODE_CHALLENGE, "wrongCodeChallengeValue")
                         .setSignerKey(idpSig.getIdentity().getPrivateKey())
                         .buildJwt()
-                        .encrypt(symmetricEncryptionKey)
+                        .encryptAsNjwt(symmetricEncryptionKey)
                         .getRawString())
                 .build());
 

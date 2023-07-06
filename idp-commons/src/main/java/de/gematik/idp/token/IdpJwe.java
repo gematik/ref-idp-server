@@ -34,6 +34,7 @@ import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -63,21 +64,20 @@ public class IdpJwe extends IdpJoseObject {
     return createWithPayloadAndExpiryAndEncryptWithKey(payload, Optional.empty(), key, contentType);
   }
 
+  /**
+   * @deprecated This method will be removed in the next release.
+   *     <p>Use {@link #createJweWithPayloadAndHeaders(String,Key, Consumer<JsonWebEncryption>)}
+   *     instead.
+   */
+  @Deprecated(since = "24.1.0", forRemoval = true)
   public static IdpJwe createWithPayloadAndExpiryAndEncryptWithKey(
       final String payload,
       final Optional<ZonedDateTime> expiryOptional,
       final Key key,
       final String contentType) {
     final JsonWebEncryption jwe = new JsonWebEncryption();
-
     jwe.setPlaintext(payload);
-    if (key instanceof PublicKey) {
-      jwe.setAlgorithmHeaderValue(KeyManagementAlgorithmIdentifiers.ECDH_ES);
-    } else {
-      jwe.setAlgorithmHeaderValue(KeyManagementAlgorithmIdentifiers.DIRECT);
-    }
-    jwe.setEncryptionMethodHeaderParameter(ContentEncryptionAlgorithmIdentifiers.AES_256_GCM);
-    jwe.setKey(key);
+    configureKeyForJwe(key, jwe);
     expiryOptional
         .map(TokenClaimExtraction::zonedDateTimeToClaim)
         .ifPresent(expValue -> jwe.setHeader(ClaimName.EXPIRES_AT.getJoseName(), expValue));
@@ -90,11 +90,39 @@ public class IdpJwe extends IdpJoseObject {
     }
   }
 
+  public static IdpJwe createJweWithPayloadAndHeaders(
+      final String payload, final Key key, final Consumer<JsonWebEncryption> setHeaderOperator) {
+    final JsonWebEncryption jwe = new JsonWebEncryption();
+    jwe.setPlaintext(payload);
+    configureKeyForJwe(key, jwe);
+    setHeaderOperator.accept(jwe);
+    try {
+      return new IdpJwe(jwe.getCompactSerialization());
+    } catch (final JoseException e) {
+      throw new IdpJoseException("Error during token encryption", e);
+    }
+  }
+
+  private static void configureKeyForJwe(final Key key, final JsonWebEncryption jwe) {
+    if (key instanceof PublicKey) {
+      jwe.setAlgorithmHeaderValue(KeyManagementAlgorithmIdentifiers.ECDH_ES);
+    } else {
+      jwe.setAlgorithmHeaderValue(KeyManagementAlgorithmIdentifiers.DIRECT);
+    }
+    jwe.setEncryptionMethodHeaderParameter(ContentEncryptionAlgorithmIdentifiers.AES_256_GCM);
+    jwe.setKey(key);
+  }
+
   public JsonWebToken decryptNestedJwt(final Key key) {
     setDecryptionKey(key);
     return new JsonWebToken(
         getStringBodyClaim(NESTED_JWT)
             .orElseThrow(() -> new IdpJoseException("Could not find njwt")));
+  }
+
+  public JsonWebToken decryptJwt(final Key key) {
+    setDecryptionKey(key);
+    return new JsonWebToken(decryptJweAndReturnPayloadString(key));
   }
 
   @Override
