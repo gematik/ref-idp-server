@@ -7,12 +7,12 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.1.1</version>
+    <version>3.1.0</version>
   </parent>
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-global</artifactId>
-  <version>24.0.4</version>
+  <version>24.0.1</version>
   <packaging>pom</packaging>
 
   <description>IDP</description>
@@ -101,7 +101,7 @@
     <version.plexus-utils>3.4.2</version.plexus-utils>
     <version.rest-assured>5.3.1</version.rest-assured>
     <version.serenity.core>3.2.4</version.serenity.core>
-    <version.tiger>2.1.1</version.tiger>
+    <version.tiger>2.0.0</version.tiger>
     <version.unirest>3.14.4</version.unirest>
 
     <version.build-helper-maven-plugin>3.4.0</version.build-helper-maven-plugin>
@@ -110,7 +110,7 @@
     <version.jacoco-maven-plugin>0.8.10</version.jacoco-maven-plugin>
     <version.jakarta.ws.rs-api>3.1.0</version.jakarta.ws.rs-api>
     <version.maven>3.8.6</version.maven>
-    <version.maven-clean-plugin>3.3.1</version.maven-clean-plugin>
+    <version.maven-clean-plugin>3.2.0</version.maven-clean-plugin>
     <version.maven-compiler-plugin>3.11.0</version.maven-compiler-plugin>
     <!-- Overwrite Version from Parent -->
     <maven-deploy-plugin.version>3.1.1</maven-deploy-plugin.version>
@@ -130,7 +130,7 @@
     <version.sonar-maven-plugin>3.9.1.2184</version.sonar-maven-plugin>
     <version.spotless-maven-plugin>2.37.0</version.spotless-maven-plugin>
     <version.spotless.google-java-format>1.15.0</version.spotless.google-java-format>
-    <version.spring-boot-maven-plugin>3.1.1</version.spring-boot-maven-plugin>
+    <version.spring-boot-maven-plugin>3.1.0</version.spring-boot-maven-plugin>
     <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
   </properties>
 

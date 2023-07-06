@@ -22,10 +22,6 @@ import jakarta.annotation.PostConstruct;
 import java.security.Security;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.util.StackLocatorUtil;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -36,7 +32,6 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
-@Slf4j
 @SpringBootApplication(scanBasePackages = {"de.gematik.idp"})
 @RequiredArgsConstructor
 public class IdpServer implements WebMvcConfigurer {
@@ -62,7 +57,6 @@ public class IdpServer implements WebMvcConfigurer {
     loggingFilter.setIncludeQueryString(true);
     loggingFilter.setIncludePayload(true);
     loggingFilter.setMaxPayloadLength(64000);
-    loggingFilter.setIncludeHeaders(true);
     return loggingFilter;
   }
 
@@ -71,18 +65,6 @@ public class IdpServer implements WebMvcConfigurer {
     if (idpConfiguration.getDefaultLocale() != null) {
       Locale.setDefault(idpConfiguration.getDefaultLocale());
     }
-  }
-
-  @PostConstruct
-  public void setIdpLogLevel() {
-    final String loggerServer = "de.gematik.idp.server";
-    final String loggerRequests = "org.springframework.web.filter.CommonsRequestLoggingFilter";
-    Configurator.setLevel(loggerServer, idpConfiguration.getLoglevel());
-    Configurator.setLevel(loggerRequests, idpConfiguration.getLoglevel());
-
-    final LoggerContext loggerContext =
-        LoggerContext.getContext(StackLocatorUtil.getCallerClassLoader(2), false, null);
-    log.info("loglevel: {}", loggerContext.getLogger(loggerServer).getLevel());
   }
 
   @Bean
