@@ -53,7 +53,7 @@ or use docker compose:
 
 ```console
 $ mvn clean install -pl idp-server -am -Dskip.unittests -Dskip.inttests
-$ export appVersion=24.1.0
+$ export appVersion=25.0.0
 $ export serverLoglevel=info (default)
 $ docker-compose --project-name myidp -f docker-compose-ref.yml up -d
 ```
