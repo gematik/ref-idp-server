@@ -54,8 +54,6 @@ public class DiscoveryDocumentController {
   private final String fedAuthEndpoint;
   private IdpJwtProcessor jwtProcessor;
 
-  private final String cacheControlDiscDoc;
-
   @Autowired private ScopeService scopeService;
 
   @PostConstruct
@@ -123,6 +121,7 @@ public class DiscoveryDocumentController {
   }
 
   private void setNoCacheHeader(final HttpServletResponse response) {
-    response.setHeader("Cache-Control", cacheControlDiscDoc);
+    response.setHeader("Cache-Control", "no-store");
+    response.setHeader("Pragma", "no-cache");
   }
 }

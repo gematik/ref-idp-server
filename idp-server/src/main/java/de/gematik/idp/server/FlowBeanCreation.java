@@ -177,10 +177,17 @@ public class FlowBeanCreation {
     final FederationIdpList theFederationIdpList = new FederationIdpList();
     theFederationIdpList.add(
         FedIdpListEntry.builder()
-            .idpIssId("https://idpfadi.dev.gematik.solutions")
-            .idpName("gematik reference authorization server")
+            .idpIssId("https://gsi.dev.gematik.solutions")
+            .idpName("gematik sektoraler IDP")
             .idpSek2(true)
-            .idpLogo("")
+            .idpLogo("https://gsi.dev.gematik.solutions/noLogoYet")
+            .build());
+    theFederationIdpList.add(
+        FedIdpListEntry.builder()
+            .idpIssId("https://web.tu.id.digital.barmer.de/")
+            .idpName("Verimi")
+            .idpSek2(true)
+            .idpLogo("https://web.verimi.de/images/verimi-logo-green.svg")
             .build());
     return theFederationIdpList;
   }

@@ -28,6 +28,7 @@ public enum ClaimName {
   ORGANIZATION_NAME("organizationName"),
   PROFESSION_OID("professionOID"),
   ID_NUMBER("idNummer"),
+  DISPLAY_NAME("display_name"),
   BIRTHDATE("birthdate"),
   TELEMATIK_ALTER("urn:telematik:claims:alter"),
   TELEMATIK_DISPLAY_NAME("urn:telematik:claims:display_name"),

@@ -75,7 +75,13 @@ class DiscoveryDocumentTest {
   @Test
   void testHttpCacheHeader() throws UnirestException {
     final HttpResponse httpResponse = retrieveDiscoveryDocument();
-    assertThat(httpResponse.getHeaders().get("Cache-Control")).isEqualTo(List.of("max-age=300"));
+    assertThat(httpResponse.getHeaders().get("Cache-Control")).isEqualTo(List.of("no-store"));
+  }
+
+  @Test
+  void testHttpPragmaHeader() throws UnirestException {
+    final HttpResponse httpResponse = retrieveDiscoveryDocument();
+    assertThat(httpResponse.getHeaders().get("Pragma")).isEqualTo(List.of("no-cache"));
   }
 
   @Afo("A_20458")

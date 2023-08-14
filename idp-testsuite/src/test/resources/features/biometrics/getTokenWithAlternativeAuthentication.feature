@@ -163,7 +163,8 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
             organizationName: "(.{1,64})",
             professionOID:    "1\\.2\\.276\\.0\\.76\\.4\\.(3\\d|4\\d|178|23[2-90]|240|241)",
             scope:            "${TESTENV.scopes_basisflow_regex}",
-            sub:              ".*"
+            sub:              ".*",
+            display_name:     "Maike Lausén"
           }
         """
 
@@ -234,7 +235,8 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
             professionOID:    "1\\.2\\.276\\.0\\.76\\.4\\.(3\\d|4\\d|178|23[2-90]|240|241)",
             organizationName: "(.{1,64})",
             sub:              ".*",
-            jti:              ".*"
+            jti:              ".*",
+            display_name:     "(.{3,129})"
            }
         """
 

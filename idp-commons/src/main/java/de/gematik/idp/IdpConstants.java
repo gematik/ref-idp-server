@@ -53,4 +53,6 @@ public final class IdpConstants {
   public static final String OPENID = "openid";
   public static final String EREZEPT = "e-rezept";
   public static final String PAIRING = "pairing";
+
+  public static final String OID_VERSICHERTER = "1.2.276.0.76.4.49";
 }

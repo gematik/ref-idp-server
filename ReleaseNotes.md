@@ -1,3 +1,11 @@
+# Release 25.0.0
+
+- deprecated method JsonWebToken#encrypt(Key) removed
+- Bump mysql to 8.0.29 to provide full development compatibility on arm64
+- builder for access and id token can now handle display name
+- fix bug that claims with value null don't appear in id_token
+- update dependencies
+
 # Release 24.1.0
 
 - method JsonWebToken#encrypt(Key) is deprecated

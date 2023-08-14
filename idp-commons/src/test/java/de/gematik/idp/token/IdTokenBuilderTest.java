@@ -17,6 +17,7 @@
 package de.gematik.idp.token;
 
 import static de.gematik.idp.IdpConstants.EREZEPT;
+import static de.gematik.idp.IdpConstants.OID_VERSICHERTER;
 import static de.gematik.idp.IdpConstants.OPENID;
 import static de.gematik.idp.IdpConstants.PAIRING;
 import static de.gematik.idp.field.ClaimName.ACCESS_TOKEN_HASH;
@@ -24,6 +25,7 @@ import static de.gematik.idp.field.ClaimName.ALGORITHM;
 import static de.gematik.idp.field.ClaimName.AUDIENCE;
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
 import static de.gematik.idp.field.ClaimName.CLIENT_ID;
+import static de.gematik.idp.field.ClaimName.DISPLAY_NAME;
 import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
 import static de.gematik.idp.field.ClaimName.FAMILY_NAME;
 import static de.gematik.idp.field.ClaimName.GIVEN_NAME;
@@ -70,7 +72,7 @@ class IdTokenBuilderTest {
   public void init(@PkiKeyResolver.Filename("authz_rsa") final PkiIdentity clientIdentity) {
     pkiIdentity = clientIdentity;
     final Map<String, Object> bodyClaims = new HashMap<>();
-    bodyClaims.put(PROFESSION_OID.getJoseName(), "profession");
+    bodyClaims.put(PROFESSION_OID.getJoseName(), OID_VERSICHERTER);
     bodyClaims.put(ORGANIZATION_NAME.getJoseName(), "organization");
     bodyClaims.put(ID_NUMBER.getJoseName(), "id_number");
     bodyClaims.put(GIVEN_NAME.getJoseName(), "given_name");
@@ -108,11 +110,12 @@ class IdTokenBuilderTest {
         .containsKey(SUBJECT.getJoseName())
         .containsKey(EXPIRES_AT.getJoseName())
         .containsKey(ISSUED_AT.getJoseName())
-        .containsEntry(PROFESSION_OID.getJoseName(), "profession")
+        .containsEntry(PROFESSION_OID.getJoseName(), OID_VERSICHERTER)
         .containsEntry(ORGANIZATION_NAME.getJoseName(), "organization")
         .containsEntry(ID_NUMBER.getJoseName(), "id_number")
         .containsEntry(GIVEN_NAME.getJoseName(), "given_name")
         .containsEntry(FAMILY_NAME.getJoseName(), "family_name")
+        .containsEntry(DISPLAY_NAME.getJoseName(), "given_name family_name")
         .containsEntry(AUDIENCE.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP)
         .containsEntry(NONCE.getJoseName(), NONCE_VALUE)
         .doesNotContainKey(JWKS_URI.getJoseName());
@@ -186,8 +189,8 @@ class IdTokenBuilderTest {
         .containsEntry(FAMILY_NAME.getJoseName(), "family_name")
         .containsEntry(NONCE.getJoseName(), NONCE_VALUE)
         .doesNotContainKey(JWKS_URI.getJoseName())
-        .doesNotContainKey(ORGANIZATION_NAME.getJoseName())
-        .doesNotContainKey(PROFESSION_OID.getJoseName());
+        .containsKey(ORGANIZATION_NAME.getJoseName())
+        .containsKey(PROFESSION_OID.getJoseName());
   }
 
   @Test
@@ -204,6 +207,67 @@ class IdTokenBuilderTest {
     assertThat(idToken.getBodyClaim(AUDIENCE))
         .get()
         .isEqualTo(TestConstants.CLIENT_ID_E_REZEPT_APP);
+  }
+
+  @Test
+  void verifyNoDisplayNameForNonEgkAndNoDisplayNameInAuthCode() {
+    final Map<String, Object> bodyClaims = new HashMap<>();
+    bodyClaims.put(PROFESSION_OID.getJoseName(), "not egk");
+    bodyClaims.put(ORGANIZATION_NAME.getJoseName(), "organization");
+    bodyClaims.put(ID_NUMBER.getJoseName(), "id_number");
+    bodyClaims.put(GIVEN_NAME.getJoseName(), "given_name");
+    bodyClaims.put(FAMILY_NAME.getJoseName(), "family_name");
+    bodyClaims.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), List.of("foo", "bar"));
+    bodyClaims.put(JWKS_URI.getJoseName(), "jwks_uri");
+    bodyClaims.put(NONCE.getJoseName(), NONCE_VALUE);
+    bodyClaims.put(CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP);
+    bodyClaims.put(SCOPE.getJoseName(), EREZEPT + " " + OPENID);
+    createIdTokenBuilder(bodyClaims);
+    final JsonWebToken idToken =
+        idTokenBuilder.buildIdToken(
+            TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, authenticationToken);
+    assertThat(idToken.getBodyClaims()).doesNotContainKey(DISPLAY_NAME.getJoseName());
+  }
+
+  @Test
+  void verifyNoDisplayNameForScopeOtherThanErezept() {
+    final Map<String, Object> bodyClaims = new HashMap<>();
+    bodyClaims.put(PROFESSION_OID.getJoseName(), OID_VERSICHERTER);
+    bodyClaims.put(ORGANIZATION_NAME.getJoseName(), "organization");
+    bodyClaims.put(ID_NUMBER.getJoseName(), "id_number");
+    bodyClaims.put(GIVEN_NAME.getJoseName(), "given_name");
+    bodyClaims.put(FAMILY_NAME.getJoseName(), "family_name");
+    bodyClaims.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), List.of("foo", "bar"));
+    bodyClaims.put(JWKS_URI.getJoseName(), "jwks_uri");
+    bodyClaims.put(NONCE.getJoseName(), NONCE_VALUE);
+    bodyClaims.put(CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP);
+    bodyClaims.put(SCOPE.getJoseName(), PAIRING + " " + OPENID);
+    createIdTokenBuilder(bodyClaims);
+    final JsonWebToken idToken =
+        idTokenBuilder.buildIdToken(
+            TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, authenticationToken);
+    assertThat(idToken.getBodyClaims()).doesNotContainKey(DISPLAY_NAME.getJoseName());
+  }
+
+  @Test
+  void verifyDisplayNameTakenFromAuthTokenClaim() {
+    final Map<String, Object> bodyClaims = new HashMap<>();
+    bodyClaims.put(PROFESSION_OID.getJoseName(), "not egk");
+    bodyClaims.put(ORGANIZATION_NAME.getJoseName(), "organization");
+    bodyClaims.put(ID_NUMBER.getJoseName(), "id_number");
+    bodyClaims.put(GIVEN_NAME.getJoseName(), "given_name");
+    bodyClaims.put(FAMILY_NAME.getJoseName(), "family_name");
+    bodyClaims.put(DISPLAY_NAME.getJoseName(), "display name");
+    bodyClaims.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), List.of("foo", "bar"));
+    bodyClaims.put(JWKS_URI.getJoseName(), "jwks_uri");
+    bodyClaims.put(NONCE.getJoseName(), NONCE_VALUE);
+    bodyClaims.put(CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP);
+    bodyClaims.put(SCOPE.getJoseName(), EREZEPT + " " + OPENID);
+    createIdTokenBuilder(bodyClaims);
+    final JsonWebToken idToken =
+        idTokenBuilder.buildIdToken(
+            TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, authenticationToken);
+    assertThat(idToken.getBodyClaim(DISPLAY_NAME)).get().isEqualTo("display name");
   }
 
   @Test

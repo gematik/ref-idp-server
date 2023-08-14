@@ -208,14 +208,14 @@ class TokenLoggerTest {
             "state",
             "Dieser Parameter wird vom Client zufällig generiert, um CSRF zu verhindern. Indem der"
                 + " Server mit diesem Wert antwortet, werden Redirects legitmiert. WICHTIG: Darf"
-                + " nicht länger als 32 Zeichen sein.",
+                + " nicht länger als 512 Zeichen sein.",
             "client_id",
             "Die Client-ID des Primärsystems wird beim Registrieren des Primärsystems beim IDP"
                 + " festgelegt.",
             "nonce",
             "String zu Verhinderung von CSRF-Attacken. Dieser Wert ist optional. Wenn er mitgegeben"
                 + " wird muss der gleiche Wert im abschließend ausgegebenen ID-Token wieder"
-                + " auftauchen. WICHTIG: Darf nicht länger als 32 Zeichen sein.",
+                + " auftauchen. WICHTIG: Darf nicht länger als 512 Zeichen sein.",
             "redirect_uri",
             "Die URL wird vom Primärsystem beim Registrierungsprozess im IDP hinterlegt und leitet"
                 + " die Antwort des Servers an diese Adresse um.",

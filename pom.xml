@@ -7,12 +7,12 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.1.1</version>
+    <version>3.1.2</version>
   </parent>
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-global</artifactId>
-  <version>24.1.0</version>
+  <version>25.0.0</version>
   <packaging>pom</packaging>
 
   <description>IDP</description>
@@ -94,18 +94,18 @@
     <version.assertj>3.24.2</version.assertj>
     <version.bouncycastle.bcpkix>1.74</version.bouncycastle.bcpkix>
     <version.commons-io>2.13.0</version.commons-io>
-    <version.gemLibPki>0.12.0</version.gemLibPki>
-    <version.h2>2.1.214</version.h2>
+    <version.gemLibPki>1.0.0</version.gemLibPki>
+    <version.h2>2.2.220</version.h2>
     <version.json>20230618</version.json>
     <version.log4j2>2.20.0</version.log4j2>
     <version.plexus-utils>3.4.2</version.plexus-utils>
     <version.rest-assured>5.3.1</version.rest-assured>
     <version.serenity.core>3.2.4</version.serenity.core>
     <version.tiger>2.1.1</version.tiger>
-    <version.unirest>3.14.4</version.unirest>
+    <version.unirest>3.14.5</version.unirest>
 
     <version.build-helper-maven-plugin>3.4.0</version.build-helper-maven-plugin>
-    <version.docker-maven-plugin>0.43.0</version.docker-maven-plugin>
+    <version.docker-maven-plugin>0.43.3</version.docker-maven-plugin>
     <version.copy-rename-maven-plugin>1.0.1</version.copy-rename-maven-plugin>
     <version.jacoco-maven-plugin>0.8.10</version.jacoco-maven-plugin>
     <version.jakarta.ws.rs-api>3.1.0</version.jakarta.ws.rs-api>
@@ -128,9 +128,9 @@
     <version.maven-surefire-plugin>3.1.2</version.maven-surefire-plugin>
     <version.nexus-staging-maven-plugin>1.6.13</version.nexus-staging-maven-plugin>
     <version.sonar-maven-plugin>3.9.1.2184</version.sonar-maven-plugin>
-    <version.spotless-maven-plugin>2.37.0</version.spotless-maven-plugin>
+    <version.spotless-maven-plugin>2.38.0</version.spotless-maven-plugin>
     <version.spotless.google-java-format>1.15.0</version.spotless.google-java-format>
-    <version.spring-boot-maven-plugin>3.1.1</version.spring-boot-maven-plugin>
+    <version.spring-boot-maven-plugin>3.1.2</version.spring-boot-maven-plugin>
     <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
   </properties>
 

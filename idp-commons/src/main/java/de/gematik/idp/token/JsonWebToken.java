@@ -79,15 +79,6 @@ public class JsonWebToken extends IdpJoseObject {
   }
 
   /**
-   * @deprecated This method will be renamed in the next release.
-   *     <p>Use {@link #encryptAsNjwt(Key)} instead.
-   */
-  @Deprecated(since = "24.1.0", forRemoval = true)
-  public IdpJwe encrypt(final Key key) {
-    return encryptAsNjwt(key);
-  }
-
-  /**
    * @param key encryption key
    * @return encrypted nested JWT
    */

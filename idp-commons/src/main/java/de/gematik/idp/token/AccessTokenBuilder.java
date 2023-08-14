@@ -16,6 +16,8 @@
 
 package de.gematik.idp.token;
 
+import static de.gematik.idp.IdpConstants.EREZEPT;
+import static de.gematik.idp.IdpConstants.OID_VERSICHERTER;
 import static de.gematik.idp.IdpConstants.OPENID;
 import static de.gematik.idp.IdpConstants.PAIRING;
 import static de.gematik.idp.field.ClaimName.AUDIENCE;
@@ -24,6 +26,7 @@ import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
 import static de.gematik.idp.field.ClaimName.AUTHORIZED_PARTY;
 import static de.gematik.idp.field.ClaimName.AUTH_TIME;
 import static de.gematik.idp.field.ClaimName.CLIENT_ID;
+import static de.gematik.idp.field.ClaimName.DISPLAY_NAME;
 import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
 import static de.gematik.idp.field.ClaimName.FAMILY_NAME;
 import static de.gematik.idp.field.ClaimName.GIVEN_NAME;
@@ -50,6 +53,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import lombok.Data;
 import lombok.SneakyThrows;
@@ -98,6 +102,19 @@ public class AccessTokenBuilder {
     if (authenticationToken.getScopesBodyClaim().contains(PAIRING)) {
       Arrays.stream(nonPairingClaims).forEach(claim -> claimsMap.remove(claim.getJoseName()));
     }
+    // for erezept in federation
+    final Optional<Object> displayName = authenticationToken.getBodyClaim(DISPLAY_NAME);
+    final Optional<Object> professionOid = authenticationToken.getBodyClaim(PROFESSION_OID);
+    if (displayName.isPresent()) {
+      claimsMap.put(DISPLAY_NAME.getJoseName(), displayName.get());
+    } else if (professionOid.isPresent()
+        && authenticationToken.getScopesBodyClaim().contains(EREZEPT)
+        && professionOid.get().equals(OID_VERSICHERTER)) {
+      claimsMap.put(
+          DISPLAY_NAME.getJoseName(),
+          claimsMap.get(GIVEN_NAME.getJoseName()) + " " + claimsMap.get(FAMILY_NAME.getJoseName()));
+    }
+
     claimsMap.put(ISSUED_AT.getJoseName(), now.toEpochSecond());
     claimsMap.put(ISSUER.getJoseName(), issuerUrl);
     claimsMap.put(AUTHENTICATION_CLASS_REFERENCE.getJoseName(), IdpConstants.EIDAS_LOA_HIGH);

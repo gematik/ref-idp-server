@@ -16,6 +16,8 @@
 
 package de.gematik.idp.token;
 
+import static de.gematik.idp.IdpConstants.EREZEPT;
+import static de.gematik.idp.IdpConstants.OID_VERSICHERTER;
 import static de.gematik.idp.field.ClaimName.ACCESS_TOKEN_HASH;
 import static de.gematik.idp.field.ClaimName.AUDIENCE;
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_CLASS_REFERENCE;
@@ -23,6 +25,7 @@ import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
 import static de.gematik.idp.field.ClaimName.AUTHORIZED_PARTY;
 import static de.gematik.idp.field.ClaimName.AUTH_TIME;
 import static de.gematik.idp.field.ClaimName.CLIENT_ID;
+import static de.gematik.idp.field.ClaimName.DISPLAY_NAME;
 import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
 import static de.gematik.idp.field.ClaimName.FAMILY_NAME;
 import static de.gematik.idp.field.ClaimName.GIVEN_NAME;
@@ -48,6 +51,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import lombok.Data;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -83,8 +87,27 @@ public class IdTokenBuilder {
 
     CLAIMS_TO_TAKE_FROM_AUTHENTICATION_TOKEN.stream()
         .map(claimName -> Pair.of(claimName, authenticationToken.getBodyClaim(claimName)))
-        .filter(pair -> pair.getValue().isPresent())
-        .forEach(pair -> claimsMap.put(pair.getKey().getJoseName(), pair.getValue().get()));
+        .forEach(
+            pair ->
+                claimsMap.put(
+                    pair.getKey().getJoseName(),
+                    pair.getValue().isPresent() ? pair.getValue().get() : null));
+
+    final Optional<Object> nonceInAuthCode = authenticationToken.getBodyClaim(NONCE);
+    nonceInAuthCode.ifPresent(o -> claimsMap.put(NONCE.getJoseName(), o));
+    // for erezept in federation
+    final Optional<Object> displayName = authenticationToken.getBodyClaim(DISPLAY_NAME);
+    final Optional<Object> professionOid = authenticationToken.getBodyClaim(PROFESSION_OID);
+    if (displayName.isPresent()) {
+      claimsMap.put(DISPLAY_NAME.getJoseName(), displayName.get());
+    } else if (professionOid.isPresent()
+        && authenticationToken.getScopesBodyClaim().contains(EREZEPT)
+        && professionOid.get().equals(OID_VERSICHERTER)) {
+      claimsMap.put(
+          DISPLAY_NAME.getJoseName(),
+          claimsMap.get(GIVEN_NAME.getJoseName()) + " " + claimsMap.get(FAMILY_NAME.getJoseName()));
+    }
+
     claimsMap.put(
         AUTHORIZED_PARTY.getJoseName(),
         authenticationToken

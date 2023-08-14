@@ -119,27 +119,89 @@ Feature: Fordere Access Token mit einer signierten Challenge an
           }
         """
     Examples: GetToken - Zertifikate zur Signatur der Challenge
-      | cert                                                        | professionOID      | idNumber                          | organisationName                                                 | family_name | given_name                |
-      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12         | 1.2.276.0.76.4.49  | X110411675                        | Test GKV-SVNOT-VALID                                             | Bödefeld    | Darius Michael Brian Ubbo |
-      | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12        | 1.2.276.0.76.4.49  | X110471380                        | Test GKV-SVNOT-VALID                                             | Burgund     | Ulrich Hans Johann von    |
-      | /certs/valid/80276883110000129068-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.54  | 3-SMC-B-Testkarte-883110000129068 | Apotheke am SportzentrumTEST-ONLY                                | Blankenberg | Dominik-Peter             |
-      | /certs/valid/80276883110000129071-C_SMCB_HCI_AUT_E256.p12   | 1.2.276.0.76.4.53  | 5-SMC-B-Testkarte-883110000129071 | Universitätsklinik MitteTEST-ONLY                                | $NULL       | $NULL                     |
-      | /certs/valid/80276883110000129074-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.52  | 1-SMC-B-Testkarte-883110000129074 | Psychotherapeutische Praxis Norbert Graf AngermännTEST-ONLY      | Angermänn   | Norbert                   |
-      | /certs/valid/80276883110000129077-C_SMCB_HCI_AUT_E256.p12   | 1.2.276.0.76.4.50  | 1-SMC-B-Testkarte-883110000129077 | Praxis Rainer Graf d' AgóstinoTEST-ONLY                          | Agóstino    | Rainer                    |
-      | /certs/valid/80276883110000129080-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.51  | 2-SMC-B-Testkarte-883110000129080 | Zahnarztpraxis Dr. Hillbert TangerðalTEST-ONLY                   | $NULL       | $NULL                     |
-      | /certs/valid/80276883110000129083-C_HP_AUT_E256.p12         | 1.2.276.0.76.4.30  | 1-HBA-Testkarte-883110000129083   | $NULL                                                            | MaiÞer      | Roland                    |
-      | /certs/valid/80276883110000129086-C_HP_AUT_R2048.p12        | 1.2.276.0.76.4.31  | 2-HBA-Testkarte-883110000129086   | $NULL                                                            | Szczyrbel   | Gustav Freiherr           |
-      | /certs/valid/80276001011699802001-C_HP_AUT_E256.p12         | 1.2.276.0.76.4.233 | 9-1-AP-AaronAal01                 | $NULL                                                            | Aal         | Aaron                     |
-      | /certs/valid/80276001011699802002-C_HP_AUT_R2048.p12        | 1.2.276.0.76.4.32  | 3-1-APO-BeaBiene02                | $NULL                                                            | Biene       | Bea                       |
-      | /certs/valid/80276001011699802003-C_HP_AUT_E256.p12         | 1.2.276.0.76.4.46  | 4-1-PSY-DianaDorsch03             | $NULL                                                            | Dorsch      | Diana                     |
-      | /certs/valid/80276001011699802004-C_HP_AUT_R2048.p12        | 1.2.276.0.76.4.235 | 9-1-HBM-EllaElster04              | $NULL                                                            | Elster      | Ella                      |
-      | /certs/valid/80276001011699901340-C_SMCB_AUT_E256_X509.p12  | 1.2.276.0.76.4.53  | 5-2-KHAUS-KOMMA-20230327          | Tolles kleines Krankenhaus, am ruhigen,erholsamen Park TEST-ONLY | $NULL       | $NULL                     |
+      | cert                                                        | professionOID      | idNumber                          | organisationName                                                 | family_name | given_name      |
+      | /certs/valid/80276883110000129068-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.54  | 3-SMC-B-Testkarte-883110000129068 | Apotheke am SportzentrumTEST-ONLY                                | Blankenberg | Dominik-Peter   |
+      | /certs/valid/80276883110000129071-C_SMCB_HCI_AUT_E256.p12   | 1.2.276.0.76.4.53  | 5-SMC-B-Testkarte-883110000129071 | Universitätsklinik MitteTEST-ONLY                                | $NULL       | $NULL           |
+      | /certs/valid/80276883110000129074-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.52  | 1-SMC-B-Testkarte-883110000129074 | Psychotherapeutische Praxis Norbert Graf AngermännTEST-ONLY      | Angermänn   | Norbert         |
+      | /certs/valid/80276883110000129077-C_SMCB_HCI_AUT_E256.p12   | 1.2.276.0.76.4.50  | 1-SMC-B-Testkarte-883110000129077 | Praxis Rainer Graf d' AgóstinoTEST-ONLY                          | Agóstino    | Rainer          |
+      | /certs/valid/80276883110000129080-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.51  | 2-SMC-B-Testkarte-883110000129080 | Zahnarztpraxis Dr. Hillbert TangerðalTEST-ONLY                   | $NULL       | $NULL           |
+      | /certs/valid/80276883110000129083-C_HP_AUT_E256.p12         | 1.2.276.0.76.4.30  | 1-HBA-Testkarte-883110000129083   | $NULL                                                            | MaiÞer      | Roland          |
+      | /certs/valid/80276883110000129086-C_HP_AUT_R2048.p12        | 1.2.276.0.76.4.31  | 2-HBA-Testkarte-883110000129086   | $NULL                                                            | Szczyrbel   | Gustav Freiherr |
+      | /certs/valid/80276001011699802001-C_HP_AUT_E256.p12         | 1.2.276.0.76.4.233 | 9-1-AP-AaronAal01                 | $NULL                                                            | Aal         | Aaron           |
+      | /certs/valid/80276001011699802002-C_HP_AUT_R2048.p12        | 1.2.276.0.76.4.32  | 3-1-APO-BeaBiene02                | $NULL                                                            | Biene       | Bea             |
+      | /certs/valid/80276001011699802003-C_HP_AUT_E256.p12         | 1.2.276.0.76.4.46  | 4-1-PSY-DianaDorsch03             | $NULL                                                            | Dorsch      | Diana           |
+      | /certs/valid/80276001011699802004-C_HP_AUT_R2048.p12        | 1.2.276.0.76.4.235 | 9-1-HBM-EllaElster04              | $NULL                                                            | Elster      | Ella            |
+      | /certs/valid/80276001011699901340-C_SMCB_AUT_E256_X509.p12  | 1.2.276.0.76.4.53  | 5-2-KHAUS-KOMMA-20230327          | Tolles kleines Krankenhaus, am ruhigen,erholsamen Park TEST-ONLY | $NULL       | $NULL           |
+
+  #noinspection NonAsciiCharacters
+  @TCID:IDP_REF_TOK_017 @PRIO:1
+    @Afo:A_20731 @Afo:A_20464 @Afo:A_20952 @Afo:A_21320 @Afo:A_21321 @Afo:A_20313
+    @Approval @Ready
+  Scenario Outline: GetTokenSigned - Gutfall - Validiere Access Token Claims für eGK
+  ```
+  Wir fordern einen Access Token an und überprüfen dass der Access Token korrekte Header und Body Claims enthält.
+
+
+    Given IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
+      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
+    And IDP I sign the challenge with '<cert>'
+    And IDP I request a code token with signed challenge successfully
+    And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
+    And IDP I request an access token
+
+    When IDP I extract the header claims from token ACCESS_TOKEN_ENCRYPTED
+    Then IDP the header claims should match in any order
+        """
+          {
+            alg: "dir",
+            enc: "A256GCM",
+            cty: "NJWT",
+            exp: "[\\d]*"
+          }
+        """
+    When IDP I extract the header claims from token ACCESS_TOKEN
+    Then IDP the header claims should match in any order
+        """
+          { alg: "BP256R1",
+            kid: "${json-unit.ignore}",
+            typ: "at+JWT"
+          }
+        """
+    When IDP I extract the body claims from token ACCESS_TOKEN
+    Then IDP the body claims should match in any order
+        """
+          { acr:              "gematik-ehealth-loa-high",
+            amr:              ["mfa", "sc", "pin"],
+            aud:              "${TESTENV.aud}",
+            auth_time:        "[\\d]*",
+            azp:              "${TESTENV.client_id}",
+            client_id:        "${TESTENV.client_id}",
+            exp:              "[\\d]*",
+            jti:              "${json-unit.ignore}",
+            family_name:      "<family_name>",
+            given_name:       "<given_name>",
+            iat:              "[\\d]*",
+            idNummer:         "<idNumber>",
+            iss:              "${TESTENV.issuer}",
+            organizationName: "<organisationName>",
+            professionOID:    "<professionOID>",
+            scope:            "${TESTENV.scopes_basisflow_regex}",
+            sub:              ".*",
+            display_name: "<displyName>"
+          }
+        """
+    Examples: GetToken - Zertifikate zur Signatur der Challenge
+      | cert                                                 | professionOID     | idNumber   | organisationName     | family_name | given_name                | displyName                         |
+      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12  | 1.2.276.0.76.4.49 | X110411675 | Test GKV-SVNOT-VALID | Bödefeld    | Darius Michael Brian Ubbo | Darius Michael Brian Ubbo Bödefeld |
+      | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12 | 1.2.276.0.76.4.49 | X110471380 | Test GKV-SVNOT-VALID | Burgund     | Ulrich Hans Johann von    | Ulrich Hans Johann von Burgund     |
 
 
   @TCID:IDP_REF_TOK_003 @PRIO:1
     @Afo:A_21321 @Afo:A_20313
     @Approval @Ready
-  Scenario Outline: GetTokenSigned - Gutfall - Validiere ID Token Claims
+  Scenario Outline: GetTokenSigned - Gutfall - Validiere ID Token Claims für eGK
   ```
   Wir fordern einen Access Token an und überprüfen dass der ID Token korrekte Header und Body Claims enthält.
 
@@ -192,13 +254,90 @@ Feature: Fordere Access Token mit einer signierten Challenge an
             professionOID:    "1\\.2\\.276\\.0\\.76\\.4\\.(3\\d|4\\d|178|23[2-90]|240|241)",
             organizationName: "(.{1,64})",
             sub:              ".*",
-            jti:              ".*"
+            jti:              ".*",
+            display_name:     "(.{3,129})"
           }
         """
     Examples: GetToken - Zertifikate zur Signatur der Challenge
       | cert                                                 |
       | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12  |
       | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12 |
+
+
+  @TCID:IDP_REF_TOK_018 @PRIO:1
+    @Afo:A_21321 @Afo:A_20313
+    @Approval @Ready
+  Scenario Outline: GetTokenSigned - Gutfall - Validiere ID Token Claims
+  ```
+  Wir fordern einen Access Token an und überprüfen dass der ID Token korrekte Header und Body Claims enthält.
+
+  -  Der at_hash Wert muss base64 URL encoded sein (enthält keine URL inkompatiblen Zeichen +/=)
+
+
+    Given IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
+      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 98765 | code          |
+    And IDP I sign the challenge with '<cert>'
+    And IDP I request a code token with signed challenge successfully
+    And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
+    And IDP I request an access token
+
+    When IDP I extract the header claims from token ID_TOKEN_ENCRYPTED
+    Then IDP the header claims should match in any order
+        """
+          {
+            alg: "dir",
+            enc: "A256GCM",
+            cty: "NJWT",
+            exp: "[\\d]*"
+          }
+        """
+    When IDP I extract the header claims from token ID_TOKEN
+    Then IDP the header claims should match in any order
+        """
+          { alg: "BP256R1",
+            kid: "${json-unit.ignore}",
+            typ: "JWT"
+          }
+        """
+    When IDP I extract the body claims from token ID_TOKEN
+    Then IDP the body claims should match in any order
+        """
+          { acr:              "gematik-ehealth-loa-high",
+            amr:              ["mfa","sc","pin"],
+            at_hash:          "[A-Za-z0-9\\-\\_]*",
+            aud:              "${TESTENV.client_id}",
+            auth_time:        "[\\d]*",
+            azp:              "${TESTENV.client_id}",
+            exp:              "[\\d]*",
+            family_name:      "<family_name>",
+            given_name:       "<given_name>",
+            iat:              "[\\d]*",
+            idNummer:         "<idNumber>",
+            iss:              "${TESTENV.issuer}",
+            nonce:            "98765",
+            professionOID:    "<professionOID>",
+            organizationName: "<organisationName>",
+            sub:              ".*",
+            jti:              ".*",
+          }
+        """
+    Examples: GetToken - Zertifikate zur Signatur der Challenge
+      | cert                                                        | professionOID      | idNumber                          | organisationName                                                 | family_name | given_name      |
+      | /certs/valid/80276883110000129068-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.54  | 3-SMC-B-Testkarte-883110000129068 | Apotheke am SportzentrumTEST-ONLY                                | Blankenberg | Dominik-Peter   |
+      | /certs/valid/80276883110000129071-C_SMCB_HCI_AUT_E256.p12   | 1.2.276.0.76.4.53  | 5-SMC-B-Testkarte-883110000129071 | Universitätsklinik MitteTEST-ONLY                                | $NULL       | $NULL           |
+      | /certs/valid/80276883110000129074-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.52  | 1-SMC-B-Testkarte-883110000129074 | Psychotherapeutische Praxis Norbert Graf AngermännTEST-ONLY      | Angermänn   | Norbert         |
+      | /certs/valid/80276883110000129077-C_SMCB_HCI_AUT_E256.p12   | 1.2.276.0.76.4.50  | 1-SMC-B-Testkarte-883110000129077 | Praxis Rainer Graf d' AgóstinoTEST-ONLY                          | Agóstino    | Rainer          |
+      | /certs/valid/80276883110000129080-C_SMCB_AUT_R2048_X509.p12 | 1.2.276.0.76.4.51  | 2-SMC-B-Testkarte-883110000129080 | Zahnarztpraxis Dr. Hillbert TangerðalTEST-ONLY                   | $NULL       | $NULL           |
+      | /certs/valid/80276883110000129083-C_HP_AUT_E256.p12         | 1.2.276.0.76.4.30  | 1-HBA-Testkarte-883110000129083   | $NULL                                                            | MaiÞer      | Roland          |
+      | /certs/valid/80276883110000129086-C_HP_AUT_R2048.p12        | 1.2.276.0.76.4.31  | 2-HBA-Testkarte-883110000129086   | $NULL                                                            | Szczyrbel   | Gustav Freiherr |
+      | /certs/valid/80276001011699802001-C_HP_AUT_E256.p12         | 1.2.276.0.76.4.233 | 9-1-AP-AaronAal01                 | $NULL                                                            | Aal         | Aaron           |
+      | /certs/valid/80276001011699802002-C_HP_AUT_R2048.p12        | 1.2.276.0.76.4.32  | 3-1-APO-BeaBiene02                | $NULL                                                            | Biene       | Bea             |
+      | /certs/valid/80276001011699802003-C_HP_AUT_E256.p12         | 1.2.276.0.76.4.46  | 4-1-PSY-DianaDorsch03             | $NULL                                                            | Dorsch      | Diana           |
+      | /certs/valid/80276001011699802004-C_HP_AUT_R2048.p12        | 1.2.276.0.76.4.235 | 9-1-HBM-EllaElster04              | $NULL                                                            | Elster      | Ella            |
+      | /certs/valid/80276001011699901340-C_SMCB_AUT_E256_X509.p12  | 1.2.276.0.76.4.53  | 5-2-KHAUS-KOMMA-20230327          | Tolles kleines Krankenhaus, am ruhigen,erholsamen Park TEST-ONLY | $NULL       | $NULL           |
+
 
   @TCID:IDP_REF_TOK_004 @PRIO:1
   @Approval @Ready

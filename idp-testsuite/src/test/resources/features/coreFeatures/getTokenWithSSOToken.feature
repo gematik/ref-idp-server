@@ -135,7 +135,8 @@ Feature: Fordere Access Token mittels SSO Token an
             organizationName: "(.{1,64})",
             professionOID:    "1\\.2\\.276\\.0\\.76\\.4\\.(3\\d|4\\d|178|23[2-90]|240|241)",
             scope:            "${TESTENV.scopes_basisflow_regex}",
-            sub:              ".*"
+            sub:              ".*",
+            display_name:     "(.{3,129})"
           }
         """
     Examples: GetToken - Zertifikate zur Signatur der Challenge
@@ -208,7 +209,8 @@ Feature: Fordere Access Token mittels SSO Token an
             organizationName: "(.{1,64})",
             professionOID:    "1\\.2\\.276\\.0\\.76\\.4\\.(3\\d|4\\d|178|23[2-90]|240|241)",
             sub:              ".*",
-            jti:              ".*"
+            jti:              ".*",
+            display_name:     "(.{3,129})"
           }
         """
     Examples: GetToken - Zertifikate zur Signatur der Challenge
