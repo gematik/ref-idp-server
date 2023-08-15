@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-@Product:IDP-D
+@PRODUKT:IDP-D
 @Biometrics
 Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
 
@@ -26,6 +26,7 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
 
   @Approval @Ready
     @TCID:IDP_REF_LIST_000 @PRIO:1
+    @TESTSTUFE:4
   Scenario Outline: Biometrie Pairingliste - Gutfall - Löschen alle Pairings vor Start der Tests
 
   ```
@@ -41,8 +42,9 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
       | /certs/valid/egk-idp-idnumber-d-valid-ecc.p12 | keyidlist201 |
 
   @Approval @Ready
-  @Afo:A_21424 @Afo:A_21450 @Afo:A_21452
+  @AFO-ID:A_21424 @AFO-ID:A_21450 @AFO-ID:A_21452
   @TCID:IDP_REF_LIST_001 @PRIO:1
+  @TESTSTUFE:4
   Scenario: Biometrie Pairingliste - Gutfall - Erzeuge einen Pairingeintrag für IDNummer und fordere Pairingliste an
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
     And IDP I create a device information token with
@@ -78,8 +80,9 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
     Then the response status is 204
 
   @Approval @Ready
-  @Afo:A_21452
+  @AFO-ID:A_21452
   @TCID:IDP_REF_LIST_002 @PRIO:1
+  @TESTSTUFE:4
   Scenario: Biometrie Pairingliste - Gutfall - Erzeuge mehrere Pairingeinträge für IDNummer und fordere Pairingliste an
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
     And IDP I create a device information token with
@@ -127,8 +130,9 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
     Then the response status is 204
 
   @Approval @Ready
-  @Afo:A_21452
-  @TCID:IDP_REF_LIST_003 @PRIO:1 @Negative
+  @AFO-ID:A_21452
+  @TCID:IDP_REF_LIST_003 @PRIO:1 @TESTFALL:Negativ
+  @TESTSTUFE:4
   Scenario: Biometrie Pairingliste - Fordere Pairingliste an für IdNummer, welche kein Pairing hat
     And IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-e-valid-ecc.p12'
     When IDP I request all pairings
@@ -141,8 +145,9 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
       """
 
   @Approval @Ready
-  @Afo:A_21442
-  @TCID:IDP_REF_LIST_004 @PRIO:1 @Negative
+  @AFO-ID:A_21442
+  @TCID:IDP_REF_LIST_004 @PRIO:1 @TESTFALL:Negativ
+  @TESTSTUFE:4
   Scenario: Biometrie Pairingliste - Fordere Pairingliste an mit eRezept Access Token
     And IDP I request an erezept access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     When IDP I request all pairings
@@ -150,8 +155,9 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
 
 
   @Approval @Ready
-  @Afo:A_21442
-  @TCID:IDP_REF_LIST_005 @PRIO:1 @Negative
+  @AFO-ID:A_21442
+  @TCID:IDP_REF_LIST_005 @PRIO:1 @TESTFALL:Negativ
+  @TESTSTUFE:4
   Scenario: Biometrie Pairingliste - Fordere Pairingliste an mit eRezept SSO Token
     And IDP I request an erezept access token via SSO token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     When IDP I request all pairings

@@ -17,14 +17,19 @@
 package de.gematik.idp.token;
 
 import de.gematik.idp.exceptions.IdpJoseException;
+import java.security.interfaces.ECPublicKey;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Objects;
+import kong.unirest.json.JSONObject;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jose4j.json.JsonUtil;
+import org.jose4j.jwk.EllipticCurveJsonWebKey;
+import org.jose4j.jwk.JsonWebKey;
+import org.jose4j.jwk.JsonWebKeySet;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
@@ -62,6 +67,29 @@ public class TokenClaimExtraction {
     } catch (final JoseException e) {
       throw new IdpJoseException(e);
     }
+  }
+
+  public static JsonWebKeySet extractJwksFromBody(final String token) {
+    final JwtConsumer jwtConsumer =
+        new JwtConsumerBuilder()
+            .setSkipSignatureVerification()
+            .setSkipDefaultAudienceValidation()
+            .setSkipAllValidators()
+            .build();
+    try {
+      final JSONObject payload =
+          new JSONObject(jwtConsumer.process(token).getJwtClaims().getRawJson());
+      return new JsonWebKeySet(payload.get("jwks").toString());
+    } catch (final InvalidJwtException | JoseException e) {
+      throw new IdpJoseException(e);
+    }
+  }
+
+  public static ECPublicKey getECPublicKey(final JsonWebKeySet jsonWebKeySet, final String keyId) {
+    final JsonWebKey jsonWebKey =
+        Objects.requireNonNull(
+            jsonWebKeySet.findJsonWebKey(keyId, null, null, null), "Key not found in jwks");
+    return ((EllipticCurveJsonWebKey) jsonWebKey).getECPublicKey();
   }
 
   public static ZonedDateTime claimToZonedDateTime(final Long claim) {

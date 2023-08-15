@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-@Product:IDP-D
+@PRODUKT:IDP-D
 @Biometrics
 Feature: Alternative Authentisierung, Anwendung am IDP Server
 
@@ -27,6 +27,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
 
   @TCID:IDP_REF_ALTAUTH_001 @PRIO:1
     @Approval
+    @TESTSTUFE:4
   Scenario Outline: Author mit alternativer Authentisierung - Gutfall - Löschen alle Pairings vor Start der Tests
 
   ```
@@ -45,9 +46,10 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth007        |
 
 
-  @Afo:A_21439 @Afo:A_21449 @Afo:A_21440
+  @AFO-ID:A_21439 @AFO-ID:A_21449 @AFO-ID:A_21440
     @TCID:IDP_REF_ALTAUTH_002 @PRIO:1
     @Approval
+    @TESTSTUFE:4
   Scenario Outline: Author mit alternativer Authentisierung - Gutfall - Validiere Antwortstruktur
 
   ```
@@ -95,9 +97,10 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | Fair Phone   | FairPhone 3 | F3      | Android | 1.0.2 f    | keyidauth001unknown |
 
 
-  @Afo:A_20731 @Afo:A_20377 @Afo:A_20697 @Afo:A_21317
+  @AFO-ID:A_20731 @AFO-ID:A_20377 @AFO-ID:A_20697 @AFO-ID:A_21317
   @Approval @RefImplOnly @PRIO:1
   @TCID:IDP_REF_ALTAUTH_003
+  @TESTSTUFE:4
   Scenario: Author mit alternativer Authentisierung - Gutfall - Validiere Location Header und Code Token Claims
 
   ```
@@ -166,9 +169,10 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
         }
         """
 
-  @Afo:A_20319
+  @AFO-ID:A_20319-01
   @Signature @Approval @RefImplOnly
   @TCID:IDP_REF_ALTAUTH_004 @PRIO:1
+  @TESTSTUFE:4
   Scenario: Author mit alternativer Authentisierung - Validiere Signatur des Code Token
 
   ```
@@ -202,9 +206,10 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
 
     Then IDP the context TOKEN_CODE must be signed with cert PUK_SIGN
 
-  @Afo:A_20695
+  @AFO-ID:A_20695-01
   @Signature @Approval @RefImplOnly
   @TCID:IDP_REF_ALTAUTH_005 @PRIO:1
+  @TESTSTUFE:4
   Scenario: Author mit alternativer Authentisierung - Validiere Signatur des SSO Token
 
   ```
@@ -245,6 +250,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     # negative cases
   @Approval
   @TCID:IDP_REF_ALTAUTH_006 @PRIO:1
+  @TESTSTUFE:4
   Scenario: Author mit alternativer Authentisierung - Pairing anlegen für Negativtests
 
   ```
@@ -262,8 +268,9 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     Then the response status is 200
 
   @Approval
-  @Afo:A_21438
-  @TCID:IDP_REF_ALTAUTH_007 @PRIO:1 @Negative
+  @AFO-ID:A_21438
+  @TCID:IDP_REF_ALTAUTH_007 @PRIO:1 @TESTFALL:Negativ
+  @TESTSTUFE:4
   Scenario: Author mit alternativer Authentisierung - Aufruf ohne Parameter encrypted_signed_authentication_data
 
   ```
@@ -282,8 +289,9 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
 
 
   @Approval
-    @Afo:A_21434
-    @TCID:IDP_REF_ALTAUTH_008 @PRIO:1 @Negative
+    @AFO-ID:A_21434
+    @TCID:IDP_REF_ALTAUTH_008 @PRIO:1 @TESTFALL:Negativ
+    @TESTSTUFE:4
   Scenario Outline: Author mit alternativer Authentisierung - fehlende Inhalte in encrypted_signed_authentication_data
 
   ```
@@ -313,8 +321,9 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth007 | $NULL                               | 2000       | access_denied |
 
   @Approval
-  @Afo:A_20699
-  @TCID:IDP_REF_ALTAUTH_009 @PRIO:1 @Negative
+  @AFO-ID:A_20699-03
+  @TCID:IDP_REF_ALTAUTH_009 @PRIO:1 @TESTFALL:Negativ
+  @TESTSTUFE:4
   Scenario: Author mit alternativer Authentisierung - fehlerhafte Challenge in encrypted_signed_authentication_data
 
   ```
@@ -339,8 +348,9 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     Then IDP the response is an 400 error with gematik code 2000 and error 'access_denied'
 
   @Approval
-  @Afo:A_21438
-  @TCID:IDP_REF_ALTAUTH_010 @PRIO:1 @Negative
+  @AFO-ID:A_21438
+  @TCID:IDP_REF_ALTAUTH_010 @PRIO:1 @TESTFALL:Negativ
+  @TESTSTUFE:4
   Scenario: Author mit alternativer Authentisierung - fehlerhafte Signatur der encrypted_signed_authentication_data
 
   ```
@@ -363,8 +373,9 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     Then IDP the response is an 400 error with gematik code 2000 and error 'access_denied'
 
   @Approval
-    @Afo:A_21434
-    @TCID:IDP_REF_ALTAUTH_011 @PRIO:1 @Negative
+    @AFO-ID:A_21434
+    @TCID:IDP_REF_ALTAUTH_011 @PRIO:1 @TESTFALL:Negativ
+    @TESTSTUFE:4
   Scenario Outline: Author mit alternativer Authentisierung - Konflikt mit zuvor registrierten Daten - falsche Inhalte in encrypted_signed_authentication_data
 
   ```

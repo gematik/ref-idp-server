@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-@Product:IDP-D
+@PRODUKT:IDP-D
 @FastTrack
 @ThirdPartyToken
 @RefImplOnly
@@ -28,8 +28,9 @@ Feature: Beantrage Token mit dem Auth Code des sektoralen IDPs
     And IDP I initialize the sektoral idp endpoints
 
 
-  @TCID:IDP_THIRD_PARTY_TOKEN_001 @PRIO:1
+  @TCID:IDP_REF_THIRDPARTYTOKEN_001 @PRIO:1
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: ThirdParty - Gutfall - Einreichen des authorization_codes beim Token endpoint, validiere Antwortstruktur
 
   ```
@@ -66,8 +67,9 @@ Feature: Beantrage Token mit dem Auth Code des sektoralen IDPs
         """
 
 
-  @TCID:IDP_THIRD_PARTY_TOKEN_002 @PRIO:1
+  @TCID:IDP_REF_THIRDPARTYTOKEN_002 @PRIO:1
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: ThirdParty - Gutfall - Einreichen des authorization_codes beim Token endpoint, ohne optinale nonce
 
   ```
@@ -104,8 +106,9 @@ Feature: Beantrage Token mit dem Auth Code des sektoralen IDPs
         """
 
 
-  @TCID:IDP_THIRD_PARTY_TOKEN_003 @PRIO:1
+  @TCID:IDP_REF_THIRDPARTYTOKEN_003 @PRIO:1
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: ThirdParty - Gutfall - Einreichen des ssotoken beim Token endpoint
   ```
   Wir fordern einen Access Token via SSO an und überprüfen dass die JSON Antwort folgende Felder enthält:

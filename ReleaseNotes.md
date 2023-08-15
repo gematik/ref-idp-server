@@ -1,3 +1,7 @@
+# Release 25.0.1
+
+- TokenClaimExtraction extended
+
 # Release 25.0.0
 
 - deprecated method JsonWebToken#encrypt(Key) removed

@@ -23,12 +23,14 @@ import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.PkiKeyResolver;
+import java.security.PublicKey;
 import java.security.Security;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.jose4j.jwk.JsonWebKeySet;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -50,6 +52,8 @@ class TokenClaimExtractionTest {
           + "XNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJ"
           + "vZmlsZSJdfX19.owSs71NCqki3X2baaZrH9bx-qu2HQb_BGKOZ6sw-2oZr27hMHuFrU9e5lJPh_THyh-XS10pEySIPYt132Tol"
           + "9g";
+  private static final String ENTITY_STMNT_ABOUT_RP_EXPIRES_IN_YEAR_2043 =
+      "eyJhbGciOiJFUzI1NiIsInR5cCI6ImVudGl0eS1zdGF0ZW1lbnQrand0Iiwia2lkIjoicHVrX2ZlZF9zaWcifQ.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjU3OTAyIiwic3ViIjoiaHR0cDovLzEyNy4wLjAuMTo4MDg0IiwiYXVkIjpudWxsLCJpYXQiOjE2Nzk1NzE4NTYsImV4cCI6MjMxMDI5MTg1NiwiandrcyI6eyJrZXlzIjpbeyJ1c2UiOiJzaWciLCJraWQiOiJwdWtfZmRfc2lnIiwia3R5IjoiRUMiLCJjcnYiOiJQLTI1NiIsIngiOiI5YkpzMjdZQWZsTVVXSzVueHVpRjZYQUcwSmF6dXZ3UmkxRXBGSzBYS2lrIiwieSI6IlA4bHpOVlJPZ1R1d2JEcXNkOHJUMUFJM3plejk0SEJzVERwT3ZhalAwclkifV19fQ.QQN5-IcTdmxg8PT5BlLT7OLlATLBI1PVFvods8dVCBd_b7m6sEOi8Y1GJp2hk08MoQatLbTvMTSVv5lqeH59hQ";
 
   static {
     Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
@@ -109,5 +113,22 @@ class TokenClaimExtractionTest {
                     .includeSignerCertificateInHeader(true));
 
     assertThat(token.getClientCertificateFromHeader()).get().isEqualTo(identity.getCertificate());
+  }
+
+  @Test
+  void readJwks() {
+    final JsonWebKeySet jwks =
+        TokenClaimExtraction.extractJwksFromBody(ENTITY_STMNT_ABOUT_RP_EXPIRES_IN_YEAR_2043);
+    assertThat(jwks.getJsonWebKeys()).hasSize(1);
+    assertThat(jwks.findJsonWebKeys("puk_fd_sig", null, null, null)).hasSize(1);
+    assertThat(jwks.findJsonWebKey("puk_fd_sig", null, null, null).getUse()).isEqualTo("sig");
+  }
+
+  @Test
+  void getPublicKeyFromJwks() {
+    final JsonWebKeySet jwks =
+        TokenClaimExtraction.extractJwksFromBody(ENTITY_STMNT_ABOUT_RP_EXPIRES_IN_YEAR_2043);
+    final PublicKey p = TokenClaimExtraction.getECPublicKey(jwks, "puk_fd_sig");
+    assertThat(p.getAlgorithm()).isEqualTo("EC");
   }
 }

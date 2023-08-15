@@ -14,15 +14,16 @@
 # limitations under the License.
 #
 
-@Product:IDP-D
+@PRODUKT:IDP-D
 @DiscoveryDocument
 Feature: Fordere Discovery Dokument an
   Frontends von TI Diensten müssen vom IDP Server über ein HTTP GET an den Discovery Endpoint ein Discovery Dokument
   abfragen können. Welches alle notwendigen Informationen enthält um die IDP Server Endpunkte bedienen zu können.
 
   @TCID:IDP_REF_DISC_001 @PRIO:1
-  @Afo:A_20457  @Afo:A_20688
+  @AFO-ID:A_20457  @AFO-ID:A_20688
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: Disc - Dokument muss verfügbar sein
 
   ```
@@ -39,8 +40,9 @@ Feature: Fordere Discovery Dokument an
     And IDP the response content type matches 'application/jwt.*'
 
   @TCID:IDP_REF_DISC_002 @PRIO:1
-  @Afo:A_20591
+  @AFO-ID:A_20591-01
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: Disc - Dokument muss signiert sein
 
   ```
@@ -56,8 +58,9 @@ Feature: Fordere Discovery Dokument an
     Then IDP the response must be signed with cert PUK_DISC
 
   @TCID:IDP_REF_DISC_003 @PRIO:1
-  @Afo:A_20591
+  @AFO-ID:A_20591-01
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: Disc - Dokument header claims sind korrekt
 
   ```
@@ -83,8 +86,9 @@ Feature: Fordere Discovery Dokument an
 
 
   @TCID:IDP_REF_DISC_004 @PRIO:1
-  @Afo:A_20698 @Afo:A_20591 @Afo:A_20439 @Afo:A_20458 @Afo:A_21429
+  @AFO-ID:A_20698 @AFO-ID:A_20591-01 @AFO-ID:A_20439 @AFO-ID:A_20458-02 @AFO-ID:A_21429-02
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: Disc - Dokument body claims sind korrekt
 
   ```
@@ -132,8 +136,9 @@ Feature: Fordere Discovery Dokument an
 
 
   @TCID:IDP_REF_DISC_005 @PRIO:2
-  @Afo:A_20698
+  @AFO-ID:A_20698
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: Disc - Zeitliche Body Claims sind korrekt
 
   ```
@@ -153,9 +158,10 @@ Feature: Fordere Discovery Dokument an
     And IDP the body claim 'exp' contains a date not after P1DT1S
 
 
-  @Afo:A_20691
+  @AFO-ID:A_20691
   @manual
   @Approval @Ready @Timeout
+  @TESTSTUFE:4
   Scenario: Disc - Prüfe Zeitliche Gültigkeit ist maximal 24h
   ```
   Ich wiederhole stündlich das Szenario 'Disc - Discovery Dokument - Zeitliche Body Claims sind korrekt'
@@ -165,8 +171,9 @@ Feature: Fordere Discovery Dokument an
 
 
   @TCID:IDP_REF_DISC_006 @PRIO:1
-  @Afo:A_20687 @Afo:A_20439
+  @AFO-ID:A_20687-01 @AFO-ID:A_20439
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: Disc - Die URLs im Dokument sind erreichbar
 
   ```
@@ -201,8 +208,9 @@ Feature: Fordere Discovery Dokument an
 
 
   @TCID:IDP_REF_DISC_007 @PRIO:1
-  @Afo:A_20732 @Afo:A_20591
+  @AFO-ID:A_20732 @AFO-ID:A_20591-01
   @Approval @Ready @OutOfScope:KeyChecksOCSP
+  @TESTSTUFE:4
   Scenario: Disc - Die idpSig URI ist erreichbar und enthält ein public X509 Zertifikat
 
   ```
@@ -230,8 +238,9 @@ Feature: Fordere Discovery Dokument an
 
 
   @TCID:IDP_REF_DISC_008 @PRIO:1
-  @Afo:A_20732
+  @AFO-ID:A_20732
   @Approval @Ready @OutOfScope:KeyChecksOCSP
+  @TESTSTUFE:4
   Scenario: Disc - Die idpEnc URI ist erreichbar und enthält einen public X509 Schlüssel
 
   ```
@@ -259,6 +268,7 @@ Feature: Fordere Discovery Dokument an
 
   @TCID:IDP_REF_DISC_009 @PRIO:1
     @Approval @Ready @OutOfScope:KeyChecksOCSP
+    @TESTSTUFE:4
   Scenario Outline: Disc - Check JWKS URI
 
   ```

@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-@Product:IDP-D
+@PRODUKT:IDP-D
 @SsoTokenFlow
 Feature: Fordere Access Token mittels SSO Token an
   Frontends von TI Diensten müssen vom IDP Server über ein HTTP POST an den Token Endpoint ein Access/SSO/ID Token abfragen können.
@@ -24,8 +24,9 @@ Feature: Fordere Access Token mittels SSO Token an
     And IDP I retrieve public keys from URIs
 
   @TCID:IDP_REF_TOK_051 @PRIO:1
-    @Afo:A_20950
+    @AFO-ID:A_20950-01
     @Approval
+    @TESTSTUFE:4
   Scenario Outline: GetTokenSSO - Gutfall - Validiere Antwortstruktur
   ```
   Wir fordern einen Access Token via SSO an und überprüfen dass die JSON Antwort folgende Felder enthält:
@@ -71,8 +72,9 @@ Feature: Fordere Access Token mittels SSO Token an
       | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12 |
 
   @TCID:IDP_REF_TOK_052 @PRIO:1
-    @Afo:A_20731 @Afo:A_20464 @Afo:A_20952 @Afo:A_20313
+    @AFO-ID:A_20731 @AFO-ID:A_20464 @AFO-ID:A_20952 @AFO-ID:A_20313-01
     @Approval
+    @TESTSTUFE:4
   Scenario Outline: GetTokenSSO - Gutfall - Validiere Access Token Claims
   ```
   Wir fordern einen Access Token via SSO an und überprüfen dass der Access Token korrekte Header und Body Claims enthält.
@@ -145,8 +147,9 @@ Feature: Fordere Access Token mittels SSO Token an
       | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12 |
 
   @TCID:IDP_REF_TOK_053 @PRIO:1
-    @Afo:A_20313
+    @AFO-ID:A_20313-01
     @Approval @Ready
+    @TESTSTUFE:4
   Scenario Outline: GetTokenSSO - Gutfall - Validiere ID Token Claims
   ```
   Wir fordern einen Access Token via SSO an und überprüfen dass der ID Token korrekte Header und Body Claims enthält.
@@ -219,9 +222,10 @@ Feature: Fordere Access Token mittels SSO Token an
       | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12 |
 
   @TCID:IDP_REF_TOK_054 @PRIO:1
-    @Afo:A_20327
+    @AFO-ID:A_20327-02
     @Approval @Ready
     @Signature
+    @TESTSTUFE:4
   Scenario Outline: GetTokenSSO - Gutfall - Validiere Signatur Access Token
   ```
   Wir fordern einen Access Token via SSO an und überprüfen, dass der Access Token mit der puk_idp_sign signiert wurde.
@@ -253,9 +257,10 @@ Feature: Fordere Access Token mittels SSO Token an
       | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12 |
 
   @TCID:IDP_REF_TOK_055 @PRIO:1
-    @Afo:A_20327
+    @AFO-ID:A_20327-02
     @Approval @Ready
     @Signature
+    @TESTSTUFE:4
   Scenario Outline: GetTokenSSO - Gutfall - Validiere Signatur ID Token
   ```
   Wir fordern einen Access Token via SSO an und überprüfen, dass der ID Token mit der puk_idp_sign signiert wurde.
@@ -290,6 +295,7 @@ Feature: Fordere Access Token mittels SSO Token an
   @TCID:IDP_REF_TOK_056 @PRIO:4
   @Approval @Ready @RefImplOnly
   @Timeout
+  @TESTSTUFE:4
   Scenario: GetTokenSSO - Speichere SSO Token für manuelle Tests
   ```
   Wir fordern einen Access Token via SSO an und speichern den SSO Token im testartefacts Verzeichnis um
@@ -308,11 +314,12 @@ Feature: Fordere Access Token mittels SSO Token an
 
 
   @TCID:IDP_REF_TOK_057 @PRIO:4
-  @Afo:A_20315 @Afo:A_20692
-  @Afo:A_20947
-  @Afo:A_20948
+  @AFO-ID:A_20315-01 @AFO-ID:A_20692-01
+  @AFO-ID:A_20947
+  @AFO-ID:A_20948-01
   @Approval
   @Timeout
+  @TESTSTUFE:4
   Scenario: GetTokenSSO - Veralteter SSO Token wird abgelehnt
   ```
   Wir laden einen veralteten SSO Token vom Dateisystem und überprüfen, dass der Server eine Anfrage für einen Access Token ablehnt.
@@ -329,9 +336,10 @@ Feature: Fordere Access Token mittels SSO Token an
     Then IDP the response is an 400 error with gematik code 2040 and error 'access_denied'
 
   @TCID:IDP_REF_TOK_058 @PRIO:3
-  @Afo:A_20315 @Afo:A_20692
+  @AFO-ID:A_20315-01 @AFO-ID:A_20692-01
   @Approval
   @Manual
+  @TESTSTUFE:4
   Scenario: GetTokenSSO - Fast veralteter SSO Token wird akzeptiert
   ```
   Wir fragen einen SSO Token an, speichern diesen und testen, dass wir auch nach 11h59m mit diesem noch immer

@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-@Product:IDP-D
+@PRODUKT:IDP-D
 @SsoTokenFlow
 Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
   Frontends von TI Diensten müssen vom IDP Server über ein HTTP POST an den Authorization Endpoint ein Code Token abfragen können.
@@ -24,8 +24,9 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
     And IDP I retrieve public keys from URIs
 
   @TCID:IDP_REF_AUTH_101 @PRIO:1
-  @Afo:A_20946 @Afo:A_20950
+  @AFO-ID:A_20946-01 @AFO-ID:A_20950-01
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: AuthorSSO - Gutfall - Validiere Antwortstruktur
 
   ```
@@ -65,8 +66,9 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
     And IDP I expect the Context with key STATE to match 'xxxstatexxx2'
 
   @TCID:IDP_REF_AUTH_102 @PRIO:1
-  @Afo:A_20946 @Afo:A_20950 @Afo:A_20377
+  @AFO-ID:A_20946-01 @AFO-ID:A_20950-01 @AFO-ID:A_20377
   @Approval @Ready @RefImplOnly
+  @TESTSTUFE:4
   Scenario: AuthorSSO - Gutfall - Validiere Location Header und Code Token Claims
 
   ```
@@ -142,10 +144,11 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
         """
 
   @TCID:IDP_REF_AUTH_103 @PRIO:1
-  @Afo:A_20319
+  @AFO-ID:A_20319-01
   @Approval @Ready
   @Signature
   @RefImplOnly
+  @TESTSTUFE:4
   Scenario: AuthorSSO - Validiere Signatur des Code Token
 
   ```
@@ -180,6 +183,7 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
   @Approval @Ready
   @Timeout
   @LongRunning
+  @TESTSTUFE:4
   Scenario: AuthorSSO - Veralteter Challenge Token wird abgelehnt
 
   ```
@@ -213,8 +217,9 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
     #
     # negative cases
 
-  @TCID:IDP_REF_AUTH_105 @PRIO:2 @Negative
+  @TCID:IDP_REF_AUTH_105 @PRIO:2 @TESTFALL:Negativ
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: AuthorSSO - Challenge Token fehlt beim SSO Token Aufruf
 
   ```
@@ -244,10 +249,11 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
     Then IDP the response is an 400 error with gematik code 2030 and error 'invalid_request'
 
 
-  @Afo:A_20948  @Afo:A_20949 @Negative
+  @AFO-ID:A_20948-01  @AFO-ID:A_20949 @TESTFALL:Negativ
   @TCID:IDP_REF_AUTH_106
   @PRIO:2
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: AuthorSSO - Anfrage mit modifiziertem SSO Token
 
   ```
@@ -280,9 +286,10 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
   @TCID:IDP_REF_AUTH_107 @PRIO:2
   @OpenBug
   @issue:IDP-659
-  @Afo:A_20588
-  @Afo:A_20589
+  @AFO-ID:A_20588-01
+  @AFO-ID:A_20589
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: Auth - Gesperrter User Agent
 
   ```

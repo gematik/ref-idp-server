@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-@Product:Sektoral-IDP
+@PRODUKT:Sektoral-IDP
 @FastTrack
 @SektoralIdp
 @RefImplOnly

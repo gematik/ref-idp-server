@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-
+@PRODUKT:IDP-D
 Feature: Authentisierung mit sektoralem IDP
 
   Die eRezept-App stößt eine Authentisierung über die IDP Föderation an
@@ -26,8 +26,9 @@ Feature: Authentisierung mit sektoralem IDP
     And TGR set local variable "tokenEndpoint" to "!{rbel:currentResponseAsString('$.body.body.token_endpoint')}"
 
 
-  @TCID:FED_IDP_AUTH_001
+  @TCID:IDP_REF_FEDAUTH_001
   @Approval
+  @TESTSTUFE:4
   Scenario: Fed Auth Endpoint - Der federation_authorization_endpoint ist erreichbar
 
   ```
@@ -43,8 +44,9 @@ Feature: Authentisierung mit sektoralem IDP
     And TGR current response with attribute "$.header.Location.request_uri.value" matches "urn.*"
 
 
-  @TCID:FED_IDP_AUTH_002
+  @TCID:IDP_REF_FEDAUTH_002
   @Approval
+  @TESTSTUFE:4
   Scenario: Fed Auth Endpoint - Authentication Request an den GSI
 
   ```
@@ -67,8 +69,9 @@ Feature: Authentisierung mit sektoralem IDP
     And TGR current response with attribute "$.header.Location.code.value" matches ".*"
 
 
-  @TCID:FED_IDP_AUTH_003
+  @TCID:IDP_REF_FEDAUTH_003
   @Approval
+  @TESTSTUFE:4
   Scenario: Fed Auth Endpoint - Auth Code des GSI beim eRezept Auth Server einreichen
 
   ```
@@ -101,8 +104,9 @@ Feature: Authentisierung mit sektoralem IDP
     And TGR current response with attribute "$.header.Location.basicPath" matches "https://redirect.gematik.de/erezept"
 
 
-  @TCID:FED_IDP_AUTH_004
+  @TCID:IDP_REF_FEDAUTH_004
   @Approval
+  @TESTSTUFE:4
   Scenario: Fed Auth Endpoint - Auth Code des eRezept Authservers beim Token Endpoint einreichen
 
   ```
@@ -149,10 +153,12 @@ Feature: Authentisierung mit sektoralem IDP
         """
 
 
-  @TCID:FED_IDP_AUTH_005
+  @TCID:IDP_REF_FEDAUTH_005
     @Approval
     @OpenBug
     @GRAS-22
+    @TESTSTUFE:4
+    @TESTFALL:Negativ
   Scenario Outline: Fed Auth Endpoint - Fehlerhafte Parameter bei GET an Federation Auth Endpoint
 
   ```
@@ -174,10 +180,12 @@ Feature: Authentisierung mit sektoralem IDP
       | eRezeptApp    | https://redirect.gematik.de/erezept | code         | openid e-rezept | https://idpfadi.dev.gematik.solutions | 400       |
 
 
-  @TCID:FED_IDP_AUTH_006
+  @TCID:IDP_REF_FEDAUTH_006
     @Approval
     @OpenBug
     @GRAS-22
+    @TESTSTUFE:4
+    @TESTFALL:Negativ
   Scenario Outline: Fed Auth Endpoint - Fehlerhafte Parameter bei POST an Federation Auth Endpoint
 
   ```

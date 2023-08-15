@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-@Product:IDP-D
+@PRODUKT:IDP-D
 @Biometrics
 @AlternativeAuth
 Feature: Alternative Authentisierung, Anwendung am IDP Server
@@ -27,6 +27,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
 
   @TCID:IDP_REF_BIOTOKEN_006 @PRIO:1
     @Approval
+    @TESTSTUFE:4
   Scenario Outline: GetToken signed authentication data - Gutfall - Löschen alle Pairings vor Start der Tests
 
   ```
@@ -42,9 +43,10 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidget003 |
 
 
-  @Afo:A_20731 @Afo:A_20464 @Afo:A_20952 @Afo:A_21320
+  @AFO-ID:A_20731 @AFO-ID:A_20464 @AFO-ID:A_20952 @AFO-ID:A_21320
   @Approval
   @TCID:IDP_REF_BIOTOKEN_007 @PRIO:1
+  @TESTSTUFE:4
   Scenario: GetToken signed authentication data - Gutfall - Validiere Antwortstruktur
 
   ```
@@ -89,9 +91,10 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
         """
 
 
-  @Afo:A_20731 @Afo:A_20464 @Afo:A_20952 @Afo:A_21320 @Afo:A_21321 @Afo:A_20524
+  @AFO-ID:A_20731 @AFO-ID:A_20464 @AFO-ID:A_20952 @AFO-ID:A_21320 @AFO-ID:A_21321 @AFO-ID:A_20524-04
   @Approval
   @TCID:IDP_REF_BIOTOKEN_008 @PRIO:1
+  @TESTSTUFE:4
   Scenario: GetToken signed pairing data - Gutfall - Check Access Token - Validiere Access Token Claims
 
   ```
@@ -168,9 +171,10 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
           }
         """
 
-  @Afo:A_21321
+  @AFO-ID:A_21321
   @Approval
   @TCID:IDP_REF_BIOTOKEN_009 @PRIO:1
+  @TESTSTUFE:4
   Scenario: GetToken signed pairing data - Gutfall - Check ID Token - Validiere ID Token Claims
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I create a device information token with

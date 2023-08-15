@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-@Product:IDP-D
+@PRODUKT:IDP-D
 @SignedChallengeFlow
 Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
   Frontends von TI Diensten müssen vom IDP Server über ein HTTP POST an den Authorization Endpoint ein Code Token abfragen können.
@@ -26,6 +26,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
 
   @TCID:IDP_REF_AUTH_051 @PRIO:1
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: AuthorChallenge - Validiere signierte Challenge mit BP256R1
 
   ```
@@ -59,6 +60,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
 
   @TCID:IDP_REF_AUTH_067 @PRIO:2
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: AuthorChallenge - Validiere signierte Challenge mit PS256
   ```
   Wir wählen einen gültigen Code verifier, fordern einen Challenge Token an und signieren diesen mit einem RSA Zertifikat.
@@ -90,8 +92,9 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
         """
 
   @TCID:IDP_REF_AUTH_052 @PRIO:1
-  @Afo:A_20699 @Afo:A_20951 @Afo:A_20693
+  @AFO-ID:A_20699-03 @AFO-ID:A_20951-01 @AFO-ID:A_20693-01
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: AuthorChallenge - Gutfall - Validiere Antwortstruktur
 
   ```
@@ -118,8 +121,9 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And IDP I expect the Context with key SSO_TOKEN_ENCRYPTED to match '.*'
 
   @TCID:IDP_REF_AUTH_053 @PRIO:2
-  @Afo:A_21472
+  @AFO-ID:A_21472
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: AuthorChallenge - Gutfall - Primärsysteme Client ohne SSO Token
 
   ```
@@ -146,8 +150,9 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And IDP I expect the Context with key SSO_TOKEN_ENCRYPTED to match '$NULL'
 
   @TCID:IDP_REF_AUTH_054 @PRIO:1
-  @Afo:A_20699 @Afo:A_20951 @Afo:A_20731 @Afo:A_20377 @Afo:A_20697 @Afo:A_21317
+  @AFO-ID:A_20699-03 @AFO-ID:A_20951-01 @AFO-ID:A_20731 @AFO-ID:A_20377 @AFO-ID:A_20697 @AFO-ID:A_21317
   @Approval @Ready @RefImplOnly
+  @TESTSTUFE:4
   Scenario: AuthorChallenge - Gutfall - Validiere Location Header und Code Token Claims
 
   ```
@@ -215,9 +220,10 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
         """
 
   @TCID:IDP_REF_AUTH_055 @PRIO:1
-  @Afo:A_20319
+  @AFO-ID:A_20319-01
   @Approval @Ready
   @Signature @RefImplOnly
+  @TESTSTUFE:4
   Scenario: AuthorChallenge - Validiere Signatur des Code Token
 
   ```
@@ -247,9 +253,10 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
         """
 
   @TCID:IDP_REF_AUTH_056 @PRIO:1
-  @Afo:A_20695
+  @AFO-ID:A_20695-01
   @Approval @Ready
   @Signature @RefImplOnly
+  @TESTSTUFE:4
   Scenario: AuthorChallenge - Validiere Signatur des SSO Token
 
   ```
@@ -269,10 +276,11 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     Then IDP the context SSO_TOKEN must be signed with cert PUK_SIGN
 
   @TCID:IDP_REF_AUTH_057 @PRIO:3
-  @Afo:A_20314
+  @AFO-ID:A_20314-01
   @Approval @Ready
   @Timeout
   @LongRunning
+  @TESTSTUFE:4
   Scenario: AuthorChallenge - Veralteter Challenge Token wird abgelehnt
 
   ```
@@ -297,8 +305,9 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
   #
   # negative cases
 
-  @TCID:IDP_REF_AUTH_058 @PRIO:2 @Negative
+  @TCID:IDP_REF_AUTH_058 @PRIO:2 @TESTFALL:Negativ
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: AuthorChallenge - Aufruf ohne Parameter
 
   ```
@@ -317,9 +326,10 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     Then IDP the response is an 400 error with gematik code 2030 and error 'invalid_request'
 
 
-  @TCID:IDP_REF_AUTH_059 @PRIO:2 @Negative
-  @Afo:A_20951
+  @TCID:IDP_REF_AUTH_059 @PRIO:2 @TESTFALL:Negativ
+  @AFO-ID:A_20951-01
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: AuthorChallenge - Challenge mit abgelaufenem Zertifikat signiert
 
   ```
@@ -338,11 +348,12 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And IDP I request a code token with signed challenge
     Then IDP the response is an 400 error with gematik code 2020 and error 'invalid_request'
 
-  @TCID:IDP_REF_AUTH_060 @PRIO:1 @Negative
-  @Afo:A_20951 @Afo:A_20318 @Afo:A_20465
+  @TCID:IDP_REF_AUTH_060 @PRIO:1 @TESTFALL:Negativ
+  @AFO-ID:A_20951-01 @AFO-ID:A_20318 @AFO-ID:A_20465
   @OutOfScope:KeyChecksOCSP
   @manual
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: AuthorChallenge - Challenge mit gesperrtem Zertifikat signiert
   ```
   Wir wählen einen gültigen Code verifier, fordern einen Challenge Token an, signieren diesen
@@ -360,9 +371,10 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
   # Then IDP the response is an 302 error with gematik code 2020 and error 'invalid_request'
 
 
-  @TCID:IDP_REF_AUTH_061 @PRIO:1 @Negative
-  @Afo:A_20951
+  @TCID:IDP_REF_AUTH_061 @PRIO:1 @TESTFALL:Negativ
+  @AFO-ID:A_20951-01
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: AuthorChallenge - Challenge mit selbst signiertem Zertifikat signiert
 
   ```
@@ -381,9 +393,10 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And IDP I request a code token with signed challenge
     Then IDP the response is an 400 error with gematik code 2020 and error 'invalid_request'
 
-  @TCID:IDP_REF_AUTH_062 @PRIO:2 @Negative
-  @Afo:A_20951
+  @TCID:IDP_REF_AUTH_062 @PRIO:2 @TESTFALL:Negativ
+  @AFO-ID:A_20951-01
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: AuthorChallenge - Fehlerhafte Signatur der SIGNED_CHALLENGE (Keine Signatur)
 
   ```
@@ -402,8 +415,9 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And IDP I request a code token with signed challenge
     Then IDP the response is an 400 error with gematik code 2031 and error 'invalid_request'
 
-  @TCID:IDP_REF_AUTH_063 @PRIO:1 @Negative
+  @TCID:IDP_REF_AUTH_063 @PRIO:1 @TESTFALL:Negativ
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: AuthorChallenge - Falscher Inhalt in der signierten Challenge
 
   ```
@@ -423,9 +437,10 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And IDP I request a code token with signed challenge
     Then IDP the response is an 400 error with gematik code 2031 and error 'invalid_request'
 
-  @TCID:IDP_REF_AUTH_064 @PRIO:2 @Negative
-  @Afo:A_20951
+  @TCID:IDP_REF_AUTH_064 @PRIO:2 @TESTFALL:Negativ
+  @AFO-ID:A_20951-01
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: AuthorChallenge - Invalide Signatur
 
   ```
@@ -447,8 +462,9 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And IDP I request a code token with signed challenge
     Then IDP the response is an 400 error with gematik code 2013 and error 'invalid_request'
 
-  @TCID:IDP_REF_AUTH_065 @PRIO:2 @Negative
+  @TCID:IDP_REF_AUTH_065 @PRIO:2 @TESTFALL:Negativ
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: AuthorChallenge - Forder Code über Signed Challenge Endpunkt mit SSO Token Parameter an
 
   ```
@@ -476,8 +492,9 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     Then IDP the response is an 400 error with gematik code 2030 and error 'invalid_request'
 
 
-  @TCID:IDP_REF_AUTH_066 @PRIO:1 @Negative
+  @TCID:IDP_REF_AUTH_066 @PRIO:1 @TESTFALL:Negativ
     @Approval @Ready
+    @TESTSTUFE:4
   Scenario Outline: AuthorChallenge - IDNummer invalid oder null
 
   ```
