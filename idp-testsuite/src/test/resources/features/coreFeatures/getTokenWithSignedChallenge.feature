@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-@Product:IDP-D
+@PRODUKT:IDP-D
 @SignedChallengeFlow
 Feature: Fordere Access Token mit einer signierten Challenge an
   Frontends von TI Diensten müssen vom IDP Server über ein HTTP POST an den Token Endpoint ein Access/SSO/ID Token abfragen können.
@@ -24,8 +24,9 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I retrieve public keys from URIs
 
   @TCID:IDP_REF_TOK_001 @PRIO:1
-    @Afo:A_20463 @Afo:A_20321
+    @AFO-ID:A_20463 @AFO-ID:A_20321-01
     @Approval @Ready
+    @TESTSTUFE:4
   Scenario Outline: GetTokenSigned - Gutfall - Validiere Antwortstruktur
   ```
   Wir fordern einen Access Token an und überprüfen dass die JSON Antwort folgende Felder enthält:
@@ -62,8 +63,9 @@ Feature: Fordere Access Token mit einer signierten Challenge an
 
   #noinspection NonAsciiCharacters
   @TCID:IDP_REF_TOK_002 @PRIO:1
-    @Afo:A_20731 @Afo:A_20464 @Afo:A_20952 @Afo:A_21320 @Afo:A_21321 @Afo:A_20313
+    @AFO-ID:A_20731 @AFO-ID:A_20464 @AFO-ID:A_20952 @AFO-ID:A_21320 @AFO-ID:A_21321 @AFO-ID:A_20313-01
     @Approval @Ready
+    @TESTSTUFE:4
   Scenario Outline: GetTokenSigned - Gutfall - Validiere Access Token Claims
   ```
   Wir fordern einen Access Token an und überprüfen dass der Access Token korrekte Header und Body Claims enthält.
@@ -135,8 +137,9 @@ Feature: Fordere Access Token mit einer signierten Challenge an
 
   #noinspection NonAsciiCharacters
   @TCID:IDP_REF_TOK_017 @PRIO:1
-    @Afo:A_20731 @Afo:A_20464 @Afo:A_20952 @Afo:A_21320 @Afo:A_21321 @Afo:A_20313
+    @AFO-ID:A_20731 @AFO-ID:A_20464 @AFO-ID:A_20952 @AFO-ID:A_21320 @AFO-ID:A_21321 @AFO-ID:A_20313-01
     @Approval @Ready
+    @TESTSTUFE:4
   Scenario Outline: GetTokenSigned - Gutfall - Validiere Access Token Claims für eGK
   ```
   Wir fordern einen Access Token an und überprüfen dass der Access Token korrekte Header und Body Claims enthält.
@@ -199,8 +202,9 @@ Feature: Fordere Access Token mit einer signierten Challenge an
 
 
   @TCID:IDP_REF_TOK_003 @PRIO:1
-    @Afo:A_21321 @Afo:A_20313
+    @AFO-ID:A_21321 @AFO-ID:A_20313-01
     @Approval @Ready
+    @TESTSTUFE:4
   Scenario Outline: GetTokenSigned - Gutfall - Validiere ID Token Claims für eGK
   ```
   Wir fordern einen Access Token an und überprüfen dass der ID Token korrekte Header und Body Claims enthält.
@@ -265,8 +269,9 @@ Feature: Fordere Access Token mit einer signierten Challenge an
 
 
   @TCID:IDP_REF_TOK_018 @PRIO:1
-    @Afo:A_21321 @Afo:A_20313
+    @AFO-ID:A_21321 @AFO-ID:A_20313-01
     @Approval @Ready
+    @TESTSTUFE:4
   Scenario Outline: GetTokenSigned - Gutfall - Validiere ID Token Claims
   ```
   Wir fordern einen Access Token an und überprüfen dass der ID Token korrekte Header und Body Claims enthält.
@@ -341,6 +346,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
 
   @TCID:IDP_REF_TOK_004 @PRIO:1
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: GetTokenSigned - Subject Claim und IdNummer sind in beiden Tokens identisch
   ```
   Wir fordern einen Access Token an und überprüfen, dass der subject claim und die Id Nummer im ID Token und im
@@ -365,6 +371,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
 
   @TCID:IDP_REF_TOK_005 @PRIO:2
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: GetTokenSigned - Subject Claim ist bei unterschiedlichen Zertifikaten unterschiedlich
   ```
   Wir fordern einen Access Token an speichern den sub claim des Access Tokens und machen eine weitere Anfrage mit
@@ -397,6 +404,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
 
   @TCID:IDP_REF_TOK_006 @PRIO:2
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: GetTokenSigned - Subject Claim ist bei unterschiedlichen Zertifikaten mit gleicher IDNummer identisch
   ```
   Wir fordern einen Access Token an speichern den sub claim des Access Tokens und machen eine weitere Anfrage mit
@@ -428,9 +436,10 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     Then IDP the body claim 'sub' should match '${VAR.access_token_sub}'
 
   @TCID:IDP_REF_TOK_007 @PRIO:1
-    @Afo:A_20327
+    @AFO-ID:A_20327-02
     @Approval @Ready
     @Signature
+    @TESTSTUFE:4
   Scenario Outline: GetTokenSigned - Gutfall - Validiere Signatur Access Token
   ```
   Wir fordern einen Access Token an und überprüfen, dass der Access Token mit der puk_idp_sign signiert wurde.
@@ -452,9 +461,10 @@ Feature: Fordere Access Token mit einer signierten Challenge an
       | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12 |
 
   @TCID:IDP_REF_TOK_008 @PRIO:1
-    @Afo:A_20327
+    @AFO-ID:A_20327-02
     @Approval @Ready
     @Signature
+    @TESTSTUFE:4
   Scenario Outline: GetTokenSigned - Gutfall - Validiere Signatur ID Token
   ```
   Wir fordern einen Access Token an und überprüfen, dass der ID Token mit der puk_idp_sign signiert wurde.
@@ -477,9 +487,10 @@ Feature: Fordere Access Token mit einer signierten Challenge an
 
 
   @TCID:IDP_REF_TOK_009 @PRIO:2
-  @Afo:A_20314 @Afo:A_20315
+  @AFO-ID:A_20314-01 @AFO-ID:A_20315-01
   @Approval @Ready @LongRunning
   @Timeout
+  @TESTSTUFE:4
   Scenario: GetTokenSigned - Veralteter Access Token code wird abgelehnt
   ```
   Wir fordern einen Token Code an, warten dann 1 Minute und prüfen, dass der Server eine Access Token Anfrage mit einer
@@ -497,8 +508,9 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I request an access token
     Then IDP the response is an 400 error with gematik code 3011 and error 'invalid_grant'
 
-  @TCID:IDP_REF_TOK_010 @PRIO:2 @Negative
+  @TCID:IDP_REF_TOK_010 @PRIO:2 @TESTFALL:Negativ
     @Approval @Ready
+    @TESTSTUFE:4
   Scenario Outline: GetTokenSigned - Null Parameter
   ```
   Wir fordern einen Access Token mit einer Anfrage an, in welcher je ein Parameter null gesetzt ist.
@@ -525,8 +537,9 @@ Feature: Fordere Access Token mit einer signierten Challenge an
       | 3004   | invalid_request | authorization_code | ${TESTENV.redirect_uri} | $CONTEXT             | $NULL                      | ${TESTENV.client_id} |
       | 1002   | invalid_request | authorization_code | ${TESTENV.redirect_uri} | $CONTEXT             | ${TESTENV.code_verifier01} | $NULL                |
 
-  @TCID:IDP_REF_TOK_011 @PRIO:2 @Negative
+  @TCID:IDP_REF_TOK_011 @PRIO:2 @TESTFALL:Negativ
     @Approval @Ready
+    @TESTSTUFE:4
   Scenario Outline: GetTokenSigned - Fehlende Parameter
   ```
   Wir fordern einen Access Token mit einer Anfrage an, in welcher je ein Parameter fehlt.
@@ -553,8 +566,9 @@ Feature: Fordere Access Token mit einer signierten Challenge an
       | 1002   | invalid_request | authorization_code | ${TESTENV.redirect_uri} | $CONTEXT             | ${TESTENV.code_verifier01} | $REMOVE              |
 
   #noinspection NonAsciiCharacters
-  @TCID:IDP_REF_TOK_012 @PRIO:1 @Negative
+  @TCID:IDP_REF_TOK_012 @PRIO:1 @TESTFALL:Negativ
     @Approval @Ready
+    @TESTSTUFE:4
   Scenario Outline: GetTokenSigned - Ungültige Parameter
   ```
   Wir fordern einen Access Token mit einer Anfrage an, in welcher ein Parameter ungültig ist.
@@ -580,8 +594,9 @@ Feature: Fordere Access Token mit einer signierten Challenge an
       | 3016   | invalid_request        | authorization_code | ${TESTENV.redirect_uri}        | $CONTEXT                                                                                                                                                  | Was war das für ein Zaubertraum, der sich in meine Seele glückt? An Tannen gehn die Lichter an und immer weiter wird der Raum. | ${TESTENV.client_id} |
       | 3007   | invalid_client         | authorization_code | ${TESTENV.redirect_uri}        | $CONTEXT                                                                                                                                                  | ${TESTENV.code_verifier01}                                                                                                     | shadows              |
 
-  @TCID:IDP_REF_TOK_013 @PRIO:2 @Negative
+  @TCID:IDP_REF_TOK_013 @PRIO:2 @TESTFALL:Negativ
     @Approval @Ready
+    @TESTSTUFE:4
   Scenario Outline: GetTokenSigned - Access Token Ungültige User Consent Inhalte im Zertifikat
   ```
   Wir signieren eine Challenge mit einem Zertifikate, welches ungültige Einträge beim User Consent hat.
@@ -608,8 +623,9 @@ Feature: Fordere Access Token mit einer signierten Challenge an
 #      | /certs/invalid/egk-idp-profid-invoid2-ecc.p12      | #
       | /certs/invalid/egk-idp-orgname-toolong-ecc.p12     |
 
-  @TCID:IDP_REF_TOK_015 @PRIO:2 @Negative
+  @TCID:IDP_REF_TOK_015 @PRIO:2 @TESTFALL:Negativ
     @Approval @Ready
+    @TESTSTUFE:4
   Scenario Outline: GetTokenSigned - Access Token User Consent Inhalte des Zertifikats sind null
   ```
   Wir signieren eine Challenge mit einem Zertifikate, welches ungültige Null Einträge beim User Consent hat.
@@ -634,8 +650,9 @@ Feature: Fordere Access Token mit einer signierten Challenge an
       | /certs/invalid/egk-idp-profid-null-ecc.p12    |
 
 
-  @TCID:IDP_REF_TOK_016 @PRIO:2 @Negative
+  @TCID:IDP_REF_TOK_016 @PRIO:2 @TESTFALL:Negativ
     @Approval @Ready
+    @TESTSTUFE:4
   Scenario Outline: GetTokenSigned - ID Token User Consent Inhalte des Zertifikats sind null
   ```
   Wir signieren eine Challenge mit einem Zertifikate, welches ungültige Null Einträge beim User Consent hat.

@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-@Product:IDP-D
+@PRODUKT:IDP-D
 @Biometrics
 Feature: Fordere Access Token für Pairing an
   Frontends müssen mit einer eGK einen pairing Access/SSO/ID Token für den Zugriff auf die Pairing-Schnittstelle des IDP bekommen.
@@ -24,8 +24,9 @@ Feature: Fordere Access Token für Pairing an
     And IDP I retrieve public keys from URIs
 
   @Approval
-  @Afo:A_20698
+  @AFO-ID:A_20698
   @TCID:IDP_REF_BIOTOKEN_001 @PRIO:1
+  @TESTSTUFE:4
   Scenario: Biometrie Auth - Gutfall - Fordere Challenge für Pairing an
 
   ```
@@ -93,9 +94,10 @@ Feature: Fordere Access Token für Pairing an
               }
             """
 
-  @Afo:A_20699 @Afo:A_20951
+  @AFO-ID:A_20699-03 @AFO-ID:A_20951-01
   @Approval
   @TCID:IDP_REF_BIOTOKEN_002 @PRIO:1
+  @TESTSTUFE:4
   Scenario: Biometrie Author mit signierter Challenge - Gutfall - Validiere Antwortstruktur
 
   ```
@@ -123,9 +125,10 @@ Feature: Fordere Access Token für Pairing an
     And IDP I expect the Context with key STATE to match 'xxxstatexxx'
     And IDP I expect the Context with key SSO_TOKEN_ENCRYPTED to match '.*'
 
-  @Afo:A_20731 @Afo:A_20464 @Afo:A_20952 @Afo:A_21410
+  @AFO-ID:A_20731 @AFO-ID:A_20464 @AFO-ID:A_20952 @AFO-ID:A_21410
   @Approval
   @TCID:IDP_REF_BIOTOKEN_003 @PRIO:1
+  @TESTSTUFE:4
   Scenario: Biometrie GetToken mit signierter Challenge - Gutfall - Validiere Access Token Claims
     Given IDP I choose code verifier '${TESTENV.code_verifier01}'
     And IDP I request a challenge with
@@ -163,9 +166,10 @@ Feature: Fordere Access Token für Pairing an
           }
         """
 
-  @Afo:A_20699 @Afo:A_20951
+  @AFO-ID:A_20699-03 @AFO-ID:A_20951-01
   @Approval
   @TCID:IDP_REF_BIOTOKEN_004 @PRIO:1
+  @TESTSTUFE:4
   Scenario: Biometrie Author mit SSO Token - Gutfall - Validiere Antwortstruktur
 
   ```
@@ -203,9 +207,10 @@ Feature: Fordere Access Token für Pairing an
     And IDP I expect the Context with key STATE to match 'xxxstatexxx'
     And IDP I expect the Context with key SSO_TOKEN to match '$NULL'
 
-  @Afo:A_20731 @Afo:A_20464 @Afo:A_20952
+  @AFO-ID:A_20731 @AFO-ID:A_20464 @AFO-ID:A_20952
   @Approval
   @TCID:IDP_REF_BIOTOKEN_005 @PRIO:1
+  @TESTSTUFE:4
   Scenario: Biometrie GetToken mit SSO Token - Gutfall - Validiere Access Token Claims
 
 

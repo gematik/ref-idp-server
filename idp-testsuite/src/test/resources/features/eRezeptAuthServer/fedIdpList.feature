@@ -15,6 +15,7 @@
 #
 
 @FedIdpList
+@PRODUKT:IDP-D
 Feature: Fed Idp List Endpoint
 
   Die eRezept-App stößt eine Authentisierung über die IDP Föderation an
@@ -24,8 +25,9 @@ Feature: Fed Idp List Endpoint
     And TGR find request to path "/.well-known/openid-configuration"
     And TGR set local variable "fed_list_endpoint" to "!{rbel:currentResponseAsString('$.body.body.fed_idp_list_uri')}"
 
-  @TCID:FED_IDP_LIST_001
+  @TCID:IDP_REF_FEDLIST_001
   @Approval
+  @TESTSTUFE:4
   Scenario: Fed Idp List - Die fed_idp_list_uri ist erreichbar
 
   ```
@@ -38,8 +40,9 @@ Feature: Fed Idp List Endpoint
     And TGR current response with attribute "$.header.Content-Type" matches "application/jwt.*"
 
 
-  @TCID:FED_IDP_LIST_002
+  @TCID:IDP_REF_FEDLIST_002
   @Approval
+  @TESTSTUFE:4
   Scenario: Fed Idp List - Die fed_idp_list_uri hat korrekte Header Claims
 
   ```
@@ -59,8 +62,9 @@ Feature: Fed Idp List Endpoint
         """
 
 
-  @TCID:FED_IDP_LIST_003
+  @TCID:IDP_REF_FEDLIST_003
   @Approval
+  @TESTSTUFE:4
   Scenario: Fed Idp List - Die fed_idp_list_uri hat korrekte Body Claims
 
   ```

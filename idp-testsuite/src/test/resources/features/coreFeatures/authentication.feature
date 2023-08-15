@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-@Product:IDP-D
+@PRODUKT:IDP-D
 @Authentication
 Feature: Authentifiziere Anwendung am IDP Server
 
@@ -25,8 +25,9 @@ Feature: Authentifiziere Anwendung am IDP Server
     And IDP I retrieve public keys from URIs
 
   @TCID:IDP_REF_AUTH_001 @PRIO:1
-  @Afo:A_20698  @Afo:A_20523
+  @AFO-ID:A_20698  @AFO-ID:A_20523
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: Auth - Gutfall - Validiere Antwortstruktur
 
   ```
@@ -73,8 +74,9 @@ Feature: Authentifiziere Anwendung am IDP Server
         """
 
   @TCID:IDP_REF_AUTH_002 @PRIO:1
-  @Afo:A_20376 @Afo:A_20521 @Afo:A_20377
+  @AFO-ID:A_20376 @AFO-ID:A_20521-02 @AFO-ID:A_20377
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: Auth - Gutfall - Validiere Claims
 
   ```
@@ -123,6 +125,7 @@ Feature: Authentifiziere Anwendung am IDP Server
 
   @TCID:IDP_REF_AUTH_003 @PRIO:2
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: Auth - Anfrage Parameter nonce optional
 
   ```
@@ -159,8 +162,9 @@ Feature: Authentifiziere Anwendung am IDP Server
 
 
   @TCID:IDP_REF_AUTH_004 @PRIO:1
-  @Afo:A_20604
+  @AFO-ID:A_20604
   @Approval @Ready @Signature
+  @TESTSTUFE:4
   Scenario: Auth - Validiere Signatur der Challenge
 
   ```
@@ -176,9 +180,10 @@ Feature: Authentifiziere Anwendung am IDP Server
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | code          |
     Then IDP the context CHALLENGE must be signed with cert PUK_SIGN
 
-  @TCID:IDP_REF_AUTH_005 @PRIO:2 @Negative
-    @Afo:A_20698 @Afo:A_20440
+  @TCID:IDP_REF_AUTH_005 @PRIO:2 @TESTFALL:Negativ
+    @AFO-ID:A_20698 @AFO-ID:A_20440-01
     @Approval @Ready
+    @TESTSTUFE:4
   Scenario Outline: Auth - Fehlende Parameter
 
   ```
@@ -205,9 +210,10 @@ Feature: Authentifiziere Anwendung am IDP Server
       | 302       | 2004   | invalid_request | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | $REMOVE       |
       # nonce is not mandatory so no example here
 
-  @TCID:IDP_REF_AUTH_006 @PRIO:2 @Negative
-    @Afo:A_20440
+  @TCID:IDP_REF_AUTH_006 @PRIO:2 @TESTFALL:Negativ
+    @AFO-ID:A_20440-01
     @Approval @Ready
+    @TESTSTUFE:4
   Scenario Outline: Auth - Null Parameter
 
   ```
@@ -233,9 +239,10 @@ Feature: Authentifiziere Anwendung am IDP Server
       | 302         | 2002   | invalid_request | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | $NULL       | 123456789 | code          |
       | 302         | 2004   | invalid_request | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | $NULL         |
 
-  @TCID:IDP_REF_AUTH_007 @PRIO:1 @Negative
-    @Afo:A_20440
+  @TCID:IDP_REF_AUTH_007 @PRIO:1 @TESTFALL:Negativ
+    @AFO-ID:A_20440-01
     @Approval @Ready
+    @TESTSTUFE:4
   Scenario Outline: Auth - Ungültige Parameter
 
   ```
@@ -275,6 +282,7 @@ Feature: Authentifiziere Anwendung am IDP Server
   #bei diesem Test sind keine Afos verlinkt, weil es dazu keine Afos/RFCs gibt. Die Vorgabe kommt aus dem Umsetzungskonzept von RISE
   @TCID:IDP_REF_AUTH_008 @PRIO:2
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: Auth - Parameter state und nonce mit maximaler Länge
 
   ```
@@ -292,8 +300,9 @@ Feature: Authentifiziere Anwendung am IDP Server
 
 
       #bei diesem Test sind keine Afos verlinkt, weil es dazu keine Afos/RFCs gibt. Die Vorgabe kommt aus dem Umsetzungskonzept von RISE
-  @TCID:IDP_REF_AUTH_009 @PRIO:2 @Negative
+  @TCID:IDP_REF_AUTH_009 @PRIO:2 @TESTFALL:Negativ
     @Approval @Ready
+    @TESTSTUFE:4
   Scenario Outline: Auth - Parameter state und nonce zu lang - More
 
   ```
@@ -316,6 +325,7 @@ Feature: Authentifiziere Anwendung am IDP Server
 
   @TCID:IDP_REF_AUTH_010 @PRIO:1
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: Auth - Parameter State, Nonce mit maximaler Laenge
 
   ```

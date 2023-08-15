@@ -15,7 +15,7 @@
 #
 
 
-@Product:IDP-D
+@PRODUKT:IDP-D
 @Biometrics
 @Blocklist
 Feature: Blocklist für Registrierung und alternative Authentisierung am IDP Server
@@ -29,6 +29,7 @@ Feature: Blocklist für Registrierung und alternative Authentisierung am IDP Ser
 
   @Approval @Ready
     @TCID:IDP_REF_BLOCK_001 @PRIO:1
+    @TESTSTUFE:4
   Scenario Outline: Blocklist - Gutfall - Löschen alle Pairings vor Start der Tests
 
   ```
@@ -52,9 +53,10 @@ Feature: Blocklist für Registrierung und alternative Authentisierung am IDP Ser
       | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidblock011 |
       | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidblock012 |
 
-  @Afo:A_21423
+  @AFO-ID:A_21423
   @TCID:IDP_REF_BLOCK_002
   @Approval @PRIO:1
+  @TESTSTUFE:4
   Scenario: Blocklist - Gutfall - Ablehnen der Registriere eines geblockten Geräts
 
   ```
@@ -73,9 +75,10 @@ Feature: Blocklist für Registrierung und alternative Authentisierung am IDP Ser
     Then IDP the response is an 400 error with gematik code 4002 and error 'access_denied'
 
 
-  @Afo:A_21404
+  @AFO-ID:A_21404
     @TCID:IDP_REF_BLOCK_003
     @Approval @Ready @PRIO:1
+    @TESTSTUFE:4
   Scenario Outline: Blocklist - Gutfall - Registrieren eines nicht geblockten Geräts
 
   ```
@@ -111,9 +114,10 @@ Feature: Blocklist für Registrierung und alternative Authentisierung am IDP Ser
       | Google       | Pixel 2 | Pixel 2 | Android        | 11.0.1     | keyidblock006 |
 
 
-  @Afo:A_21423
+  @AFO-ID:A_21423
   @TCID:IDP_REF_BLOCK_004
   @Approval @PRIO:1
+  @TESTSTUFE:4
   Scenario: Blocklist - Gutfall - Ablehnung von alternativer Authentisierung mit geblocktem Gerät
 
   ```
@@ -145,9 +149,10 @@ Feature: Blocklist für Registrierung und alternative Authentisierung am IDP Ser
     Then IDP the response is an 400 error with gematik code 2000 and error 'access_denied'
 
 
-  @Afo:A_21404
+  @AFO-ID:A_21404
     @TCID:IDP_REF_BLOCK_005
     @Approval @Ready @PRIO:1
+    @TESTSTUFE:4
   Scenario Outline: Blocklist - Gutfall - alternativer Authentisierung mit nicht geblocktem Gerät
 
   ```

@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-@Product:IDP-D
+@PRODUKT:IDP-D
 @Biometrics
 Feature: Deregistrierung für Alternative Authentisierung am IDP Server
 
@@ -27,6 +27,7 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
 
   @TCID:IDP_REF_DEREG_001
     @Approval @PRIO:1
+    @TESTSTUFE:4
   Scenario Outline: GetToken signed authentication data - Gutfall - Löschen alle Pairings vor Start der Tests
 
   ```
@@ -45,8 +46,9 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
 
 
   @Approval @Ready
-  @Afo:A_21447
+  @AFO-ID:A_21447
   @TCID:IDP_REF_DEREG_002 @PRIO:1
+  @TESTSTUFE:4
   Scenario: Biometrie Deregister - Gutfall - Erzeuge Pairing und lösche dieses wieder
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I create a device information token with
@@ -63,8 +65,9 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
 
 
   @Approval @Ready
-  @Afo:A_21447
+  @AFO-ID:A_21447
   @TCID:IDP_REF_DEREG_003 @PRIO:1
+  @TESTSTUFE:4
   Scenario: Biometrie Deregister - Gutfall - Erzeuge mehrere Pairings und lösche nur eines
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     And IDP I create a device information token with
@@ -102,8 +105,9 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
       """
 
   @Approval @Ready
-  @Afo:A_21447 @Afo:A_21448
-  @TCID:IDP_REF_DEREG_004 @PRIO:1 @Negative
+  @AFO-ID:A_21447 @AFO-ID:A_21448
+  @TCID:IDP_REF_DEREG_004 @PRIO:1 @TESTFALL:Negativ
+  @TESTSTUFE:4
   Scenario: Biometrie Deregister - Lösche Pairing für nicht existenten key identifier
 
   ```
@@ -115,8 +119,9 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
     Then IDP the response is an 400 error with gematik code 4000 and error 'invalid_request'
 
   @Approval @Ready
-  @Afo:A_21448
-  @TCID:IDP_REF_DEREG_005 @PRIO:1  @Negative
+  @AFO-ID:A_21448
+  @TCID:IDP_REF_DEREG_005 @PRIO:1  @TESTFALL:Negativ
+  @TESTSTUFE:4
   Scenario: Biometrie Deregister - Lösche Pairing für key identifier einer anderen IDNummer
 
   ```
@@ -140,8 +145,9 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
   # So nicht testbar, da kein access token angefordert werden kann
 
   @Approval @Ready
-  @Afo:A_21442
-  @TCID:IDP_REF_DEREG_006 @PRIO:1  @Negative
+  @AFO-ID:A_21442
+  @TCID:IDP_REF_DEREG_006 @PRIO:1  @TESTFALL:Negativ
+  @TESTSTUFE:4
   Scenario: Biometrie Deregister - Lösche Pairing mit e-Rezept Access Token
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     And IDP I create a device information token with
@@ -158,8 +164,9 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
 
 
   @Approval @Ready
-  @Afo:A_21442
-  @TCID:IDP_REF_DEREG_007 @PRIO:1  @Negative
+  @AFO-ID:A_21442
+  @TCID:IDP_REF_DEREG_007 @PRIO:1  @TESTFALL:Negativ
+  @TESTSTUFE:4
   Scenario: Biometrie Deregister - Lösche Pairing mit e-Rezept SSO Token
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-c-valid-ecc.p12'
     And IDP I create a device information token with
@@ -176,8 +183,9 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
 
 
   @Approval @Ready
-  @Afo:A_21448
-  @TCID:IDP_REF_DEREG_008 @PRIO:1  @Negative
+  @AFO-ID:A_21448
+  @TCID:IDP_REF_DEREG_008 @PRIO:1  @TESTFALL:Negativ
+  @TESTSTUFE:4
   Scenario: Biometrie Deregister - Lösche Pairing fehlender key identifier in der Anfrage
     Given IDP I request an pairing access token via SSO token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     When IDP I deregister the device with '$REMOVE'
@@ -194,8 +202,9 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
         """
 
   @Approval
-  @Afo:A_21448
-  @TCID:IDP_REF_DEREG_009 @PRIO:1  @Negative
+  @AFO-ID:A_21448
+  @TCID:IDP_REF_DEREG_009 @PRIO:1  @TESTFALL:Negativ
+  @TESTSTUFE:4
   Scenario: Biometrie Deregister - Lösche Pairing Null key identifier in der Anfrage
   ```
   Das Senden eines null Wertes wird am Server als KeyIdentifier "null" interpretiert.

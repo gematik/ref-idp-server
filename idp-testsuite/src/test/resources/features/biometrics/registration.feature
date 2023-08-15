@@ -14,12 +14,12 @@
 # limitations under the License.
 #
 
-@Product:IDP-D
+@PRODUKT:IDP-D
 @Biometrics
-@Afo:A_21415
-@Afo:A_21425
-@Afo:A_21427
-@Afo:A_21420
+@AFO-ID:A_21415
+@AFO-ID:A_21425
+@AFO-ID:A_21427
+@AFO-ID:A_21420
 Feature: Registrierung für Alternative Authentisierung am IDP Server
 
   Frontends müssen mit einer eGK und einem pairing Access oder SSO Token Geräte registrieren können.
@@ -33,6 +33,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
 
   @TCID:IDP_REF_ALTAUTREG_000
     @Approval @PRIO:1
+    @TESTSTUFE:4
   Scenario Outline: Biometrie AltAutReg - Gutfall - Löschen alle Pairings vor Start der Tests
 
   ```
@@ -54,8 +55,9 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidinvamr02      |
 
   @Approval @Ready
-    @Afo:A_21423
+    @AFO-ID:A_21423
     @TCID:IDP_REF_ALTAUTREG_001 @PRIO:1
+    @TESTSTUFE:4
   Scenario Outline: AltAutReg - Gutfall - Registriere ein Pairing
 
   ```
@@ -96,8 +98,9 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
   # ein testfall bei dem ein anderer Puk/Priv_SE_AUT registriert und dann verwendet wird, findet sich unter authorizationWithAlternativeAuthentication
 
   @Approval @Ready
-  @Afo:A_21412
+  @AFO-ID:A_21412
   @TCID:IDP_REF_ALTAUTREG_002 @PRIO:1
+  @TESTSTUFE:4
   Scenario: AltAutReg - Gutfall - Zwei Pairings mit identem Identifier und Pub SE Auth aber unterschiedlicher IdNummer
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I create a device information token with
@@ -129,8 +132,9 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
         """
 
   @Approval @Ready
-  @Afo:A_21412
+  @AFO-ID:A_21412
   @TCID:IDP_REF_ALTAUTREG_003 @PRIO:1
+  @TESTSTUFE:4
   Scenario: AltAutReg - Gutfall - Zwei Pairings mit unterschiedlichem key identifier und unterschiedlicher IDNummer
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I create a device information token with
@@ -162,7 +166,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
         """
 
   @Approval @Ready
-  @TCID:IDP_REF_ALTAUTREG_004 @PRIO:1 @Negative
+  @TCID:IDP_REF_ALTAUTREG_004 @PRIO:1 @TESTFALL:Negativ
+  @TESTSTUFE:4
   Scenario: AltAutReg - Zweifacher Eintragungsversuch Idente Daten
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I create a device information token with
@@ -180,9 +185,10 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
 
 
   @Approval @Ready
-  @Afo:A_21412
-  @Afo:A_21427
-  @TCID:IDP_REF_ALTAUTREG_005 @PRIO:1 @Negative
+  @AFO-ID:A_21412
+  @AFO-ID:A_21427
+  @TCID:IDP_REF_ALTAUTREG_005 @PRIO:1 @TESTFALL:Negativ
+  @TESTSTUFE:4
   Scenario: AltAutReg - Zweifacher Eintragungsversuch Devicedaten unterschiedlich
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I create a device information token with
@@ -207,7 +213,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
 
 
   @Approval @Ready
-  @TCID:IDP_REF_ALTAUTREG_006 @PRIO:1  @Negative
+  @TCID:IDP_REF_ALTAUTREG_006 @PRIO:1  @TESTFALL:Negativ
+  @TESTSTUFE:4
   Scenario: AltAutReg - Zweifacher Eintragungsversuch alles bis auf key identifier und Zertifikat unterschiedlich
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I create a device information token with
@@ -232,8 +239,9 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
 
   @OpenBug @issue:IDP-453
     @Approval
-    @Afo:A_21422   @Afo:A_21421
-    @TCID:IDP_REF_ALTAUTREG_007 @PRIO:1 @Negative
+    @AFO-ID:A_21422   @AFO-ID:A_21421
+    @TCID:IDP_REF_ALTAUTREG_007 @PRIO:1 @TESTFALL:Negativ
+    @TESTSTUFE:4
   Scenario Outline: AltAutReg - Unterschiedliche Zertifikate mit identer IDNummer in Verwendung
     # Real world scenario: alte Karte verloren, neue Karte, neues Zert, alte Karte wieder verwendet, bevor diese abgelaufen ist/gesperrt wurde
     Given IDP I request an pairing access token with eGK cert '/certs/valid/<cert_access>'
@@ -256,8 +264,9 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
 
 
   @Approval @Ready
-    @Afo:A_21422
-    @TCID:IDP_REF_ALTAUTREG_008 @PRIO:1 @Negative
+    @AFO-ID:A_21422
+    @TCID:IDP_REF_ALTAUTREG_008 @PRIO:1 @TESTFALL:Negativ
+    @TESTSTUFE:4
   Scenario Outline: AltAutReg - Unterschiedliche Zertifikate mit unterschiedlicher IDNummer in Verwendung
     Given IDP I request an pairing access token with eGK cert '/certs/valid/<cert_access>'
 
@@ -283,8 +292,9 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       # wurde, als für die Registrierung. Alles was er hier hat, ist die ID_NUMBER (KVNR) und die ist dieselbe.
 
   @Approval
-    @Afo:A_21423
-    @TCID:IDP_REF_ALTAUTREG_009 @PRIO:1  @Negative
+    @AFO-ID:A_21423
+    @TCID:IDP_REF_ALTAUTREG_009 @PRIO:1  @TESTFALL:Negativ
+    @TESTSTUFE:4
   Scenario Outline: AltAutReg - Null Werte in device info
 
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
@@ -309,8 +319,9 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | keyidentnull06 | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | $NULL   |
 
   @Approval
-    @Afo:A_21423
-    @TCID:IDP_REF_ALTAUTREG_010 @PRIO:1  @Negative
+    @AFO-ID:A_21423
+    @TCID:IDP_REF_ALTAUTREG_010 @PRIO:1  @TESTFALL:Negativ
+    @TESTSTUFE:4
   Scenario Outline: AltAutReg - Fehlende Werte in device info
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -334,8 +345,9 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | keyidentremove06 | eRezeptApp | Fair Phone   | FairPhone 3 | F3      | Android | $REMOVE |
 
   @Approval
-    @Afo:A_21470
-    @TCID:IDP_REF_ALTAUTREG_011 @PRIO:1 @Negative
+    @AFO-ID:A_21470
+    @TCID:IDP_REF_ALTAUTREG_011 @PRIO:1 @TESTFALL:Negativ
+    @TESTSTUFE:4
   Scenario Outline: AltAutReg - Null Werte in pairing data
 
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
@@ -360,8 +372,9 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | keyidentnull17 | /keys/valid/Pub_Se_Aut-1.pem | FairPhone 3 | 419094927676993 | Android | 1893456000 | $NULL                                         |
 
   @Approval
-    @Afo:A_21470
-    @TCID:IDP_REF_ALTAUTREG_012 @PRIO:1 @Negative
+    @AFO-ID:A_21470
+    @TCID:IDP_REF_ALTAUTREG_012 @PRIO:1 @TESTFALL:Negativ
+    @TESTSTUFE:4
   Scenario Outline: AltAutReg - Fehlende Werte in pairing data
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -385,8 +398,9 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | keyidentremove17 | /keys/valid/Pub_Se_Aut-1.pem | FairPhone 3 | 419094927676993 | Android | 1893456000 | $REMOVE                                       |
 
   @Approval @issue:IDP-470 @OpenBug
-    @Afo:A_21421
-    @TCID:IDP_REF_ALTAUTREG_013 @PRIO:1 @Negative
+    @AFO-ID:A_21421
+    @TCID:IDP_REF_ALTAUTREG_013 @PRIO:1 @TESTFALL:Negativ
+    @TESTSTUFE:4
   Scenario Outline: AltAutReg - Ungültige Zertifikate (selfsigned, outdated, revoced)
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -407,8 +421,9 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
       | keyidentinvcert03 | /certs/invalid/egk-idp-idnumber-a-revoked-ecc.p12    |
 
   @Approval @OpenBug
-    @Afo:A_21422
-    @TCID:IDP_REF_ALTAUTREG_014 @PRIO:1 @Negative
+    @AFO-ID:A_21422
+    @TCID:IDP_REF_ALTAUTREG_014 @PRIO:1 @TESTFALL:Negativ
+    @TESTSTUFE:4
   Scenario Outline: AltAutReg - Registriere Pairing mit Zertifikat ohne IDNummer
     Given IDP I request an pairing access token with eGK cert '/certs/valid/<cert_access>'
 
@@ -440,12 +455,13 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
   @Approval
   Scenario: AltAutReg - Ungültige Serial number in pairing data
 
-  @Afo:A_20463
-  @Afo:A_21413
-  @Afo:A_21425
+  @AFO-ID:A_20463
+  @AFO-ID:A_21413
+  @AFO-ID:A_21425
   @LongRunning
   @Approval @Ready
-  @TCID:IDP_REF_ALTAUTREG_015 @PRIO:1 @Negative
+  @TCID:IDP_REF_ALTAUTREG_015 @PRIO:1 @TESTFALL:Negativ
+  @TESTSTUFE:4
   Scenario: AltAutReg - Pairing mit veraltetem Access Token wird abgelehnt
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
     And IDP I create a device information token with
@@ -463,8 +479,9 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     # die auf der allow-Liste stehen)
 
   @Approval
-  @Afo:A_21413
-  @TCID:IDP_REF_ALTAUTREG_016 @PRIO:1 @Negative
+  @AFO-ID:A_21413
+  @TCID:IDP_REF_ALTAUTREG_016 @PRIO:1 @TESTFALL:Negativ
+  @TESTSTUFE:4
   Scenario: AltAutReg - Zugriff mit ACCESS_TOKEN von signierter Challenge mit falschem Scope (erezept)
     Given IDP I request an erezept access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -479,8 +496,9 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     Then IDP the response is an 403 error with gematik code 4001 and error 'access_denied'
 
   @Approval
-  @Afo:A_21413
-  @TCID:IDP_REF_ALTAUTREG_017 @PRIO:1 @Negative
+  @AFO-ID:A_21413
+  @TCID:IDP_REF_ALTAUTREG_017 @PRIO:1 @TESTFALL:Negativ
+  @TESTSTUFE:4
   Scenario: AltAutReg - Zugriff mit ACCESS_TOKEN via SSO Token mit falschem Scope (erezept)
     Given IDP I request an erezept access token via SSO token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -495,7 +513,8 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     Then IDP the response is an 403 error with gematik code 4001 and error 'access_denied'
 
   @Approval @Ready
-    @TCID:IDP_REF_ALTAUTREG_018 @PRIO:1 @Negative
+    @TCID:IDP_REF_ALTAUTREG_018 @PRIO:1 @TESTFALL:Negativ
+    @TESTSTUFE:4
   Scenario Outline: AltAutReg - Registriere ein Pairing mit falschen Versionen
     Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
 
@@ -525,8 +544,9 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
   @TCID:IDP_REF_ALTAUTREG_019 @PRIO:2
   @OpenBug
   @issue:IDP-658
-  @Afo:A_21419
+  @AFO-ID:A_21419
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario:AltAutReg - Zugriff mit ACCESS_TOKEN mit falschem AMR
 
   ```

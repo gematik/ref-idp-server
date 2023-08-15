@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-@Product:IDP-D
+@PRODUKT:IDP-D
 @FastTrack
 @ThirdPartyAuth
 @RefImplOnly
@@ -27,8 +27,9 @@ Feature: Authentifiziere User am Third Party Endpoint
     And IDP I retrieve public keys from URIs
     And IDP I initialize the sektoral idp endpoints
 
-  @TCID:IDP_THIRD_PARTY_AUTH_001 @PRIO:1
+  @TCID:IDP_REF_THIRDPARTYAUTH_001 @PRIO:1
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: ThirdParty - Gutfall -Auth-Request an zentralen IDP, validiere Antwortstruktur
 
   ```
@@ -58,8 +59,9 @@ Feature: Authentifiziere User am Third Party Endpoint
     And IDP the response URI exists with param 'scope' and value 'erp_sek_auth%2Bopenid'
     And IDP the response URI exists with param 'redirect_uri' and value 'http%3A%2F%2Fredirect.gematik.de%2Ferezept'
 
-  @TCID:IDP_THIRD_PARTY_AUTH_002 @PRIO:1
+  @TCID:IDP_REF_THIRDPARTYAUTH_002 @PRIO:1
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: ThirdParty - Gutfall - Weiterleitung des Auth-Reqs des zentralen IDPs, validiere Antwortstruktur
 
   ```
@@ -88,8 +90,9 @@ Feature: Authentifiziere User am Third Party Endpoint
         """
 
 
-  @TCID:IDP_THIRD_PARTY_AUTH_003 @PRIO:1
+  @TCID:IDP_REF_THIRDPARTYAUTH_003 @PRIO:1
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: ThirdParty - Gutfall - Einreichen den third_party_authorization_code, validiere Antwortstruktur
 
   ```
@@ -120,8 +123,9 @@ Feature: Authentifiziere User am Third Party Endpoint
     And IDP the response URI exists with param 'state' and value 'xxxstatexxx'
 
 
-  @TCID:IDP_THIRD_PARTY_AUTH_004 @PRIO:1
+  @TCID:IDP_REF_THIRDPARTYAUTH_004 @PRIO:1
   @Approval @Ready
+  @TESTSTUFE:4
   Scenario: ThirdParty - Die kk_app_list_uri ist erreichbar
 
   ```
