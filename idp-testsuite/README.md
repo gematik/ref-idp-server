@@ -110,6 +110,8 @@ Es startet eine Instanz auf localhost:8080.
 ```console
 $ mvn clean package -pl idp-server -am
 $ java -jar ./idp-server/target/idp-server-*.jar --idp.loglevel=debug
+oder
+$ java -jar ./idp-server/target/idp-server-*.jar --idp.serverUrl=https://myServerUrl.de
 ```
 
 Es startet eine Instanz auf localhost:8080.
@@ -201,9 +203,10 @@ $ mvn verify -Dskip.unittests=true -Dcucumber.filter.tags="@TCID:IDP_REF_DISC_00
   ![DebugTestcase1](doc/images/DebugTestcase1.PNG)
 * Klick "Modify Run Configuration"
   ![DebugTestcase2](doc/images/DebugTestcase2.PNG)
-* Main Class setzen auf: ```de.gematik.test.tiger.TigerCucumberRunner```
+* Main Class setzen auf: ```io.cucumber.junit.TigerCucumberRunner```
 * Glue setzen
   auf: ```de.gematik.test.tiger.glue net.serenitybdd.cucumber.actors de.gematik.idp.test.steps```
+* evtl. Feature or folder path setzen: <your direct path>/idp/idp-testsuite/src/test/resources/features/coreFeatures/discoveryDocument.feature
   ![DebugTestcase3](doc/images/DebugTestcase3.PNG)
 * Test Result
   ![DebugTestcase4](doc/images/DebugTestcase4.PNG)

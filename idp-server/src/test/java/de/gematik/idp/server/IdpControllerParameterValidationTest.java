@@ -26,6 +26,7 @@ import static de.gematik.idp.error.IdpErrorType.UNSUPPORTED_RESPONSE_TYPE;
 import static de.gematik.idp.field.ClaimName.CODE_VERIFIER;
 import static de.gematik.idp.field.ClaimName.KEY_ID;
 import static de.gematik.idp.field.ClaimName.TOKEN_KEY;
+import static java.util.function.Predicate.not;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import de.gematik.idp.IdpConstants;
@@ -216,6 +217,35 @@ class IdpControllerParameterValidationTest {
   }
 
   @Test
+  void getAuthenticationChallenge_missingState_invalidClientId_invalidRedirect_shouldGiveError() {
+    final GetRequest getRequest =
+        Unirest.get("http://localhost:" + port + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT);
+
+    getChallengeParameterMap.stream()
+        .map(getInvalidationFunction("client_id", "0"))
+        .map(getInvalidationFunction("redirect_uri", "attack"))
+        .filter(Objects::nonNull)
+        .filter(not(e -> e.getKey().equals("state")))
+        .forEach(entry -> getRequest.queryString(entry.getKey(), entry.getValue()));
+
+    assertThat(getRequest.asString().getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+  }
+
+  @Test
+  void getAuthenticationChallenge_missingClientId_invalidRedirect_shouldGiveError() {
+    final GetRequest getRequest =
+        Unirest.get("http://localhost:" + port + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT);
+
+    getChallengeParameterMap.stream()
+        .map(getInvalidationFunction("redirect_uri", "attack"))
+        .filter(Objects::nonNull)
+        .filter(not(e -> e.getKey().equals("client_id")))
+        .forEach(entry -> getRequest.queryString(entry.getKey(), entry.getValue()));
+
+    assertThat(getRequest.asString().getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+  }
+
+  @Test
   void getAccessToken_missingCode_shouldGiveError() {
     assertErrorResponseMatches(
         buildGetAccessTokenRequest(getInvalidationFunction("code", null)),
@@ -373,6 +403,36 @@ class IdpControllerParameterValidationTest {
                 .asString()
                 .getStatus())
         .isEqualTo(400);
+  }
+
+  @Test
+  void getThirdPartyAuthorizationRequest_invalidClientId_invalidRedirect_should400() {
+    final GetRequest getRequest =
+        Unirest.get("http://localhost:" + port + IdpConstants.THIRD_PARTY_ENDPOINT);
+
+    getThirdPartyAuthorizationParameterMap.stream()
+        .map(getInvalidationFunction("client_id", "0"))
+        .map(getInvalidationFunction("redirect_uri", "attack"))
+        .filter(Objects::nonNull)
+        .forEach(entry -> getRequest.queryString(entry.getKey(), entry.getValue()));
+
+    assertThat(getRequest.asString().getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+  }
+
+  @Test
+  void
+      getThirdPartyAuthorizationRequest_missingState_notRegisteredClientId_invalidRedirect_should400() {
+    final GetRequest getRequest =
+        Unirest.get("http://localhost:" + port + IdpConstants.THIRD_PARTY_ENDPOINT);
+
+    getThirdPartyAuthorizationParameterMap.stream()
+        .map(getInvalidationFunction("client_id", "notRegisteredClient"))
+        .map(getInvalidationFunction("redirect_uri", "attack"))
+        .filter(Objects::nonNull)
+        .filter(not(e -> e.getKey().equals("state")))
+        .forEach(entry -> getRequest.queryString(entry.getKey(), entry.getValue()));
+
+    assertThat(getRequest.asString().getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
   }
 
   @SneakyThrows

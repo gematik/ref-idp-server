@@ -67,6 +67,7 @@ Feature: Authentifiziere Anwendung am IDP Server
                 "professionOID" : ".*Rolle.*",
                 "organizationName" : ".*Organisationszugehörigkeit.*",
                 "family_name" : ".*Nachname.*",
+                "display_name": ".*Vornamens.*Nachnamens.*",
                 "idNummer" : ".*Id.*Krankenversichertennummer.*Telematik\\-Id.*"
               }
             }

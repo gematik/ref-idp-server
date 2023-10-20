@@ -78,6 +78,7 @@ public class IdpAuthenticator {
       final JsonWebToken decryptedChallenge = decryptChallenge(signedChallenge);
       verifyExpInChallenge(signedChallenge);
       verifyExpInChallengeEqualsExpInSignedChallenge(signedChallenge, decryptedChallenge);
+      verifyCtyHeaderClaimInJws(decryptedChallenge);
       return buildBasicFlowTokenLocation(decryptedChallenge).build().toString();
     } catch (final URISyntaxException e) {
       throw new IdpServerLocationBuildException(e);
@@ -97,6 +98,13 @@ public class IdpAuthenticator {
         .isEmpty()) {
       log.error(signedChallenge.getHeaderDecoded());
       throw new IdpServerException(2030, INVALID_REQUEST, "EPK-Typ fehlerhaft");
+    }
+  }
+
+  private void verifyCtyHeaderClaimInJws(final JsonWebToken signedChallenge) {
+    if (signedChallenge.getHeaderClaim(CONTENT_TYPE).filter("NJWT"::equals).isEmpty()) {
+      log.error(signedChallenge.getHeaderDecoded());
+      throw new IdpServerException(2030, INVALID_REQUEST, "CTY fehlerhaft");
     }
   }
 
@@ -350,7 +358,7 @@ public class IdpAuthenticator {
 
   private void verifyClientCertificate(final X509Certificate nestedX509ClientCertificate) {
     try {
-      tucPki018Verifier.performTucPki18Checks(nestedX509ClientCertificate);
+      tucPki018Verifier.performTucPki018Checks(nestedX509ClientCertificate);
     } catch (final GemPkiException | RuntimeException e) {
       throw new IdpServerException(2020, INVALID_REQUEST, "Das AUT Zertifikat ist ungültig", e);
     }

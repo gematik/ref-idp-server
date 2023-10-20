@@ -73,12 +73,13 @@ Feature: Fed Idp List Endpoint
     Given TGR clear recorded messages
     When TGR sende eine leere GET Anfrage an "${fed_list_endpoint}"
     And TGR find request to path ".*"
-    Then TGR current response at "$.body.body.fed_idp_list.[?(@.idp_iss_id.content == 'https://gsi.dev.gematik.solutions')]" matches as JSON:
+    Then TGR current response at "$.body.body.fed_idp_list.[?(@.idp_iss.content == 'https://gsi.dev.gematik.solutions')]" matches as JSON:
             """
             {
               "idp_name": "gematik sektoraler IDP",
-              "idp_iss_id": "https://gsi.dev.gematik.solutions",
+              "idp_iss": "https://gsi.dev.gematik.solutions",
               "idp_logo": "https://gsi.dev.gematik.solutions/noLogoYet",
-              "idp_sek_2": true
+              "idp_sek_2": true,
+              "idp_pkv": true
             }
         """

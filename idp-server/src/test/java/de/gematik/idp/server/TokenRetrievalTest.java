@@ -767,7 +767,12 @@ class TokenRetrievalTest {
               .containsOnlyKeys("e-rezept", "openid");
           assertThat(response.getBody().getUserConsent().getRequestedClaims())
               .containsOnlyKeys(
-                  "organizationName", "professionOID", "idNummer", "given_name", "family_name");
+                  "organizationName",
+                  "professionOID",
+                  "idNummer",
+                  "given_name",
+                  "family_name",
+                  "display_name");
         });
 
     idpClient.login(egkUserIdentity);

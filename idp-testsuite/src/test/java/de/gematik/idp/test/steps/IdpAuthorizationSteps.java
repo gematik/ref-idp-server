@@ -59,6 +59,12 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
 
   @SneakyThrows
   public void signChallenge(final String keyfile, final String password) {
+    signChallengeWithSignaturHeaders(keyfile, password, Map.of("typ", "JWT", "cty", "NJWT"));
+  }
+
+  @SneakyThrows
+  public void signChallengeWithSignaturHeaders(
+      final String keyfile, final String password, final Map<String, String> params) {
     final String challenge = Context.get().getString(ContextKey.CHALLENGE);
 
     final Key pkey = keyAndCertificateStepsHelper.readPrivateKeyFromKeyStore(keyfile, password);
@@ -74,8 +80,7 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
     } else {
       jsonWebSignature.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_PSS_USING_SHA256);
     }
-    jsonWebSignature.setHeader("typ", "JWT");
-    jsonWebSignature.setHeader("cty", "NJWT");
+    params.forEach(jsonWebSignature::setHeader);
     jsonWebSignature.setCertificateChainHeaderValue(cert);
 
     Context.get()
