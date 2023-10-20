@@ -36,26 +36,26 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
     And IDP I deregister the device with '<key_id>'
 
     Examples: Zu deregistrierende Daten
-      | auth_cert                                     | key_id       |
-      | /certs/valid/egk-idp-idnumber-d-valid-ecc.p12 | keyidlist100 |
-      | /certs/valid/egk-idp-idnumber-d-valid-ecc.p12 | keyidlist200 |
-      | /certs/valid/egk-idp-idnumber-d-valid-ecc.p12 | keyidlist201 |
+      | auth_cert                                       | key_id       |
+      | /certs/valid/egk-idp-idnumber-d-valid-ecc-2.p12 | keyidlist100 |
+      | /certs/valid/egk-idp-idnumber-d-valid-ecc-2.p12 | keyidlist200 |
+      | /certs/valid/egk-idp-idnumber-d-valid-ecc-2.p12 | keyidlist201 |
 
   @Approval @Ready
   @AFO-ID:A_21424 @AFO-ID:A_21450 @AFO-ID:A_21452
   @TCID:IDP_REF_LIST_001 @PRIO:1
   @TESTSTUFE:4
   Scenario: Biometrie Pairingliste - Gutfall - Erzeuge einen Pairingeintrag für IDNummer und fordere Pairingliste an
-    Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
+    Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc-2.p12'
     And IDP I create a device information token with
       | name                 | manufacturer | product     | model | os      | os_version |
       | ${TESTENV.client_id} | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create pairing data with
-      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidlist100   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-d-valid-ecc.p12 |
-    And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
-    And IDP I register the device with '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
-    And IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
+      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info               |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidlist100   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-d-valid-ecc-2.p12 |
+    And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-d-valid-ecc-2.p12'
+    And IDP I register the device with '/certs/valid/egk-idp-idnumber-d-valid-ecc-2.p12'
+    And IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc-2.p12'
     When IDP I request all pairings
     Then the response status is 200
     And IDP the response http headers match
@@ -84,25 +84,25 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
   @TCID:IDP_REF_LIST_002 @PRIO:1
   @TESTSTUFE:4
   Scenario: Biometrie Pairingliste - Gutfall - Erzeuge mehrere Pairingeinträge für IDNummer und fordere Pairingliste an
-    Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
+    Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc-2.p12'
     And IDP I create a device information token with
       | name       | manufacturer | product     | model | os      | os_version |
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create pairing data with
-      | se_subject_public_key_info   | key_identifier | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             | product     |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidlist200   | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-d-valid-ecc.p12 | FairPhone 3 |
-    And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
-    And IDP I register the device with '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
-    And IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
+      | se_subject_public_key_info   | key_identifier | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info               | product     |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidlist200   | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-d-valid-ecc-2.p12 | FairPhone 3 |
+    And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-d-valid-ecc-2.p12'
+    And IDP I register the device with '/certs/valid/egk-idp-idnumber-d-valid-ecc-2.p12'
+    And IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc-2.p12'
     And IDP I create a device information token with
       | name       | manufacturer | product     | model | os      | os_version |
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create pairing data with
-      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidlist201   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-d-valid-ecc.p12 |
-    And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
-    And IDP I register the device with '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
-    And IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc.p12'
+      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info               |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidlist201   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-d-valid-ecc-2.p12 |
+    And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-d-valid-ecc-2.p12'
+    And IDP I register the device with '/certs/valid/egk-idp-idnumber-d-valid-ecc-2.p12'
+    And IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-d-valid-ecc-2.p12'
     When IDP I request all pairings
     Then the response status is 200
     And IDP the JSON response should match
@@ -134,7 +134,7 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
   @TCID:IDP_REF_LIST_003 @PRIO:1 @TESTFALL:Negativ
   @TESTSTUFE:4
   Scenario: Biometrie Pairingliste - Fordere Pairingliste an für IdNummer, welche kein Pairing hat
-    And IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-e-valid-ecc.p12'
+    And IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-e-valid-ecc-2.p12'
     When IDP I request all pairings
     Then the response status is 200
     And IDP the JSON response should match
@@ -149,7 +149,7 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
   @TCID:IDP_REF_LIST_004 @PRIO:1 @TESTFALL:Negativ
   @TESTSTUFE:4
   Scenario: Biometrie Pairingliste - Fordere Pairingliste an mit eRezept Access Token
-    And IDP I request an erezept access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
+    And IDP I request an erezept access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12'
     When IDP I request all pairings
     Then IDP the response is an 403 error with gematik code 4001 and error 'access_denied'
 
@@ -159,6 +159,6 @@ Feature: Fordere Pairingliste für Alternative Authentisierung am IDP Server an
   @TCID:IDP_REF_LIST_005 @PRIO:1 @TESTFALL:Negativ
   @TESTSTUFE:4
   Scenario: Biometrie Pairingliste - Fordere Pairingliste an mit eRezept SSO Token
-    And IDP I request an erezept access token via SSO token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
+    And IDP I request an erezept access token via SSO token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12'
     When IDP I request all pairings
     Then IDP the response is an 403 error with gematik code 4001 and error 'access_denied'

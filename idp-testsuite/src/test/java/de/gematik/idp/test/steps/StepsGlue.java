@@ -34,11 +34,13 @@ import de.gematik.idp.test.steps.model.IdpEndpointType;
 import de.gematik.test.bdd.Context;
 import de.gematik.test.bdd.ContextKey;
 import de.gematik.test.bdd.Variables;
+import de.gematik.test.tiger.common.config.TigerGlobalConfiguration;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
 import io.cucumber.java.DataTableType;
 import io.cucumber.java.ParameterType;
 import io.cucumber.java.de.Gegebensei;
+import io.cucumber.java.de.Und;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -568,6 +570,22 @@ public class StepsGlue {
   @When("IDP I sign the challenge with {string}")
   public void iSignTheChallengeWith(final String keyfile) {
     author.signChallenge(cucumberValuesConverter.parseDocString(keyfile), "00");
+  }
+
+  /**
+   * sign the stored challenge with given certificate and default password "00"
+   *
+   * @param keyfile file to read the certificate from
+   * @gematik.context.in CHALLENGE
+   * @gematik.context.out SIGNED_CHALLENGE
+   * @see CucumberValuesConverter
+   */
+  @When("IDP I sign the challenge with {string} and Header Claims")
+  public void iSignTheChallengeWithCertAndHeaders(final String keyfile, final DataTable params) {
+    author.signChallengeWithSignaturHeaders(
+        cucumberValuesConverter.parseDocString(keyfile),
+        "00",
+        cucumberValuesConverter.getMapFromDatatable(params));
   }
 
   /**
@@ -1240,6 +1258,14 @@ public class StepsGlue {
     sektoralIdp.initializeSektoralIdp();
   }
 
+  @And("IDP I add the token key {string} to the key folder")
+  @Und("IDP Ich füge den token key {string} meinem Schklüsselverzeichnis hinzu")
+  @SneakyThrows
+  public void iAddTokenKeyFromConfig(final String tokenKeyLocation) {
+    access.addAesKeyToRbelKeyManager(
+        TigerGlobalConfiguration.resolvePlaceholders(
+            TigerGlobalConfiguration.readString(tokenKeyLocation)));
+  }
   // =================================================================================================================
   //
   // Z E N T R A L E R   I D P   F A S T   T R A C K

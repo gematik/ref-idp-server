@@ -188,8 +188,7 @@ class AccessTokenBuilderTest {
     assertThat(accessToken.getBodyClaims())
         .extractingByKey(AUTH_TIME.getJoseName())
         .extracting(
-            authTimeValue -> TokenClaimExtraction.claimToZonedDateTime(authTimeValue),
-            InstanceOfAssertFactories.ZONED_DATE_TIME)
+            TokenClaimExtraction::claimToZonedDateTime, InstanceOfAssertFactories.ZONED_DATE_TIME)
         .isBetween(ZonedDateTime.now().minusMinutes(1), ZonedDateTime.now());
   }
 
@@ -202,8 +201,8 @@ class AccessTokenBuilderTest {
             SCOPE.getJoseName(),
             OPENID + " " + EREZEPT));
     final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);
-    assertThat(accessToken.getBodyClaim(AUDIENCE)).get().isEqualTo(EREZEPT_AUDIENCE);
-    assertThat(accessToken.getBodyClaim(DISPLAY_NAME)).get().isEqualTo("Juna Fuchs");
+    assertThat(accessToken.getBodyClaim(AUDIENCE).orElseThrow()).isEqualTo(EREZEPT_AUDIENCE);
+    assertThat(accessToken.getBodyClaim(DISPLAY_NAME).orElseThrow()).isEqualTo("Juna Fuchs");
   }
 
   @Test
@@ -215,7 +214,7 @@ class AccessTokenBuilderTest {
             SCOPE.getJoseName(),
             OPENID + " " + PAIRING));
     final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);
-    assertThat(accessToken.getBodyClaim(AUDIENCE)).get().isEqualTo(PAIRING_AUDIENCE);
+    assertThat(accessToken.getBodyClaim(AUDIENCE).orElseThrow()).isEqualTo(PAIRING_AUDIENCE);
     assertThat(accessToken.getBodyClaims()).doesNotContainKey(DISPLAY_NAME.getJoseName());
   }
 
@@ -224,7 +223,8 @@ class AccessTokenBuilderTest {
     final JsonWebToken authCode = new JsonWebToken(AUTH_CODE_FOR_SMCB);
     assertThat(authCode).isNotNull();
     final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authCode);
-    assertThat(accessToken.getBodyClaims()).doesNotContainKey(DISPLAY_NAME.getJoseName());
+    assertThat(accessToken.getBodyClaims()).containsKey(DISPLAY_NAME.getJoseName());
+    assertThat(accessToken.getBodyClaim(DISPLAY_NAME)).isEmpty();
   }
 
   @Test
@@ -238,7 +238,7 @@ class AccessTokenBuilderTest {
     assertThat(accessToken.getBodyClaim(ORGANIZATION_NAME))
         .get()
         .isEqualTo(authCode.getBodyClaim(ORGANIZATION_NAME).orElseThrow());
-    assertThat(accessToken.getBodyClaim(PROFESSION_OID)).get().isEqualTo(OID_VERSICHERTER);
+    assertThat(accessToken.getBodyClaim(PROFESSION_OID).orElseThrow()).isEqualTo(OID_VERSICHERTER);
     assertThat(accessToken.getBodyClaim(ID_NUMBER))
         .get()
         .isEqualTo(authCode.getBodyClaim(ID_NUMBER).orElseThrow());

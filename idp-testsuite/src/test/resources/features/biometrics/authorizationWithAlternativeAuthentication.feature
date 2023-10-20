@@ -37,13 +37,13 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     And IDP I deregister the device with '<key_id>'
 
     Examples: Zu deregistrierende Daten
-      | auth_cert                                     | key_id              |
-      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth001allow   |
-      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth001unknown |
-      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth002        |
-      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth003        |
-      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth004        |
-      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth007        |
+      | auth_cert                                       | key_id              |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12 | keyidauth001allow   |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12 | keyidauth001unknown |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12 | keyidauth002        |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12 | keyidauth003        |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12 | keyidauth004        |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12 | keyidauth007        |
 
 
   @AFO-ID:A_21439 @AFO-ID:A_21449 @AFO-ID:A_21440
@@ -58,15 +58,15 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
 
   Die Antwort muss den Code 302 und die richtigen HTTP Header haben.
 
-    Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
+    Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12'
     And IDP I create a device information token with
       | name       | manufacturer   | product   | model   | os   | os_version   |
       | eRezeptApp | <manufacturer> | <product> | <model> | <os> | <os_version> |
     And IDP I create pairing data with
-      | se_subject_public_key_info   | key_identifier | product   | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
-      | /keys/valid/Pub_Se_Aut-1.pem | <keyid>        | <product> | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-    And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
-    And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
+      | se_subject_public_key_info   | key_identifier | product   | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info               |
+      | /keys/valid/Pub_Se_Aut-1.pem | <keyid>        | <product> | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12 |
+    And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12'
+    And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12'
 
     And IDP I choose code verifier '${TESTENV.code_verifier01}'
     And IDP I request a challenge with
@@ -76,8 +76,8 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | name       | manufacturer   | product   | model   | os   | os_version   |
       | eRezeptApp | <manufacturer> | <product> | <model> | <os> | <os_version> |
     And IDP I create authentication data with
-      | authentication_data_version | auth_cert                                     | key_identifier | amr                                 |
-      | 1.0                         | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | <keyid>        | ["mfa", "hwk", "generic-biometric"] |
+      | authentication_data_version | auth_cert                                       | key_identifier | amr                                 |
+      | 1.0                         | /certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12 | <keyid>        | ["mfa", "hwk", "generic-biometric"] |
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication
     Then the response status is 302
@@ -110,15 +110,15 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
   Die AUTHORIZATION_CODE Antwort muss im Location header state, code und SSO Token als Query Parameter enthalten und
   die richtigen Claims im Token haben.
 
-    Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
+    Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12'
     And IDP I create a device information token with
       | name       | manufacturer | product     | model | os      | os_version |
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create pairing data with
-      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth002   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-    And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
-    And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
+      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info               |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth002   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12 |
+    And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12'
+    And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12'
 
     And IDP I choose code verifier '${TESTENV.code_verifier01}'
     And IDP I request a challenge with
@@ -128,8 +128,8 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | name       | manufacturer | product     | model | os      | os_version |
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create authentication data with
-      | authentication_data_version | auth_cert                                     | key_identifier | amr                   |
-      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth002   | ["mfa", "hwk", "kba"] |
+      | authentication_data_version | auth_cert                                       | key_identifier | amr                   |
+      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12 | keyidauth002   | ["mfa", "hwk", "kba"] |
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication successfully
 
@@ -181,15 +181,15 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
 
   Der AUTHORIZATION_CODE muss mit dem passenden FD.Sig Zertifikat des IDPs gültig signiert sein.
 
-    Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
+    Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12'
     And IDP I create a device information token with
       | name       | manufacturer | product     | model | os      | os_version |
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create pairing data with
-      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth003   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-    And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
-    And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
+      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info               |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth003   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12 |
+    And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12'
+    And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12'
 
     And IDP I choose code verifier '${TESTENV.code_verifier01}'
     And IDP I request a challenge with
@@ -199,8 +199,8 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | name       | manufacturer | product     | model | os      | os_version |
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create authentication data with
-      | authentication_data_version | auth_cert                                     | key_identifier | amr                    |
-      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth002   | ["mfa", "hwk", "face"] |
+      | authentication_data_version | auth_cert                                       | key_identifier | amr                    |
+      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12 | keyidauth002   | ["mfa", "hwk", "face"] |
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication successfully
 
@@ -218,15 +218,15 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
 
   Der SSO_TOKEN muss mit dem Auth Zertifikat gültig signiert sein.
 
-    Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
+    Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12'
     And IDP I create a device information token with
       | name       | manufacturer | product     | model | os      | os_version |
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create pairing data with
-      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth004   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-    And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
-    And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
+      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info               |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth004   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12 |
+    And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12'
+    And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12'
 
     And IDP I choose code verifier '${TESTENV.code_verifier01}'
     And IDP I request a challenge with
@@ -236,8 +236,8 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | name       | manufacturer | product     | model | os      | os_version |
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create authentication data with
-      | authentication_data_version | auth_cert                                     | key_identifier | amr                                 |
-      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth004   | ["mfa", "hwk", "generic-biometric"] |
+      | authentication_data_version | auth_cert                                       | key_identifier | amr                                 |
+      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12 | keyidauth004   | ["mfa", "hwk", "generic-biometric"] |
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication successfully
 
@@ -256,15 +256,15 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
   ```
   Wir registrierten ein Pairing, das für alle Negativtests verwendet wird. Damit entfallen diese Schritte in den folgenden Testfällen.
 
-    Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
+    Given IDP I request an pairing access token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12'
     And IDP I create a device information token with
       | name       | manufacturer | product     | model | os      | os_version |
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create pairing data with
-      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info             |
-      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth007   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 |
-    And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
-    And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc.p12'
+      | se_subject_public_key_info   | key_identifier | product     | serialnumber    | issuer          | not_after       | auth_cert_subject_public_key_info               |
+      | /keys/valid/Pub_Se_Aut-1.pem | keyidauth007   | FairPhone 3 | $FILL_FROM_CERT | $FILL_FROM_CERT | $FILL_FROM_CERT | /certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12 |
+    And IDP I sign pairing data with '/certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12'
+    And IDP I register the device with '/certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12'
     Then the response status is 200
 
   @Approval
@@ -315,10 +315,10 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     Then IDP the response is an 400 error with gematik code <error_code> and error '<error>'
 
     Examples: Parameter für authentication data
-      | auth_cert                                     | key_id       | amr                                 | error_code | error         |
-      | $NULL                                         | keyidauth007 | ["mfa", "hwk", "generic-biometric"] | 2000       | access_denied |
-      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | $NULL        | ["mfa", "hwk", "generic-biometric"] | 2000       | access_denied |
-      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth007 | $NULL                               | 2000       | access_denied |
+      | auth_cert                                       | key_id       | amr                                 | error_code | error         |
+      | $NULL                                           | keyidauth007 | ["mfa", "hwk", "generic-biometric"] | 2000       | access_denied |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12 | $NULL        | ["mfa", "hwk", "generic-biometric"] | 2000       | access_denied |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12 | keyidauth007 | $NULL                               | 2000       | access_denied |
 
   @Approval
   @AFO-ID:A_20699-03
@@ -341,8 +341,8 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | name       | manufacturer | product     | model | os      | os_version |
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create authentication data with
-      | authentication_data_version | auth_cert                                     | key_identifier | amr                    |
-      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth007   | ["mfa", "hwk", "face"] |
+      | authentication_data_version | auth_cert                                       | key_identifier | amr                    |
+      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12 | keyidauth007   | ["mfa", "hwk", "face"] |
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-1-pkcs8.der'
     When IDP I request a code token with alternative authentication
     Then IDP the response is an 400 error with gematik code 2000 and error 'access_denied'
@@ -366,8 +366,8 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
       | name       | manufacturer | product     | model | os      | os_version |
       | eRezeptApp | Fair Phone   | FairPhone 3 | F3    | Android | 1.0.2 f    |
     And IDP I create authentication data with
-      | authentication_data_version | auth_cert                                     | key_identifier | amr                    |
-      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauth007   | ["mfa", "hwk", "face"] |
+      | authentication_data_version | auth_cert                                       | key_identifier | amr                    |
+      | ${TESTENV.pairing_version}  | /certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12 | keyidauth007   | ["mfa", "hwk", "face"] |
     And IDP I sign authentication data with '/keys/valid/Priv_Se_Aut-2-pkcs8.der'
     When IDP I request a code token with alternative authentication
     Then IDP the response is an 400 error with gematik code 2000 and error 'access_denied'
@@ -399,7 +399,7 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
     Then IDP the response is an 400 error with gematik code <error_code> and error '<error>'
 
     Examples: Parameter für authentication data
-      | auth_cert                                     | key_id           | error_code | error         |
-      | /certs/valid/egk-idp-idnumber-c-valid-ecc.p12 | keyidauth007     | 2000       | access_denied |
-      | /certs/valid/egk-idp-idnumber-a-valid-ecc.p12 | keyidauthInvalid | 2000       | access_denied |
+      | auth_cert                                       | key_id           | error_code | error         |
+      | /certs/valid/egk-idp-idnumber-c-valid-ecc-2.p12 | keyidauth007     | 2000       | access_denied |
+      | /certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12 | keyidauthInvalid | 2000       | access_denied |
 

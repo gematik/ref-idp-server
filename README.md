@@ -16,9 +16,8 @@ The **IDP-Global** project consists of various sub-projects. These are
   <br>
 
 * **IDP-Sektoral:** PoC for a sectoral IDP in the Fast Track context
-* **IDP-Fedmaster:** PoC for a federation master in the context of federated IDPs
 
-The last 2 sub-projects in the list above are not part of the reference implementation published on
+The last sub-project "IDP-Sektoral" in the list above is not part of the reference implementation published on
 github.
 
 ### Idp-Server as docker image
@@ -53,7 +52,7 @@ or use docker compose:
 
 ```console
 $ mvn clean install -pl idp-server -am -Dskip.unittests -Dskip.inttests
-$ export appVersion=25.0.1
+$ export appVersion=25.0.2
 $ export serverLoglevel=info (default)
 $ docker-compose --project-name myidp -f docker-compose-ref.yml up -d
 ```

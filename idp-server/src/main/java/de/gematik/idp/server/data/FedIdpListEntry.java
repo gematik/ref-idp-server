@@ -32,10 +32,11 @@ import lombok.NoArgsConstructor;
 public class FedIdpListEntry {
 
   private String idpName;
-  private String idpIssId;
+  private String idpIss;
 
   @JsonProperty("idp_sek_2")
   private Boolean idpSek2;
 
   private String idpLogo;
+  private Boolean idpPkv;
 }

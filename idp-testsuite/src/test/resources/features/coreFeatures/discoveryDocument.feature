@@ -170,43 +170,6 @@ Feature: Fordere Discovery Dokument an
   ```
 
 
-  @TCID:IDP_REF_DISC_006 @PRIO:1
-  @AFO-ID:A_20687-01 @AFO-ID:A_20439
-  @Approval @Ready
-  @TESTSTUFE:4
-  Scenario: Disc - Die URLs im Dokument sind erreichbar
-
-  ```
-  Wir fordern das Discovery Dokument an und überprüfen die URIs in den Claims
-
-  - issuer
-  - authorization_endpoint
-  - token_endpoint
-  - auth_pair_endpoint
-  - uri_pair
-
-  Die Antwort des Servers auf Anfragen auf diese URIs muss erfolgreich sein im Sinne der Erreichbarkeit,
-  kann aber einen Fehler (4XX) retournieren.
-
-
-    Given IDP I request the discovery document
-
-    When IDP I extract the body claims
-    Then IDP URI in claim "uri_disc" exists with method GET and status 200
-    And IDP URI in claim "uri_disc" exists with method GET and status 200
-    And IDP URI in claim "authorization_endpoint" exists with method GET and status 400
-    And IDP URI in claim "authorization_endpoint" exists with method POST and status 400
-    And IDP URI in claim "sso_endpoint" exists with method GET and status 405
-    And IDP URI in claim "sso_endpoint" exists with method POST and status 400
-    And IDP URI in claim "token_endpoint" exists with method GET and status 405
-    And IDP URI in claim "token_endpoint" exists with method POST and status 400
-    And IDP URI in claim "auth_pair_endpoint" exists with method GET and status 405
-    And IDP URI in claim "auth_pair_endpoint" exists with method POST and status 400
-    And IDP URI in claim "uri_pair" exists with method GET and status 403
-    And IDP URI in claim "uri_pair" exists with method POST and status 403
-    # content type not supported
-
-
   @TCID:IDP_REF_DISC_007 @PRIO:1
   @AFO-ID:A_20732 @AFO-ID:A_20591-01
   @Approval @Ready @OutOfScope:KeyChecksOCSP

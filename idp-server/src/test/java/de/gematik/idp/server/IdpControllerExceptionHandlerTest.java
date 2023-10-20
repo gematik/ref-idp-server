@@ -24,7 +24,6 @@ import static org.mockito.Mockito.when;
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.UriUtils;
-import de.gematik.idp.data.IdpErrorResponse;
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpKey;
@@ -36,7 +35,6 @@ import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 import kong.unirest.json.JSONObject;
-import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -48,9 +46,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.web.bind.MissingServletRequestParameterException;
 
 @ExtendWith(SpringExtension.class)
 @ExtendWith(PkiKeyResolver.class)
@@ -74,7 +70,8 @@ class IdpControllerExceptionHandlerTest {
     Unirest.config().reset();
     Unirest.config().followRedirects(false);
     idpServerExceptionHandler =
-        new IdpServerExceptionHandler(serverUrlService, discSig, idpConfiguration);
+        new IdpServerExceptionHandler(
+            serverUrlService, discSig, idpConfiguration, idpAuthenticator);
   }
 
   @Test
@@ -230,13 +227,5 @@ class IdpControllerExceptionHandlerTest {
     assertThat(errorObject.getString("error")).isEqualTo("server_error");
     assertThat(errorObject.get("gematik_uuid")).isNotNull();
     assertThat(errorObject.get("gematik_timestamp")).isNotNull();
-  }
-
-  @Test
-  void testMissingServletRequestParameterException() {
-    final ResponseEntity<IdpErrorResponse> resp =
-        idpServerExceptionHandler.handleMissingServletRequestParameter(
-            new MissingServletRequestParameterException("anyParam", "anyType"), null, null);
-    AssertionsForClassTypes.assertThat(resp.toString()).isNotEmpty();
   }
 }

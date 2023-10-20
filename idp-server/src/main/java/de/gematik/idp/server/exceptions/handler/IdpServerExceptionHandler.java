@@ -24,6 +24,7 @@ import de.gematik.idp.server.ServerUrlService;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.exceptions.IdpServerException;
+import de.gematik.idp.server.services.IdpAuthenticator;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
 import jakarta.servlet.http.HttpServletResponse;
@@ -35,6 +36,7 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -68,6 +70,7 @@ public class IdpServerExceptionHandler {
   private final ServerUrlService serverUrlService;
   private final IdpKey idpEnc;
   private final IdpConfiguration idpConfiguration;
+  private final IdpAuthenticator idpAuthenticator;
 
   @ExceptionHandler(IdpServerException.class)
   public ResponseEntity<IdpErrorResponse> handleIdpServerException(
@@ -260,8 +263,7 @@ public class IdpServerExceptionHandler {
       final WebRequest request,
       final HttpServletResponse response) {
     return handleIdpServerException(
-        Optional.ofNullable(
-                idpConfiguration.getErrors().getGenericErrorMap().get(ex.getParameterName()))
+        Optional.ofNullable(createIdpErrorResponse(ex.getParameterName(), request))
             .map(resp -> new IdpServerException(resp, ex))
             .orElseGet(
                 () ->
@@ -269,6 +271,40 @@ public class IdpServerExceptionHandler {
                         ex.getMessage(), ex, IdpErrorType.INVALID_REQUEST, HttpStatus.BAD_REQUEST)),
         request,
         response);
+  }
+
+  private IdpErrorResponse createIdpErrorResponse(
+      final String parameterName, final WebRequest request) {
+
+    final Map<String, String[]> paramMap = request.getParameterMap();
+
+    if (paramMap.containsKey("client_id") && paramMap.containsKey("redirect_uri")) {
+      try {
+        idpAuthenticator.validateRedirectUri(
+            paramMap.get("client_id")[0], paramMap.get("redirect_uri")[0]);
+      } catch (final IdpServerException ex) {
+        return new IdpErrorResponse(
+            IdpErrorType.INVALID_REQUEST,
+            "1020",
+            0,
+            null,
+            "redirect_uri ist ungültig",
+            HttpStatus.BAD_REQUEST.value());
+      }
+      // positive case, client_id and redirect_uri valid - get IdpErrorResponse for parameterName
+      // via configuration
+      return idpConfiguration.getErrors().getGenericErrorMap().get(parameterName);
+    }
+
+    if (idpConfiguration.getErrors().getGenericErrorMap().get(parameterName).getHttpStatusCode()
+        == HttpStatus.FOUND.value()) {
+      // invalid case, client_id and/or redirect_uri not present but response as 302 -
+      // IdpErrorResponse not possible
+      return null;
+    } else {
+      // positive case, client_id and/or redirect_uri not validated because response not as 302
+      return idpConfiguration.getErrors().getGenericErrorMap().get(parameterName);
+    }
   }
 
   @ExceptionHandler(HttpRequestMethodNotSupportedException.class)

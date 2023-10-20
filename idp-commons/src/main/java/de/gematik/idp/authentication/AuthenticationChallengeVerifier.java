@@ -25,7 +25,6 @@ import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.exceptions.NoNestedJwtFoundException;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.token.JsonWebToken;
-import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
 import java.util.Map;
@@ -36,7 +35,6 @@ import lombok.Data;
 import org.jose4j.jwa.AlgorithmConstraints;
 import org.jose4j.jwa.AlgorithmConstraints.ConstraintType;
 import org.jose4j.jws.AlgorithmIdentifiers;
-import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 
@@ -64,11 +62,6 @@ public class AuthenticationChallengeVerifier {
     performClientSignatureValidation(authCert, authenticationResponse.getRawString());
   }
 
-  public void verifyResponseWithPublicKeyAndThrowExceptionIfFail(
-      final PublicKey publicKey, final JsonWebToken authenticationResponse) {
-    performClientSignatureValidationWithKey(publicKey, authenticationResponse.getRawString());
-  }
-
   private void performClientSignatureValidation(
       final X509Certificate clientCertificate, final String authResponse) {
     final JwtConsumer serverJwtConsumer =
@@ -84,17 +77,6 @@ public class AuthenticationChallengeVerifier {
     try {
       serverJwtConsumer.process(authResponse);
     } catch (final Exception e) {
-      throw new ChallengeSignatureInvalidException(e);
-    }
-  }
-
-  private void performClientSignatureValidationWithKey(
-      final PublicKey publicKey, final String authResponse) {
-    final JwtConsumer serverJwtConsumer =
-        new JwtConsumerBuilder().setVerificationKey(publicKey).build();
-    try {
-      serverJwtConsumer.process(authResponse);
-    } catch (final InvalidJwtException e) {
       throw new ChallengeSignatureInvalidException(e);
     }
   }

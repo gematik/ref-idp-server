@@ -15,7 +15,7 @@ idp:
     keyId: puk_disc_sig
   symmetricEncryptionKey: "geheimerSchluesselDerNochGehashtWird"
   defaultLocale: US
-  fedAuthEndpoint : "https://idpfadi.dev.gematik.solutions/auth"
+  fedAuthEndpoint: "https://idpfadi.dev.gematik.solutions/auth"
   debug:
     requestLogging: true
   subjectSaltValue: fkdlsjaviaen4evdsnavaew4vcxo
@@ -29,6 +29,7 @@ idp:
         ORGANIZATION_NAME: "Zustimmung zur Verarbeitung der Organisationszugehörigkeit"
         FAMILY_NAME: "Zustimmung zur Verarbeitung des Nachnamens"
         ID_NUMBER: "Zustimmung zur Verarbeitung der Id (z.B. Krankenversichertennummer, Telematik-Id)"
+        DISPLAY_NAME: "Zustimmung zur Verarbeitung des Vornamens und des Nachnamens"
   productTypeDisplayString: "IDP"
   scopesConfiguration:
     openid:
@@ -36,7 +37,7 @@ idp:
     e-rezept:
       description: "Zugriff auf die E-Rezept-Funktionalität."
       audienceUrl: "https://erp-test.zentral.erp.splitdns.ti-dienste.de/"
-      claimsToBeIncluded: [ GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER ]
+      claimsToBeIncluded: [ GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER, DISPLAY_NAME ]
     pairing:
       description: "Zugriff auf die Daten für die biometrischer Authentisierung."
       audienceUrl: "https://idp-pairing-test.zentral.idp.splitdns.ti-dienste.de"

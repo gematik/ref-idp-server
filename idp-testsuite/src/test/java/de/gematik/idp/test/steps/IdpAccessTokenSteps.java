@@ -161,4 +161,16 @@ public class IdpAccessTokenSteps extends IdpStepsBase {
     claims.setStringClaim("code_verifier", codeVerifier);
     return keyAndCertificateStepsHelper.encrypt(claims.toJson(), pukToken);
   }
+
+  @SneakyThrows
+  public void addAesKeyToRbelKeyManager(final String aesKeyBase64) {
+    final byte[] tokenKeyBytes = Base64.getUrlDecoder().decode(aesKeyBase64);
+    final SecretKey tokenKey = new SecretKeySpec(tokenKeyBytes, "AES");
+    TigerDirector.getTigerTestEnvMgr()
+        .getLocalTigerProxyOrFail()
+        .getRbelLogger()
+        .getRbelKeyManager()
+        .addKey("token_key", tokenKey, RbelKey.PRECEDENCE_KEY_FOLDER);
+    log.info("Adding token key form Config to KeyFolder " + aesKeyBase64);
+  }
 }

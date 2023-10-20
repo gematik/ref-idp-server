@@ -1,3 +1,10 @@
+# Release 25.0.2
+
+- fix open redirect vulnerability
+- fixes in testsuite and idp-server for cr31
+- update test certificates
+- update dependencies
+
 # Release 25.0.1
 
 - TokenClaimExtraction extended

@@ -130,7 +130,7 @@ public class FlowBeanCreation {
                   FlowBeanCreation.class.getClassLoader().getResourceAsStream("TSL_default.xml"),
                   "Resource unavailable.")
               .readAllBytes();
-      final TrustStatusListType tsl = TslConverter.bytesToTsl(tslBytes);
+      final TrustStatusListType tsl = TslConverter.bytesToTslUnsigned(tslBytes);
       final List<TspService> tspServiceTypeList = new TslInformationProvider(tsl).getTspServices();
 
       return TucPki018Verifier.builder()
@@ -177,17 +177,19 @@ public class FlowBeanCreation {
     final FederationIdpList theFederationIdpList = new FederationIdpList();
     theFederationIdpList.add(
         FedIdpListEntry.builder()
-            .idpIssId("https://gsi.dev.gematik.solutions")
+            .idpIss("https://gsi.dev.gematik.solutions")
             .idpName("gematik sektoraler IDP")
             .idpSek2(true)
             .idpLogo("https://gsi.dev.gematik.solutions/noLogoYet")
+            .idpPkv(true)
             .build());
     theFederationIdpList.add(
         FedIdpListEntry.builder()
-            .idpIssId("https://web.tu.id.digital.barmer.de/")
+            .idpIss("https://web.tu.id.digital.barmer.de/")
             .idpName("Verimi")
             .idpSek2(true)
             .idpLogo("https://web.verimi.de/images/verimi-logo-green.svg")
+            .idpPkv(false)
             .build());
     return theFederationIdpList;
   }

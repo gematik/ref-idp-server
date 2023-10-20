@@ -17,7 +17,6 @@
 package de.gematik.idp.token;
 
 import static de.gematik.idp.IdpConstants.EREZEPT;
-import static de.gematik.idp.IdpConstants.OID_VERSICHERTER;
 import static de.gematik.idp.IdpConstants.OPENID;
 import static de.gematik.idp.IdpConstants.PAIRING;
 import static de.gematik.idp.field.ClaimName.AUDIENCE;
@@ -39,6 +38,7 @@ import static de.gematik.idp.field.ClaimName.PROFESSION_OID;
 import static de.gematik.idp.field.ClaimName.SCOPE;
 import static de.gematik.idp.field.ClaimName.SUBJECT;
 import static de.gematik.idp.field.ClaimName.TYPE;
+import static de.gematik.idp.token.TokenBuilderUtil.addDisplayNameToBodyClaims;
 import static de.gematik.idp.token.TokenBuilderUtil.buildSubjectClaim;
 
 import de.gematik.idp.IdpConstants;
@@ -103,16 +103,9 @@ public class AccessTokenBuilder {
       Arrays.stream(nonPairingClaims).forEach(claim -> claimsMap.remove(claim.getJoseName()));
     }
     // for erezept in federation
-    final Optional<Object> displayName = authenticationToken.getBodyClaim(DISPLAY_NAME);
-    final Optional<Object> professionOid = authenticationToken.getBodyClaim(PROFESSION_OID);
-    if (displayName.isPresent()) {
-      claimsMap.put(DISPLAY_NAME.getJoseName(), displayName.get());
-    } else if (professionOid.isPresent()
-        && authenticationToken.getScopesBodyClaim().contains(EREZEPT)
-        && professionOid.get().equals(OID_VERSICHERTER)) {
-      claimsMap.put(
-          DISPLAY_NAME.getJoseName(),
-          claimsMap.get(GIVEN_NAME.getJoseName()) + " " + claimsMap.get(FAMILY_NAME.getJoseName()));
+    if (authenticationToken.getScopesBodyClaim().contains(EREZEPT)) {
+      final Optional<Object> displayName = authenticationToken.getBodyClaim(DISPLAY_NAME);
+      addDisplayNameToBodyClaims(displayName, claimsMap);
     }
 
     claimsMap.put(ISSUED_AT.getJoseName(), now.toEpochSecond());

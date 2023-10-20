@@ -514,6 +514,37 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     Then IDP the response is an 400 error with gematik code 2020 and error 'invalid_request'
 
     Examples: Author - Zertifikate
-      | cert                                                |
-      | '/certs/invalid/egk-idp-idnum-invalididnum-ecc.p12' |
-      | '/certs/invalid/egk-idp-idnum-null-ecc.p12'         |
+      | cert                                                  |
+      | '/certs/invalid/egk-idp-idnum-invalididnum-ecc-2.p12' |
+      | '/certs/invalid/egk-idp-idnum-null-ecc-2.p12'         |
+
+
+  @TCID:IDP_REF_AUTH_068 @PRIO:2 @TESTFALL:Negativ
+    @Approval @Ready
+    @TESTSTUFE:4
+  Scenario Outline: AuthorChallenge - Signierte Challenge mit falschen Header Claims
+
+  ```
+  Wir wählen einen gültigen Code verifier, fordern einen Challenge Token an, signieren diesen
+  mit einem validen Zertifikat aber mit falschen Signatur Header Claims und fordern einen TOKEN_CODE mit der signierten Challenge an.
+
+  Der Server muss diese Anfrage mit HTTP Status 400 und einer Fehlermeldung ablehnen.
+
+
+    Given IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
+      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 3344  | code          |
+
+    When IDP I sign the challenge with '/certs/invalid/smcb-idp-expired.p12'
+    When IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12' and Header Claims
+      | typ   | cty   |
+      | <typ> | <cty> |
+    And IDP I request a code token with signed challenge
+    And IDP the response is an <http_code> error with gematik code <err_id> and error '<err>'
+
+    Examples:
+      | typ | cty     | http_code | err_id | err             |
+      | JWT | njwt    | 400       | 2030   | invalid_request |
+      | JWT | JWT     | 400       | 2031   | invalid_request |
+      | JWT | $REMOVE | 400       | 2030   | invalid_request |

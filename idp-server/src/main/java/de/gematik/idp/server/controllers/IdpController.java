@@ -215,7 +215,7 @@ public class IdpController {
       @RequestParam(name = "scope") @NotEmpty(message = "1002") final String userAgentScope,
       @RequestParam(name = "kk_app_id") @NotEmpty(message = "1002") final String sekIdpId,
       final HttpServletResponse response) {
-
+    idpAuthenticator.validateRedirectUri(userAgentClientId, userAgentRedirectUri);
     final String idpState = Nonce.getNonceAsHex(FASTTRACK_IDP_STATE_LENGTH);
     final String idpCodeChallengeMethod = "S256";
     final String idpNonce = Nonce.getNonceAsHex(FASTTRACK_IDP_NONCE_LENGTH);

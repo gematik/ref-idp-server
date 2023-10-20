@@ -31,7 +31,7 @@ class X509ClaimExtractionTest {
   private static final String EGK_FILE = "src/test/resources/109500969_X114428530_c.ch.aut-ecc.p12";
   private static final String HBA_CERT_FILE = "src/test/resources/hba_aut.pem";
   private static final String PSYCHOTHERAPEUT_FILE =
-      "src/test/resources/Psychotherapeut_zwei_prof_E256.pem";
+      "src/test/resources/Psychotherapeut_zwei_prof_E256_expired.pem";
   private static final String SMCB_FILE =
       "src/test/resources/833621999741600_c.hci.aut-apo-ecc.p12";
   private static final String ARZTPRAXIS_FILE =
@@ -116,7 +116,8 @@ class X509ClaimExtractionTest {
     assertThatThrownBy(
             () ->
                 X509ClaimExtraction.extractClaimsFromCertificate(
-                    certificateDataFromP12("src/test/resources/egk-idp-firstname-toolong-ecc.p12")))
+                    certificateDataFromP12(
+                        "src/test/resources/egk-idp-firstname-toolong-ecc-2.p12")))
         .isNotNull();
   }
 
@@ -125,7 +126,7 @@ class X509ClaimExtractionTest {
     assertThatThrownBy(
             () ->
                 X509ClaimExtraction.extractClaimsFromCertificate(
-                    certificateDataFromP12("src/test/resources/egk-idp-famname-toolong-ecc.p12")))
+                    certificateDataFromP12("src/test/resources/egk-idp-famname-toolong-ecc-2.p12")))
         .isNotNull();
   }
 
@@ -134,7 +135,7 @@ class X509ClaimExtractionTest {
     assertThatThrownBy(
             () ->
                 X509ClaimExtraction.extractClaimsFromCertificate(
-                    certificateDataFromP12("src/test/resources/egk-idp-orgname-toolong-ecc.p12")))
+                    certificateDataFromP12("src/test/resources/egk-idp-orgname-toolong-ecc-2.p12")))
         .isNotNull();
   }
 
@@ -144,7 +145,7 @@ class X509ClaimExtractionTest {
             () ->
                 X509ClaimExtraction.extractClaimsFromCertificate(
                     certificateDataFromP12(
-                        "src/test/resources/egk-idp-idnum-invalididnum-ecc.p12")))
+                        "src/test/resources/egk-idp-idnum-invalididnum-ecc-2.p12")))
         .isNotNull();
   }
 
@@ -153,7 +154,7 @@ class X509ClaimExtractionTest {
     assertThatThrownBy(
             () ->
                 X509ClaimExtraction.extractClaimsFromCertificate(
-                    certificateDataFromP12("src/test/resources/egk-idp-profid-null-ecc.p12")))
+                    certificateDataFromP12("src/test/resources/egk-idp-profid-null-ecc-2.p12")))
         .isNotNull();
   }
 

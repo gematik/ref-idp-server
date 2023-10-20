@@ -150,6 +150,27 @@ class SignedChallengeValidationTest {
         .isInstanceOf(RuntimeException.class);
   }
 
+  @SneakyThrows
+  @Test
+  void getBasicFlowTokenLocationTest_InvalidSignaturHeaderInSignedChallenge() {
+    final JsonWebToken signedChallenge =
+        signServerChallenge(
+            challengeToken.getRawString(),
+            egkIdentity.getCertificate(),
+            tbsData -> {
+              if (egkIdentity.getPrivateKey() instanceof RSAPrivateKey) {
+                return RsaSignerUtility.createRsaSignature(tbsData, egkIdentity.getPrivateKey());
+              } else {
+                return EcSignerUtility.createEcSignature(tbsData, egkIdentity.getPrivateKey());
+              }
+            },
+            Map.of("typ", "JWT", "cty", "njwt"));
+    final IdpJwe encryptedChallenge =
+        signedChallenge.encryptAsNjwt(idpEnc.getIdentity().getCertificate().getPublicKey());
+    assertThatThrownBy(() -> idpAuthenticator.getBasicFlowTokenLocation(encryptedChallenge))
+        .isInstanceOf(RuntimeException.class);
+  }
+
   private JsonWebToken getSignedChallenge() {
     return signServerChallenge(
         challengeToken.getRawString(),
@@ -160,19 +181,20 @@ class SignedChallengeValidationTest {
           } else {
             return EcSignerUtility.createEcSignature(tbsData, egkIdentity.getPrivateKey());
           }
-        });
+        },
+        Map.of("typ", "JWT", "cty", "NJWT"));
   }
 
   private JsonWebToken signServerChallenge(
       final String challengeToSign,
       final X509Certificate certificate,
-      final UnaryOperator<byte[]> contentSigner) {
+      final UnaryOperator<byte[]> contentSigner,
+      final Map<String, String> params) {
     final JwtClaims claims = new JwtClaims();
     claims.setClaim(ClaimName.NESTED_JWT.getJoseName(), challengeToSign);
     final JsonWebSignature jsonWebSignature = new JsonWebSignature();
     jsonWebSignature.setPayload(claims.toJson());
-    jsonWebSignature.setHeader("typ", "JWT");
-    jsonWebSignature.setHeader("cty", "NJWT");
+    params.forEach(jsonWebSignature::setHeader);
     jsonWebSignature.setCertificateChainHeaderValue(certificate);
     if (isEcKey(certificate.getPublicKey())) {
       jsonWebSignature.setAlgorithmHeaderValue(BRAINPOOL256_USING_SHA256);

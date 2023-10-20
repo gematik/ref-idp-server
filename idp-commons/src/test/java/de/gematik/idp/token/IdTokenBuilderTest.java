@@ -204,13 +204,12 @@ class IdTokenBuilderTest {
     final JsonWebToken idToken =
         idTokenBuilder.buildIdToken(
             TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, authenticationToken);
-    assertThat(idToken.getBodyClaim(AUDIENCE))
-        .get()
+    assertThat(idToken.getBodyClaim(AUDIENCE).orElseThrow())
         .isEqualTo(TestConstants.CLIENT_ID_E_REZEPT_APP);
   }
 
   @Test
-  void verifyNoDisplayNameForNonEgkAndNoDisplayNameInAuthCode() {
+  void verifyDisplayNameForNonEgkWithNoDisplayNameInAuthCode() {
     final Map<String, Object> bodyClaims = new HashMap<>();
     bodyClaims.put(PROFESSION_OID.getJoseName(), "not egk");
     bodyClaims.put(ORGANIZATION_NAME.getJoseName(), "organization");
@@ -226,7 +225,30 @@ class IdTokenBuilderTest {
     final JsonWebToken idToken =
         idTokenBuilder.buildIdToken(
             TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, authenticationToken);
-    assertThat(idToken.getBodyClaims()).doesNotContainKey(DISPLAY_NAME.getJoseName());
+    assertThat(idToken.getBodyClaims()).containsKey(DISPLAY_NAME.getJoseName());
+    assertThat(idToken.getBodyClaim(DISPLAY_NAME).orElseThrow())
+        .isEqualTo("given_name family_name");
+  }
+
+  @Test
+  void verifyDisplayNameNullWhenFamilyNameAndGivenNameNull() {
+    final Map<String, Object> bodyClaims = new HashMap<>();
+    bodyClaims.put(PROFESSION_OID.getJoseName(), "krankenhaus");
+    bodyClaims.put(ORGANIZATION_NAME.getJoseName(), "organization");
+    bodyClaims.put(ID_NUMBER.getJoseName(), "id_number");
+    bodyClaims.put(GIVEN_NAME.getJoseName(), null);
+    bodyClaims.put(FAMILY_NAME.getJoseName(), null);
+    bodyClaims.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), List.of("foo", "bar"));
+    bodyClaims.put(JWKS_URI.getJoseName(), "jwks_uri");
+    bodyClaims.put(NONCE.getJoseName(), NONCE_VALUE);
+    bodyClaims.put(CLIENT_ID.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP);
+    bodyClaims.put(SCOPE.getJoseName(), EREZEPT + " " + OPENID);
+    createIdTokenBuilder(bodyClaims);
+    final JsonWebToken idToken =
+        idTokenBuilder.buildIdToken(
+            TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, authenticationToken);
+    assertThat(idToken.getBodyClaims()).containsKey(DISPLAY_NAME.getJoseName());
+    assertThat(idToken.getBodyClaim(DISPLAY_NAME)).isEmpty();
   }
 
   @Test
@@ -267,7 +289,7 @@ class IdTokenBuilderTest {
     final JsonWebToken idToken =
         idTokenBuilder.buildIdToken(
             TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, authenticationToken);
-    assertThat(idToken.getBodyClaim(DISPLAY_NAME)).get().isEqualTo("display name");
+    assertThat(idToken.getBodyClaim(DISPLAY_NAME).orElseThrow()).isEqualTo("display name");
   }
 
   @Test
@@ -281,8 +303,7 @@ class IdTokenBuilderTest {
     final JsonWebToken idToken =
         idTokenBuilder.buildIdToken(
             TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, authenticationToken);
-    assertThat(idToken.getBodyClaim(AUDIENCE))
-        .get()
+    assertThat(idToken.getBodyClaim(AUDIENCE).orElseThrow())
         .isEqualTo(TestConstants.CLIENT_ID_E_REZEPT_APP);
   }
 }

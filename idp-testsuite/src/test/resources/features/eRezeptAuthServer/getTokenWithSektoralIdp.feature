@@ -15,12 +15,14 @@
 #
 
 @PRODUKT:IDP-D
+@SektAuth
 Feature: Authentisierung mit sektoralem IDP
 
   Die eRezept-App stößt eine Authentisierung über die IDP Föderation an
 
   Background: Initialisiere Testkontext durch Abfrage des Discovery Dokuments
     Given IDP I initialize scenario from discovery document endpoint
+    And IDP I add the token key "fed.tokenKey" to the key folder
     And TGR find request to path "/.well-known/openid-configuration"
     And TGR set local variable "fedAuthEndpoint" to "!{rbel:currentResponseAsString('$.body.body.federation_authorization_endpoint')}"
     And TGR set local variable "tokenEndpoint" to "!{rbel:currentResponseAsString('$.body.body.token_endpoint')}"
@@ -151,6 +153,45 @@ Feature: Authentisierung mit sektoralem IDP
             access_token:                       '.*'
           }
         """
+    Then TGR current response at "$.body.access_token.header" matches as JSON:
+        """
+          {
+            "alg": "dir",
+            "enc": "A256GCM",
+            "cty": "NJWT",
+            "exp": "${json-unit.ignore}"
+          }
+        """
+    Then TGR current response at "$.body.access_token.body.njwt.header" matches as JSON:
+        """
+          { alg: "BP256R1",
+            kid: "${json-unit.ignore}",
+            typ: "at+JWT"
+          }
+        """
+    Then TGR current response at "$.body.access_token.body.njwt.body" matches as JSON:
+        """
+          {
+            acr:              "gematik-ehealth-loa-high",
+            amr:              ["mfa"],
+            aud:              "${json-unit.ignore}",
+            auth_time:        "${json-unit.ignore}",
+            azp:              "eRezeptApp",
+            client_id:        "eRezeptApp",
+            exp:              "${json-unit.ignore}",
+            jti:              "${json-unit.ignore}",
+            family_name:      "",
+            given_name:       "",
+            iat:              "${json-unit.ignore}",
+            idNummer:         "X110411675",
+            iss:              "${fed.idpIss}",
+            organizationName: "109500969",
+            professionOID:    "1.2.276.0.76.4.49",
+            scope:            "openid e-rezept",
+            sub:              ".*",
+            display_name:     "Darius Michael Brian Ubbo Graf von Bödefeld"
+          }
+        """
 
 
   @TCID:IDP_REF_FEDAUTH_005
@@ -170,14 +211,14 @@ Feature: Authentisierung mit sektoralem IDP
       | <clientId> | xxxstatexxx | <redirectUri> | ds7JaEfpdLidWekR52OhoVpjXHDlplLyV3GtUezxfY0 | S256                  | <responseType> | 1234  | <scope> | <idpIss> |
     And TGR find request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "<errorCode>"
+    And TGR current response with attribute "<errorLocation>" matches "<errorMessage>"
 
     Examples:
-      | clientId      | redirectUri                         | responseType | scope           | idpIss                                | errorCode |
-      | invalidClient | https://redirect.gematik.de/erezept | code         | openid e-rezept | https://gsi.dev.gematik.solutions     | 400       |
-      | eRezeptApp    | http://redirect.gematik.de/erezept  | code         | openid e-rezept | https://gsi.dev.gematik.solutions     | 400       |
-      | eRezeptApp    | https://redirect.gematik.de/erezept | token        | openid e-rezept | https://gsi.dev.gematik.solutions     | 400       |
-      | eRezeptApp    | https://redirect.gematik.de/erezept | code         | openid fhir-vzd | https://gsi.dev.gematik.solutions     | 400       |
-      | eRezeptApp    | https://redirect.gematik.de/erezept | code         | openid e-rezept | https://idpfadi.dev.gematik.solutions | 400       |
+      | clientId      | redirectUri                         | responseType | scope           | idpIss                                | errorCode | errorLocation                              | errorMessage              |
+      | invalidClient | https://redirect.gematik.de/erezept | code         | openid e-rezept | https://gsi.dev.gematik.solutions     | 400       | $.body.gematik_error_text                  | client_id ist ungültig    |
+      | eRezeptApp    | http://redirect.gematik.de/erezept  | code         | openid e-rezept | https://gsi.dev.gematik.solutions     | 400       | $.body.gematik_error_text                  | redirect_uri ist ungültig |
+      | eRezeptApp    | https://redirect.gematik.de/erezept | token        | openid e-rezept | https://gsi.dev.gematik.solutions     | 302       | $.header.Location.gematik_error_text.value | .*response_type.*         |
+      | eRezeptApp    | https://redirect.gematik.de/erezept | code         | openid e-rezept | https://idpfadi.dev.gematik.solutions | 302       | $.header.Location.gematik_error_text.value | .*idp_iss.*               |
 
 
   @TCID:IDP_REF_FEDAUTH_006
