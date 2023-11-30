@@ -170,6 +170,28 @@ class TokenRetrievalTest {
   }
 
   @Test
+  void getAccessTokenWithEccWithExternalAuthenticate(
+      @Filename("833621999741600_c.hci.aut-apo-ecc") final PkiIdentity eccSmcbIdentity)
+      throws UnirestException {
+    final IdpTokenResult tokenResponse =
+        idpClient.login(
+            eccSmcbIdentity.getCertificate(),
+            tbsData -> {
+              try {
+                final Signature eccSign =
+                    Signature.getInstance("SHA256withECDSA", new BouncyCastleProvider());
+                eccSign.initSign(eccSmcbIdentity.getPrivateKey());
+                eccSign.update(tbsData, 0, tbsData.length);
+                return eccSign.sign();
+              } catch (final Exception e) {
+                throw new RuntimeException(e);
+              }
+            });
+
+    assertThat(tokenResponse.getTokenType()).as("TokenType").isEqualTo("Bearer");
+  }
+
+  @Test
   void authenticationForwardShouldContainSsoToken() throws UnirestException {
     idpClient.setAfterAuthenticationCallback(
         response -> assertThat(response.getHeaders().getFirst("Location")).contains("ssotoken="));

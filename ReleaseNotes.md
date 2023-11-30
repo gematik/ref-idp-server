@@ -1,3 +1,11 @@
+# Release 25.0.4
+
+- fix copywrite header
+
+# Release 25.0.3
+
+- add alg in JWK for P-256-Keys
+
 # Release 25.0.2
 
 - fix open redirect vulnerability

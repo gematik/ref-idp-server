@@ -28,7 +28,7 @@ import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Set;
 import lombok.SneakyThrows;
-import net.thucydides.core.annotations.Step;
+import net.serenitybdd.annotations.Step;
 import org.apache.commons.collections.IteratorUtils;
 import org.assertj.core.api.Assertions;
 import org.jose4j.json.JsonUtil;
