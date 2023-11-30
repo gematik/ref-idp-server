@@ -7,12 +7,12 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>25.0.2</version>
+    <version>25.0.4</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>idp-testsuite</artifactId>
-  <version>25.0.2</version>
+  <version>25.0.4</version>
   <packaging>jar</packaging>
 
   <properties>
@@ -154,7 +154,7 @@
     <dependency>
       <groupId>org.junit.vintage</groupId>
       <artifactId>junit-vintage-engine</artifactId>
-      <version>5.10.0</version>
+      <version>5.10.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -223,7 +223,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>properties-maven-plugin</artifactId>
-        <version>1.2.0</version>
+        <version>1.2.1</version>
         <executions>
           <execution>
             <goals>
@@ -373,7 +373,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.1.1</version>
         <executions>
           <execution>
             <id>aforeporter</id>

@@ -16,6 +16,8 @@
 
 package de.gematik.idp.data;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import java.security.cert.X509Certificate;
@@ -26,7 +28,7 @@ import lombok.NoArgsConstructor;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECPoint;
-import org.jose4j.keys.BigEndianBigInteger;
+import org.jose4j.base64url.Base64Url;
 
 @Data
 @AllArgsConstructor
@@ -42,6 +44,10 @@ public class IdpEccKeyDescriptor extends IdpKeyDescriptor {
   @JsonProperty("y")
   private String eccPointYValue;
 
+  @JsonInclude(Include.NON_NULL)
+  @JsonProperty("alg")
+  private String alg;
+
   @Builder
   public IdpEccKeyDescriptor(
       final String[] x5c,
@@ -50,11 +56,13 @@ public class IdpEccKeyDescriptor extends IdpKeyDescriptor {
       final String keyType,
       final String eccCurveName,
       final String eccPointXValue,
-      final String eccPointYValue) {
+      final String eccPointYValue,
+      final String alg) {
     super(x5c, publicKeyUse, keyId, keyType);
     this.eccCurveName = eccCurveName;
     this.eccPointXValue = eccPointXValue;
     this.eccPointYValue = eccPointYValue;
+    this.alg = alg;
   }
 
   public static IdpKeyDescriptor constructFromX509Certificate(
@@ -68,6 +76,7 @@ public class IdpEccKeyDescriptor extends IdpKeyDescriptor {
 
       final BCECPublicKey bcecPublicKey = (BCECPublicKey) (certificate.getPublicKey());
       String eccCurveName = "";
+      String alg = null;
       if (((ECNamedCurveParameterSpec) bcecPublicKey.getParameters())
           .getName()
           .equals("brainpoolP256r1")) {
@@ -76,6 +85,7 @@ public class IdpEccKeyDescriptor extends IdpKeyDescriptor {
           .getName()
           .equals("prime256v1")) {
         eccCurveName = "P-256";
+        alg = "ES256";
       } else {
         throw new IdpCryptoException(
             "Unknown Key-Format encountered: '"
@@ -86,10 +96,10 @@ public class IdpEccKeyDescriptor extends IdpKeyDescriptor {
       final ECPoint generator = bcecPublicKey.getQ();
       descriptorBuilder
           .eccCurveName(eccCurveName)
-          .eccPointXValue(
-              BigEndianBigInteger.toBase64Url(generator.getAffineXCoord().toBigInteger()))
-          .eccPointYValue(
-              BigEndianBigInteger.toBase64Url(generator.getAffineYCoord().toBigInteger()));
+          .eccPointXValue(Base64Url.encode(generator.getAffineXCoord().getEncoded()))
+          .eccPointYValue(Base64Url.encode(generator.getAffineYCoord().getEncoded()))
+          .alg(alg);
+
 
       return descriptorBuilder.build();
     } catch (final ClassCastException e) {

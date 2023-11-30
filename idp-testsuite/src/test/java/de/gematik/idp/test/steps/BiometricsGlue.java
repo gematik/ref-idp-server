@@ -24,12 +24,13 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.When;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
-import net.thucydides.core.annotations.Steps;
+import net.serenitybdd.annotations.Steps;
 
 @Slf4j
 public class BiometricsGlue {
 
-  @Steps IdpBiometricsSteps biosteps;
+  @Steps
+  IdpBiometricsSteps biosteps;
 
   @Steps CucumberValuesConverter cucumberValuesConverter;
 

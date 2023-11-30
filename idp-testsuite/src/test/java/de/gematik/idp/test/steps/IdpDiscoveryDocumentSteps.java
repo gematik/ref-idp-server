@@ -27,8 +27,8 @@ import io.restassured.config.SSLConfig;
 import io.restassured.response.Response;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import net.serenitybdd.annotations.Step;
 import net.serenitybdd.rest.SerenityRest;
-import net.thucydides.core.annotations.Step;
 
 @Slf4j
 public class IdpDiscoveryDocumentSteps extends IdpStepsBase {

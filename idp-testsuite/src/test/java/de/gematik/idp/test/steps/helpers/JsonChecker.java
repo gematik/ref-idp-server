@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import de.gematik.test.bdd.Context;
 import java.util.Iterator;
 import lombok.SneakyThrows;
-import net.thucydides.core.annotations.Step;
+import net.serenitybdd.annotations.Step;
 import org.apache.commons.collections.IteratorUtils;
 import org.assertj.core.api.Assertions;
 import org.json.JSONArray;
