@@ -1,5 +1,5 @@
 idp:
-  version: @project.version@
+  version: '@project.version@'
   idpSig:
     fileName: classpath:idp_sig.p12
     keyId: puk_idp_sig
@@ -18,6 +18,7 @@ idp:
   fedAuthEndpoint: "https://idpfadi.dev.gematik.solutions/auth"
   debug:
     requestLogging: true
+  loglevel: info
   subjectSaltValue: fkdlsjaviaen4evdsnavaew4vcxo
   blockedClientSystems:
     - "blocked_user_agent"
@@ -225,10 +226,6 @@ idp:
         detailMessage: "Challenge ist abgelaufen"
         error: INVALID_REQUEST
         code: 2032
-
-caching:
-  discoveryDocument:
-    cacheControl: "max-age=300"
 server:
   port: ${SERVER_PORT:8080}
 management:

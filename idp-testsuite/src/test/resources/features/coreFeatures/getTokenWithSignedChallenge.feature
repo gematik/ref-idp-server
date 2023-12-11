@@ -430,7 +430,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
 
-    When IDP I sign the challenge with '/certs/valid/egk-idp-idnumber-a-folgekarte-ecc.p12'
+    When IDP I sign the challenge with '/certs/valid/egk-idp-idnumber-a-folgekarte-ecc-2.p12'
     And IDP I request a code token with signed challenge successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     And IDP I request an access token
@@ -676,5 +676,5 @@ Feature: Fordere Access Token mit einer signierten Challenge an
       | /certs/invalid/egk-idp-famname-null-ecc-2.p12   |
       | /certs/invalid/egk-idp-firstname-null-ecc-2.p12 |
 #      | '/certs/invalid/egk-idp-orgname-null-ecc-2.p12'   |
-      | /certs/invalid/egk-idp-profid-null-ecc-2.p12      |
+      | /certs/invalid/egk-idp-profid-null-ecc-2.p12    |
 
