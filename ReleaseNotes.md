@@ -1,3 +1,8 @@
+# Release 25.0.5
+
+- replace test certificates that are about to expire
+- update dependencies
+
 # Release 25.0.4
 
 - fix copywrite header

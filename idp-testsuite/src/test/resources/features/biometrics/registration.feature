@@ -257,10 +257,10 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
     And IDP the response is an <status> error with gematik code <errid> and error '<errcode>'
 
     Examples: Liste mit Einträgen wo immer ein Zertifikat unterschiedlich aber gültig ist
-      | status | errcode       | errid | key_identifier     | cert_access                        | cert_keydata     | cert_public_key                       | cert_sign                             | cert_register                         |
-      | 403    | access_denied | 4001  | keyidentdiffcert03 | egk-idp-idnumber-a-valid-ecc-2.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-folgekarte-ecc.p12 | egk-idp-idnumber-a-valid-ecc-2.p12    | egk-idp-idnumber-a-valid-ecc-2.p12    |
-      | 403    | access_denied | 4001  | keyidentdiffcert04 | egk-idp-idnumber-a-valid-ecc-2.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc-2.p12    | egk-idp-idnumber-a-folgekarte-ecc.p12 | egk-idp-idnumber-a-valid-ecc-2.p12    |
-      | 403    | access_denied | 4001  | keyidentdiffcert05 | egk-idp-idnumber-a-valid-ecc-2.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc-2.p12    | egk-idp-idnumber-a-valid-ecc-2.p12    | egk-idp-idnumber-a-folgekarte-ecc.p12 |
+      | status | errcode       | errid | key_identifier     | cert_access                        | cert_keydata     | cert_public_key                         | cert_sign                               | cert_register                           |
+      | 403    | access_denied | 4001  | keyidentdiffcert03 | egk-idp-idnumber-a-valid-ecc-2.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-folgekarte-ecc-2.p12 | egk-idp-idnumber-a-valid-ecc-2.p12      | egk-idp-idnumber-a-valid-ecc-2.p12      |
+      | 403    | access_denied | 4001  | keyidentdiffcert04 | egk-idp-idnumber-a-valid-ecc-2.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc-2.p12      | egk-idp-idnumber-a-folgekarte-ecc-2.p12 | egk-idp-idnumber-a-valid-ecc-2.p12      |
+      | 403    | access_denied | 4001  | keyidentdiffcert05 | egk-idp-idnumber-a-valid-ecc-2.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc-2.p12      | egk-idp-idnumber-a-valid-ecc-2.p12      | egk-idp-idnumber-a-folgekarte-ecc-2.p12 |
 
 
   @Approval @Ready
@@ -283,7 +283,7 @@ Feature: Registrierung für Alternative Authentisierung am IDP Server
 
     Examples: Liste mit Einträgen wo immer ein Zertifikat mit anderer IDNummer unterschiedlich aber gültig ist
       | status | errcode       | errid | key_identifier     | cert_access                        | cert_keydata     | cert_public_key                    | cert_sign                          | cert_register                      |
-     # | 400    | invalid_parameter_value | -1    | keyidentdiffcert01 | egk-idp-idnumber-a-folgekarte-ecc.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc-2.p12 | egk-idp-idnumber-a-valid-ecc-2.p12 | egk-idp-idnumber-a-valid-ecc-2.p12 |
+     # | 400    | invalid_parameter_value | -1    | keyidentdiffcert01 | egk-idp-idnumber-a-folgekarte-ecc-2.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc-2.p12 | egk-idp-idnumber-a-valid-ecc-2.p12 | egk-idp-idnumber-a-valid-ecc-2.p12 |
       | 403    | access_denied | 4001  | keyidentdiffcert01 | egk-idp-idnumber-b-valid-ecc-2.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc-2.p12 | egk-idp-idnumber-a-valid-ecc-2.p12 | egk-idp-idnumber-a-valid-ecc-2.p12 |
       # | 409    | invalid_request | 4004  | keyidentdiffcert03 | egk-idp-idnumber-a-valid-ecc-2.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-b-valid-ecc-2.p12 | egk-idp-idnumber-a-valid-ecc-2.p12 | egk-idp-idnumber-a-valid-ecc-2.p12 |
       | 403    | access_denied | 4001  | keyidentdiffcert04 | egk-idp-idnumber-a-valid-ecc-2.p12 | Pub_Se_Aut-1.pem | egk-idp-idnumber-a-valid-ecc-2.p12 | egk-idp-idnumber-b-valid-ecc-2.p12 | egk-idp-idnumber-a-valid-ecc-2.p12 |
