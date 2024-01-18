@@ -59,7 +59,7 @@ idp:
       redirectUri: http://test-ps.gematik.de/erezept
       returnSsoToken: false
     AuthenticatorDevLocal:
-      redirectUri: http://localhost:3500/callback
+      redirectUri: https://localhost:3500/callback
       returnSsoToken: true
     GematikNotificationGateway:
       redirectUri: http://localhost:9042/notification-gateway/callback

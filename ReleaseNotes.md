@@ -1,3 +1,9 @@
+# Release 25.1.0
+
+- update unit test data
+- update dependencies
+- extend API to read PublicKey and plain PrivateKey from pem file
+
 # Release 25.0.5
 
 - replace test certificates that are about to expire
@@ -5,7 +11,7 @@
 
 # Release 25.0.4
 
-- fix copywrite header
+- fix copyright header
 
 # Release 25.0.3
 
@@ -64,7 +70,7 @@
 # Release 23.0.1
 
 - remove federation from repository (keep fedmaster)
-- idp-sektoral with fasttrack functionality only (not published on github)
+- idp-sektoral with fasttrack functionality only (not published on gitHub)
 - external pull request for docker-compose integrated
 
 # Release 22.0.4

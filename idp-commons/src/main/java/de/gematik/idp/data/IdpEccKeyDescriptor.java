@@ -100,7 +100,6 @@ public class IdpEccKeyDescriptor extends IdpKeyDescriptor {
           .eccPointYValue(Base64Url.encode(generator.getAffineYCoord().getEncoded()))
           .alg(alg);
 
-
       return descriptorBuilder.build();
     } catch (final ClassCastException e) {
       throw new IdpCryptoException("Unknown Key-Format encountered!", e);

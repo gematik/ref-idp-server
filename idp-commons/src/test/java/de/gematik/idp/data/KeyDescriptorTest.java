@@ -32,12 +32,13 @@ public class KeyDescriptorTest {
   @Test
   void correctPointCoordsInEccKeyDescriptor_pubkeyWithLeadingZeros() {
     final byte[] pemFileContent =
-        FileUtils.readFileToByteArray(
-            new File("src/test/resources/jwk_testcert.pem"));
+        FileUtils.readFileToByteArray(new File("src/test/resources/jwk_testcert.pem"));
     final X509Certificate certificate = CryptoLoader.getCertificateFromPem(pemFileContent);
-    final IdpEccKeyDescriptor keyDescriptor = (IdpEccKeyDescriptor) constructFromX509Certificate(certificate, "myKid", false);
-    assertThat(keyDescriptor.getEccPointXValue()).isEqualTo("YzEPFvphu4T3GgWmjPXxPT0-Pdm_Q04OLENAH98zn-M");
-    assertThat(keyDescriptor.getEccPointYValue()).isEqualTo("AHPHggsq6YwFfW2fSIJtawMLAh9ZoKPFTZqPFgQW0t4");
+    final IdpEccKeyDescriptor keyDescriptor =
+        (IdpEccKeyDescriptor) constructFromX509Certificate(certificate, "myKid", false);
+    assertThat(keyDescriptor.getEccPointXValue())
+        .isEqualTo("YzEPFvphu4T3GgWmjPXxPT0-Pdm_Q04OLENAH98zn-M");
+    assertThat(keyDescriptor.getEccPointYValue())
+        .isEqualTo("AHPHggsq6YwFfW2fSIJtawMLAh9ZoKPFTZqPFgQW0t4");
   }
-
 }
