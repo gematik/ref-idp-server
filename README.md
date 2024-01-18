@@ -52,7 +52,7 @@ or use docker compose:
 
 ```console
 $ mvn clean install -pl idp-server -am -Dskip.unittests -Dskip.inttests
-$ export appVersion=25.0.5
+$ export appVersion=25.1.0
 $ export serverLoglevel=info (default)
 $ docker-compose --project-name myidp -f docker-compose-ref.yml up -d
 ```
@@ -71,6 +71,8 @@ modify entries in the scopesConfiguration section of the idp-server's applicatio
 ### Unittests
 
 disable: `-Dskip.unittests`
+
+The key `ref-es-sig` can be published and was therefore added for unit tests (KeyUtilityTest).
 
 ### Integration Testing/Approval Testing
 

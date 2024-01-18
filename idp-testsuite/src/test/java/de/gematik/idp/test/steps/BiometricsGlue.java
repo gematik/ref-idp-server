@@ -29,8 +29,7 @@ import net.serenitybdd.annotations.Steps;
 @Slf4j
 public class BiometricsGlue {
 
-  @Steps
-  IdpBiometricsSteps biosteps;
+  @Steps IdpBiometricsSteps biosteps;
 
   @Steps CucumberValuesConverter cucumberValuesConverter;
 

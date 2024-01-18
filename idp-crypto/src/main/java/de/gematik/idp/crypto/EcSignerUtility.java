@@ -27,7 +27,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class EcSignerUtility {
+public final class EcSignerUtility {
 
   public static byte[] createEcSignature(final byte[] toBeSignedData, final PrivateKey privateKey) {
     try {

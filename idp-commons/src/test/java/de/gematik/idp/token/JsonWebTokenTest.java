@@ -57,11 +57,11 @@ class JsonWebTokenTest {
 
   private PkiIdentity identityNist;
 
-  // key from idp\idp-commons\src\test\resources\sig-nist.p12
+  // sig-nist key generated in openSSL
   private static final String JWK_AS_STRING =
       "{\"use\": \"enc\",\"kid\": \"ref_puk_fd_enc\",\"kty\": \"EC\",\"crv\": \"P-256\",\"x\":"
-          + " \"Mq933FT_V8xd1TkfB0pH02d6cx2bmUS-bxHuBtA1yfs\",\"y\":"
-          + " \"5uwf8phUbWIi92CqgglM94ft-FC4MHH836khswo6ppo\"}";
+          + " \"lP7-tZwWhO6LopclYdUIwaXdYVW8Pb0iHY1NVEmH_ik\",\"y\":"
+          + " \"yuosJfEVZdmDj3sZo6hmoJJz_CzAvrrgDq3jChs2uAY\"}";
 
   @BeforeEach
   public void setup(

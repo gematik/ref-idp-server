@@ -7,18 +7,18 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>25.0.5</version>
+    <version>25.1.0</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>idp-testsuite</artifactId>
-  <version>25.0.5</version>
+  <version>25.1.0</version>
   <packaging>jar</packaging>
 
   <properties>
     <idp-server.spring.profile>idp</idp-server.spring.profile>
     <sektoral-idp.spring.profile>sektoralIdp</sektoral-idp.spring.profile>
-    <version.datatable>7.14.1</version.datatable>
+    <version.datatable>7.15.0</version.datatable>
   </properties>
 
   <dependencies>

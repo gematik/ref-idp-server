@@ -39,7 +39,7 @@ import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class EcKeyUtility {
+public final class EcKeyUtility {
 
   public static PublicKey genPublicKey(final String algorithm, final ECPoint ecPoint) {
     try {

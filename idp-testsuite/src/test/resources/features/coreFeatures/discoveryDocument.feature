@@ -132,7 +132,7 @@ Feature: Fordere Discovery Dokument an
             ____code_challenge_methods_supported:   ["S256"]
           }
         """
-    And TGR current response at "$.body.body.scopes_supported" matches ".*openid.*e-rezept.*pairing.*"
+    And TGR current response with attribute "$.body.body.scopes_supported" matches ".*openid.*e-rezept.*pairing.*"
 
 
   @TCID:IDP_REF_DISC_005 @PRIO:2
