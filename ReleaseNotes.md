@@ -1,3 +1,7 @@
+# Release 25.1.1
+
+- IdpJwtProcessor can be instantiated without X509Certificate
+
 # Release 25.1.0
 
 - update unit test data

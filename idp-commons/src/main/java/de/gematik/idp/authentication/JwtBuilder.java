@@ -144,8 +144,7 @@ public class JwtBuilder {
     } else if (signerKey instanceof RSAPrivateKey) {
       return AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
     } else {
-      throw new IdpCryptoException(
-          "Could not identify Signer-Key: " + signerKey.getClass().toString());
+      throw new IdpCryptoException("Could not identify Signer-Key: " + signerKey.getClass());
     }
   }
 
