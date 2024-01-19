@@ -25,7 +25,9 @@ import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.token.JsonWebToken;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
 import java.util.Objects;
@@ -42,6 +44,24 @@ public class IdpJwtProcessor {
   private final String algorithm;
   private Optional<String> keyId;
   private PrivateKey privateKey;
+
+  public IdpJwtProcessor(final PrivateKey privKey, final String keyId) {
+    this.certificate = null;
+    privateKey = privKey;
+    this.keyId = Optional.ofNullable(keyId);
+    if (privKey instanceof final ECPrivateKey ecprivatekey) {
+      if (ecprivatekey.getParams() instanceof final ECNamedCurveSpec ecNamedCurveSpec
+          && ecNamedCurveSpec.getName().equals("prime256v1")) {
+        algorithm = "ES256";
+      } else {
+        algorithm = BRAINPOOL256_USING_SHA256;
+      }
+    } else if (privKey instanceof RSAPrivateKey) {
+      algorithm = AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
+    } else {
+      throw new IdpCryptoException("Could not identify Private-Key: " + privKey.getClass());
+    }
+  }
 
   public IdpJwtProcessor(@NonNull final PkiIdentity identity, final Optional<String> keyId) {
     this(identity.getCertificate());
@@ -70,7 +90,7 @@ public class IdpJwtProcessor {
       algorithm = AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
     } else {
       throw new IdpCryptoException(
-          "Could not identify Public-Key: " + certificate.getPublicKey().getClass().toString());
+          "Could not identify Public-Key: " + certificate.getPublicKey().getClass());
     }
   }
 

@@ -34,15 +34,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers;
+import de.gematik.idp.crypto.KeyUtility;
+import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import de.gematik.idp.crypto.model.PkiIdentity;
+import de.gematik.idp.file.ResourceReader;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.JsonWebToken;
+import java.io.Serial;
+import java.math.BigInteger;
+import java.security.PrivateKey;
 import java.security.Security;
+import java.security.interfaces.DSAParams;
+import java.security.interfaces.DSAPrivateKey;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.SneakyThrows;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -165,6 +174,82 @@ class IdpJwtProcessorTest {
     jwtBuilder
         .getClaims()
         .forEach((key, value) -> assertThat(payloadAsString).contains(value.toString()));
+  }
+
+  @SneakyThrows
+  @Test
+  void createFromPrivateKeyEcc() {
+    final PrivateKey privateKey =
+        KeyUtility.readX509PrivateKeyPlain(
+            ResourceReader.getFileFromResourceAsTmpFile("keys/ref-es-sig_privKey.pem"));
+    assertThat(privateKey).isNotNull();
+    final IdpJwtProcessor idpJwtProc = new IdpJwtProcessor(privateKey, "puk_idp_sig_test");
+    final JsonWebToken jwt = idpJwtProc.buildJwt(jwtBuilder);
+    assertThat(jwt).isNotNull();
+  }
+
+  @Test
+  void createFromPrivateKey_wrongPrivateKeyObject() {
+    final PrivateKey privateKey =
+        new DSAPrivateKey() {
+          @Serial private static final long serialVersionUID = 8001498111124156703L;
+
+          @Override
+          public BigInteger getX() {
+            return null;
+          }
+
+          @Override
+          public String getAlgorithm() {
+            return null;
+          }
+
+          @Override
+          public String getFormat() {
+            return null;
+          }
+
+          @Override
+          public byte[] getEncoded() {
+            return new byte[0];
+          }
+
+          @Override
+          public DSAParams getParams() {
+            return null;
+          }
+        };
+    assertThat(privateKey).isNotNull();
+
+    assertThatThrownBy(() -> new IdpJwtProcessor(privateKey, "puk_idp_sig_test"))
+        .isInstanceOf(IdpCryptoException.class)
+        .hasMessageContaining("Could not identify Private-Key");
+  }
+
+  @SneakyThrows
+  @Test
+  void createFromPrivateKeyBrainpool() {
+    final PrivateKey privateKey =
+        KeyUtility.readX509PrivateKeyPlain(
+            ResourceReader.getFileFromResourceAsTmpFile(
+                "keys/1_C.SGD-HSM.AUT_oid_sgd1_hsm_ecc-bpool-privKey.pem"));
+    assertThat(privateKey).isNotNull();
+    final IdpJwtProcessor idpJwtProc = new IdpJwtProcessor(privateKey, "my_brainpool_key");
+    final JsonWebToken jwt = idpJwtProc.buildJwt(jwtBuilder);
+    assertThat(jwt).isNotNull();
+  }
+
+  @SneakyThrows
+  @Test
+  void createFromPrivateKeyRsa() {
+    final PrivateKey privateKey =
+        KeyUtility.readX509PrivateKeyPlain(
+            ResourceReader.getFileFromResourceAsTmpFile(
+                "keys/1_C.SGD-HSM.AUT_oid_sgd1_hsm_rsa-privKey.pem"));
+    assertThat(privateKey).isNotNull();
+    final IdpJwtProcessor idpJwtProc = new IdpJwtProcessor(privateKey, "my_rsa_key");
+    final JsonWebToken jwt = idpJwtProc.buildJwt(jwtBuilder);
+    assertThat(jwt).isNotNull();
   }
 
   private JsonWebToken createJwt(final PkiIdentity identity) {

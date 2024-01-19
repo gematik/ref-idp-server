@@ -13,7 +13,7 @@
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-global</artifactId>
-  <version>25.1.0</version>
+  <version>25.1.1</version>
   <packaging>pom</packaging>
 
   <description>IDP</description>
