@@ -98,7 +98,9 @@ class AuthenticationResponseBuilderTest {
             .build();
 
     authenticationChallengeVerifier =
-        AuthenticationChallengeVerifier.builder().serverIdentity(serverIdentity).build();
+        AuthenticationChallengeVerifier.builder()
+            .serverPublicKey(serverIdentity.getCertificate().getPublicKey())
+            .build();
 
     challenge =
         authenticationChallengeBuilder.buildAuthenticationChallenge(

@@ -30,7 +30,6 @@ import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -156,10 +155,10 @@ public class X509ClaimExtraction {
       throw new IdpCryptoException("No profession OID found!");
     }
     for (final ASN1Encodable encodable : admissionEntry.get()) {
-      if (encodable instanceof DLSequence) {
-        final ASN1Encodable obj = ((DLSequence) encodable).getObjectAt(0);
-        if (obj instanceof ASN1ObjectIdentifier) {
-          return Optional.of((ASN1ObjectIdentifier) obj);
+      if (encodable instanceof final DLSequence dlSequence) {
+        final ASN1Encodable obj = dlSequence.getObjectAt(0);
+        if (obj instanceof final ASN1ObjectIdentifier aSN1ObjectIdentifier) {
+          return Optional.of(aSN1ObjectIdentifier);
         }
       }
     }
@@ -172,8 +171,8 @@ public class X509ClaimExtraction {
       return Optional.empty();
     }
     for (final ASN1Encodable encodable : admissionEntry.get()) {
-      if (encodable instanceof DERPrintableString) {
-        return Optional.ofNullable(((DERPrintableString) encodable).getString());
+      if (encodable instanceof final DERPrintableString derPrintableString) {
+        return Optional.of(derPrintableString.getString());
       }
     }
     return Optional.empty();
@@ -190,11 +189,9 @@ public class X509ClaimExtraction {
       final ASN1Encodable parsedValue = JcaX509ExtensionUtils.parseExtensionValue(data);
       final DLSequence a = (DLSequence) parsedValue;
       DLSequence b = null;
-      final Iterator<ASN1Encodable> iterator = a.iterator();
-      while (iterator.hasNext()) {
-        final ASN1Encodable next = iterator.next();
-        if (next instanceof DLSequence) {
-          b = (DLSequence) next;
+      for (final ASN1Encodable next : a) {
+        if (next instanceof final DLSequence dlSequence) {
+          b = dlSequence;
         }
       }
       if (b == null) {

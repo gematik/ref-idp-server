@@ -26,7 +26,7 @@ class ResourceReaderTest {
   @Test
   void getFileFromResourceAsTmpFile_FileFound() {
     assertDoesNotThrow(
-        () -> ResourceReader.getFileFromResourceAsTmpFile("keys/ref-es-sigkey_pub.pem"));
+        () -> ResourceReader.getFileFromResourceAsTmpFile("keys/ref-es-sig-pubkey.pem"));
   }
 
   @Test

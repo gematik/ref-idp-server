@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
+import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -48,6 +49,9 @@ public class IdpEccKeyDescriptor extends IdpKeyDescriptor {
   @JsonProperty("alg")
   private String alg;
 
+  // added for javadoc plugin
+  public static class IdpEccKeyDescriptorBuilder {}
+
   @Builder
   public IdpEccKeyDescriptor(
       final String[] x5c,
@@ -67,14 +71,25 @@ public class IdpEccKeyDescriptor extends IdpKeyDescriptor {
 
   public static IdpKeyDescriptor constructFromX509Certificate(
       final X509Certificate certificate, final String keyId, final boolean addX5C) {
-    try {
-      final IdpEccKeyDescriptor.IdpEccKeyDescriptorBuilder descriptorBuilder =
-          IdpEccKeyDescriptor.builder().keyId(keyId).keyType(getKeyType(certificate));
-      if (addX5C) {
-        descriptorBuilder.x5c(getCertArray(certificate));
-      }
+    final IdpEccKeyDescriptor.IdpEccKeyDescriptorBuilder descriptorBuilder =
+        IdpEccKeyDescriptor.builder().keyId(keyId).keyType(getKeyType(certificate));
+    if (addX5C) {
+      descriptorBuilder.x5c(getCertArray(certificate));
+    }
+    return getIdpEccKeyDescriptor(certificate.getPublicKey(), descriptorBuilder);
+  }
 
-      final BCECPublicKey bcecPublicKey = (BCECPublicKey) (certificate.getPublicKey());
+  public static IdpKeyDescriptor createFromPublicKey(
+      final PublicKey publicKey, final String keyId) {
+    final IdpEccKeyDescriptor.IdpEccKeyDescriptorBuilder descriptorBuilder =
+        IdpEccKeyDescriptor.builder().keyId(keyId).keyType(getKeyType(publicKey));
+    return getIdpEccKeyDescriptor(publicKey, descriptorBuilder);
+  }
+
+  private static IdpEccKeyDescriptor getIdpEccKeyDescriptor(
+      final PublicKey publicKey, final IdpEccKeyDescriptorBuilder descriptorBuilder) {
+    try {
+      final BCECPublicKey bcecPublicKey = (BCECPublicKey) publicKey;
       String eccCurveName = "";
       String alg = null;
       if (((ECNamedCurveParameterSpec) bcecPublicKey.getParameters())

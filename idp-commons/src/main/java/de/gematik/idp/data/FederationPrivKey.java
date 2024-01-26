@@ -29,7 +29,7 @@ public class FederationPrivKey {
 
   private final PkiIdentity identity;
   private Optional<Boolean> addX5c;
-  private Optional<String> keyId;
+  private String keyId;
   private Optional<String> use;
 
   public IdpKeyDescriptor buildJwk() {

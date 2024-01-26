@@ -36,7 +36,7 @@ public class IdpKey {
   public IdpKeyDescriptor buildJwk() {
     final IdpKeyDescriptor keyDesc =
         IdpKeyDescriptor.constructFromX509Certificate(
-            identity.getCertificate(), keyId, addX5c.orElse(false));
+            identity.getCertificate(), keyId.orElse("null"), addX5c.orElse(false));
     keyDesc.setPublicKeyUse(use.orElse(null));
     return keyDesc;
   }

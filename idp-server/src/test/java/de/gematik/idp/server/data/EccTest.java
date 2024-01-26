@@ -17,14 +17,19 @@
 package de.gematik.idp.server.data;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
 import de.gematik.idp.crypto.EcKeyUtility;
+import de.gematik.idp.crypto.KeyUtility;
+import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import de.gematik.idp.data.IdpEccKeyDescriptor;
 import de.gematik.idp.data.IdpJwksDocument;
 import de.gematik.idp.data.IdpKeyDescriptor;
+import de.gematik.idp.file.ResourceReader;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.token.JsonWebToken;
+import java.io.File;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.PublicKey;
@@ -81,7 +86,7 @@ class EccTest {
                           final IdpKeyDescriptor keyDesc =
                               IdpKeyDescriptor.constructFromX509Certificate(
                                   idpKey.getIdentity().getCertificate(),
-                                  idpKey.getKeyId(),
+                                  idpKey.getKeyId().orElse("null"),
                                   idpKey
                                       .getKeyId()
                                       .map(id -> !id.equals("puk_idp_enc"))
@@ -110,11 +115,58 @@ class EccTest {
     Assertions.assertDoesNotThrow(() -> jwt.encryptAsNjwt(pk));
   }
 
+  /**
+   * This test is to check if the public key can be read from a X509Certificate object and from a
+   * PEM file (without a certificate envelope) as well. Keys are put into an IdpJwksDocument.
+   */
+  @SneakyThrows
+  @Test
+  void IdpJwksDocument_PubKeysFromMixedSources() {
+    final List<IdpKeyDescriptor> keys = new java.util.ArrayList<>(List.of());
+    keys.add(
+        IdpKeyDescriptor.constructFromX509Certificate(
+            idpSig.getIdentity().getCertificate(), idpSig.getKeyId().orElse("null")));
+    keys.add(
+        IdpKeyDescriptor.createFromPublicKey(
+            KeyUtility.readX509PublicKey(
+                ResourceReader.getFileFromResourceAsTmpFile("idp_enc_pubkey.pem")),
+            "puk_idp_enc"));
+    final IdpJwksDocument idpJwksDocument = IdpJwksDocument.builder().keys(keys).build();
+
+    assertThat(idpJwksDocument.getKeys()).hasSize(2);
+  }
+
+  @SneakyThrows
+  @Test
+  void IdpJwksDocument_PubKeyPrime256v1() {
+    final List<IdpKeyDescriptor> keys = new java.util.ArrayList<>(List.of());
+    keys.add(
+        IdpKeyDescriptor.createFromPublicKey(
+            KeyUtility.readX509PublicKey(
+                ResourceReader.getFileFromResourceAsTmpFile("fedmaster-sig-pubkey.pem")),
+            "fed_sig_key"));
+    final IdpJwksDocument idpJwksDocument = IdpJwksDocument.builder().keys(keys).build();
+
+    assertThat(idpJwksDocument.getKeys()).hasSize(1);
+  }
+
+  @SneakyThrows
+  @Test
+  void IdpJwksDocument_PubKeySecP256k1NotSupported() {
+    final File file = ResourceReader.getFileFromResourceAsTmpFile("ecpublickey_secp256k1.pem");
+    final PublicKey publicKey = KeyUtility.readX509PublicKey(file);
+
+    assertThatThrownBy(() -> IdpKeyDescriptor.createFromPublicKey(publicKey, "anyKeyId"))
+        .isInstanceOf(IdpCryptoException.class)
+        .hasMessageContaining("Unknown Key-Format");
+  }
+
   @SneakyThrows
   @Test
   void encryptWithPubKeyFromXYCoordsFromCertificate() {
     final IdpKeyDescriptor idpKeyDescriptor =
-        IdpKeyDescriptor.constructFromX509Certificate(idpEnc.getIdentity().getCertificate());
+        IdpKeyDescriptor.constructFromX509Certificate(
+            idpEnc.getIdentity().getCertificate(), idpEnc.getKeyId().orElse("null"));
     final IdpEccKeyDescriptor idpEncDesc = (IdpEccKeyDescriptor) idpKeyDescriptor;
 
     final BigInteger theX =
@@ -141,7 +193,8 @@ class EccTest {
     final String curve = "brainpoolP256r1";
 
     final IdpKeyDescriptor idpKeyDescriptor =
-        IdpKeyDescriptor.constructFromX509Certificate(idpEnc.getIdentity().getCertificate());
+        IdpKeyDescriptor.constructFromX509Certificate(
+            idpEnc.getIdentity().getCertificate(), idpEnc.getKeyId().orElse("null"));
     final IdpEccKeyDescriptor idpEncDesc = (IdpEccKeyDescriptor) idpKeyDescriptor;
 
     final ECPublicKey ecPublicKey =
@@ -171,7 +224,8 @@ class EccTest {
     final PublicKey pubKeyCert = idpEnc.getIdentity().getCertificate().getPublicKey();
 
     final IdpKeyDescriptor idpKeyDescriptor =
-        IdpKeyDescriptor.constructFromX509Certificate(idpEnc.getIdentity().getCertificate());
+        IdpKeyDescriptor.constructFromX509Certificate(
+            idpEnc.getIdentity().getCertificate(), idpEnc.getKeyId().orElse("null"));
     final IdpEccKeyDescriptor idpEncDesc = (IdpEccKeyDescriptor) idpKeyDescriptor;
 
     final BigInteger theX =

@@ -24,20 +24,27 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Security;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.Test;
 
 class KeyUtilityTest {
+  static {
+    Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+    Security.insertProviderAt(new BouncyCastleProvider(), 1);
+  }
 
   @Test
   void readX509PublicKey() {
     final PublicKey publicKey =
-        KeyUtility.readX509PublicKey(new File("src/test/resources/keys/ref-es-sigkey_pub.pem"));
+        KeyUtility.readX509PublicKey(new File("src/test/resources/keys/ref-es-sig-pubkey.pem"));
     assertThat(publicKey).isNotNull();
   }
 
   @Test
   void readX509PublicKey_fileNotFound() {
-    assertThatThrownBy(() -> KeyUtility.readX509PublicKey(new File("non_existing_file")))
+    final File file = new File("non_existing_file");
+    assertThatThrownBy(() -> KeyUtility.readX509PublicKey(file))
         .isInstanceOf(IdpCryptoException.class)
         .hasCauseInstanceOf(FileNotFoundException.class);
   }
@@ -46,7 +53,7 @@ class KeyUtilityTest {
   void readX509PrivateKey_plain() {
     final PrivateKey privateKey =
         KeyUtility.readX509PrivateKeyPlain(
-            new File("src/test/resources/keys/ref-es-sig_privKey.pem"));
+            new File("src/test/resources/keys/ref-es-sig-privkey.pem"));
     assertThat(privateKey).isNotNull();
   }
 

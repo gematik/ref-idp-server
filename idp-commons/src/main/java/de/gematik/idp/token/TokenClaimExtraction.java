@@ -103,12 +103,12 @@ public class TokenClaimExtraction {
   public static ZonedDateTime claimToZonedDateTime(final Object claim) {
     Objects.requireNonNull(claim);
 
-    if (claim instanceof String) {
-      return claimToZonedDateTime(Long.parseLong((String) claim));
-    } else if (claim instanceof Long) {
-      return claimToZonedDateTime((Long) claim);
-    } else if (claim instanceof Integer) {
-      return claimToZonedDateTime(Integer.toUnsignedLong((Integer) claim));
+    if (claim instanceof final String claimString) {
+      return claimToZonedDateTime(Long.parseLong(claimString));
+    } else if (claim instanceof final Long claimLong) {
+      return claimToZonedDateTime(claimLong);
+    } else if (claim instanceof final Integer claimInt) {
+      return claimToZonedDateTime(Integer.toUnsignedLong(claimInt));
     } else {
       throw new IllegalArgumentException(
           "Couldn't convert claim: " + claim.getClass().getSimpleName());

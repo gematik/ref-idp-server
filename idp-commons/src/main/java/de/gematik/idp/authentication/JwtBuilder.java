@@ -132,11 +132,9 @@ public class JwtBuilder {
   }
 
   private String determineAlgorithm() {
-    if (signerKey instanceof ECPrivateKey) {
-      if (((ECPrivateKey) signerKey).getParams() instanceof ECNamedCurveSpec
-          && ((ECNamedCurveSpec) ((ECPrivateKey) signerKey).getParams())
-              .getName()
-              .equals("prime256v1")) {
+    if (signerKey instanceof final ECPrivateKey ecPrivateKey) {
+      if (ecPrivateKey.getParams() instanceof final ECNamedCurveSpec ecNamedCurveSpec
+          && ecNamedCurveSpec.getName().equals("prime256v1")) {
         return AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256;
       } else {
         return BRAINPOOL256_USING_SHA256;

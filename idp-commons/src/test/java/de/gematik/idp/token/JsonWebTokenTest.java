@@ -256,7 +256,7 @@ class JsonWebTokenTest {
     final IdpJwe idpJwe = jsonWebToken.encryptAsJwt(jwk);
 
     assertThat(idpJwe.getHeaderClaims().keySet()).contains("kid", "cty");
-    assertThat(idpJwe.getHeaderClaim(CONTENT_TYPE).get()).isEqualTo("JWT");
+    assertThat(idpJwe.getHeaderClaim(CONTENT_TYPE)).contains("JWT");
   }
 
   @SneakyThrows

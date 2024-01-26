@@ -27,7 +27,7 @@ class ParResponseTest {
   void builder() {
     final ParResponse parResponse =
         ParResponse.builder().requestUri("reqUri").expiresIn(4234243).build();
-    assertThat(parResponse.toString().length()).isPositive();
+    assertThat(parResponse.toString()).isNotEmpty();
     assertThat(parResponse.getRequestUri()).isEqualTo("reqUri");
     assertThat(parResponse.getExpiresIn()).isEqualTo(4234243);
   }

@@ -25,10 +25,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import de.gematik.idp.exceptions.IdpJoseException;
+import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
-import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -66,23 +66,36 @@ public class IdpKeyDescriptor implements JSONAware {
     }
   }
 
-  public static IdpKeyDescriptor constructFromX509Certificate(final X509Certificate certificate) {
-    return constructFromX509Certificate(certificate, Optional.empty(), true);
+  public static IdpKeyDescriptor constructFromX509Certificate(
+      final X509Certificate certificate, final String keyId) {
+    return constructFromX509Certificate(certificate, keyId, true);
   }
 
   public static IdpKeyDescriptor constructFromX509Certificate(
-      final X509Certificate certificate, final Optional<String> keyId, final boolean addX5C) {
+      final X509Certificate certificate, final String keyId, final boolean addX5C) {
     if (isEcKey(certificate.getPublicKey())) {
-      return IdpEccKeyDescriptor.constructFromX509Certificate(
-          certificate, keyId.orElse(certificate.getSerialNumber().toString()), addX5C);
+      return IdpEccKeyDescriptor.constructFromX509Certificate(certificate, keyId, addX5C);
     } else {
-      return IdpRsaKeyDescriptor.constructFromX509Certificate(
-          certificate, keyId.orElse(certificate.getSerialNumber().toString()), addX5C);
+      return IdpRsaKeyDescriptor.constructFromX509Certificate(certificate, keyId);
+    }
+  }
+
+  public static IdpKeyDescriptor createFromPublicKey(
+      final PublicKey publicKey, final String keyId) {
+
+    if (isEcKey(publicKey)) {
+      return IdpEccKeyDescriptor.createFromPublicKey(publicKey, keyId);
+    } else {
+      throw new IdpCryptoException("Unknown Key-Format encountered!");
     }
   }
 
   public static String getKeyType(final X509Certificate certificate) {
-    if (isEcKey(certificate.getPublicKey())) {
+    return getKeyType(certificate.getPublicKey());
+  }
+
+  public static String getKeyType(final PublicKey publicKey) {
+    if (isEcKey(publicKey)) {
       return EllipticCurveJsonWebKey.KEY_TYPE;
     } else {
       return RsaJsonWebKey.KEY_TYPE;

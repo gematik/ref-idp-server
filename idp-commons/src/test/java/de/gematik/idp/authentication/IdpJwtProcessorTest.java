@@ -181,7 +181,7 @@ class IdpJwtProcessorTest {
   void createFromPrivateKeyEcc() {
     final PrivateKey privateKey =
         KeyUtility.readX509PrivateKeyPlain(
-            ResourceReader.getFileFromResourceAsTmpFile("keys/ref-es-sig_privKey.pem"));
+            ResourceReader.getFileFromResourceAsTmpFile("keys/ref-es-sig-privkey.pem"));
     assertThat(privateKey).isNotNull();
     final IdpJwtProcessor idpJwtProc = new IdpJwtProcessor(privateKey, "puk_idp_sig_test");
     final JsonWebToken jwt = idpJwtProc.buildJwt(jwtBuilder);
@@ -232,7 +232,7 @@ class IdpJwtProcessorTest {
     final PrivateKey privateKey =
         KeyUtility.readX509PrivateKeyPlain(
             ResourceReader.getFileFromResourceAsTmpFile(
-                "keys/1_C.SGD-HSM.AUT_oid_sgd1_hsm_ecc-bpool-privKey.pem"));
+                "keys/1_C.SGD-HSM.AUT_oid_sgd1_hsm-ecc-bpool-privkey.pem"));
     assertThat(privateKey).isNotNull();
     final IdpJwtProcessor idpJwtProc = new IdpJwtProcessor(privateKey, "my_brainpool_key");
     final JsonWebToken jwt = idpJwtProc.buildJwt(jwtBuilder);
