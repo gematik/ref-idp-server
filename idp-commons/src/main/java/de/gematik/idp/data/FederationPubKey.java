@@ -16,31 +16,43 @@
 
 package de.gematik.idp.data;
 
-import de.gematik.idp.crypto.model.PkiIdentity;
+import de.gematik.idp.crypto.exceptions.IdpCryptoException;
+import java.security.PublicKey;
+import java.security.cert.X509Certificate;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+@Setter
 @AllArgsConstructor
 @RequiredArgsConstructor
 @Getter
 public class FederationPubKey {
 
-  private final PkiIdentity identity;
-  private final String issuer;
-  private final String type;
-  @Setter private Optional<Boolean> addX5c;
-  @Setter private Optional<String> keyId;
-  @Setter private Optional<String> use;
-  @Setter private String url;
+  private Optional<X509Certificate> certificate = Optional.empty();
+  private Optional<PublicKey> publicKey = Optional.empty();
+  private String keyId;
+  private Optional<String> use = Optional.empty();
 
-  public IdpKeyDescriptor buildJwk() {
-    final IdpKeyDescriptor keyDesc =
-        IdpKeyDescriptor.constructFromX509Certificate(
-            identity.getCertificate(), keyId, addX5c.orElse(false));
-    keyDesc.setPublicKeyUse(use.orElse(null));
-    return keyDesc;
+  public IdpKeyDescriptor buildJwkWithX5c() {
+    return IdpKeyDescriptor.constructFromX509Certificate(certificate.orElseThrow(), keyId, true);
+  }
+
+  public IdpKeyDescriptor buildJwkWithoutX5c() {
+    if (publicKey.isPresent()) {
+      final IdpKeyDescriptor keyDesc = IdpKeyDescriptor.createFromPublicKey(publicKey.get(), keyId);
+      use.ifPresent(keyDesc::setPublicKeyUse);
+      return keyDesc;
+    } else if (certificate.isPresent()) {
+      final IdpKeyDescriptor keyDesc =
+          IdpKeyDescriptor.constructFromX509Certificate(certificate.get(), keyId, false);
+      use.ifPresent(keyDesc::setPublicKeyUse);
+      return keyDesc;
+    } else {
+      throw new IdpCryptoException(
+          "FederationPubKey invalid. No PublicKey or certificate present.");
+    }
   }
 }

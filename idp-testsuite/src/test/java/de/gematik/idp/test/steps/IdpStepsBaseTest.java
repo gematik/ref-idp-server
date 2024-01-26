@@ -38,7 +38,7 @@ public class IdpStepsBaseTest {
             getClass().getResourceAsStream("/certs/invalid/smcb-idp-selfsigned.p12"));
     final X509Certificate cert = CryptoLoader.getCertificateFromP12(data, "00");
     assertThat(cert).isNotNull();
-    final IdpKeyDescriptor desc = IdpKeyDescriptor.constructFromX509Certificate(cert);
+    final IdpKeyDescriptor desc = IdpKeyDescriptor.constructFromX509Certificate(cert, "test");
     final JSONObject jsonObject = new JSONObject(desc.toJSONString());
     final IdpStepsBase idpStepsBase = new IdpStepsBase();
 
@@ -57,7 +57,7 @@ public class IdpStepsBaseTest {
             getClass().getResourceAsStream("/certs/invalid/smcb-idp-expired-ecc.p12"));
     final X509Certificate cert = CryptoLoader.getCertificateFromP12(data, "00");
     assertThat(cert).isNotNull();
-    final IdpKeyDescriptor desc = IdpKeyDescriptor.constructFromX509Certificate(cert);
+    final IdpKeyDescriptor desc = IdpKeyDescriptor.constructFromX509Certificate(cert, "test");
     final JSONObject jsonObject = new JSONObject(desc.toJSONString());
 
     assertThatThrownBy(
@@ -76,7 +76,7 @@ public class IdpStepsBaseTest {
                 .getResourceAsStream("/certs/valid/80276883110000129068-C_SMCB_HCI_AUT_E256.p12"));
     final X509Certificate cert = CryptoLoader.getCertificateFromP12(data, "00");
     assertThat(cert).isNotNull();
-    final IdpKeyDescriptor desc = IdpKeyDescriptor.constructFromX509Certificate(cert);
+    final IdpKeyDescriptor desc = IdpKeyDescriptor.constructFromX509Certificate(cert, "test");
     final JSONObject jsonObject = new JSONObject(desc.toJSONString());
 
     new IdpStepsBase().keyAndCertificateStepsHelper.jsonObjectShouldBeValidCertificate(jsonObject);

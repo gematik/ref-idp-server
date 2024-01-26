@@ -98,7 +98,9 @@ class AuthenticationChallengeVerifierTest {
             .build();
     authenticationResponseBuilder = AuthenticationResponseBuilder.builder().build();
     authenticationChallengeVerifier =
-        AuthenticationChallengeVerifier.builder().serverIdentity(serverIdentity).build();
+        AuthenticationChallengeVerifier.builder()
+            .serverPublicKey(serverIdentity.getCertificate().getPublicKey())
+            .build();
     authenticationChallenge =
         authenticationChallengeBuilder.buildAuthenticationChallenge(
             "goo", "foo", "bar", "schmar", "openid pairing", "nonceValue");

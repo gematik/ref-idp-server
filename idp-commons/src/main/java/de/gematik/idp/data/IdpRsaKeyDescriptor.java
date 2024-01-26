@@ -53,13 +53,12 @@ public class IdpRsaKeyDescriptor extends IdpKeyDescriptor {
   }
 
   public static IdpKeyDescriptor constructFromX509Certificate(
-      final X509Certificate certificate, final String keyId, final boolean addX5C) {
+      final X509Certificate certificate, final String keyId) {
     try {
       final IdpRsaKeyDescriptor.IdpRsaKeyDescriptorBuilder descriptorBuilder =
           IdpRsaKeyDescriptor.builder().keyId(keyId).keyType(getKeyType(certificate));
-      if (addX5C) {
-        descriptorBuilder.x5c(getCertArray(certificate));
-      }
+
+      descriptorBuilder.x5c(getCertArray(certificate));
 
       final BCRSAPublicKey bcrsaPublicKey = (BCRSAPublicKey) certificate.getPublicKey();
       descriptorBuilder

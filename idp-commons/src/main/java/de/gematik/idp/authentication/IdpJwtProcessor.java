@@ -42,7 +42,7 @@ public class IdpJwtProcessor {
 
   private final X509Certificate certificate;
   private final String algorithm;
-  private Optional<String> keyId;
+  private Optional<String> keyId = Optional.empty();
   private PrivateKey privateKey;
 
   public IdpJwtProcessor(final PrivateKey privKey, final String keyId) {
@@ -72,16 +72,13 @@ public class IdpJwtProcessor {
   public IdpJwtProcessor(@NonNull final PkiIdentity identity) {
     this(identity.getCertificate());
     privateKey = identity.getPrivateKey();
-    this.keyId = Optional.empty();
   }
 
   public IdpJwtProcessor(@NonNull final X509Certificate certificate) {
     this.certificate = certificate;
-    if (certificate.getPublicKey() instanceof ECPublicKey) {
-      if (((ECPublicKey) certificate.getPublicKey()).getParams() instanceof ECNamedCurveSpec
-          && ((ECNamedCurveSpec) ((ECPublicKey) certificate.getPublicKey()).getParams())
-              .getName()
-              .equals("prime256v1")) {
+    if (certificate.getPublicKey() instanceof final ECPublicKey ecpublickey) {
+      if (ecpublickey.getParams() instanceof final ECNamedCurveSpec ecNamedCurveSpec
+          && ecNamedCurveSpec.getName().equals("prime256v1")) {
         algorithm = "ES256";
       } else {
         algorithm = BRAINPOOL256_USING_SHA256;

@@ -60,7 +60,9 @@ public class SsoTokenBuilder {
     headerClaimsMap.put(
         ALGORITHM.getJoseName(), BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256);
     bodyClaimsMap.put(
-        CONFIRMATION.getJoseName(), IdpKeyDescriptor.constructFromX509Certificate(certificate));
+        CONFIRMATION.getJoseName(),
+        IdpKeyDescriptor.constructFromX509Certificate(
+            certificate, certificate.getSerialNumber().toString()));
     headerClaimsMap.put(TYPE.getJoseName(), "JWT");
     bodyClaimsMap.put(ISSUER.getJoseName(), issuerUrl);
     bodyClaimsMap.put(ISSUED_AT.getJoseName(), issuingTime.toEpochSecond());

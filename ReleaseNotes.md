@@ -1,3 +1,8 @@
+# Release 26.0.0
+
+- Refactoring Key handling
+- update dependencies
+
 # Release 25.1.1
 
 - IdpJwtProcessor can be instantiated without X509Certificate

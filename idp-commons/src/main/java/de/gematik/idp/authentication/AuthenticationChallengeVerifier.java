@@ -18,13 +18,13 @@ package de.gematik.idp.authentication;
 
 import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
 
-import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.ChallengeExpiredException;
 import de.gematik.idp.exceptions.ChallengeSignatureInvalidException;
 import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.exceptions.NoNestedJwtFoundException;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.token.JsonWebToken;
+import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
 import java.util.Map;
@@ -43,7 +43,7 @@ import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 @AllArgsConstructor
 public class AuthenticationChallengeVerifier {
 
-  private PkiIdentity serverIdentity;
+  private PublicKey serverPublicKey;
 
   public void verifyResponseAndThrowExceptionIfFail(final JsonWebToken authenticationResponse) {
     final X509Certificate clientCertificate =
@@ -93,7 +93,7 @@ public class AuthenticationChallengeVerifier {
       throw new ChallengeExpiredException();
     }
     try {
-      serverChallenge.verify(serverIdentity.getCertificate().getPublicKey());
+      serverChallenge.verify(serverPublicKey);
     } catch (final Exception e) {
       throw new ChallengeSignatureInvalidException();
     }

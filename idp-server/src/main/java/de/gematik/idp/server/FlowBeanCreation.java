@@ -114,7 +114,9 @@ public class FlowBeanCreation {
 
   @Bean
   public AuthenticationChallengeVerifier authenticationChallengeVerifier() {
-    return AuthenticationChallengeVerifier.builder().serverIdentity(idpSig.getIdentity()).build();
+    return AuthenticationChallengeVerifier.builder()
+        .serverPublicKey(idpSig.getIdentity().getCertificate().getPublicKey())
+        .build();
   }
 
   @Bean

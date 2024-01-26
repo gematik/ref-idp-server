@@ -24,7 +24,7 @@ public interface KeyConfigurationBase {
   default FederationPrivKey getFederationPrivKey(
       final KeyConfig keyConfiguration, final PkiIdentity pkiIdentity) {
     final FederationPrivKey federationPrivKey = new FederationPrivKey(pkiIdentity);
-    federationPrivKey.setKeyId(Optional.ofNullable(keyConfiguration.getKeyId()));
+    federationPrivKey.setKeyId(keyConfiguration.getKeyId());
     federationPrivKey.setUse(Optional.ofNullable(keyConfiguration.getUse()));
     federationPrivKey.setAddX5c(Optional.of(keyConfiguration.isX5cInJwks()));
     return federationPrivKey;

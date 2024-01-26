@@ -20,7 +20,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.exceptions.IdpRuntimeException;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import lombok.AccessLevel;
@@ -53,40 +53,39 @@ public final class JwtHelper {
     return String.join(".", splitJws);
   }
 
-  public static IdpJwksDocument getJwks(final FederationPrivKey... federationPrivKeys) {
-    return IdpJwksDocument.builder()
-        .keys(
-            Arrays.stream(federationPrivKeys)
-                .map(
-                    federationPrivKey -> {
-                      final IdpKeyDescriptor keyDesc =
-                          IdpKeyDescriptor.constructFromX509Certificate(
-                              federationPrivKey.getIdentity().getCertificate(),
-                              federationPrivKey.getKeyId(),
-                              federationPrivKey.getAddX5c().orElse(false));
-                      keyDesc.setPublicKeyUse(federationPrivKey.getUse().orElse(null));
-                      return keyDesc;
-                    })
-                .toList())
-        .build();
-  }
-
-  // TODO: IDP-740
   public static IdpJwksDocument getJwks(@NonNull final FederationPubKey... federationPubKeys) {
-    return IdpJwksDocument.builder()
-        .keys(
+    final List<IdpKeyDescriptor> keyDescriptors =
+        new java.util.ArrayList<>(
             Stream.of(federationPubKeys)
+                .filter(federationPubKey -> federationPubKey.getCertificate().isPresent())
                 .map(
                     federationPubKey -> {
                       final IdpKeyDescriptor keyDesc =
                           IdpKeyDescriptor.constructFromX509Certificate(
-                              federationPubKey.getIdentity().getCertificate(),
+                              federationPubKey.getCertificate().orElseThrow(),
                               federationPubKey.getKeyId(),
-                              federationPubKey.getAddX5c().orElse(false));
+                              true);
                       keyDesc.setPublicKeyUse(federationPubKey.getUse().orElse(null));
                       return keyDesc;
                     })
-                .toList())
-        .build();
+                .toList());
+
+    final List<IdpKeyDescriptor> keyDescriptorsWithoutX5c =
+        Stream.of(federationPubKeys)
+            .filter(federationPubKey -> federationPubKey.getPublicKey().isPresent())
+            .map(
+                federationPubKey -> {
+                  final IdpKeyDescriptor keyDesc =
+                      IdpKeyDescriptor.createFromPublicKey(
+                          federationPubKey.getPublicKey().orElseThrow(),
+                          federationPubKey.getKeyId());
+                  keyDesc.setPublicKeyUse(federationPubKey.getUse().orElse(null));
+                  return keyDesc;
+                })
+            .toList();
+
+    keyDescriptors.addAll(keyDescriptorsWithoutX5c);
+
+    return IdpJwksDocument.builder().keys(keyDescriptors).build();
   }
 }

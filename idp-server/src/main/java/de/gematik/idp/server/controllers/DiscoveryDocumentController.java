@@ -74,7 +74,7 @@ public class DiscoveryDocumentController {
                       final IdpKeyDescriptor keyDesc =
                           IdpKeyDescriptor.constructFromX509Certificate(
                               identity.getIdentity().getCertificate(),
-                              identity.getKeyId(),
+                              identity.getKeyId().orElse("null"),
                               identity
                                   .getKeyId()
                                   .map(id -> !id.equals("puk_idp_enc"))

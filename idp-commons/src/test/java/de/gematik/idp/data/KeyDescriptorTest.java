@@ -26,7 +26,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 
-public class KeyDescriptorTest {
+class KeyDescriptorTest {
 
   @SneakyThrows
   @Test
