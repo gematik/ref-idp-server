@@ -1,3 +1,8 @@
+# Release 26.0.1
+
+- add claim for family name
+- update dependencies
+
 # Release 26.0.0
 
 - Refactoring Key handling
