@@ -33,6 +33,7 @@ public enum ClaimName {
   TELEMATIK_ALTER("urn:telematik:claims:alter"),
   TELEMATIK_DISPLAY_NAME("urn:telematik:claims:display_name"),
   TELEMATIK_GIVEN_NAME("urn:telematik:claims:given_name"),
+  TELEMATIK_FAMILY_NAME("urn:telematik:claims:family_name"),
   TELEMATIK_GESCHLECHT("urn:telematik:claims:geschlecht"),
   TELEMATIK_EMAIL("urn:telematik:claims:email"),
   TELEMATIK_PROFESSION("urn:telematik:claims:profession"),
