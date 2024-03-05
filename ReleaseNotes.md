@@ -1,3 +1,7 @@
+# Release 27.0.1
+
+- add missing scope for gitHub
+
 # Release 27.0.0
 
 - idp-client login for ePA (wip)
