@@ -72,7 +72,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 1234  | code          |
-    And IDP I sign the challenge with '/certs/valid/80276883110000104481-C_CH_AUT_R2048.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12'
 
     When IDP I extract the header claims from token SIGNED_CHALLENGE
     Then IDP the header claims should match in any order

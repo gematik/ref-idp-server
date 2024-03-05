@@ -16,6 +16,7 @@
 
 package de.gematik.idp.server;
 
+import static de.gematik.idp.IdpConstants.DEFAULT_SERVER_URL;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import de.gematik.idp.IdpConstants;
@@ -43,8 +44,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class MockIdpClientTokenSynchronTest {
 
-  private static final String URI_MOCK_IDP_SERVER =
-      "https://idp.zentral.idp.splitdns.ti-dienste.de";
+  private static final String URI_MOCK_IDP_SERVER = DEFAULT_SERVER_URL;
+
   private static final Set<String> VOLATILE_CLAIMS =
       Set.of(
           ClaimName.EXPIRES_AT.getJoseName(),
@@ -63,7 +64,7 @@ class MockIdpClientTokenSynchronTest {
 
   @BeforeEach
   public void startup(
-      @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc")
+      @PkiKeyResolver.Filename("109500969_X114428530-2_c.ch.aut-ecc")
           final PkiIdentity clientIdentity,
       @PkiKeyResolver.Filename("ecc") final PkiIdentity serverIdentity) {
     idpClient =

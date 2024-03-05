@@ -31,7 +31,7 @@ public final class IdpConstants {
   public static final String TOKEN_ENDPOINT = "/token";
   public static final String PAIRING_ENDPOINT = "/pairings";
   public static final String THIRD_PARTY_ENDPOINT = "/extauth";
-  public static final String DEFAULT_SERVER_URL = "https://idp.zentral.idp.splitdns.ti-dienste.de";
+  public static final String DEFAULT_SERVER_URL = "https://idp.dev.gematik.solutions";
   public static final String EIDAS_LOA_HIGH = "gematik-ehealth-loa-high";
   public static final int JTI_LENGTH = 16;
   public static final String AMR_FAST_TRACK = "mfa";

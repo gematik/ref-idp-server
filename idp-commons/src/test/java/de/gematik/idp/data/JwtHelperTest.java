@@ -76,7 +76,7 @@ class JwtHelperTest {
         Optional.ofNullable(
             CryptoLoader.getCertificateFromP12(
                 FileUtils.readFileToByteArray(
-                    new File("src/test/resources/109500969_X114428530_c.ch.aut-ecc.p12")),
+                    new File("src/test/resources/109500969_X114428530-2_c.ch.aut-ecc.p12")),
                 "00")));
     federationPubKey.setPublicKey(Optional.empty());
     federationPubKey.setKeyId("anyKeyId");

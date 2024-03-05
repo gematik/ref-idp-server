@@ -4,7 +4,7 @@ redirectUri: https://redirect.testsuite.gsi
 
 scope: urn:telematik:display_name urn:telematik:versicherter openid
 
-idpIss: https://idp.zentral.idp.splitdns.ti-dienste.de
+idpIss: https://idp.dev.gematik.solutions
 
 codeVerifier: drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj
 

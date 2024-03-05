@@ -82,7 +82,7 @@ class DataVersionServiceTest {
 
   @Test
   void testSignedAuthDataVersionIsAllowed(
-      @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc.p12")
+      @PkiKeyResolver.Filename("109500969_X114428530-2_c.ch.aut-ecc.p12")
           final PkiIdentity identity) {
     final JsonWebToken webToken =
         new JwtBuilder()
@@ -96,7 +96,7 @@ class DataVersionServiceTest {
 
   @Test
   void testSignedAuthDataVersionIsNotAllowed(
-      @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc.p12")
+      @PkiKeyResolver.Filename("109500969_X114428530-2_c.ch.aut-ecc.p12")
           final PkiIdentity identity) {
     final JsonWebToken webToken =
         new JwtBuilder()
@@ -111,7 +111,7 @@ class DataVersionServiceTest {
 
   @Test
   void testSignedAuthDataVersionClaimNotExists(
-      @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc.p12")
+      @PkiKeyResolver.Filename("109500969_X114428530-2_c.ch.aut-ecc.p12")
           final PkiIdentity identity) {
     final JsonWebToken webToken =
         new JwtBuilder()
@@ -126,7 +126,7 @@ class DataVersionServiceTest {
 
   @Test
   void testSignedAuthDataVersionIsNull(
-      @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc.p12")
+      @PkiKeyResolver.Filename("109500969_X114428530-2_c.ch.aut-ecc.p12")
           final PkiIdentity identity) {
     final JsonWebToken webToken =
         new JwtBuilder()
@@ -142,7 +142,7 @@ class DataVersionServiceTest {
 
   @Test
   void testSignedAuthDataVersionIsEmpty(
-      @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc.p12")
+      @PkiKeyResolver.Filename("109500969_X114428530-2_c.ch.aut-ecc.p12")
           final PkiIdentity identity) {
     final JsonWebToken webToken =
         new JwtBuilder()
@@ -158,7 +158,7 @@ class DataVersionServiceTest {
 
   @Test
   void testSignedPairingDataVersionIsAllowed(
-      @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc.p12")
+      @PkiKeyResolver.Filename("109500969_X114428530-2_c.ch.aut-ecc.p12")
           final PkiIdentity identity) {
     final JsonWebToken webToken =
         new JwtBuilder()

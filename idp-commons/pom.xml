@@ -6,12 +6,12 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>26.0.1</version>
+    <version>27.0.0</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>idp-commons</artifactId>
 
-  <version>26.0.1</version>
+  <version>27.0.0</version>
 
   <dependencies>
 
@@ -49,7 +49,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.13.0</version>
+      <version>${version.commons-lang3}</version>
     </dependency>
 
     <dependency>
@@ -66,7 +66,7 @@
     <dependency>
       <groupId>org.bitbucket.b_c</groupId>
       <artifactId>jose4j</artifactId>
-      <version>0.9.4</version>
+      <version>0.9.5</version>
     </dependency>
   </dependencies>
 

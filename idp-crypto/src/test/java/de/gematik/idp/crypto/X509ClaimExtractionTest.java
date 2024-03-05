@@ -28,12 +28,13 @@ import org.junit.jupiter.api.Test;
 
 class X509ClaimExtractionTest {
 
-  private static final String EGK_FILE = "src/test/resources/109500969_X114428530_c.ch.aut-ecc.p12";
+  private static final String EGK_FILE =
+      "src/test/resources/109500969_X114428530-2_c.ch.aut-ecc.p12";
   private static final String HBA_CERT_FILE = "src/test/resources/hba_aut.pem";
   private static final String PSYCHOTHERAPEUT_FILE =
       "src/test/resources/Psychotherapeut_zwei_prof_E256_expired.pem";
   private static final String SMCB_FILE =
-      "src/test/resources/833621999741600_c.hci.aut-apo-ecc.p12";
+      "src/test/resources/833621999741600-2_c.hci.aut-apo-ecc.p12";
   private static final String ARZTPRAXIS_FILE =
       "src/test/resources/Betriebsstatte_Arzt_max_E256.pem";
   private static final String KRANKENHAUS_FILE =
@@ -60,7 +61,7 @@ class X509ClaimExtractionTest {
         .containsEntry("family_name", null)
         .containsEntry("organizationName", "Aschoffsche Apotheke TEST-ONLY")
         .containsEntry("professionOID", "1.2.276.0.76.4.54")
-        .containsEntry("idNummer", "3-2-EPA-833621999741600");
+        .containsEntry("idNummer", "3-2.333398.TestOnly");
   }
 
   @Test

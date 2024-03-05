@@ -126,6 +126,16 @@ public class IdpClient implements IIdpClient {
   private String fixedIdpHost;
   private DiscoveryDocumentResponse discoveryDocumentResponse;
 
+  private static UnaryOperator<byte[]> getContentSigner(final PkiIdentity pkiIdentity) {
+    return tbsData -> {
+      if (pkiIdentity.getPrivateKey() instanceof RSAPrivateKey) {
+        return RsaSignerUtility.createRsaSignature(tbsData, pkiIdentity.getPrivateKey());
+      } else {
+        return EcSignerUtility.createEcSignature(tbsData, pkiIdentity.getPrivateKey());
+      }
+    };
+  }
+
   @SneakyThrows
   private String signServerChallenge(
       final String challengeToSign,
@@ -185,15 +195,7 @@ public class IdpClient implements IIdpClient {
   @Override
   public IdpTokenResult login(final PkiIdentity idpIdentity) {
     assertThatIdpIdentityIsValid(idpIdentity);
-    return login(
-        idpIdentity.getCertificate(),
-        tbsData -> {
-          if (idpIdentity.getPrivateKey() instanceof RSAPrivateKey) {
-            return RsaSignerUtility.createRsaSignature(tbsData, idpIdentity.getPrivateKey());
-          } else {
-            return EcSignerUtility.createEcSignature(tbsData, idpIdentity.getPrivateKey());
-          }
-        });
+    return login(idpIdentity.getCertificate(), getContentSigner(idpIdentity));
   }
 
   public IdpTokenResult login(
@@ -268,6 +270,63 @@ public class IdpClient implements IIdpClient {
             .build(),
         beforeTokenMapper,
         afterTokenCallback);
+  }
+
+  public AuthorizationCodeResult login(
+      final PkiIdentity smcbIdentity,
+      final String codeChallenge,
+      final String state,
+      final String nonce) {
+
+    final X509Certificate certificate = smcbIdentity.getCertificate();
+
+    LOGGER.debug(
+        "Performing Authorization with remote-URL '{}'",
+        discoveryDocumentResponse.getAuthorizationEndpoint());
+    final AuthorizationResponse authorizationResponse =
+        authorizationResponseMapper.apply(
+            authenticatorClient.doAuthorizationRequest(
+                AuthorizationRequest.builder()
+                    .clientId(clientId)
+                    .link(discoveryDocumentResponse.getAuthorizationEndpoint())
+                    .codeChallenge(codeChallenge)
+                    .codeChallengeMethod(codeChallengeMethod)
+                    .redirectUri(redirectUrl)
+                    .state(state)
+                    .scopes(scopes)
+                    .nonce(nonce)
+                    .build(),
+                beforeAuthorizationMapper,
+                afterAuthorizationCallback));
+
+    // Authentication
+    LOGGER.debug(
+        "Performing Authentication with remote-URL '{}'",
+        discoveryDocumentResponse.getAuthorizationEndpoint());
+    final AuthenticationResponse authenticationResponse =
+        authenticationResponseMapper.apply(
+            authenticatorClient.performAuthentication(
+                AuthenticationRequest.builder()
+                    .authenticationEndpointUrl(discoveryDocumentResponse.getAuthorizationEndpoint())
+                    .signedChallenge(
+                        new IdpJwe(
+                            signServerChallenge(
+                                authorizationResponse
+                                    .getAuthenticationChallenge()
+                                    .getChallenge()
+                                    .getRawString(),
+                                certificate,
+                                getContentSigner(smcbIdentity))))
+                    .build(),
+                beforeAuthenticationMapper,
+                afterAuthenticationCallback));
+
+    final String location = authenticationResponse.getLocation();
+    return AuthorizationCodeResult.builder()
+        .authorizationCode(UriUtils.extractParameterValue(location, "code"))
+        .redirectUri(UriUtils.extractBaseUri(authenticationResponse.getLocation()))
+        .state(UriUtils.extractParameterValue(location, "state"))
+        .build();
   }
 
   public IdpTokenResult loginWithSsoToken(final IdpJwe ssoToken) {

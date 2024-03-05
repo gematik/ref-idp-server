@@ -104,7 +104,8 @@ class IdpControllerParameterValidationTest {
   private PkiIdentity pkiIdentity;
 
   @BeforeEach
-  public void setup(@Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity) {
+  public void setup(
+      @Filename("109500969_X114428530-2_c.ch.aut-ecc") final PkiIdentity egkIdentity) {
     idpClient =
         IdpClient.builder()
             .clientId(TestConstants.CLIENT_ID_E_REZEPT_APP)

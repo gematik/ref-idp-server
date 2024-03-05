@@ -56,7 +56,7 @@ class AuthenticationTokenBuilderTest {
   @BeforeEach
   public void init(
       final PkiIdentity ecc,
-      @Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity clientIdentity) {
+      @Filename("109500969_X114428530-2_c.ch.aut-ecc") final PkiIdentity clientIdentity) {
 
     encryptionKey = new SecretKeySpec(DigestUtils.sha256("fdsa"), "AES");
     authenticationTokenBuilder =

@@ -16,6 +16,7 @@
 
 package de.gematik.idp.client;
 
+import static de.gematik.idp.IdpConstants.DEFAULT_SERVER_URL;
 import static de.gematik.idp.IdpConstants.EREZEPT;
 import static de.gematik.idp.IdpConstants.OPENID;
 import static de.gematik.idp.field.ClaimName.FAMILY_NAME;
@@ -24,7 +25,6 @@ import static de.gematik.idp.field.ClaimName.ID_NUMBER;
 import static de.gematik.idp.field.ClaimName.ORGANIZATION_NAME;
 import static de.gematik.idp.field.ClaimName.PROFESSION_OID;
 
-import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
 import de.gematik.idp.authentication.AuthenticationResponse;
@@ -79,7 +79,7 @@ public class MockIdpClient implements IIdpClient {
   private final String clientId;
   private final boolean produceTokensWithInvalidSignature;
   private final boolean produceOnlyExpiredTokens;
-  @Builder.Default private final String uriIdpServer = IdpConstants.DEFAULT_SERVER_URL;
+  @Builder.Default private final String uriIdpServer = DEFAULT_SERVER_URL;
   private final HashMap<String, String> scopeToAudienceUrls = new HashMap<>();
   private AccessTokenBuilder accessTokenBuilder;
   private AuthenticationResponseBuilder authenticationResponseBuilder;

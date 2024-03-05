@@ -75,9 +75,9 @@ class AuthenticationChallengeVerifierTest {
   public void init(
       @PkiKeyResolver.Filename("1_C.SGD-HSM.AUT_oid_sgd1_hsm_ecc.p12")
           final PkiIdentity serverIdentity,
-      @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc.p12")
+      @PkiKeyResolver.Filename("109500969_X114428530-2_c.ch.aut-ecc.p12")
           final PkiIdentity clientIdentity,
-      @PkiKeyResolver.Filename("833621999741600_c.hci.aut-apo-rsa.p12")
+      @PkiKeyResolver.Filename("833621999741600-2_c.hci.aut-apo-rsa.p12")
           final PkiIdentity rsaClientIdentity) {
     this.clientIdentity = clientIdentity;
     this.serverIdentity = serverIdentity;
@@ -144,7 +144,7 @@ class AuthenticationChallengeVerifierTest {
 
   @Test
   void checkSignatureNjwt_certMismatch(
-      @PkiKeyResolver.Filename("833621999741600_c.hci.aut-apo-ecc.p12")
+      @PkiKeyResolver.Filename("833621999741600-2_c.hci.aut-apo-ecc.p12")
           final PkiIdentity otherServerIdentity) {
     authenticationChallengeBuilder =
         AuthenticationChallengeBuilder.builder()

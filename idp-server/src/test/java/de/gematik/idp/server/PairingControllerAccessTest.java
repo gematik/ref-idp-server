@@ -85,15 +85,15 @@ class PairingControllerAccessTest {
   @Autowired private PairingService pairingService;
   @Autowired private PairingRepository pairingRepository;
   @Autowired private DeviceValidationRepository deviceValidationRepository;
+  @LocalServerPort private int localServerPort;
   private IdpClient idpClient;
   private PkiIdentity egkUserIdentity;
   private PkiIdentity rsaUserIdentity;
   private JsonWebToken accessToken;
-  @LocalServerPort private int localServerPort;
 
   @BeforeEach
   public void startup(
-      @Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity,
+      @Filename("109500969_X114428530-2_c.ch.aut-ecc") final PkiIdentity egkIdentity,
       @PkiKeyResolver.Filename("rsa") final PkiIdentity rsaIdentity) {
     idpClient =
         IdpClient.builder()

@@ -74,8 +74,9 @@ class ChallengeTokenValidationServiceTest {
 
   @BeforeEach
   public void startup(
-      @Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity,
-      @PkiKeyResolver.Filename("833621999741600_c.hci.aut-apo-ecc") final PkiIdentity rsaIdentity) {
+      @Filename("109500969_X114428530-2_c.ch.aut-ecc") final PkiIdentity egkIdentity,
+      @PkiKeyResolver.Filename("833621999741600-2_c.hci.aut-apo-ecc")
+          final PkiIdentity rsaIdentity) {
     this.egkIdentity =
         PkiIdentity.builder()
             .certificate(egkIdentity.getCertificate())
@@ -97,8 +98,8 @@ class ChallengeTokenValidationServiceTest {
 
   @Test
   void validateInvalidPairingChallenge(
-      @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity,
-      @PkiKeyResolver.Filename("833621999741600_c.hci.aut-apo-ecc")
+      @PkiKeyResolver.Filename("109500969_X114428530-2_c.ch.aut-ecc") final PkiIdentity egkIdentity,
+      @PkiKeyResolver.Filename("833621999741600-2_c.hci.aut-apo-ecc")
           final PkiIdentity authModuleIdentity) {
     assertThatThrownBy(
             () ->
@@ -110,7 +111,7 @@ class ChallengeTokenValidationServiceTest {
 
   @Test
   void validateInvalidCertChallenge(
-      @PkiKeyResolver.Filename("833621999741600_c.hci.aut-apo-ecc")
+      @PkiKeyResolver.Filename("833621999741600-2_c.hci.aut-apo-ecc")
           final PkiIdentity authModuleIdentity) {
     assertThatThrownBy(
             () ->
@@ -184,7 +185,7 @@ class ChallengeTokenValidationServiceTest {
     claims.setClaim(KEY_IDENTIFIER.getJoseName(), "654321");
     claims.setClaim(ALGORITHM.getJoseName(), "SHA256");
     claims.setClaim(DEVICE_PRODUCT.getJoseName(), "S8");
-    claims.setClaim(CERTIFICATE_SERIALNUMBER.getJoseName(), "257423680229794");
+    claims.setClaim(CERTIFICATE_SERIALNUMBER.getJoseName(), "329475536876795");
     claims.setClaim(
         AUTH_CERT_SUBJECT_PUBLIC_KEY_INFO.getJoseName(),
         java.util.Base64.getUrlEncoder()

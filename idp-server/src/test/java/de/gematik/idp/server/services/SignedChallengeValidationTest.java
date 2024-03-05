@@ -80,7 +80,7 @@ class SignedChallengeValidationTest {
   @BeforeEach
   public void init(
       final PkiIdentity ecc,
-      @Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity) {
+      @Filename("109500969_X114428530-2_c.ch.aut-ecc") final PkiIdentity egkIdentity) {
     idpSig.setKeyId(Optional.of(SERVER_KEY_IDENTITY));
     this.egkIdentity =
         PkiIdentity.builder()

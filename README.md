@@ -52,7 +52,7 @@ or use docker compose:
 
 ```console
 $ mvn clean install -pl idp-server -am -Dskip.unittests -Dskip.inttests
-$ export appVersion=26.0.1
+$ export appVersion=27.0.0
 $ export serverLoglevel=info (default)
 $ docker-compose --project-name myidp -f docker-compose-ref.yml up -d
 ```
@@ -67,6 +67,33 @@ $ curl http://localhost:8571/auth/realms/idp/.well-known/openid-configuration
 
 You can modify the scopes that are supported by the IDP Server. All you have to is add, remove or
 modify entries in the scopesConfiguration section of the idp-server's application.yml.
+
+### Configuration of Server URL
+
+The URL of the idp-server is required for many fields inside the discovery document of the server. For example, the authorization endpoint:
+
+```
+{
+"authorization_endpoint": "https://server42/sign_response",
+...
+```
+
+The idp-server determines the URL in the following priority order if it exists:
+
+1. jvm arg: --idp.serverUrl=https://myServerUrlAsJvmArgument.de
+2. environment variable: IDP_SERVER_URL=myServerUrlFromEnv:8080
+3. spring boot configuration (application.yml):
+
+```
+idp:
+   serverUrl: "https://urlPreConfiguredUrl"
+```
+
+During development, it is recommended to set "severUrl" not in application.yml as some unit tests will fail then.
+Background: serverUrl will be set several times in the discovery document and used from there in unit tests.
+In unit tests, random (free) ports are used, and with that they are part of the serverUrl.
+
+4. precompiled value: IdpConstants.DEFAULT_SERVER_URL
 
 ### Unittests
 

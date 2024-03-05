@@ -60,7 +60,8 @@ class AuthenticationCallTest {
 
   @BeforeEach
   public void startup(
-      @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity) {
+      @PkiKeyResolver.Filename("109500969_X114428530-2_c.ch.aut-ecc")
+          final PkiIdentity egkIdentity) {
     idpClient =
         IdpClient.builder()
             .clientId(TestConstants.CLIENT_ID_E_REZEPT_APP)

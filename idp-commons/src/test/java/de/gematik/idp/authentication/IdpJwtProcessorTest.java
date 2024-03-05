@@ -73,7 +73,7 @@ class IdpJwtProcessorTest {
               new HashMap<>(
                   Map.ofEntries(
                       entry(ISSUED_AT.getJoseName(), ZonedDateTime.now().toEpochSecond()),
-                      entry(ISSUER.getJoseName(), "https://idp.zentral.idp.splitdns.ti-dienste.de"),
+                      entry(ISSUER.getJoseName(), "https://myIdp.de"),
                       entry(RESPONSE_TYPE.getJoseName(), "code"),
                       entry(SCOPE.getJoseName(), "openid e-rezept"),
                       entry(CLIENT_ID.getJoseName(), "ZXJlemVwdC1hcHA"),

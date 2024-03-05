@@ -33,7 +33,7 @@ class CryptoLoaderTest {
   void loadRsaCertificateFromP12() throws IOException {
     final byte[] p12FileContent =
         FileUtils.readFileToByteArray(
-            new File("src/test/resources/833621999741600_c.hci.aut-apo-rsa.p12"));
+            new File("src/test/resources/833621999741600-2_c.hci.aut-apo-rsa.p12"));
     final X509Certificate certificate = CryptoLoader.getCertificateFromP12(p12FileContent, "00");
 
     assertThat(certificate.getSubjectX500Principal().toString()).containsIgnoringCase("CN=");
