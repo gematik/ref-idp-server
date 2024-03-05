@@ -51,6 +51,10 @@ idp:
       description: "123 Test"
       audienceUrl: "https://template.audience.de"
       claimsToBeIncluded: [ ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER ]
+    epa:
+      description: "epa scopes"
+      audienceUrl: "https://epa.audience.de"
+      claimsToBeIncluded: [ ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER ]
   registeredClient:
     eRezeptApp:
       redirectUri: http://redirect.gematik.de/erezept
