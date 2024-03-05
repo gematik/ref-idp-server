@@ -48,7 +48,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(PkiKeyResolver.class)
 class SsoTokenBuilderTest {
 
-  private static final String uriIdpServer = "https://idp.zentral.idp.splitdns.ti-dienste.de";
+  private static final String URI_IDP_SERVER = "https://myIdp.de";
 
   static {
     Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
@@ -63,7 +63,7 @@ class SsoTokenBuilderTest {
   @BeforeEach
   public void init(
       final PkiIdentity ecc,
-      @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc")
+      @PkiKeyResolver.Filename("109500969_X114428530-2_c.ch.aut-ecc")
           final PkiIdentity clientIdentity) {
     serverIdentity = ecc;
     this.clientIdentity = clientIdentity;
@@ -71,7 +71,7 @@ class SsoTokenBuilderTest {
     encryptionKey =
         new SecretKeySpec(
             DigestUtils.sha256("fdsfdsafdsafdsafdsarvdfvcxyvcxyvc".getBytes()), "AES");
-    ssoTokenBuilder = new SsoTokenBuilder(serverJwtProcessor, uriIdpServer, encryptionKey);
+    ssoTokenBuilder = new SsoTokenBuilder(serverJwtProcessor, URI_IDP_SERVER, encryptionKey);
   }
 
   @Test
@@ -103,7 +103,7 @@ class SsoTokenBuilderTest {
             ORGANIZATION_NAME.getJoseName(),
             PROFESSION_OID.getJoseName(),
             ID_NUMBER.getJoseName())
-        .containsEntry(ISSUER.getJoseName(), uriIdpServer);
+        .containsEntry(ISSUER.getJoseName(), URI_IDP_SERVER);
   }
 
   @Test
@@ -128,7 +128,7 @@ class SsoTokenBuilderTest {
             ORGANIZATION_NAME.getJoseName(),
             PROFESSION_OID.getJoseName(),
             ID_NUMBER.getJoseName())
-        .containsEntry(ISSUER.getJoseName(), uriIdpServer);
+        .containsEntry(ISSUER.getJoseName(), URI_IDP_SERVER);
   }
 
   @Afo("A_20731")

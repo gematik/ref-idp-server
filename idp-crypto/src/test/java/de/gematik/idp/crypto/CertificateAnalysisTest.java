@@ -29,7 +29,8 @@ import org.junit.jupiter.api.Test;
 
 class CertificateAnalysisTest {
 
-  private static final String EGK_FILE = "src/test/resources/109500969_X114428530_c.ch.aut-ecc.p12";
+  private static final String EGK_FILE =
+      "src/test/resources/109500969_X114428530-2_c.ch.aut-ecc.p12";
 
   @Test
   void testPolicyExtensionForEgk() throws IOException, CertificateEncodingException {

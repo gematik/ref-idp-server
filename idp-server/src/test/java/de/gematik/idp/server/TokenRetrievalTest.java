@@ -91,7 +91,7 @@ class TokenRetrievalTest {
 
   @BeforeEach
   public void startup(
-      @Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity) {
+      @Filename("109500969_X114428530-2_c.ch.aut-ecc") final PkiIdentity egkIdentity) {
     idpClient =
         IdpClient.builder()
             .clientId(TestConstants.CLIENT_ID_E_REZEPT_APP)
@@ -140,7 +140,7 @@ class TokenRetrievalTest {
 
   @Test
   void getAccessTokenWithRsa(
-      @Filename("833621999741600_c.hci.aut-apo-rsa") final PkiIdentity rsaEgkIdentity)
+      @Filename("833621999741600-2_c.hci.aut-apo-rsa") final PkiIdentity rsaEgkIdentity)
       throws UnirestException {
     final IdpTokenResult tokenResponse = idpClient.login(rsaEgkIdentity);
 
@@ -149,7 +149,7 @@ class TokenRetrievalTest {
 
   @Test
   void getAccessTokenWithRsaWithExternalAuthenticate(
-      @Filename("833621999741600_c.hci.aut-apo-rsa") final PkiIdentity rsaEgkIdentity)
+      @Filename("833621999741600-2_c.hci.aut-apo-rsa") final PkiIdentity rsaEgkIdentity)
       throws UnirestException {
     final IdpTokenResult tokenResponse =
         idpClient.login(
@@ -171,7 +171,7 @@ class TokenRetrievalTest {
 
   @Test
   void getAccessTokenWithEccWithExternalAuthenticate(
-      @Filename("833621999741600_c.hci.aut-apo-ecc") final PkiIdentity eccSmcbIdentity)
+      @Filename("833621999741600-2_c.hci.aut-apo-ecc") final PkiIdentity eccSmcbIdentity)
       throws UnirestException {
     final IdpTokenResult tokenResponse =
         idpClient.login(

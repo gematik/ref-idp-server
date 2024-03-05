@@ -42,8 +42,9 @@ public class EcSignerUtilityTest {
 
   @BeforeAll
   public static void init() throws IOException {
-    identity = certificateDataFrom("src/test/resources/109500969_X114428530_c.ch.aut-ecc.p12");
-    otherIdentity = certificateDataFrom("src/test/resources/833621999741600_c.hci.aut-apo-ecc.p12");
+    identity = certificateDataFrom("src/test/resources/109500969_X114428530-2_c.ch.aut-ecc.p12");
+    otherIdentity =
+        certificateDataFrom("src/test/resources/833621999741600-2_c.hci.aut-apo-ecc.p12");
   }
 
   private static PkiIdentity certificateDataFrom(final String filename) throws IOException {

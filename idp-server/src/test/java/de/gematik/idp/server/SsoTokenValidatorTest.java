@@ -64,7 +64,7 @@ class SsoTokenValidatorTest {
 
   @BeforeEach
   public void init(
-      @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity egkIdentity,
+      @PkiKeyResolver.Filename("109500969_X114428530-2_c.ch.aut-ecc") final PkiIdentity egkIdentity,
       @PkiKeyResolver.Filename("rsa") final PkiIdentity rsaIdentity) {
     egkUserIdentity = egkIdentity;
     rsaUserIdentity = rsaIdentity;
@@ -74,7 +74,7 @@ class SsoTokenValidatorTest {
         new SecretKeySpec(DigestUtils.sha256("fdsfdsafdsayvcxy".getBytes()), "AES");
     ssoTokenBuilder =
         new SsoTokenBuilder(
-            serverTokenProzessor, urlService.determineServerUrl(), tokenEncryptionKey);
+            serverTokenProzessor, urlService.determineServerUrlConfigured(), tokenEncryptionKey);
     ssoTokenValidator = new SsoTokenValidator(serverKey, tokenEncryptionKey);
   }
 

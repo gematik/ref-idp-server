@@ -64,7 +64,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(PkiKeyResolver.class)
 class AccessTokenBuilderTest {
 
-  private static final String URI_IDP_SERVER = "https://idp.zentral.idp.splitdns.ti-dienste.de";
+  private static final String URI_IDP_SERVER = "https://myIdp.de";
   private static final String KEY_ID = "my_key_id";
   private static final String EREZEPT_AUDIENCE = "erezeptAudience";
   private static final String PAIRING_AUDIENCE = "pairingAudience";
@@ -89,7 +89,7 @@ class AccessTokenBuilderTest {
 
   @BeforeAll
   void setup(
-      @PkiKeyResolver.Filename("109500969_X114428530_c.ch.aut-ecc")
+      @PkiKeyResolver.Filename("109500969_X114428530-2_c.ch.aut-ecc")
           final PkiIdentity clientIdentity,
       @PkiKeyResolver.Filename("ecc") final PkiIdentity serverIdentity) {
 

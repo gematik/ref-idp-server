@@ -16,6 +16,7 @@
 
 package de.gematik.idp.token;
 
+import static de.gematik.idp.IdpConstants.DEFAULT_SERVER_URL;
 import static de.gematik.idp.IdpConstants.EREZEPT;
 import static de.gematik.idp.IdpConstants.OID_VERSICHERTER;
 import static de.gematik.idp.IdpConstants.OPENID;
@@ -61,7 +62,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(PkiKeyResolver.class)
 class IdTokenBuilderTest {
 
-  private static final String uriIdpServer = "https://idp.zentral.idp.splitdns.ti-dienste.de";
+  private static final String URI_IDP_SERVER = DEFAULT_SERVER_URL;
   private static final long maxIdTokenExpirationInSec = 86400;
   private static final String NONCE_VALUE = "wertDerNonce-superRandom";
   private IdTokenBuilder idTokenBuilder;
@@ -93,7 +94,7 @@ class IdTokenBuilderTest {
             .setSignerKey(pkiIdentity.getPrivateKey())
             .buildJwt();
     idTokenBuilder =
-        new IdTokenBuilder(new IdpJwtProcessor(pkiIdentity), uriIdpServer, "saltValue");
+        new IdTokenBuilder(new IdpJwtProcessor(pkiIdentity), URI_IDP_SERVER, "saltValue");
   }
 
   @Rfc("OpenID Connect Core 1.0 incorporating errata set 1 - 2 ID Token")
@@ -106,7 +107,7 @@ class IdTokenBuilderTest {
             TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, authenticationToken);
 
     assertThat(idToken.getBodyClaims())
-        .containsEntry(ISSUER.getJoseName(), uriIdpServer)
+        .containsEntry(ISSUER.getJoseName(), URI_IDP_SERVER)
         .containsKey(SUBJECT.getJoseName())
         .containsKey(EXPIRES_AT.getJoseName())
         .containsKey(ISSUED_AT.getJoseName())
@@ -179,7 +180,7 @@ class IdTokenBuilderTest {
             TestConstants.CLIENT_ID_E_REZEPT_APP, authenticationToken, authenticationToken);
 
     assertThat(idToken.getBodyClaims())
-        .containsEntry(ISSUER.getJoseName(), uriIdpServer)
+        .containsEntry(ISSUER.getJoseName(), URI_IDP_SERVER)
         .containsKey(SUBJECT.getJoseName())
         .containsEntry(AUDIENCE.getJoseName(), TestConstants.CLIENT_ID_E_REZEPT_APP)
         .containsKey(EXPIRES_AT.getJoseName())

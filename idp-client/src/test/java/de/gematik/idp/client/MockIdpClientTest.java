@@ -16,6 +16,7 @@
 
 package de.gematik.idp.client;
 
+import static de.gematik.idp.IdpConstants.DEFAULT_SERVER_URL;
 import static de.gematik.idp.field.ClaimName.ALGORITHM;
 import static de.gematik.idp.field.ClaimName.ISSUER;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,7 +38,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(PkiKeyResolver.class)
 class MockIdpClientTest {
 
-  private static final String URI_IDP_SERVER = "https://idp.zentral.idp.splitdns.ti-dienste.de";
+  private static final String URI_IDP_SERVER = DEFAULT_SERVER_URL;
   private static final String CLIENT_ID_E_REZEPT_APP = "eRezeptApp";
   private MockIdpClient mockIdpClient;
   private PkiIdentity serverIdentity;
@@ -127,7 +128,7 @@ class MockIdpClientTest {
 
   @Test
   void verifyTokenWithEcClientCertificate(
-      @PkiKeyResolver.Filename("833621999741600_c.hci.aut-apo-ecc.p12")
+      @PkiKeyResolver.Filename("833621999741600-2_c.hci.aut-apo-ecc.p12")
           final PkiIdentity eccClientIdentity) {
     Assertions.assertDoesNotThrow(
         () ->

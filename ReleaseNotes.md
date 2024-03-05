@@ -1,3 +1,10 @@
+# Release 27.0.0
+
+- idp-client login for ePA (wip)
+- read server URL at server startup, remove code for extracting server URL from request
+- update test certificates
+- update dependencies
+
 # Release 26.0.1
 
 - add claim for family name

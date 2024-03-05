@@ -21,7 +21,6 @@ import static de.gematik.idp.IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT;
 import static de.gematik.idp.IdpConstants.FED_AUTH_ENDPOINT;
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 
 import de.gematik.idp.field.ClaimName;
@@ -61,7 +60,8 @@ class DiscoveryDocumentTest {
   @BeforeEach
   public void setUpLocalHostUrl() {
     testHostUrl = "http://localhost:" + localServerPort;
-    doReturn(CONFIGURED_SERVER_URL).when(serverUrlService).determineServerUrl(any());
+    doReturn(CONFIGURED_SERVER_URL).when(serverUrlService).determineServerUrlConfigured();
+    doReturn(CONFIGURED_SERVER_URL).when(serverUrlService).determineServerUrlRuntime();
     doReturn(CONFIGURED_ISSUER_URL).when(serverUrlService).getIssuerUrl();
   }
 

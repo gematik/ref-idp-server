@@ -56,9 +56,9 @@ Feature: Fordere Access Token mit einer signierten Challenge an
           }
         """
     Examples: GetToken - Zertifikate zur Signatur der Challenge
-      | cert                                                 |
-      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12  |
-      | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12 |
+      | cert                                                   |
+      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12    |
+      | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 |
 
 
   #noinspection NonAsciiCharacters
@@ -197,9 +197,9 @@ Feature: Fordere Access Token mit einer signierten Challenge an
           }
         """
     Examples: GetToken - Zertifikate zur Signatur der Challenge
-      | cert                                                 | professionOID     | idNumber   | organisationName     | family_name | given_name                | displyName                         |
-      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12  | 1.2.276.0.76.4.49 | X110411675 | Test GKV-SVNOT-VALID | Bödefeld    | Darius Michael Brian Ubbo | Darius Michael Brian Ubbo Bödefeld |
-      | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12 | 1.2.276.0.76.4.49 | X110471380 | Test GKV-SVNOT-VALID | Burgund     | Ulrich Hans Johann von    | Ulrich Hans Johann von Burgund     |
+      | cert                                                   | professionOID     | idNumber   | organisationName     | family_name | given_name                | displyName                         |
+      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12    | 1.2.276.0.76.4.49 | X110411675 | Test GKV-SVNOT-VALID | Bödefeld    | Darius Michael Brian Ubbo | Darius Michael Brian Ubbo Bödefeld |
+      | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 | 1.2.276.0.76.4.49 | X110471380 | Test GKV-SVNOT-VALID | Burgund     | Ulrich Hans Johann von    | Ulrich Hans Johann von Burgund     |
 
 
   @TCID:IDP_REF_TOK_003 @PRIO:1
@@ -264,9 +264,9 @@ Feature: Fordere Access Token mit einer signierten Challenge an
           }
         """
     Examples: GetToken - Zertifikate zur Signatur der Challenge
-      | cert                                                 |
-      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12  |
-      | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12 |
+      | cert                                                   |
+      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12    |
+      | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 |
 
 
   @TCID:IDP_REF_TOK_018 @PRIO:1
@@ -458,9 +458,9 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     When IDP I request an access token
     Then IDP the context ACCESS_TOKEN must be signed with cert PUK_SIGN
     Examples: GetToken - Zertifikate zur Signatur der Challenge
-      | cert                                                 |
-      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12  |
-      | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12 |
+      | cert                                                   |
+      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12    |
+      | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 |
 
   @TCID:IDP_REF_TOK_008 @PRIO:1
     @AFO-ID:A_20327-02
@@ -483,9 +483,9 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     When IDP I request an access token
     Then IDP the context ID_TOKEN must be signed with cert PUK_SIGN
     Examples: GetToken - Zertifikate zur Signatur der Challenge
-      | cert                                                 |
-      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12  |
-      | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12 |
+      | cert                                                   |
+      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12    |
+      | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 |
 
 
   @TCID:IDP_REF_TOK_009 @PRIO:2

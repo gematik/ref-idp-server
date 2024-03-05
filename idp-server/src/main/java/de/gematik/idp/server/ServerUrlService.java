@@ -16,27 +16,29 @@
 
 package de.gematik.idp.server;
 
-import de.gematik.idp.IdpConstants;
+import static de.gematik.idp.IdpConstants.DEFAULT_SERVER_URL;
+
 import de.gematik.idp.server.configuration.IdpConfiguration;
-import jakarta.servlet.http.HttpServletRequest;
+import de.gematik.idp.server.services.ServerPortListener;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class ServerUrlService {
+  @Autowired private ServerPortListener serverPortListener;
 
   private final IdpConfiguration idpConfiguration;
 
-  public String determineServerUrl(final HttpServletRequest request) {
-    return getServerUrlOptional()
-        .orElse("http://" + request.getServerName() + ":" + request.getServerPort());
+  public String determineServerUrlRuntime() {
+    return getServerUrlFromConfig().orElse(getServerUrlLocalInstance());
   }
 
-  public String determineServerUrl() {
-    return getServerUrlOptional().orElse(IdpConstants.DEFAULT_SERVER_URL);
+  public String determineServerUrlConfigured() {
+    return getServerUrlFromConfig().orElse(DEFAULT_SERVER_URL);
   }
 
   public String getIssuerUrl() {
@@ -46,10 +48,18 @@ public class ServerUrlService {
             () ->
                 Optional.ofNullable(idpConfiguration.getServerUrl())
                     .filter(StringUtils::isNotBlank))
-        .orElse(IdpConstants.DEFAULT_SERVER_URL);
+        .orElse(DEFAULT_SERVER_URL);
   }
 
-  private Optional<String> getServerUrlOptional() {
+  private Optional<String> getServerUrlFromConfig() {
     return Optional.ofNullable(idpConfiguration.getServerUrl()).filter(StringUtils::isNotBlank);
+  }
+
+  private String getServerRunningPort() {
+    return String.valueOf(serverPortListener.getServerPort());
+  }
+
+  private String getServerUrlLocalInstance() {
+    return "http://localhost:" + getServerRunningPort();
   }
 }

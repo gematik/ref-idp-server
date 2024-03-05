@@ -33,7 +33,6 @@ import de.gematik.idp.token.IdpJwe;
 import de.gematik.rbellogger.RbelLogger;
 import de.gematik.rbellogger.configuration.RbelConfiguration;
 import de.gematik.rbellogger.converter.initializers.RbelKeyFolderInitializer;
-import de.gematik.rbellogger.data.RbelElement;
 import de.gematik.rbellogger.key.RbelKey;
 import de.gematik.rbellogger.key.RbelKeyManager;
 import de.gematik.rbellogger.renderer.RbelHtmlRenderer;
@@ -429,34 +428,7 @@ class TokenLoggerTest {
                         DigestUtils.sha256("geheimerSchluesselDerNochGehashtWird"), "AES"),
                     RbelKey.PRECEDENCE_KEY_FOLDER)
                 .addInitializer(new RbelKeyFolderInitializer("src/main/resources"))
-                .addPostConversionListener(RbelKeyManager.RBEL_IDP_TOKEN_KEY_LISTENER)
-                .addPreConversionMapper(
-                    RbelElement.class,
-                    (element, context) -> {
-                      if (element
-                          .getRawStringContent()
-                          .contains("localhost:" + wiremockPort.get())) {
-                        return element.toBuilder()
-                            .rawContent(
-                                element
-                                    .getRawStringContent()
-                                    .replace("localhost:" + wiremockPort.get(), "url.des.idp")
-                                    .getBytes())
-                            .build();
-                      } else if (element
-                          .getRawStringContent()
-                          .contains("localhost:" + localServerPort)) {
-                        return element.toBuilder()
-                            .rawContent(
-                                element
-                                    .getRawStringContent()
-                                    .replace("localhost:" + localServerPort, "url.des.idp")
-                                    .getBytes())
-                            .build();
-                      } else {
-                        return element;
-                      }
-                    }));
+                .addPostConversionListener(RbelKeyManager.RBEL_IDP_TOKEN_KEY_LISTENER));
 
     JEXL_NOTE_FUNCTIONS.forEach((k, v) -> rbelLogger.getValueShader().addJexlNoteCriterion(k, v));
     MASKING_FUNCTIONS.forEach(

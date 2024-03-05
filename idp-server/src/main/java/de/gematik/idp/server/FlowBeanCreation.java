@@ -80,7 +80,7 @@ public class FlowBeanCreation {
         .forEach((key, value) -> scopeToAudienceUrls.put(key, value.getAudienceUrl()));
     return new AccessTokenBuilder(
         idpSigProcessor,
-        serverUrlService.determineServerUrl(),
+        serverUrlService.determineServerUrlConfigured(),
         getSubjectSaltValue(),
         scopeToAudienceUrls);
   }
@@ -88,7 +88,7 @@ public class FlowBeanCreation {
   @Bean
   public IdTokenBuilder idTokenBuilder() {
     return new IdTokenBuilder(
-        idpSigProcessor, serverUrlService.determineServerUrl(), getSubjectSaltValue());
+        idpSigProcessor, serverUrlService.determineServerUrlConfigured(), getSubjectSaltValue());
   }
 
   @Bean
@@ -106,7 +106,7 @@ public class FlowBeanCreation {
   public AuthenticationChallengeBuilder authenticationChallengeBuilder() {
     return AuthenticationChallengeBuilder.builder()
         .serverSigner(idpSigProcessor)
-        .uriIdpServer(serverUrlService.determineServerUrl())
+        .uriIdpServer(serverUrlService.determineServerUrlConfigured())
         .userConsentConfiguration(idpConfiguration.getUserConsent())
         .scopesConfiguration(idpConfiguration.getScopesConfiguration())
         .build();

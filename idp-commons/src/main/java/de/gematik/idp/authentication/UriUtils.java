@@ -58,4 +58,15 @@ public class UriUtils {
             () ->
                 new RuntimeException("Could not find '" + param + "' parameter in '" + uri + "'"));
   }
+
+  public static String extractBaseUri(final String uriStr) {
+    final URI uri;
+    try {
+      uri = new URI(uriStr);
+    } catch (final URISyntaxException e) {
+      throw new IdpRuntimeException(e);
+    }
+
+    return uri.getScheme() + "://" + uri.getHost() + uri.getPath();
+  }
 }

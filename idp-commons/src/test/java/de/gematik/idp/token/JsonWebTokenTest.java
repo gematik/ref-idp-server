@@ -143,7 +143,7 @@ class JsonWebTokenTest {
 
   @Test
   void encryptJwtWithEcc_shouldBeJweStructure(
-      @Filename("109500969_X114428530_c.ch.aut-ecc") final PkiIdentity id) {
+      @Filename("109500969_X114428530-2_c.ch.aut-ecc") final PkiIdentity id) {
     final JsonWebToken jsonWebToken =
         idpJwtProcessor.buildJwt(
             new JwtBuilder().addAllBodyClaims(Map.of(CONFIRMATION.getJoseName(), "foobarschmar")));

@@ -67,9 +67,9 @@ Feature: Fordere Access Token mittels SSO Token an
           }
         """
     Examples: GetToken - Zertifikate zur Signatur der Challenge
-      | cert                                                 |
-      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12  |
-      | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12 |
+      | cert                                                   |
+      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12    |
+      | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 |
 
   @TCID:IDP_REF_TOK_052 @PRIO:1
     @AFO-ID:A_20731 @AFO-ID:A_20464 @AFO-ID:A_20952 @AFO-ID:A_20313-01
@@ -142,9 +142,9 @@ Feature: Fordere Access Token mittels SSO Token an
           }
         """
     Examples: GetToken - Zertifikate zur Signatur der Challenge
-      | cert                                                 |
-      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12  |
-      | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12 |
+      | cert                                                   |
+      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12    |
+      | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 |
 
   @TCID:IDP_REF_TOK_053 @PRIO:1
     @AFO-ID:A_20313-01
@@ -217,9 +217,9 @@ Feature: Fordere Access Token mittels SSO Token an
           }
         """
     Examples: GetToken - Zertifikate zur Signatur der Challenge
-      | cert                                                 |
-      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12  |
-      | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12 |
+      | cert                                                   |
+      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12    |
+      | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 |
 
   @TCID:IDP_REF_TOK_054 @PRIO:1
     @AFO-ID:A_20327-02
@@ -252,9 +252,9 @@ Feature: Fordere Access Token mittels SSO Token an
     Then IDP the context ACCESS_TOKEN must be signed with cert PUK_SIGN
 
     Examples: GetToken - Zertifikate zur Signatur der Challenge
-      | cert                                                 |
-      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12  |
-      | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12 |
+      | cert                                                   |
+      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12    |
+      | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 |
 
   @TCID:IDP_REF_TOK_055 @PRIO:1
     @AFO-ID:A_20327-02
@@ -287,9 +287,9 @@ Feature: Fordere Access Token mittels SSO Token an
     Then IDP the context ID_TOKEN must be signed with cert PUK_SIGN
 
     Examples: GetToken - Zertifikate zur Signatur der Challenge
-      | cert                                                 |
-      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12  |
-      | /certs/valid/80276883110000104481-C_CH_AUT_R2048.p12 |
+      | cert                                                   |
+      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12    |
+      | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 |
 
 
   @TCID:IDP_REF_TOK_056 @PRIO:4
