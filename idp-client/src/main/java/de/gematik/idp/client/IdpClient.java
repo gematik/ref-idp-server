@@ -273,12 +273,11 @@ public class IdpClient implements IIdpClient {
   }
 
   public AuthorizationCodeResult login(
-      final PkiIdentity smcbIdentity,
+      final X509Certificate certificate,
+      final UnaryOperator<byte[]> contentSigner,
       final String codeChallenge,
       final String state,
       final String nonce) {
-
-    final X509Certificate certificate = smcbIdentity.getCertificate();
 
     LOGGER.debug(
         "Performing Authorization with remote-URL '{}'",
@@ -316,7 +315,7 @@ public class IdpClient implements IIdpClient {
                                     .getChallenge()
                                     .getRawString(),
                                 certificate,
-                                getContentSigner(smcbIdentity))))
+                                contentSigner)))
                     .build(),
                 beforeAuthenticationMapper,
                 afterAuthenticationCallback));
@@ -327,6 +326,16 @@ public class IdpClient implements IIdpClient {
         .redirectUri(UriUtils.extractBaseUri(authenticationResponse.getLocation()))
         .state(UriUtils.extractParameterValue(location, "state"))
         .build();
+  }
+
+  public AuthorizationCodeResult login(
+      final PkiIdentity smcbIdentity,
+      final String codeChallenge,
+      final String state,
+      final String nonce) {
+
+    return login(
+        smcbIdentity.getCertificate(), getContentSigner(smcbIdentity), codeChallenge, state, nonce);
   }
 
   public IdpTokenResult loginWithSsoToken(final IdpJwe ssoToken) {
