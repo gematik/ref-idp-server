@@ -7,18 +7,18 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>27.0.1</version>
+    <version>27.0.2</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>idp-server</artifactId>
-  <version>27.0.1</version>
+  <version>27.0.2</version>
   <packaging>jar</packaging>
 
   <properties>
     <commit_hash>undefined</commit_hash>
     <version.jaxb-api>2.4.0-b180830.0359</version.jaxb-api>
-    <version.jaxb-impl>4.0.4</version.jaxb-impl>
+    <version.jaxb-impl>4.0.5</version.jaxb-impl>
   </properties>
 
   <dependencies>

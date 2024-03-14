@@ -21,12 +21,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import de.gematik.idp.TestConstants;
 import de.gematik.idp.client.AuthorizationCodeResult;
 import de.gematik.idp.client.IdpClient;
+import de.gematik.idp.crypto.EcSignerUtility;
 import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.field.ClientUtilities;
 import de.gematik.idp.tests.PkiKeyResolver;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -74,5 +76,29 @@ class EpaClientTest {
     assertThat(authorizationCodeResult.getState()).isEqualTo(state);
     assertThat(authorizationCodeResult.getRedirectUri()).contains("http");
     assertThat(authorizationCodeResult.getAuthorizationCode()).isNotEmpty();
+  }
+
+  @Test
+  void verifyLoginWithExternalContentSigner() {
+    final String nonce = Nonce.getNonceAsBase64UrlEncodedString(24);
+    final String codeChallenge =
+        ClientUtilities.generateCodeChallenge(ClientUtilities.generateCodeVerifier());
+    final String state = "state";
+
+    final AuthorizationCodeResult authorizationCodeResult =
+        idpClient.login(
+            smcbIdentity.getCertificate(),
+            getContentSigner(smcbIdentity),
+            codeChallenge,
+            state,
+            nonce);
+
+    assertThat(authorizationCodeResult.getState()).isEqualTo(state);
+    assertThat(authorizationCodeResult.getRedirectUri()).contains("http");
+    assertThat(authorizationCodeResult.getAuthorizationCode()).isNotEmpty();
+  }
+
+  private static UnaryOperator<byte[]> getContentSigner(final PkiIdentity pkiIdentityEcc) {
+    return tbsData -> EcSignerUtility.createEcSignature(tbsData, pkiIdentityEcc.getPrivateKey());
   }
 }

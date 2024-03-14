@@ -6,12 +6,12 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>27.0.1</version>
+    <version>27.0.2</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>idp-commons</artifactId>
 
-  <version>27.0.1</version>
+  <version>27.0.2</version>
 
   <dependencies>
 
@@ -66,7 +66,7 @@
     <dependency>
       <groupId>org.bitbucket.b_c</groupId>
       <artifactId>jose4j</artifactId>
-      <version>0.9.5</version>
+      <version>0.9.6</version>
     </dependency>
   </dependencies>
 
