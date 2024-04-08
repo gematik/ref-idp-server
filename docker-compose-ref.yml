@@ -45,7 +45,7 @@ services:
 
   # Idp-Server
   idpserver:
-    image: eu.gcr.io/gematik-all-infra-prod/idp/idp-server:${appVersion}
+    image: ${IDM_ARTIFACT_REGISTRY}/idm/idp-server:${appVersion}
     user: 10000:10000
     container_name: idp-server
     <<: [*service-network-ref, *service-setup-ref]

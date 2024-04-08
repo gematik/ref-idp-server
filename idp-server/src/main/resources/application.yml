@@ -56,6 +56,9 @@ idp:
       audienceUrl: "https://epa.audience.de"
       claimsToBeIncluded: [ ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER ]
   registeredClient:
+    ePA:
+      redirectUri: http://test-ps.gematik.de/ePA
+      returnSsoToken: false
     eRezeptApp:
       redirectUri: http://redirect.gematik.de/erezept
       returnSsoToken: true
