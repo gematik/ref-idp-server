@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # usage:
-# ./removeDockerImages.sh eu.gcr.io/gematik-all-infra-prod/idp/gsi-server
+# ./removeDockerImages.sh ${IDM_ARTIFACT_REGISTRY}/idp/gsi-server
 
 repository="$1"
 

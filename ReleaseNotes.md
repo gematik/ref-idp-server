@@ -1,3 +1,9 @@
+# Release 27.0.3
+
+- switch to docker base image eclipse-temurin:17-jre
+- rename docker image
+- update dependencies
+
 # Release 27.0.2
 
 - adapt idp-client login for ePA (wip)

@@ -7,12 +7,12 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>27.0.2</version>
+    <version>27.0.3</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>idp-server</artifactId>
-  <version>27.0.2</version>
+  <version>27.0.3</version>
   <packaging>jar</packaging>
 
   <properties>
@@ -59,7 +59,7 @@
     <dependency>
       <groupId>org.springdoc</groupId>
       <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-      <version>2.3.0</version>
+      <version>2.5.0</version>
     </dependency>
 
     <dependency>
@@ -140,7 +140,7 @@
     <dependency>
       <groupId>org.wiremock</groupId>
       <artifactId>wiremock-standalone</artifactId>
-      <version>3.4.2</version>
+      <version>3.5.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
