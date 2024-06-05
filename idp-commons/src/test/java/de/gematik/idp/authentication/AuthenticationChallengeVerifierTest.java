@@ -73,7 +73,7 @@ class AuthenticationChallengeVerifierTest {
 
   @BeforeEach
   public void init(
-      @PkiKeyResolver.Filename("1_C.SGD-HSM.AUT_oid_sgd1_hsm_ecc.p12")
+      @PkiKeyResolver.Filename("idp_sig.p12")
           final PkiIdentity serverIdentity,
       @PkiKeyResolver.Filename("109500969_X114428530-2_c.ch.aut-ecc.p12")
           final PkiIdentity clientIdentity,

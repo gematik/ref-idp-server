@@ -146,7 +146,7 @@ class MockIdpClientTest {
   }
 
   @Test
-  void verifyServerSignatureRsa(@PkiKeyResolver.Filename("rsa") final PkiIdentity rsaIdentity) {
+  void verifyServerSignatureRsa(@PkiKeyResolver.Filename("R2048") final PkiIdentity rsaIdentity) {
     mockIdpClient =
         MockIdpClient.builder()
             .serverIdentity(rsaIdentity)

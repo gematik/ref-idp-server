@@ -45,7 +45,7 @@ class FederationPubKeyTest {
         CryptoLoader.getCertificateFromPem(
             FileUtils.readFileToByteArray(
                 ResourceReader.getFileFromResourceAsTmpFile(
-                    "1_C.SGD-HSM.AUT_oid_sgd1_hsm_ecc.pem")));
+                    "idp_sig.pem")));
     final FederationPubKey federationPubKey = new FederationPubKey();
     federationPubKey.setCertificate(Optional.of(certificate));
 
