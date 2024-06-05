@@ -66,7 +66,7 @@ class AuthenticationResponseBuilderTest {
 
   @BeforeEach
   public void init(
-      @PkiKeyResolver.Filename("hsm_ecc") final PkiIdentity serverIdentity,
+      @PkiKeyResolver.Filename("idp_sig") final PkiIdentity serverIdentity,
       @PkiKeyResolver.Filename("c.ch.aut-ecc") final PkiIdentity clientIdentity) {
     this.clientIdentity = clientIdentity;
     this.serverIdentity = serverIdentity;

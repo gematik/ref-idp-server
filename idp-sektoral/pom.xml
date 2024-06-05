@@ -7,12 +7,12 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>27.0.3</version>
+    <version>28.0.1</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>idp-sektoral</artifactId>
-  <version>27.0.3</version>
+  <version>28.0.1</version>
   <packaging>jar</packaging>
 
   <properties>
@@ -49,12 +49,6 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>de.gematik.idp</groupId>
-      <artifactId>idp-test</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
@@ -63,16 +57,8 @@
       <artifactId>spring-webmvc</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.konghq</groupId>
-      <artifactId>unirest-java</artifactId>
-    </dependency>
-    <dependency>
       <groupId>jakarta.validation</groupId>
       <artifactId>jakarta.validation-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>jakarta.annotation</groupId>
-      <artifactId>jakarta.annotation-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>

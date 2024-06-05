@@ -1,3 +1,10 @@
+# Release 28.0.1
+
+- remove parent pom from testsuite to avoid dependency conflicts
+- update dependencies
+- updating some test certificates
+- remove Aforeporter from testsuite
+
 # Release 27.0.3
 
 - switch to docker base image eclipse-temurin:17-jre

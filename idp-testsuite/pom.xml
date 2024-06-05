@@ -4,94 +4,98 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>de.gematik.idp</groupId>
-    <artifactId>idp-global</artifactId>
-    <version>27.0.3</version>
-    <relativePath>../pom.xml</relativePath>
-  </parent>
-
+  <groupId>de.gematik.idp</groupId>
   <artifactId>idp-testsuite</artifactId>
-  <version>27.0.3</version>
+  <version>28.0.1</version>
   <packaging>jar</packaging>
 
   <properties>
     <idp-server.spring.profile>idp</idp-server.spring.profile>
     <sektoral-idp.spring.profile>sektoralIdp</sektoral-idp.spring.profile>
-    <version.datatable>7.16.1</version.datatable>
+    <version.build-helper-maven-plugin>3.6.0</version.build-helper-maven-plugin>
+    <version.commons-lang3>3.14.0</version.commons-lang3>
+    <version.maven-compiler-plugin>3.13.0</version.maven-compiler-plugin>
+    <version.copy-rename-maven-plugin>1.0.1</version.copy-rename-maven-plugin>
+    <version.java>17</version.java>
+    <version.json>20240303</version.json>
+    <version.maven-clean-plugin>3.3.2</version.maven-clean-plugin>
+    <version.maven-failsafe-plugin>3.2.5</version.maven-failsafe-plugin>
+    <version.maven-jar-plugin>3.4.1</version.maven-jar-plugin>
+    <version.maven-javadoc-plugin>3.7.0</version.maven-javadoc-plugin>
+    <version.maven-resources-plugin>3.3.1</version.maven-resources-plugin>
+    <version.maven-source-plugin>3.3.1</version.maven-source-plugin>
+    <version.maven-surefire-plugin>3.2.5</version.maven-surefire-plugin>
+    <version.rest-assured>5.4.0</version.rest-assured>
+    <version.slf4j-api>2.0.13</version.slf4j-api>
+    <version.tiger>3.0.5</version.tiger>
   </properties>
 
-  <dependencies>
-    <!-- Needed for correct working of idp spring boot instance in test run -->
-    <dependency>
-      <groupId>commons-codec</groupId>
-      <artifactId>commons-codec</artifactId>
-      <version>1.16.1</version>
-    </dependency>
+  <dependencyManagement>
+    <dependencies>
+    </dependencies>
+  </dependencyManagement>
 
+  <dependencies>
     <!-- https://mvnrepository.com/artifact/org.json/json -->
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
+      <version>${version.json}</version>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>de.gematik.idp</groupId>
       <artifactId>idp-crypto</artifactId>
       <version>${project.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>de.gematik.idp</groupId>
       <artifactId>idp-commons</artifactId>
       <version>${project.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>de.gematik.idp</groupId>
+          <artifactId>idp-crypto</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-jersey</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-lang3</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-codec</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>${version.commons-lang3}</version>
-    </dependency>
-
-    <!-- Spring boot -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-thymeleaf</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.cucumber</groupId>
-      <artifactId>datatable</artifactId>
-      <version>${version.datatable}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.cucumber</groupId>
-      <artifactId>datatable-matchers</artifactId>
-      <version>${version.datatable}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
+      <version>1.18.32</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
-      <version>${version.assertj}</version>
-      <scope>test</scope>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${version.slf4j-api}</version>
     </dependency>
     <dependency>
       <groupId>org.skyscreamer</groupId>
       <artifactId>jsonassert</artifactId>
       <version>1.5.1</version>
-    </dependency>
-    <dependency>
-      <groupId>de.gematik.idp.aforeporter</groupId>
-      <artifactId>aforeporter</artifactId>
-      <version>${version.aforeporter}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.coderplus.maven.plugins</groupId>
@@ -123,16 +127,12 @@
       <scope>test</scope>
       <exclusions>
         <exclusion>
-          <groupId>org.bouncycastle</groupId>
-          <artifactId>bcprov-jdk15on</artifactId>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>org.bouncycastle</groupId>
-          <artifactId>bcpkix-jdk15on</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.bouncycastle</groupId>
-          <artifactId>bctls-jdk15on</artifactId>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-lang3</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -140,6 +140,7 @@
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured</artifactId>
       <version>${version.rest-assured}</version>
+      <scope>test</scope>
       <exclusions>
         <exclusion>
           <groupId>org.codehaus.groovy</groupId>
@@ -153,6 +154,10 @@
           <groupId>org.codehaus.groovy</groupId>
           <artifactId>groovy</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-lang3</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.junit.vintage/junit-vintage-engine -->
@@ -163,8 +168,56 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
   <build>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${version.maven-compiler-plugin}</version>
+          <configuration>
+            <encoding>UTF-8</encoding>
+            <source>17</source>
+            <target>17</target>
+            <debug>true</debug>
+            <parameters>true</parameters>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>3.2.5</version>
+          <configuration>
+            <includes>
+              <include>**/Driver*.java</include>
+            </includes>
+            <parallel>classes</parallel>
+            <perCoreThreadCount>true</perCoreThreadCount>
+            <!--suppress UnresolvedMavenProperty, MavenModelInspection -->
+            <skipITs>${skip.inttests}</skipITs>
+            <systemPropertyVariables>
+              <!--suppress UnresolvedMavenProperty -->
+              <GEMATIK_TESTCONFIG>${gematik.testconfig}</GEMATIK_TESTCONFIG>
+              <!--suppress UnresolvedMavenProperty -->
+              <cucumber.filter.tags>@Approval and not @OpenBug and not @WiP and not @LongRunning
+              </cucumber.filter.tags>
+            </systemPropertyVariables>
+            <classesDirectory>D:\repos\idp\idp-testsuite\target\classes</classesDirectory>
+          </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>integration-test</goal>
+                <goal>verify</goal>
+              </goals>
+              <configuration>
+                <classesDirectory>D:\repos\idp\idp-testsuite\target\classes</classesDirectory>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -215,10 +268,12 @@
               <exportAntProperties>true</exportAntProperties>
               <target>
                 <property environment="env"/>
+                <!--suppress UnresolvedMavenProperty -->
                 <condition else="default" property="gematik.testconfig"
                   value="${env.GEMATIK_TESTCONFIG}">
                   <isset property="env.GEMATIK_TESTCONFIG"/>
                 </condition>
+                <!--suppress UnresolvedMavenProperty -->
                 <echo message="${gematik.testconfig}"/>
               </target>
             </configuration>
@@ -238,6 +293,7 @@
             <configuration>
               <files>
                 <file>serenity.properties</file>
+                <!--suppress UnresolvedMavenProperty -->
                 <file>testsuite_config.${gematik.testconfig}.properties</file>
               </files>
             </configuration>
@@ -250,6 +306,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
+        <version>${version.maven-source-plugin}</version>
         <executions>
           <execution>
             <id>attach-sources</id>
@@ -312,42 +369,9 @@
         </executions>
       </plugin>
 
-      <!-- workaround for bug in single-page-report of serenity
-            for large failure details to expand table to right of screen -->
-      <plugin>
-        <groupId>com.google.code.maven-replacer-plugin</groupId>
-        <artifactId>replacer</artifactId>
-        <version>1.5.3</version>
-        <configuration>
-          <file>idp-testsuite/target/site/serenity/serenity-summary.html</file>
-          <replacements>
-            <replacement>
-              <token>&lt;/head&gt;</token>
-              <value>&lt;style&gt;.compact-wrapper {
-                max-width: 1200px;
-                }
-
-                .for-failure {
-                max-width: 1150px;
-                line-break: anywhere;
-                }&lt;/style&gt;&lt;/head&gt;
-              </value>
-            </replacement>
-          </replacements>
-          <!--suppress UnresolvedMavenProperty, MavenModelInspection -->
-          <skip>${skip.inttests}</skip>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>replace</goal>
-            </goals>
-            <phase>post-integration-test</phase>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
+        <version>${version.maven-resources-plugin}</version>
         <executions>
           <execution>
             <id>default-resources</id>
@@ -374,33 +398,26 @@
           </execution>
         </executions>
       </plugin>
-      <!-- to be replaced with tiger-aforeporter-plugin -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.2.0</version>
+        <version>3.3.0</version>
         <executions>
           <execution>
-            <id>aforeporter</id>
+            <id>check-file-existence</id>
+            <phase>verify</phase>
             <goals>
-              <goal>java</goal>
+              <goal>exec</goal>
             </goals>
-            <phase>post-integration-test</phase>
             <configuration>
+              <!--suppress UnresolvedMavenProperty, MavenModelInspection -->
+              <skip>${skip.inttests}</skip>
+              <executable>sh</executable>
               <arguments>
-                <argument>-bdd</argument>
-                <argument>-rr</argument>
-                <argument>idp-testsuite/target/site/serenity</argument>
-                <argument>-tr</argument>
-                <argument>idp-testsuite/src/test/resources/features</argument>
-                <argument>-f</argument>
-                <argument>idp-testsuite/requirements.json</argument>
-                <argument>-o</argument>
-                <argument>idp-testsuite/target/site/serenity/aforeport.html</argument>
-                <argument>-tpl</argument>
-                <argument>idp-testsuite/src/test/resources/aforeport_templates</argument>
+                <argument>-c</argument>
+                <!-- verify that testsuite was executed and generates a report-->
+                <argument>test -f ./target/site/serenity/index.html</argument>
               </arguments>
-              <mainClass>de.gematik.idp.tests.aforeport.RunAfoReporter</mainClass>
             </configuration>
           </execution>
         </executions>
@@ -430,54 +447,6 @@
           </tags>
         </configuration>
       </plugin>
-      <!-- reactivate once we can run this against aurora on jenkins machines
-            <plugin>
-                <groupId>de.gematik.test</groupId>
-                <artifactId>tiger-aurora-plugin</artifactId>
-                <version>0.2.0-SNAPSHOT</version>
-                <executions>
-                    <execution>
-                        <id>aurora-testrun-import</id>
-                        <phase>post-integration-test</phase>
-                        <goals>
-                            <goal>import-testrun</goal>
-                        </goals>
-                        <configuration>
-                            <auroraComment>Testcomment</auroraComment>
-                            <auroraProfile></auroraProfile>
-                            <auroraProjectId></auroraProjectId>
-                            <auroraTestrunId></auroraTestrunId>
-                            <auroraUser></auroraUser>
-                            <auroraEncPassword></auroraEncPassword>
-                            <bddRootFolder>target/site/serenity</bddRootFolder>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            -->
-      <!--
-                        <plugin>
-                            <groupId>de.gematik.test</groupId>
-                            <artifactId>tiger-aforeporter-plugin</artifactId>
-                            <version>0.2.0-SNAPSHOT</version>
-                            <configuration>
-                                <afoFile>idp-testsuite/requirements.json</afoFile>
-                                <bddRootFolder>idp-testsuite/src/test/resources/features</bddRootFolder>
-                                <reportHtmlFile>idp-testsuite/target/site/serenity/aforeport.html</reportHtmlFile>
-                                <serenityRootFolder>idp-testsuite/target/site/serenity</serenityRootFolder>
-                            </configuration>
-                            <executions>
-                                <execution>
-                                    <id>create-aforeport</id>
-                                    <phase>post-integration-test</phase>
-                                    <goals>
-                                        <goal>aforeport</goal>
-                                    </goals>
-                                </execution>
-                            </executions>
-                        </plugin>
-                        -->
-
     </plugins>
   </build>
 
@@ -536,23 +505,9 @@
             <artifactId>maven-failsafe-plugin</artifactId>
             <version>${version.maven-failsafe-plugin}</version>
             <configuration>
-              <includes>
-                <include>**/Driver*.java</include>
-              </includes>
-              <parallel>classes</parallel>
-              <perCoreThreadCount>true</perCoreThreadCount>
-              <!--suppress UnresolvedMavenProperty, MavenModelInspection -->
-              <skipITs>${skip.inttests}</skipITs>
-              <systemPropertyVariables>
-                <GEMATIK_TESTCONFIG>${gematik.testconfig}</GEMATIK_TESTCONFIG>
-                <!--suppress UnresolvedMavenProperty -->
-                <cucumber.filter.tags>@Approval and not @OpenBug and not @WiP and not @LongRunning
-                </cucumber.filter.tags>
-              </systemPropertyVariables>
               <environmentVariables>
                 <tiger.idp.version>${project.version}</tiger.idp.version>
               </environmentVariables>
-              <forkMode>once</forkMode>
             </configuration>
           </plugin>
         </plugins>
@@ -575,22 +530,6 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-failsafe-plugin</artifactId>
             <version>${version.maven-failsafe-plugin}</version>
-            <configuration>
-              <includes>
-                <include>**/Driver*.java</include>
-              </includes>
-              <parallel>classes</parallel>
-              <perCoreThreadCount>true</perCoreThreadCount>
-              <!--suppress UnresolvedMavenProperty, MavenModelInspection -->
-              <skipITs>${skip.inttests}</skipITs>
-              <systemPropertyVariables>
-                <GEMATIK_TESTCONFIG>${gematik.testconfig}</GEMATIK_TESTCONFIG>
-                <!--suppress UnresolvedMavenProperty -->
-                <cucumber.filter.tags>@Approval and not @OpenBug and not @WiP and not @LongRunning
-                </cucumber.filter.tags>
-              </systemPropertyVariables>
-              <forkMode>once</forkMode>
-            </configuration>
           </plugin>
         </plugins>
       </build>

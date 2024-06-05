@@ -7,18 +7,19 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>27.0.3</version>
+    <version>28.0.1</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>idp-server</artifactId>
-  <version>27.0.3</version>
+  <version>28.0.1</version>
   <packaging>jar</packaging>
 
   <properties>
     <commit_hash>undefined</commit_hash>
     <version.jaxb-api>2.4.0-b180830.0359</version.jaxb-api>
     <version.jaxb-impl>4.0.5</version.jaxb-impl>
+    <version.tiger-rbel>3.0.5</version.tiger-rbel>
   </properties>
 
   <dependencies>
@@ -140,33 +141,19 @@
     <dependency>
       <groupId>org.wiremock</groupId>
       <artifactId>wiremock-standalone</artifactId>
-      <version>3.5.2</version>
+      <version>3.6.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>commons-validator</groupId>
       <artifactId>commons-validator</artifactId>
-      <version>1.8.0</version>
+      <version>1.9.0</version>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/de.gematik.test/tiger-rbel -->
     <dependency>
       <groupId>de.gematik.test</groupId>
-      <artifactId>tiger-test-lib</artifactId>
-      <version>${version.tiger}</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.bouncycastle</groupId>
-          <artifactId>bcprov-jdk15on</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.bouncycastle</groupId>
-          <artifactId>bcpkix-jdk15on</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.bouncycastle</groupId>
-          <artifactId>bctls-jdk15on</artifactId>
-        </exclusion>
-      </exclusions>
+      <artifactId>tiger-rbel</artifactId>
+      <version>${version.tiger-rbel}</version>
     </dependency>
     <dependency>
       <groupId>io.rest-assured</groupId>
@@ -186,14 +173,6 @@
           <artifactId>groovy</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>jakarta.validation</groupId>
-      <artifactId>jakarta.validation-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>jakarta.annotation</groupId>
-      <artifactId>jakarta.annotation-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>

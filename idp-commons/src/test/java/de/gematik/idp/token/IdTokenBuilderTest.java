@@ -70,7 +70,7 @@ class IdTokenBuilderTest {
   private PkiIdentity pkiIdentity;
 
   @BeforeEach
-  public void init(@PkiKeyResolver.Filename("authz_rsa") final PkiIdentity clientIdentity) {
+  public void init(@PkiKeyResolver.Filename("apo-rsa") final PkiIdentity clientIdentity) {
     pkiIdentity = clientIdentity;
     final Map<String, Object> bodyClaims = new HashMap<>();
     bodyClaims.put(PROFESSION_OID.getJoseName(), OID_VERSICHERTER);
@@ -158,7 +158,7 @@ class IdTokenBuilderTest {
 
   @Test
   void checkIdTokenWithoutNotExistingUserConsentTokenFromAuthenticationToken(
-      @PkiKeyResolver.Filename("authz_rsa") final PkiIdentity clientIdentity) {
+      @PkiKeyResolver.Filename("apo-rsa") final PkiIdentity clientIdentity) {
     final Map<String, Object> bodyClaims = new HashMap<>();
     bodyClaims.put(ID_NUMBER.getJoseName(), "id_number");
     bodyClaims.put(GIVEN_NAME.getJoseName(), "given_name");
