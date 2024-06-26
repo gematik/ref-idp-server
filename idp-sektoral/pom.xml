@@ -7,12 +7,12 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>28.0.1</version>
+    <version>28.0.2</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>idp-sektoral</artifactId>
-  <version>28.0.1</version>
+  <version>28.0.2</version>
   <packaging>jar</packaging>
 
   <properties>
@@ -71,6 +71,11 @@
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j2-impl</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.5.14</version>
     </dependency>
   </dependencies>
 

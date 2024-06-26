@@ -177,8 +177,12 @@ public class DiscoveryDocument {
   }
 
   private JSONObject getPuKFromJSONAttribute(String uri)
-      throws JSONException, KeyStoreException, CertificateException, NoSuchAlgorithmException,
-          IOException, URISyntaxException {
+      throws JSONException,
+          KeyStoreException,
+          CertificateException,
+          NoSuchAlgorithmException,
+          IOException,
+          URISyntaxException {
     if (uri.equals("$NULL")) {
       return null;
     } else if (uri.startsWith("http")) {

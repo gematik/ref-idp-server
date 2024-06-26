@@ -7,19 +7,19 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>28.0.1</version>
+    <version>28.0.2</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>idp-server</artifactId>
-  <version>28.0.1</version>
+  <version>28.0.2</version>
   <packaging>jar</packaging>
 
   <properties>
     <commit_hash>undefined</commit_hash>
     <version.jaxb-api>2.4.0-b180830.0359</version.jaxb-api>
     <version.jaxb-impl>4.0.5</version.jaxb-impl>
-    <version.tiger-rbel>3.0.5</version.tiger-rbel>
+    <version.tiger-rbel>3.1.1</version.tiger-rbel>
   </properties>
 
   <dependencies>
@@ -110,6 +110,10 @@
           <groupId>org.bouncycastle</groupId>
           <artifactId>bcpkix-jdk15on</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>com.konghq</groupId>
+          <artifactId>unirest-java</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -141,7 +145,7 @@
     <dependency>
       <groupId>org.wiremock</groupId>
       <artifactId>wiremock-standalone</artifactId>
-      <version>3.6.0</version>
+      <version>3.7.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -186,6 +190,7 @@
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j2-impl</artifactId>
     </dependency>
+
   </dependencies>
 
   <build>

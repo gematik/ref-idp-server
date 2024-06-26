@@ -6,7 +6,7 @@
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-testsuite</artifactId>
-  <version>28.0.1</version>
+  <version>28.0.2</version>
   <packaging>jar</packaging>
 
   <properties>
@@ -18,20 +18,25 @@
     <version.copy-rename-maven-plugin>1.0.1</version.copy-rename-maven-plugin>
     <version.java>17</version.java>
     <version.json>20240303</version.json>
-    <version.maven-clean-plugin>3.3.2</version.maven-clean-plugin>
-    <version.maven-failsafe-plugin>3.2.5</version.maven-failsafe-plugin>
-    <version.maven-jar-plugin>3.4.1</version.maven-jar-plugin>
+    <version.maven-clean-plugin>3.4.0</version.maven-clean-plugin>
+    <version.maven-failsafe-plugin>3.3.0</version.maven-failsafe-plugin>
+    <version.maven-jar-plugin>3.4.2</version.maven-jar-plugin>
     <version.maven-javadoc-plugin>3.7.0</version.maven-javadoc-plugin>
     <version.maven-resources-plugin>3.3.1</version.maven-resources-plugin>
     <version.maven-source-plugin>3.3.1</version.maven-source-plugin>
-    <version.maven-surefire-plugin>3.2.5</version.maven-surefire-plugin>
+    <version.maven-surefire-plugin>3.3.0</version.maven-surefire-plugin>
     <version.rest-assured>5.4.0</version.rest-assured>
     <version.slf4j-api>2.0.13</version.slf4j-api>
-    <version.tiger>3.0.5</version.tiger>
+    <version.tiger>3.1.1</version.tiger>
   </properties>
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>1.5.6</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -185,7 +190,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-failsafe-plugin</artifactId>
-          <version>3.2.5</version>
+          <version>3.3.0</version>
           <configuration>
             <includes>
               <include>**/Driver*.java</include>
@@ -445,6 +450,49 @@
               <head>Context INPUT:</head>
             </tag>
           </tags>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>2.43.0</version>
+        <configuration>
+          <formats>
+            <!-- you can define as many formats as you want, each is independent -->
+            <format>
+              <!-- define the files to apply to -->
+              <includes>
+                <include>**/*.yml</include>
+              </includes>
+              <excludes>
+                <exclude>**/target/**/*</exclude>
+              </excludes>
+              <!-- define the steps to apply to those files -->
+              <trimTrailingWhitespace/>
+              <endWithNewline/>
+              <indent>
+                <spaces>true</spaces>
+                <spacesPerTab>2</spacesPerTab>
+              </indent>
+            </format>
+          </formats>
+
+          <java>
+            <toggleOffOn/>
+            <googleJavaFormat>
+              <version>${version.spotless.google-java-format}</version>
+              <style>GOOGLE</style>
+              <reflowLongStrings>true</reflowLongStrings>
+            </googleJavaFormat>
+          </java>
+          <markdown>
+            <includes>
+              <include>**/*.md</include>
+            </includes>
+            <excludes>
+              <exclude>**/target/**/*</exclude>
+            </excludes>
+          </markdown>
         </configuration>
       </plugin>
     </plugins>

@@ -1266,6 +1266,7 @@ public class StepsGlue {
         TigerGlobalConfiguration.resolvePlaceholders(
             TigerGlobalConfiguration.readString(tokenKeyLocation)));
   }
+
   // =================================================================================================================
   //
   // Z E N T R A L E R   I D P   F A S T   T R A C K

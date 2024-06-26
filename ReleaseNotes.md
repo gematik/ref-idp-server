@@ -1,3 +1,7 @@
+# Release 28.0.2
+
+- update dependencies (unirest-java -> unirest-java-core)
+
 # Release 28.0.1
 
 - remove parent pom from testsuite to avoid dependency conflicts
