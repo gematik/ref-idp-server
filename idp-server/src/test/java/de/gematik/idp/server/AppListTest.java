@@ -19,9 +19,9 @@ package de.gematik.idp.server;
 import static de.gematik.idp.IdpConstants.APPLIST_ENDPOINT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
+import kong.unirest.core.HttpResponse;
+import kong.unirest.core.Unirest;
+import kong.unirest.core.UnirestException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

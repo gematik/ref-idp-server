@@ -7,13 +7,13 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>28.0.1</version>
+    <version>28.0.2</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-client</artifactId>
 
-  <version>28.0.1</version>
+  <version>28.0.2</version>
   <packaging>jar</packaging>
 
   <dependencies>
@@ -55,7 +55,7 @@
 
     <dependency>
       <groupId>com.konghq</groupId>
-      <artifactId>unirest-java</artifactId>
+      <artifactId>unirest-java-core</artifactId>
     </dependency>
     <dependency>
       <groupId>com.konghq</groupId>
@@ -72,6 +72,11 @@
       <artifactId>idp-test</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpcore</artifactId>
+      <version>4.4.16</version>
     </dependency>
   </dependencies>
 

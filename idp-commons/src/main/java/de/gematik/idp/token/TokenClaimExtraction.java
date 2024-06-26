@@ -23,7 +23,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Objects;
-import kong.unirest.json.JSONObject;
+import kong.unirest.core.json.JSONObject;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jose4j.json.JsonUtil;

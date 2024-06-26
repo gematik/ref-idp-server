@@ -57,9 +57,10 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
-import kong.unirest.MultipartBody;
-import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
+import kong.unirest.core.HttpResponse;
+import kong.unirest.core.MultipartBody;
+import kong.unirest.core.Unirest;
+import kong.unirest.core.UnirestException;
 import org.apache.http.HttpHeaders;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.json.JSONException;
@@ -801,7 +802,7 @@ class TokenRetrievalTest {
   }
 
   private JsonWebToken extractAuthenticationTokenFromResponse(
-      final kong.unirest.HttpResponse<String> response, final String parameterName) {
+      final HttpResponse<String> response, final String parameterName) {
     return Optional.ofNullable(response.getHeaders().getFirst("Location"))
         .map(uri -> UriUtils.extractParameterValue(uri, parameterName))
         .map(code -> new IdpJwe(code))

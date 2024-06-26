@@ -44,8 +44,7 @@ class FederationPubKeyTest {
     final X509Certificate certificate =
         CryptoLoader.getCertificateFromPem(
             FileUtils.readFileToByteArray(
-                ResourceReader.getFileFromResourceAsTmpFile(
-                    "idp_sig.pem")));
+                ResourceReader.getFileFromResourceAsTmpFile("idp_sig.pem")));
     final FederationPubKey federationPubKey = new FederationPubKey();
     federationPubKey.setCertificate(Optional.of(certificate));
 
