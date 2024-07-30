@@ -26,8 +26,8 @@ Feature: Authentisierung mit sektoralem IDP
     And TGR find request to path "/.well-known/openid-configuration"
     And TGR set local variable "fedAuthEndpoint" to "!{rbel:currentResponseAsString('$.body.body.federation_authorization_endpoint')}"
     And TGR set local variable "tokenEndpoint" to "!{rbel:currentResponseAsString('$.body.body.token_endpoint')}"
-
-
+    And TGR disable HttpClient followRedirects configuration
+    
   @TCID:IDP_REF_FEDAUTH_001
   @Approval
   @TESTSTUFE:4
@@ -173,7 +173,7 @@ Feature: Authentisierung mit sektoralem IDP
         """
           {
             acr:              "gematik-ehealth-loa-high",
-            amr:              ["mfa"],
+            amr:              "urn:telematik:auth:eGK",
             aud:              "${json-unit.ignore}",
             auth_time:        "${json-unit.ignore}",
             azp:              "eRezeptApp",
@@ -259,3 +259,91 @@ Feature: Authentisierung mit sektoralem IDP
       | code           | state              | errorCode |
       | invalidcode    | ${fachdienstState} | 400       |
       | ${gsiAuthCode} | xxxstatexxx        | 400       |
+
+
+  @TCID:IDP_REF_FEDAUTH_007
+    @Approval
+  @TESTSTUFE:4
+  Scenario: Fed Auth Endpoint - Auth Code des eRezept Authservers beim Token Endpoint einreichen
+
+  ```
+  Wir fordern vom fed_auth_endpoint eine request_uri an. Mit dieser gehen wir zum GSI
+  Der Authentication Request an den GSI wird mit einem auth_code beantwortet.
+  Diesen senden wir an den Auth Server des eRezepts, substantial soll akzeptiert werden.
+  Die Antwort muss einen auth_code des eRezept Authservers enthalten
+  Diesen senden wir an den Token Endpoint des zentralen IDPs
+
+    Given TGR clear recorded messages
+    And TGR sende eine GET Anfrage an "${fedAuthEndpoint}" mit folgenden Daten:
+      | client_id  | state       | redirect_uri                        | code_challenge                              | code_challenge_method | response_type | nonce | scope           | idp_iss                           |
+      | eRezeptApp | xxxstatexxx | https://redirect.gematik.de/erezept | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | code          | 1234  | openid e-rezept | https://gsi.dev.gematik.solutions |
+    And TGR find request to path ".*"
+    And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$.header.Location.request_uri.value')}"
+    And TGR set local variable "gsiAuthEndpoint" to "!{rbel:currentResponseAsString('$.header.Location.basicPath')}"
+    And TGR clear recorded messages
+    And TGR sende eine GET Anfrage an "${gsiAuthEndpoint}" mit folgenden Daten:
+      | request_uri   | user_id    |
+      | ${requestUri} | O018753329 |
+    And TGR find request to path ".*"
+    And TGR set local variable "gsiAuthCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
+    And TGR set local variable "fachdienstState" to "!{rbel:currentResponseAsString('$.header.Location.state.value')}"
+    And TGR clear recorded messages
+    And TGR sende eine POST Anfrage an "${fedAuthEndpoint}" mit folgenden Daten:
+      | code           | state              |
+      | ${gsiAuthCode} | ${fachdienstState} |
+    And TGR find request to path ".*"
+    And TGR set local variable "fachdienstCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
+    And TGR clear recorded messages
+    When TGR sende eine POST Anfrage an "${tokenEndpoint}" mit folgenden Daten:
+      | code              | key_verifier       | grant_type         | redirect_uri                        | client_id  |
+      | ${fachdienstCode} | ${fed.keyVerifier} | authorization_code | https://redirect.gematik.de/erezept | eRezeptApp |
+    And TGR find request to path ".*"
+    Then TGR current response with attribute "$.responseCode" matches "200"
+    Then TGR current response at "$.body" matches as JSON:
+            """
+          {
+            expires_in:                         300,
+            token_type:                         'Bearer',
+            id_token:                           '.*',
+            access_token:                       '.*'
+          }
+        """
+    Then TGR current response at "$.body.access_token.header" matches as JSON:
+        """
+          {
+            "alg": "dir",
+            "enc": "A256GCM",
+            "cty": "NJWT",
+            "exp": "${json-unit.ignore}"
+          }
+        """
+    Then TGR current response at "$.body.access_token.body.njwt.header" matches as JSON:
+        """
+          { alg: "BP256R1",
+            kid: "${json-unit.ignore}",
+            typ: "at+JWT"
+          }
+        """
+    Then TGR current response at "$.body.access_token.body.njwt.body" matches as JSON:
+        """
+          {
+            acr:              "gematik-ehealth-loa-substantial",
+            amr:              "urn:telematik:auth:mEW",
+            aud:              "${json-unit.ignore}",
+            auth_time:        "${json-unit.ignore}",
+            azp:              "eRezeptApp",
+            client_id:        "eRezeptApp",
+            exp:              "${json-unit.ignore}",
+            jti:              "${json-unit.ignore}",
+            family_name:      "",
+            given_name:       "",
+            iat:              "${json-unit.ignore}",
+            idNummer:         "O018753329",
+            iss:              "${fed.idpIss}",
+            organizationName: "106589300",
+            professionOID:    "1.2.276.0.76.4.49",
+            scope:            "openid e-rezept",
+            sub:              ".*",
+            display_name:     "Hildur Fürsich"
+          }
+        """

@@ -54,7 +54,9 @@ public final class KeyUtility {
 
   private static BCECPublicKey convertToBCECPublicKey(
       final SubjectPublicKeyInfo subjectPublicKeyInfo)
-      throws PEMException, NoSuchAlgorithmException, NoSuchProviderException,
+      throws PEMException,
+          NoSuchAlgorithmException,
+          NoSuchProviderException,
           InvalidKeySpecException {
     // Convert SubjectPublicKeyInfo to PublicKey
     final JcaPEMKeyConverter converter = new JcaPEMKeyConverter();

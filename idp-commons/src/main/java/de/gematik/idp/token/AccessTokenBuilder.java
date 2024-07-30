@@ -16,6 +16,7 @@
 
 package de.gematik.idp.token;
 
+import static de.gematik.idp.IdpConstants.EIDAS_LOA_HIGH;
 import static de.gematik.idp.IdpConstants.EREZEPT;
 import static de.gematik.idp.IdpConstants.OPENID;
 import static de.gematik.idp.IdpConstants.PAIRING;
@@ -110,7 +111,9 @@ public class AccessTokenBuilder {
 
     claimsMap.put(ISSUED_AT.getJoseName(), now.toEpochSecond());
     claimsMap.put(ISSUER.getJoseName(), issuerUrl);
-    claimsMap.put(AUTHENTICATION_CLASS_REFERENCE.getJoseName(), IdpConstants.EIDAS_LOA_HIGH);
+    claimsMap.put(
+        AUTHENTICATION_CLASS_REFERENCE.getJoseName(),
+        authenticationToken.getBodyClaim(AUTHENTICATION_CLASS_REFERENCE).orElse(EIDAS_LOA_HIGH));
     claimsMap.put(
         AUDIENCE.getJoseName(),
         determineAudienceBasedOnScope(authenticationToken.getScopesBodyClaim()));

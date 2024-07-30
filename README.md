@@ -52,7 +52,7 @@ or use docker compose:
 
 ```console
 $ mvn clean install -pl idp-server -am -Dskip.unittests -Dskip.inttests
-$ export appVersion=28.0.2
+$ export appVersion=29.0.1
 $ export serverLoglevel=info (default)
 $ docker-compose --project-name myidp -f docker-compose-ref.yml up -d
 ```
@@ -70,7 +70,8 @@ modify entries in the scopesConfiguration section of the idp-server's applicatio
 
 ### Configuration of Server URL
 
-The URL of the idp-server is required for many fields inside the discovery document of the server. For example, the authorization endpoint:
+The URL of the idp-server is required for many fields inside the discovery document of the server. For example, the
+authorization endpoint:
 
 ```
 {

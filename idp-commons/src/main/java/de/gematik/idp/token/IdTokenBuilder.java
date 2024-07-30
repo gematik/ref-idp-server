@@ -16,6 +16,7 @@
 
 package de.gematik.idp.token;
 
+import static de.gematik.idp.IdpConstants.EIDAS_LOA_HIGH;
 import static de.gematik.idp.IdpConstants.EREZEPT;
 import static de.gematik.idp.field.ClaimName.ACCESS_TOKEN_HASH;
 import static de.gematik.idp.field.ClaimName.AUDIENCE;
@@ -114,7 +115,9 @@ public class IdTokenBuilder {
             .getBodyClaim(AUTHENTICATION_METHODS_REFERENCE)
             .or(() -> accessToken.getBodyClaim(AUTHENTICATION_METHODS_REFERENCE))
             .orElseThrow());
-    claimsMap.put(AUTHENTICATION_CLASS_REFERENCE.getJoseName(), IdpConstants.EIDAS_LOA_HIGH);
+    claimsMap.put(
+        AUTHENTICATION_CLASS_REFERENCE.getJoseName(),
+        authenticationToken.getBodyClaim(AUTHENTICATION_CLASS_REFERENCE).orElse(EIDAS_LOA_HIGH));
     claimsMap.put(ACCESS_TOKEN_HASH.getJoseName(), atHashValue);
     claimsMap.put(
         SUBJECT.getJoseName(),

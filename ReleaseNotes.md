@@ -1,3 +1,10 @@
+# Release 29.0.1
+
+- Java 21
+- switch to docker base image eclipse-temurin:21-jre
+- replace hard coded values for ACR/AMR in access and id token with dynamic values by reading them from authentication
+  token
+
 # Release 28.0.2
 
 - update dependencies (unirest-java -> unirest-java-core)
