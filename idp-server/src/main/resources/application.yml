@@ -31,6 +31,7 @@ idp:
         FAMILY_NAME: "Zustimmung zur Verarbeitung des Nachnamens"
         ID_NUMBER: "Zustimmung zur Verarbeitung der Id (z.B. Krankenversichertennummer, Telematik-Id)"
         DISPLAY_NAME: "Zustimmung zur Verarbeitung des Vornamens und des Nachnamens"
+        ORGANIZATION_IK: "Zustimmung zur Verarbeitung der IK-Nummer"
   productTypeDisplayString: "IDP"
   scopesConfiguration:
     openid:
@@ -38,7 +39,7 @@ idp:
     e-rezept:
       description: "Zugriff auf die E-Rezept-Funktionalität."
       audienceUrl: "https://erp-test.zentral.erp.splitdns.ti-dienste.de/"
-      claimsToBeIncluded: [ GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER, DISPLAY_NAME ]
+      claimsToBeIncluded: [ GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER, DISPLAY_NAME, ORGANIZATION_IK ]
     pairing:
       description: "Zugriff auf die Daten für die biometrischer Authentisierung."
       audienceUrl: "https://idp-pairing-test.zentral.idp.splitdns.ti-dienste.de"
