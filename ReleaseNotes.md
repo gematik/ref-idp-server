@@ -1,3 +1,7 @@
+# Release 29.0.3
+
+- fix missing claim ORGANIZATION_IK in configuration
+
 # Release 29.0.2
 
 - add organizationIk claim to token
