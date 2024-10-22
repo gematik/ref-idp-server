@@ -26,6 +26,7 @@ public enum ClaimName {
   GIVEN_NAME("given_name"),
   FAMILY_NAME("family_name"),
   ORGANIZATION_NAME("organizationName"),
+  ORGANIZATION_IK("organizationIK"),
   PROFESSION_OID("professionOID"),
   ID_NUMBER("idNummer"),
   DISPLAY_NAME("display_name"),

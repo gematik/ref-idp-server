@@ -165,7 +165,8 @@ Feature: Alternative Authentisierung, Anwendung am IDP Server
             snc:                   ".*",
             state:                 "xxxstatexxx",
             token_type:            "code",
-            amr:                   ["mfa", "hwk", "kba"]
+            amr:                   ["mfa", "hwk", "kba"],
+            organizationIK:        "[\\d]{9,10}",
         }
         """
 

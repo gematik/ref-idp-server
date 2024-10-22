@@ -1,8 +1,15 @@
+# Release 29.0.2
+
+- add organizationIk claim to token
+- fix in acr/amr to work with erp-fd without any change on their end
+- update dependencies
+
 # Release 29.0.1
 
 - Java 21
 - switch to docker base image eclipse-temurin:21-jre
-- replace hard coded values for ACR/AMR in access and id token with dynamic values by reading them from authentication
+- replace hard coded values for ACR/AMR in access and id token with dynamic values by reading them
+  from authentication
   token
 
 # Release 28.0.2

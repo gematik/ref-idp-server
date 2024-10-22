@@ -182,7 +182,8 @@ public class FlowBeanCreation {
             .idpIss("https://gsi.dev.gematik.solutions")
             .idpName("gematik sektoraler IDP")
             .idpSek2(true)
-            .idpLogo("https://gsi.dev.gematik.solutions/noLogoYet")
+            .idpLogo(
+                "https://raw.githubusercontent.com/gematik/zero-lab/main/static/images/GID_App_light_mode.svg")
             .idpPkv(true)
             .build());
     theFederationIdpList.add(

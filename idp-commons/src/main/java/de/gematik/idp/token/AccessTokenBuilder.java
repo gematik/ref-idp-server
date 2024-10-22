@@ -34,6 +34,7 @@ import static de.gematik.idp.field.ClaimName.ID_NUMBER;
 import static de.gematik.idp.field.ClaimName.ISSUED_AT;
 import static de.gematik.idp.field.ClaimName.ISSUER;
 import static de.gematik.idp.field.ClaimName.JWT_ID;
+import static de.gematik.idp.field.ClaimName.ORGANIZATION_IK;
 import static de.gematik.idp.field.ClaimName.ORGANIZATION_NAME;
 import static de.gematik.idp.field.ClaimName.PROFESSION_OID;
 import static de.gematik.idp.field.ClaimName.SCOPE;
@@ -73,6 +74,7 @@ public class AccessTokenBuilder {
           ID_NUMBER,
           CLIENT_ID,
           SCOPE,
+          ORGANIZATION_IK,
           AUTH_TIME);
   private final IdpJwtProcessor jwtProcessor;
   private final String issuerUrl;
@@ -80,7 +82,7 @@ public class AccessTokenBuilder {
   private final Map<String, String> scopeToAudienceUrl;
 
   private final ClaimName[] nonPairingClaims =
-      new ClaimName[] {PROFESSION_OID, GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME};
+      new ClaimName[] {PROFESSION_OID, GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, ORGANIZATION_IK};
 
   public JsonWebToken buildAccessToken(final JsonWebToken authenticationToken) {
     final ZonedDateTime now = ZonedDateTime.now();
@@ -111,9 +113,7 @@ public class AccessTokenBuilder {
 
     claimsMap.put(ISSUED_AT.getJoseName(), now.toEpochSecond());
     claimsMap.put(ISSUER.getJoseName(), issuerUrl);
-    claimsMap.put(
-        AUTHENTICATION_CLASS_REFERENCE.getJoseName(),
-        authenticationToken.getBodyClaim(AUTHENTICATION_CLASS_REFERENCE).orElse(EIDAS_LOA_HIGH));
+    claimsMap.put(AUTHENTICATION_CLASS_REFERENCE.getJoseName(), EIDAS_LOA_HIGH);
     claimsMap.put(
         AUDIENCE.getJoseName(),
         determineAudienceBasedOnScope(authenticationToken.getScopesBodyClaim()));
@@ -130,9 +130,13 @@ public class AccessTokenBuilder {
             serverSubjectSalt));
     claimsMap.put(AUTHORIZED_PARTY.getJoseName(), clientId);
     claimsMap.put(JWT_ID.getJoseName(), Nonce.getNonceAsHex(IdpConstants.JTI_LENGTH));
-    claimsMap.put(
-        AUTHENTICATION_METHODS_REFERENCE.getJoseName(),
-        authenticationToken.getBodyClaim(AUTHENTICATION_METHODS_REFERENCE).orElse(getAmrString()));
+    Object amrValue =
+        authenticationToken.getBodyClaim(AUTHENTICATION_METHODS_REFERENCE).orElse(getAmrString());
+    // workaround for authenticator with substantial, TIIAM-178
+    if (amrValue.equals("urn:telematik:auth:mEW")) {
+      amrValue = new String[] {"mfa"};
+    }
+    claimsMap.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), amrValue);
     claimsMap.put(
         EXPIRES_AT.getJoseName(),
         NumericDate.fromSeconds(now.plusMinutes(5).toEpochSecond()).getValue());

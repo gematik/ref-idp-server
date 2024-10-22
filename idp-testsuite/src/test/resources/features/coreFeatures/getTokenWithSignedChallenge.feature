@@ -118,7 +118,8 @@ Feature: Fordere Access Token mit einer signierten Challenge an
             professionOID:    "<professionOID>",
             scope:            "${TESTENV.scopes_basisflow_regex}",
             sub:              ".*",
-            display_name:     "<displayName>"
+            display_name:     "<displayName>",
+            organizationIK:   $NULL
           }
         """
     Examples: GetToken - Zertifikate zur Signatur der Challenge
@@ -193,13 +194,14 @@ Feature: Fordere Access Token mit einer signierten Challenge an
             professionOID:    "<professionOID>",
             scope:            "${TESTENV.scopes_basisflow_regex}",
             sub:              ".*",
-            display_name: "<displyName>"
+            display_name:     "<displyName>",
+            organizationIK:   "<organizationIK>"
           }
         """
     Examples: GetToken - Zertifikate zur Signatur der Challenge
-      | cert                                                   | professionOID     | idNumber   | organisationName     | family_name | given_name                | displyName                         |
-      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12    | 1.2.276.0.76.4.49 | X110411675 | Test GKV-SVNOT-VALID | Bödefeld    | Darius Michael Brian Ubbo | Darius Michael Brian Ubbo Bödefeld |
-      | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 | 1.2.276.0.76.4.49 | X110471380 | Test GKV-SVNOT-VALID | Burgund     | Ulrich Hans Johann von    | Ulrich Hans Johann von Burgund     |
+      | cert                                                   | professionOID     | idNumber   | organisationName     | family_name | given_name                | displyName                         | organizationIK |
+      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12    | 1.2.276.0.76.4.49 | X110411675 | Test GKV-SVNOT-VALID | Bödefeld    | Darius Michael Brian Ubbo | Darius Michael Brian Ubbo Bödefeld | 109500969      |
+      | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 | 1.2.276.0.76.4.49 | X110471380 | Test GKV-SVNOT-VALID | Burgund     | Ulrich Hans Johann von    | Ulrich Hans Johann von Burgund     | 109500969      |
 
 
   @TCID:IDP_REF_TOK_003 @PRIO:1
@@ -260,7 +262,8 @@ Feature: Fordere Access Token mit einer signierten Challenge an
             organizationName: "(.{1,64})",
             sub:              ".*",
             jti:              ".*",
-            display_name:     "(.{3,129})"
+            display_name:     "(.{3,129})",
+            organizationIK:   "[\\d]{9,10}"
           }
         """
     Examples: GetToken - Zertifikate zur Signatur der Challenge
@@ -327,7 +330,9 @@ Feature: Fordere Access Token mit einer signierten Challenge an
             organizationName: "<organisationName>",
             sub:              ".*",
             jti:              ".*",
-            display_name:     "<displayName>"
+            display_name:     "<displayName>",
+            organizationIK:   $NULL
+
           }
         """
     Examples: GetToken - Zertifikate zur Signatur der Challenge

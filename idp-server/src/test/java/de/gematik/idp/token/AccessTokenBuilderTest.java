@@ -16,6 +16,7 @@
 
 package de.gematik.idp.token;
 
+import static de.gematik.idp.IdpConstants.EIDAS_LOA_HIGH;
 import static de.gematik.idp.IdpConstants.EREZEPT;
 import static de.gematik.idp.IdpConstants.OID_VERSICHERTER;
 import static de.gematik.idp.IdpConstants.OPENID;
@@ -23,6 +24,8 @@ import static de.gematik.idp.IdpConstants.PAIRING;
 import static de.gematik.idp.brainPoolExtension.BrainpoolAlgorithmSuiteIdentifiers.BRAINPOOL256_USING_SHA256;
 import static de.gematik.idp.field.ClaimName.ALGORITHM;
 import static de.gematik.idp.field.ClaimName.AUDIENCE;
+import static de.gematik.idp.field.ClaimName.AUTHENTICATION_CLASS_REFERENCE;
+import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
 import static de.gematik.idp.field.ClaimName.AUTH_TIME;
 import static de.gematik.idp.field.ClaimName.CLIENT_ID;
 import static de.gematik.idp.field.ClaimName.DISPLAY_NAME;
@@ -31,6 +34,7 @@ import static de.gematik.idp.field.ClaimName.GIVEN_NAME;
 import static de.gematik.idp.field.ClaimName.ID_NUMBER;
 import static de.gematik.idp.field.ClaimName.ISSUED_AT;
 import static de.gematik.idp.field.ClaimName.ISSUER;
+import static de.gematik.idp.field.ClaimName.ORGANIZATION_IK;
 import static de.gematik.idp.field.ClaimName.ORGANIZATION_NAME;
 import static de.gematik.idp.field.ClaimName.PROFESSION_OID;
 import static de.gematik.idp.field.ClaimName.SCOPE;
@@ -48,6 +52,7 @@ import de.gematik.idp.tests.Afo;
 import de.gematik.idp.tests.PkiKeyResolver;
 import java.security.Security;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.crypto.spec.SecretKeySpec;
@@ -55,7 +60,6 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -72,6 +76,9 @@ class AccessTokenBuilderTest {
   private static final String AUTH_CODE_SEKTORALER_IDP =
       "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InB1a19mZF9zaWcifQ.eyJwcm9mZXNzaW9uT0lEIjoiMS4yLjI3Ni4wLjc2LjQuNDkiLCJvcmdhbml6YXRpb25OYW1lIjoiMTA5NTAwOTY5IiwiaWROdW1tZXIiOiJYMTEwNDExNjc1IiwiYW1yIjpbIm1mYSJdLCJpc3MiOiJodHRwczovL2lkcGZhZGkuZGV2LmdlbWF0aWsuc29sdXRpb25zIiwicmVzcG9uc2VfdHlwZSI6bnVsbCwic25jIjoiS1RtWHB6aURXaFBIUjBHS2RUdEY5eV9QeHN5NTRWbWwiLCJjb2RlX2NoYWxsZW5nZV9tZXRob2QiOiJmcm9udGVuZENvZGVDaGFsbGVuZ2VNZXRob2QiLCJkaXNwbGF5X25hbWUiOiJEYXJpdXMgTWljaGFlbCBCcmlhbiBVYmJvIEdyYWYgdm9uIELDtmRlZmVsZCIsInRva2VuX3R5cGUiOiJjb2RlIiwiY2xpZW50X2lkIjoiZnJvbnRlbmRDbGllbnRJZCIsInNjb3BlIjoib3BlbmlkIGUtcmV6ZXB0IiwiYXV0aF90aW1lIjoxNjkwMjAyMzI1LCJyZWRpcmVjdF91cmkiOiJmcm9udGVuZFJlZGlyZWN0VXJpIiwic3RhdGUiOiJmcm9udGVuZFN0YXRlIiwiZXhwIjoxNjkwMjA1OTQyLCJpYXQiOjE2OTAyMDIzMjUsImNvZGVfY2hhbGxlbmdlIjoiZnJvbnRlbmRDb2RlQ2hhbGxlbmdlIiwianRpIjoiOGIyOWI0NTlkMTNiY2NmZCJ9.UIObtP1dS3iuXBkUOgPaAoQm1kHlbe6HRWeweP8-CeizPPQmxjQzHSbevm7o8-UzkllUaSyndliIyeTdV6wJdA";
 
+  private static final String AUTH_CODE_SEKTORALER_IDP_mEW =
+      "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InB1a19mZF9zaWcifQ.eyJwcm9mZXNzaW9uT0lEIjogIjEuMi4yNzYuMC43Ni40LjQ5Iiwib3JnYW5pemF0aW9uTmFtZSI6ICIxMDk1MDA5NjkiLCJpZE51bW1lciI6ICJYMTEwNDExNjc1IiwiYW1yIjogInVybjp0ZWxlbWF0aWs6YXV0aDptRVciLCJpc3MiOiAiaHR0cHM6Ly9pZHBmYWRpLmRldi5nZW1hdGlrLnNvbHV0aW9ucyIsInJlc3BvbnNlX3R5cGUiOiBudWxsLCJzbmMiOiAiejZWZWx6ZVR3M19KUFdUYWs5N3FMZGI5MzVNSWM2R0kiLCJjb2RlX2NoYWxsZW5nZV9tZXRob2QiOiAiZnJvbnRlbmRDb2RlQ2hhbGxlbmdlTWV0aG9kIiwiZGlzcGxheV9uYW1lIjogIkRhcml1cyBNaWNoYWVsIEJyaWFuIFViYm8gR3JhZiB2b24gQsO2ZGVmZWxkIiwiZ2l2ZW5fbmFtZSI6ICIiLCJ0b2tlbl90eXBlIjogImNvZGUiLCJjbGllbnRfaWQiOiAiZnJvbnRlbmRDbGllbnRJZCIsImFjciI6ICJnZW1hdGlrLWVoZWFsdGgtbG9hLWhpZ2giLCJzY29wZSI6ICJvcGVuaWQgZS1yZXplcHQiLCJhdXRoX3RpbWUiOiAxNzI1NjE3OTI3LCJyZWRpcmVjdF91cmkiOiAiZnJvbnRlbmRSZWRpcmVjdFVyaSIsInN0YXRlIjogImZyb250ZW5kU3RhdGUiLCJleHAiOiAxNzI1NjIxNTI3LCJmYW1pbHlfbmFtZSI6ICIiLCJpYXQiOiAxNzI1NjE3OTI3LCJjb2RlX2NoYWxsZW5nZSI6ICJmcm9udGVuZENvZGVDaGFsbGVuZ2UiLCJqdGkiOiAiZWVjMDNjYWUxZDNhNjEzOSJ9.UIObtP1dS3iuXBkUOgPaAoQm1kHlbe6HRWeweP8-CeizPPQmxjQzHSbevm7o8-UzkllUaSyndliIyeTdV6wJdA";
+
   private static final String AUTH_CODE_FOR_SMCB =
       "eyJhbGciOiJCUDI1NlIxIiwidHlwIjoiSldUIiwia2lkIjoicHVrX2lkcF9zaWcifQ.eyJvcmdhbml6YXRpb25OYW1lIjoiQXNjaG9mZnNjaGUgQXBvdGhla2UgVEVTVC1PTkxZIiwicHJvZmVzc2lvbk9JRCI6IjEuMi4yNzYuMC43Ni40LjU0IiwiaWROdW1tZXIiOiIzLTItRVBBLTgzMzYyMTk5OTc0MTYwMCIsImFtciI6WyJtZmEiLCJzYyIsInBpbiJdLCJpc3MiOiJodHRwczovL2lkcC56ZW50cmFsLmlkcC5zcGxpdGRucy50aS1kaWVuc3RlLmRlIiwicmVzcG9uc2VfdHlwZSI6ImNvZGUiLCJzbmMiOiJRa1hSVmZvNTNFZ0IybFhCcFp0b0kyTTZjMGE1bFg2TiIsImNvZGVfY2hhbGxlbmdlX21ldGhvZCI6IlMyNTYiLCJnaXZlbl9uYW1lIjpudWxsLCJ0b2tlbl90eXBlIjoiY29kZSIsIm5vbmNlIjoiOHVRaURrODBTMjl6QTNWa1lzWjJWZVV0R1N1d2lOcDgiLCJjbGllbnRfaWQiOiJlUmV6ZXB0QXBwIiwic2NvcGUiOiJlLXJlemVwdCBvcGVuaWQiLCJhdXRoX3RpbWUiOjE2OTA0MzgxMTAsInJlZGlyZWN0X3VyaSI6Imh0dHA6Ly9yZWRpcmVjdC5nZW1hdGlrLmRlL2VyZXplcHQiLCJzdGF0ZSI6IndCOWE0cUZZRk1LeVJoRW9pdkRTbDN5eUFaWF9ua3o5IiwiZXhwIjoxNjkwNDM4MTcwLCJmYW1pbHlfbmFtZSI6bnVsbCwiaWF0IjoxNjkwNDM4MTEwLCJjb2RlX2NoYWxsZW5nZSI6Inh3S2t2dlZpU293LTFybnQxLXBMd3RMVFBXQWxzaDdYM1FNd0ZFZDlIWDgiLCJqdGkiOiIzMjc3NTJkOTNlZWE4NTkzIn0.AAOZW9pywmyY3xrHOjnBAZF1OhmiuFQmSRNwvMIDbaGi2bL1HIX943fT8MaXFOFI-q2_kJfj0hpgMOK1omUdvw";
 
@@ -82,7 +89,7 @@ class AccessTokenBuilderTest {
 
   private AccessTokenBuilder accessTokenBuilder;
   private IdpJwtProcessor serverTokenProcessor;
-  private JsonWebToken authenticationToken;
+  private JsonWebToken authenticationTokenScopeERezept;
   private SecretKeySpec encryptionKey;
   private PkiIdentity pkiIdentity;
   private AuthenticationTokenBuilder authenticationTokenBuilder;
@@ -108,10 +115,7 @@ class AccessTokenBuilderTest {
             .jwtProcessor(serverTokenProcessor)
             .encryptionKey(encryptionKey)
             .build();
-  }
 
-  @BeforeEach
-  public void init() {
     createAuthenticationTokenByBodyClaims(
         Map.of(
             "acr",
@@ -123,7 +127,7 @@ class AccessTokenBuilderTest {
   }
 
   private void createAuthenticationTokenByBodyClaims(final Map<String, Object> map) {
-    authenticationToken =
+    authenticationTokenScopeERezept =
         authenticationTokenBuilder
             .buildAuthenticationToken(pkiIdentity.getCertificate(), map, ZonedDateTime.now())
             .decryptNestedJwt(encryptionKey);
@@ -147,7 +151,8 @@ class AccessTokenBuilderTest {
   @Afo("A_20524")
   @Test
   void verifyThatAllRequiredClaimsAreInBody() {
-    final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);
+    final JsonWebToken accessToken =
+        accessTokenBuilder.buildAccessToken(authenticationTokenScopeERezept);
 
     assertThat(accessToken.getBodyClaims())
         .containsEntry(GIVEN_NAME.getJoseName(), "Juna")
@@ -163,19 +168,22 @@ class AccessTokenBuilderTest {
 
   @Test
   void verifyThatAllRequiredClaimsAreInHeader() {
-    final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);
+    final JsonWebToken accessToken =
+        accessTokenBuilder.buildAccessToken(authenticationTokenScopeERezept);
     assertThat(accessToken.getHeaderClaims()).containsEntry(ClaimName.KEY_ID.getJoseName(), KEY_ID);
   }
 
   @Test
   void verifyExpiresAtIsPresentAndInNearFuture() {
-    final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);
+    final JsonWebToken accessToken =
+        accessTokenBuilder.buildAccessToken(authenticationTokenScopeERezept);
     assertThat(accessToken.getExpiresAtBody()).isBefore(ZonedDateTime.now().plusMinutes(5));
   }
 
   @Test
   void verifyEncryptionAlgorithmIsCorrect() {
-    final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);
+    final JsonWebToken accessToken =
+        accessTokenBuilder.buildAccessToken(authenticationTokenScopeERezept);
 
     assertThat(accessToken.getHeaderClaims())
         .containsEntry(ALGORITHM.getJoseName(), BRAINPOOL256_USING_SHA256);
@@ -184,7 +192,8 @@ class AccessTokenBuilderTest {
   @Afo("A_20731")
   @Test
   void verifyAuthTimeClaimIsPresentAndIsRecent() {
-    final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);
+    final JsonWebToken accessToken =
+        accessTokenBuilder.buildAccessToken(authenticationTokenScopeERezept);
     assertThat(accessToken.getBodyClaims())
         .extractingByKey(AUTH_TIME.getJoseName())
         .extracting(
@@ -194,15 +203,19 @@ class AccessTokenBuilderTest {
 
   @Test
   void verifyAudienceAndDisplayNameByScopeERezept() {
-    createAuthenticationTokenByBodyClaims(
-        Map.of(
-            CLIENT_ID.getJoseName(),
-            TestConstants.CLIENT_ID_E_REZEPT_APP,
-            SCOPE.getJoseName(),
-            OPENID + " " + EREZEPT));
-    final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);
+    final JsonWebToken accessToken =
+        accessTokenBuilder.buildAccessToken(authenticationTokenScopeERezept);
+    assertThat((String) accessToken.getBodyClaim(SCOPE).orElseThrow()).contains("e-rezept");
     assertThat(accessToken.getBodyClaim(AUDIENCE).orElseThrow()).isEqualTo(EREZEPT_AUDIENCE);
     assertThat(accessToken.getBodyClaim(DISPLAY_NAME).orElseThrow()).isEqualTo("Juna Fuchs");
+  }
+
+  @Test
+  void verifyOrganizationIkScopeERezept() {
+    final JsonWebToken accessToken =
+        accessTokenBuilder.buildAccessToken(authenticationTokenScopeERezept);
+    assertThat((String) accessToken.getBodyClaim(SCOPE).orElseThrow()).contains("e-rezept");
+    assertThat(accessToken.getBodyClaim(ORGANIZATION_IK).orElseThrow()).isEqualTo("109500969");
   }
 
   @Test
@@ -213,7 +226,8 @@ class AccessTokenBuilderTest {
             TestConstants.CLIENT_ID_E_REZEPT_APP,
             SCOPE.getJoseName(),
             OPENID + " " + PAIRING));
-    final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authenticationToken);
+    final JsonWebToken accessToken =
+        accessTokenBuilder.buildAccessToken(authenticationTokenScopeERezept);
     assertThat(accessToken.getBodyClaim(AUDIENCE).orElseThrow()).isEqualTo(PAIRING_AUDIENCE);
     assertThat(accessToken.getBodyClaims()).doesNotContainKey(DISPLAY_NAME.getJoseName());
   }
@@ -242,5 +256,26 @@ class AccessTokenBuilderTest {
     assertThat(accessToken.getBodyClaim(ID_NUMBER))
         .get()
         .isEqualTo(authCode.getBodyClaim(ID_NUMBER).orElseThrow());
+  }
+
+  @Test
+  void buildAccessTokenFromSektoralIdpAuthCodeAmrMwe() {
+    final JsonWebToken authCode = new JsonWebToken(AUTH_CODE_SEKTORALER_IDP_mEW);
+    assertThat(authCode).isNotNull();
+    final JsonWebToken accessToken = accessTokenBuilder.buildAccessToken(authCode);
+    assertThat(accessToken.getBodyClaim(DISPLAY_NAME))
+        .get()
+        .isEqualTo(authCode.getBodyClaim(DISPLAY_NAME).orElseThrow());
+    assertThat(accessToken.getBodyClaim(ORGANIZATION_NAME))
+        .get()
+        .isEqualTo(authCode.getBodyClaim(ORGANIZATION_NAME).orElseThrow());
+    assertThat(accessToken.getBodyClaim(PROFESSION_OID).orElseThrow()).isEqualTo(OID_VERSICHERTER);
+    assertThat(accessToken.getBodyClaim(ID_NUMBER))
+        .get()
+        .isEqualTo(authCode.getBodyClaim(ID_NUMBER).orElseThrow());
+    assertThat(accessToken.getBodyClaim(AUTHENTICATION_CLASS_REFERENCE).orElseThrow())
+        .isEqualTo(EIDAS_LOA_HIGH);
+    assertThat(accessToken.getBodyClaim(AUTHENTICATION_METHODS_REFERENCE).orElseThrow())
+        .isEqualTo(List.of("mfa"));
   }
 }

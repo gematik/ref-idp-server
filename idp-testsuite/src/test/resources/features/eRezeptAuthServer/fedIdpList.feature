@@ -78,7 +78,7 @@ Feature: Fed Idp List Endpoint
             {
               "idp_name": "gematik sektoraler IDP",
               "idp_iss": "https://gsi.dev.gematik.solutions",
-              "idp_logo": "https://gsi.dev.gematik.solutions/noLogoYet",
+              "idp_logo": "https://raw.githubusercontent.com/gematik/zero-lab/main/static/images/GID_App_light_mode.svg",
               "idp_sek_2": true,
               "idp_pkv": true
             }
