@@ -23,6 +23,7 @@ import static de.gematik.idp.crypto.TiCertificateType.SMCB;
 import static de.gematik.idp.crypto.model.CertificateExtractedFieldEnum.FAMILY_NAME;
 import static de.gematik.idp.crypto.model.CertificateExtractedFieldEnum.GIVEN_NAME;
 import static de.gematik.idp.crypto.model.CertificateExtractedFieldEnum.ID_NUMMER;
+import static de.gematik.idp.crypto.model.CertificateExtractedFieldEnum.IK_NUMMER;
 import static de.gematik.idp.crypto.model.CertificateExtractedFieldEnum.ORGANIZATION_NAME;
 import static de.gematik.idp.crypto.model.CertificateExtractedFieldEnum.PROFESSION_OID;
 
@@ -76,7 +77,12 @@ public class X509ClaimExtraction {
     claimMap.put(
         FAMILY_NAME.getFieldname(),
         getNameValueFromDn(certificate, certificateType, RFC4519Style.sn));
-
+    claimMap.put(
+        IK_NUMMER.getFieldname(),
+        getAllValuesFromDn(certificate.getSubjectX500Principal(), RFC4519Style.ou).stream()
+            .filter(ou -> ou.matches("\\d{9}"))
+            .findFirst()
+            .orElse(null));
     if (certificateType == HBA) {
       claimMap.put(ORGANIZATION_NAME.getFieldname(), null);
     } else if (certificateType == SMCB) {

@@ -49,7 +49,8 @@ class X509ClaimExtractionTest {
         .containsEntry("family_name", "Fuchs")
         .containsEntry("organizationName", "AOK Plus")
         .containsEntry("professionOID", "1.2.276.0.76.4.49")
-        .containsEntry("idNummer", "X114428530");
+        .containsEntry("idNummer", "X114428530")
+        .containsEntry("organizationIK", "109500969");
   }
 
   @Test

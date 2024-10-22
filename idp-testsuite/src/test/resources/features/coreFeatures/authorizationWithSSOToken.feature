@@ -139,7 +139,8 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
             scope:                 "${TESTENV.scopes_basisflow_regex}",
             snc:                   ".*",
             state:                 "xxxstatexxx2",
-            token_type:            "code"
+            token_type:            "code",
+            organizationIK:        "[\\d]{9,10}"
           }
         """
 

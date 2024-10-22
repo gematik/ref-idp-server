@@ -215,7 +215,8 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
             snc:                   ".*",
             state:                 "state23456",
             token_type:            "code",
-            amr:                   "${json-unit.ignore}"
+            amr:                   "${json-unit.ignore}",
+            organizationIK:        "[\\d]{9,10}"
         }
         """
 

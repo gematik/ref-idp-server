@@ -27,7 +27,7 @@ Feature: Authentisierung mit sektoralem IDP
     And TGR set local variable "fedAuthEndpoint" to "!{rbel:currentResponseAsString('$.body.body.federation_authorization_endpoint')}"
     And TGR set local variable "tokenEndpoint" to "!{rbel:currentResponseAsString('$.body.body.token_endpoint')}"
     And TGR disable HttpClient followRedirects configuration
-    
+
   @TCID:IDP_REF_FEDAUTH_001
   @Approval
   @TESTSTUFE:4
@@ -262,9 +262,9 @@ Feature: Authentisierung mit sektoralem IDP
 
 
   @TCID:IDP_REF_FEDAUTH_007
-    @Approval
+  @Approval
   @TESTSTUFE:4
-  Scenario: Fed Auth Endpoint - Auth Code des eRezept Authservers beim Token Endpoint einreichen
+  Scenario: Fed Auth Endpoint - Auth Code des eRezept Authservers beim Token Endpoint einreichen (substantial)
 
   ```
   Wir fordern vom fed_auth_endpoint eine request_uri an. Mit dieser gehen wir zum GSI
@@ -327,8 +327,8 @@ Feature: Authentisierung mit sektoralem IDP
     Then TGR current response at "$.body.access_token.body.njwt.body" matches as JSON:
         """
           {
-            acr:              "gematik-ehealth-loa-substantial",
-            amr:              "urn:telematik:auth:mEW",
+            acr:              "gematik-ehealth-loa-high",
+            amr:              ".*mfa.*",
             aud:              "${json-unit.ignore}",
             auth_time:        "${json-unit.ignore}",
             azp:              "eRezeptApp",

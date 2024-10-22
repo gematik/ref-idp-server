@@ -34,6 +34,7 @@ import static de.gematik.idp.field.ClaimName.ISSUED_AT;
 import static de.gematik.idp.field.ClaimName.ISSUER;
 import static de.gematik.idp.field.ClaimName.JWT_ID;
 import static de.gematik.idp.field.ClaimName.NONCE;
+import static de.gematik.idp.field.ClaimName.ORGANIZATION_IK;
 import static de.gematik.idp.field.ClaimName.ORGANIZATION_NAME;
 import static de.gematik.idp.field.ClaimName.PROFESSION_OID;
 import static de.gematik.idp.field.ClaimName.SUBJECT;
@@ -64,7 +65,14 @@ public class IdTokenBuilder {
 
   private static final List<ClaimName> CLAIMS_TO_TAKE_FROM_AUTHENTICATION_TOKEN =
       List.of(
-          GIVEN_NAME, FAMILY_NAME, ORGANIZATION_NAME, PROFESSION_OID, ID_NUMBER, AUTH_TIME, NONCE);
+          GIVEN_NAME,
+          FAMILY_NAME,
+          ORGANIZATION_NAME,
+          PROFESSION_OID,
+          ID_NUMBER,
+          AUTH_TIME,
+          NONCE,
+          ORGANIZATION_IK);
 
   private final IdpJwtProcessor jwtProcessor;
   private final String issuerUrl;
@@ -111,13 +119,8 @@ public class IdTokenBuilder {
                         "Missing '" + AUTHORIZED_PARTY.getJoseName() + "' claim!")));
     claimsMap.put(
         AUTHENTICATION_METHODS_REFERENCE.getJoseName(),
-        authenticationToken
-            .getBodyClaim(AUTHENTICATION_METHODS_REFERENCE)
-            .or(() -> accessToken.getBodyClaim(AUTHENTICATION_METHODS_REFERENCE))
-            .orElseThrow());
-    claimsMap.put(
-        AUTHENTICATION_CLASS_REFERENCE.getJoseName(),
-        authenticationToken.getBodyClaim(AUTHENTICATION_CLASS_REFERENCE).orElse(EIDAS_LOA_HIGH));
+        accessToken.getBodyClaim(AUTHENTICATION_METHODS_REFERENCE).orElseThrow());
+    claimsMap.put(AUTHENTICATION_CLASS_REFERENCE.getJoseName(), EIDAS_LOA_HIGH);
     claimsMap.put(ACCESS_TOKEN_HASH.getJoseName(), atHashValue);
     claimsMap.put(
         SUBJECT.getJoseName(),

@@ -795,7 +795,8 @@ class TokenRetrievalTest {
                   "idNummer",
                   "given_name",
                   "family_name",
-                  "display_name");
+                  "display_name",
+                  "organizationIK");
         });
 
     idpClient.login(egkUserIdentity);

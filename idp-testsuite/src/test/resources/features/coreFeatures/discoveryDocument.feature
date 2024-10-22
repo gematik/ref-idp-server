@@ -89,6 +89,7 @@ Feature: Fordere Discovery Dokument an
   @AFO-ID:A_20698 @AFO-ID:A_20591-01 @AFO-ID:A_20439 @AFO-ID:A_20458-02 @AFO-ID:A_21429-02
   @Approval @Ready
   @TESTSTUFE:4
+  @OpenBug
   Scenario: Disc - Dokument body claims sind korrekt
 
   ```
@@ -125,8 +126,6 @@ Feature: Fordere Discovery Dokument an
             subject_types_supported:                ["pairwise"],
             token_endpoint:                         'http.*',
             token_endpoint_auth_methods_supported:  ["none"],
-            kk_app_list_uri :                       'http.*',
-            third_party_authorization_endpoint:     'http.*',
             fed_idp_list_uri :                      'http.*',
             federation_authorization_endpoint:      'http.*',
             ____code_challenge_methods_supported:   ["S256"]

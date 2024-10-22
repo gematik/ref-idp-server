@@ -21,6 +21,7 @@ public enum CertificateExtractedFieldEnum {
   GIVEN_NAME("given_name"),
   FAMILY_NAME("family_name"),
   ORGANIZATION_NAME("organizationName"),
+  IK_NUMMER("organizationIK"),
   ID_NUMMER("idNummer");
 
   private final String fieldname;
