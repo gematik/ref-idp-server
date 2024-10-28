@@ -83,6 +83,22 @@ class JsonWebTokenTest {
   }
 
   @Test
+  void token_isExpired_isFalse() {
+    final JsonWebToken jsonWebToken =
+        idpJwtProcessor.buildJwt(new JwtBuilder().expiresAt(ZonedDateTime.now().plusMinutes(5)));
+
+    assertThat(jsonWebToken.isExpired()).isFalse();
+  }
+
+  @Test
+  void token_isExpired_isTrue() {
+    final JsonWebToken jsonWebToken =
+        idpJwtProcessor.buildJwt(new JwtBuilder().expiresAt(ZonedDateTime.now().minusMinutes(5)));
+
+    assertThat(jsonWebToken.isExpired()).isTrue();
+  }
+
+  @Test
   void getBodyClaims_shouldMatch() {
     final JsonWebToken jsonWebToken =
         idpJwtProcessor.buildJwt(
