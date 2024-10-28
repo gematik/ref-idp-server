@@ -71,6 +71,10 @@ public abstract class IdpJoseObject {
     return getDateTimeClaim(EXPIRES_AT, this::getBodyClaims).orElseThrow();
   }
 
+  public boolean isExpired() {
+    return ZonedDateTime.now().isAfter(getExpiresAt());
+  }
+
   public ZonedDateTime getExpiresAtBody() {
     return getBodyClaimAsZonedDateTime(EXPIRES_AT).orElseThrow();
   }

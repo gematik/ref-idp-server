@@ -1,3 +1,7 @@
+# Release 29.0.4
+
+- add method isExpired() to IdpJoseObject
+
 # Release 29.0.3
 
 - fix missing claim ORGANIZATION_IK in configuration

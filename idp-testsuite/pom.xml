@@ -6,7 +6,7 @@
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-testsuite</artifactId>
-  <version>29.0.3</version>
+  <version>29.0.4</version>
   <packaging>jar</packaging>
 
   <properties>
