@@ -6,7 +6,7 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>29.0.4</version>
+    <version>29.1.0</version>
   </parent>
   <artifactId>idp-report</artifactId>
 
@@ -40,11 +40,6 @@
     <dependency>
       <groupId>de.gematik.idp</groupId>
       <artifactId>idp-client</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>de.gematik.idp</groupId>
-      <artifactId>idp-sektoral</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>

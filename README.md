@@ -13,13 +13,6 @@ The **IDP-Global** project consists of various sub-projects. These are
 * **IDP-Testsuite:** Approval test suite for a central IDP, also includes tests for Fast Track
   and federated IDPs
 
-  <br>
-
-* **IDP-Sektoral:** PoC for a sectoral IDP in the Fast Track context
-
-The last sub-project "IDP-Sektoral" in the list above is not part of the reference implementation published on
-github.
-
 ### Idp-Server as docker image
 
 #### Use existing image from docker hub
@@ -70,7 +63,8 @@ modify entries in the scopesConfiguration section of the idp-server's applicatio
 
 ### Configuration of Server URL
 
-The URL of the idp-server is required for many fields inside the discovery document of the server. For example, the
+The URL of the idp-server is required for many fields inside the discovery document of the server.
+For example, the
 authorization endpoint:
 
 ```
@@ -90,8 +84,10 @@ idp:
    serverUrl: "https://urlPreConfiguredUrl"
 ```
 
-During development, it is recommended to set "severUrl" not in application.yml as some unit tests will fail then.
-Background: serverUrl will be set several times in the discovery document and used from there in unit tests.
+During development, it is recommended to set "severUrl" not in application.yml as some unit tests
+will fail then.
+Background: serverUrl will be set several times in the discovery document and used from there in
+unit tests.
 In unit tests, random (free) ports are used, and with that they are part of the serverUrl.
 
 4. precompiled value: IdpConstants.DEFAULT_SERVER_URL

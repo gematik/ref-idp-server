@@ -116,10 +116,8 @@ class DiscoveryDocumentTest {
             "uri_puk_idp_sig",
             "uri_disc",
             "code_challenge_methods_supported",
-            "kk_app_list_uri",
             "fed_idp_list_uri",
-            "federation_authorization_endpoint",
-            "third_party_authorization_endpoint");
+            "federation_authorization_endpoint");
   }
 
   @Remark("Ruecksprache mit Tommy in IDP-123, wir verwenden pairwise")

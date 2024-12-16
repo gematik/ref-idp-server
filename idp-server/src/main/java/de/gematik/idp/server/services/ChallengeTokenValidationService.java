@@ -29,7 +29,6 @@ import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.crypto.X509ClaimExtraction;
 import de.gematik.idp.data.IdpErrorResponse;
 import de.gematik.idp.error.IdpErrorType;
-import de.gematik.idp.field.AuthenticationMethodReference;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.server.data.DeviceInformation;
 import de.gematik.idp.server.devicevalidation.DeviceValidationState;
@@ -227,14 +226,5 @@ public class ChallengeTokenValidationService {
           e);
     }
     return deviceInformation;
-  }
-
-  private boolean isAlternateAuthentication(final String[] amr) {
-    final List<String> altAuthList =
-        Arrays.stream(AuthenticationMethodReference.values())
-            .filter(AuthenticationMethodReference::isAlternativeAuthentication)
-            .map(AuthenticationMethodReference::getDescription)
-            .toList();
-    return Arrays.stream(amr).anyMatch(altAuthList::contains);
   }
 }

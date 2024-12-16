@@ -165,7 +165,6 @@ und "coreFeatures" testen den Idp-Server.
    |---------features
    |-----------biometrics
    |-----------coreFeatures
-   |-----------fastTrack
 ```
 
 Bei der Testausführung wird es meistens sinnvoll sein, zu filtern.
@@ -206,7 +205,8 @@ $ mvn verify -Dskip.unittests=true -Dcucumber.filter.tags="@TCID:IDP_REF_DISC_00
 * Main Class setzen auf: ```io.cucumber.junit.TigerCucumberRunner```
 * Glue setzen
   auf: ```de.gematik.test.tiger.glue net.serenitybdd.cucumber.actors de.gematik.idp.test.steps```
-* evtl. Feature or folder path setzen: <your direct path>/idp/idp-testsuite/src/test/resources/features/coreFeatures/discoveryDocument.feature
+* evtl. Feature or folder path setzen: <your direct path>
+  /idp/idp-testsuite/src/test/resources/features/coreFeatures/discoveryDocument.feature
   ![DebugTestcase3](doc/images/DebugTestcase3.PNG)
 * Test Result
   ![DebugTestcase4](doc/images/DebugTestcase4.PNG)

@@ -56,7 +56,6 @@ import kong.unirest.core.MultipartBody;
 import kong.unirest.core.Unirest;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.tuple.Pair;
-import org.assertj.core.api.AssertionsForClassTypes;
 import org.jose4j.jwt.JwtClaims;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,7 +64,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
@@ -83,18 +81,6 @@ class IdpControllerParameterValidationTest {
           Pair.of("response_type", "code"),
           Pair.of("nonce", "foobarschmar"),
           Pair.of("scope", "openid e-rezept"));
-
-  private static final List<Pair<String, String>> getThirdPartyAuthorizationParameterMap =
-      List.of(
-          Pair.of("client_id", TestConstants.CLIENT_ID_E_REZEPT_APP),
-          Pair.of("state", "state_erp"),
-          Pair.of("redirect_uri", REDIRECT_URI_E_REZEPT_APP),
-          Pair.of("code_challenge", "m1yM_9krH3fPE2aOkRXzHQDU0lKn0mI0-Gp165Pgb1Z"),
-          Pair.of("code_challenge_method", "S256"),
-          Pair.of("response_type", "code"),
-          Pair.of("nonce", "anyfoobar"),
-          Pair.of("scope", "e-rezept openid"),
-          Pair.of("kk_app_id", "kkAppId001"));
 
   @LocalServerPort private int port;
   @Autowired private Key symmetricEncryptionKey;
@@ -387,55 +373,6 @@ class IdpControllerParameterValidationTest {
         "key_verifier wurde nicht übermittelt");
   }
 
-  @Test
-  void getThirdPartyAuthorizationRequest_should302() {
-    assertThat(
-            buildGetThirdPartyAuthorizationRequest(
-                    getInvalidationFunction("scope", "e-rezept openid"))
-                .asString()
-                .getStatus())
-        .isEqualTo(302);
-  }
-
-  @Test
-  void getThirdPartyAuthorizationRequest_should400() {
-    assertThat(
-            buildGetThirdPartyAuthorizationRequest(getInvalidationFunction("client_id", null))
-                .asString()
-                .getStatus())
-        .isEqualTo(400);
-  }
-
-  @Test
-  void getThirdPartyAuthorizationRequest_invalidClientId_invalidRedirect_should400() {
-    final GetRequest getRequest =
-        Unirest.get("http://localhost:" + port + IdpConstants.THIRD_PARTY_ENDPOINT);
-
-    getThirdPartyAuthorizationParameterMap.stream()
-        .map(getInvalidationFunction("client_id", "0"))
-        .map(getInvalidationFunction("redirect_uri", "attack"))
-        .filter(Objects::nonNull)
-        .forEach(entry -> getRequest.queryString(entry.getKey(), entry.getValue()));
-
-    assertThat(getRequest.asString().getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-  }
-
-  @Test
-  void
-      getThirdPartyAuthorizationRequest_missingState_notRegisteredClientId_invalidRedirect_should400() {
-    final GetRequest getRequest =
-        Unirest.get("http://localhost:" + port + IdpConstants.THIRD_PARTY_ENDPOINT);
-
-    getThirdPartyAuthorizationParameterMap.stream()
-        .map(getInvalidationFunction("client_id", "notRegisteredClient"))
-        .map(getInvalidationFunction("redirect_uri", "attack"))
-        .filter(Objects::nonNull)
-        .filter(not(e -> e.getKey().equals("state")))
-        .forEach(entry -> getRequest.queryString(entry.getKey(), entry.getValue()));
-
-    assertThat(getRequest.asString().getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-  }
-
   @SneakyThrows
   private void assertErrorResponseMatches(
       final HttpRequest getRequest,
@@ -477,35 +414,6 @@ class IdpControllerParameterValidationTest {
         Unirest.get("http://localhost:" + port + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT);
 
     getChallengeParameterMap.stream()
-        .map(entryStringFunction)
-        .filter(Objects::nonNull)
-        .forEach(entry -> getRequest.queryString(entry.getKey(), entry.getValue()));
-
-    return getRequest;
-  }
-
-  /** Sonar satisfaction */
-  @Test
-  void testSekIdpLocationNotFound() {
-    final HttpResponse<String> response =
-        Unirest.post("http://localhost:" + port + IdpConstants.THIRD_PARTY_ENDPOINT)
-            .header(
-                org.springframework.http.HttpHeaders.CONTENT_TYPE,
-                MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-            .field("state", "unknownState")
-            .field("code", "todoCode")
-            .field("kk_app_redirect_uri", "todoUri")
-            .asString();
-    AssertionsForClassTypes.assertThat(response.getStatus())
-        .isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
-  }
-
-  private GetRequest buildGetThirdPartyAuthorizationRequest(
-      final UnaryOperator<Entry<String, String>> entryStringFunction) {
-    final GetRequest getRequest =
-        Unirest.get("http://localhost:" + port + IdpConstants.THIRD_PARTY_ENDPOINT);
-
-    getThirdPartyAuthorizationParameterMap.stream()
         .map(entryStringFunction)
         .filter(Objects::nonNull)
         .forEach(entry -> getRequest.queryString(entry.getKey(), entry.getValue()));

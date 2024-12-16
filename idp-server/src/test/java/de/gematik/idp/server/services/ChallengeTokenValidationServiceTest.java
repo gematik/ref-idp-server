@@ -122,8 +122,7 @@ class ChallengeTokenValidationServiceTest {
 
   @SneakyThrows
   private JsonWebToken createSignedAuthenticationData(
-      final PkiIdentity authModuleIdentity, final String[] amrValue)
-      throws CertificateEncodingException {
+      final PkiIdentity authModuleIdentity, final String[] amrValue) {
 
     final JwtClaims authDataClaims = new JwtClaims();
     authDataClaims.setClaim(KEY_IDENTIFIER.getJoseName(), testKeyIdentifier);

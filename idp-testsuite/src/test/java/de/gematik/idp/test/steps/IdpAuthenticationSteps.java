@@ -16,9 +16,6 @@
 
 package de.gematik.idp.test.steps;
 
-import static de.gematik.idp.IdpConstants.FED_AUTH_APP_ENDPOINT;
-import static de.gematik.idp.IdpConstants.FED_AUTH_ENDPOINT;
-
 import de.gematik.idp.test.steps.model.HttpMethods;
 import de.gematik.idp.test.steps.model.HttpStatus;
 import de.gematik.idp.test.steps.model.IdpEndpointType;
@@ -75,21 +72,6 @@ public class IdpAuthenticationSteps extends IdpStepsBase {
     }
   }
 
-  public void sendAuthorizationRequest(
-      final IdpEndpointType idpEndpointType,
-      Map<String, String> mapParsedParams,
-      final HttpStatus status) {
-
-    final Map<String, Object> ctxt = de.gematik.test.bdd.Context.get().getMapForCurrentThread();
-    mapParsedParams = applyIfRedirect(mapParsedParams);
-    updateContext(idpEndpointType, ctxt, mapParsedParams);
-    final String url = getAuthUrl(idpEndpointType);
-
-    ctxt.put(
-        ContextKey.RESPONSE,
-        requestResponseAndAssertStatus(url, null, HttpMethods.GET, mapParsedParams, null, status));
-  }
-
   @NotNull
   public Map<String, String> getFillFromRedirect(
       final Map<String, String> mapParsedParams, final Map<String, String> parameters) {
@@ -111,27 +93,6 @@ public class IdpAuthenticationSteps extends IdpStepsBase {
       return getFillFromRedirect(mapParsedParams, parameters);
     }
     return mapParsedParams;
-  }
-
-  private String getAuthUrl(final IdpEndpointType idpEndpointType) {
-    final String url;
-    switch (idpEndpointType) {
-      case Fasttrack_Sektoral_IDP:
-        url = Context.get().getString(ContextKey.AUTH_URL_SEKTORAL_IDP);
-        break;
-      case Fed_Sektoral_IDP:
-        url = Context.get().getString(ContextKey.ISS_IDP_SEKTORAL) + FED_AUTH_ENDPOINT;
-        break;
-      case Fed_Sektoral_IDP_APP:
-        url = Context.get().getString(ContextKey.ISS_IDP_SEKTORAL) + FED_AUTH_APP_ENDPOINT;
-        break;
-      case Smartcard_IDP:
-        url = Context.getDiscoveryDocument().getThirdPartyEndpoint();
-        break;
-      default:
-        throw new java.lang.IllegalStateException("Unexpected value: " + idpEndpointType);
-    }
-    return url;
   }
 
   private void updateContext(

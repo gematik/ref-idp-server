@@ -61,7 +61,6 @@ class AuthenticationChallengeVerifierTest {
   private PkiIdentity clientIdentity;
   private PkiIdentity rsaClientIdentity;
   private PkiIdentity serverIdentity;
-  private Map<String, Map<String, String>> userConsentConfiguration;
 
   ScopeConfiguration openidConfig = ScopeConfiguration.builder().description("openid desc").build();
   ScopeConfiguration pairingConfig =

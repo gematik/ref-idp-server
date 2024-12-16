@@ -19,13 +19,12 @@ package de.gematik.idp.test.steps.model;
 import java.util.Arrays;
 
 public enum IdpEndpointType {
-  Fasttrack_Sektoral_IDP,
   Fed_Sektoral_IDP,
   Fed_Sektoral_IDP_APP,
   Smartcard_IDP;
 
   public static final String CUCUMBER_REGEX =
-      "(fasttrack sektoral idp|fed sektoral idp|fed sektoral idp app|smartcard" + " idp)";
+      "(fed sektoral idp|fed sektoral idp app|smartcard" + " idp)";
 
   private final String value;
 

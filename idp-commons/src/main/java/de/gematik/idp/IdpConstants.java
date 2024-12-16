@@ -23,14 +23,12 @@ import lombok.NoArgsConstructor;
 public final class IdpConstants {
 
   public static final String DISCOVERY_DOCUMENT_ENDPOINT = "/.well-known/openid-configuration";
-  public static final String APPLIST_ENDPOINT = "/directory/kk_apps";
   public static final String FEDIDP_LIST_ENDPOINT = "/fed_idp_list";
   public static final String BASIC_AUTHORIZATION_ENDPOINT = "/sign_response";
   public static final String ALTERNATIVE_AUTHORIZATION_ENDPOINT = "/alt_response";
   public static final String SSO_ENDPOINT = "/sso_response";
   public static final String TOKEN_ENDPOINT = "/token";
   public static final String PAIRING_ENDPOINT = "/pairings";
-  public static final String THIRD_PARTY_ENDPOINT = "/extauth";
   public static final String DEFAULT_SERVER_URL = "https://idp.dev.gematik.solutions";
   public static final String EIDAS_LOA_HIGH = "gematik-ehealth-loa-high";
   public static final String EIDAS_LOA_SUBSTANTIAL = "gematik-ehealth-loa-substantial";
@@ -38,9 +36,7 @@ public final class IdpConstants {
   public static final String AMR_FAST_TRACK = "mfa";
 
   public static final String FED_AUTH_ENDPOINT = "/auth";
-  public static final String FED_AUTH_APP_ENDPOINT = "/auth/app";
 
-  public static final String SEKTORAL_IDP_AUTHORIZATION_ENDPOINT = "/authorization";
   public static final String ENTITY_STATEMENT_ENDPOINT = "/.well-known/openid-federation";
   public static final String IDP_LIST_ENDPOINT = "/.well-known/idp_list";
   public static final String ENTITY_STATEMENT_TYP = "entity-statement+jwt";

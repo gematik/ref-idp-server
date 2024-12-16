@@ -31,8 +31,6 @@ import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.data.FedIdpListEntry;
 import de.gematik.idp.server.data.FederationIdpList;
-import de.gematik.idp.server.data.KassenAppList;
-import de.gematik.idp.server.data.KkAppListEntry;
 import de.gematik.idp.server.exceptions.IdpServerStartupException;
 import de.gematik.idp.server.services.DiscoveryDocumentBuilder;
 import de.gematik.idp.token.AccessTokenBuilder;
@@ -151,27 +149,6 @@ public class FlowBeanCreation {
     } catch (final IOException e) {
       throw new IdpServerStartupException("Error while reading TSL, " + e.getMessage());
     }
-  }
-
-  @Bean
-  public KassenAppList kkAppList() {
-    final KassenAppList theAppList = new KassenAppList();
-
-    theAppList.add(
-        KkAppListEntry.builder()
-            .kkAppId("kkAppId001")
-            .kkAppName("Gematik KK")
-            .kkAppUri("https://kk.dev.gematik.solutions")
-            .build());
-
-    theAppList.add(
-        KkAppListEntry.builder()
-            .kkAppId("kkAppId002")
-            .kkAppName("Andere KK")
-            .kkAppUri("https://to.be.defined")
-            .build());
-
-    return theAppList;
   }
 
   @Bean

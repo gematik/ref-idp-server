@@ -11,7 +11,10 @@ tigerProxy:
   forwardToProxy:
     hostname: 192.168.110.10
     port: 3128
-    type: https
+    type: http
+    noProxyHosts:
+      - "localhost"
+      - "127.0.0.1"
 
 lib:
   activateWorkflowUI: false
@@ -33,17 +36,5 @@ servers:
       workingDir: ../idp-server/target
     source:
       - local://idp-server-${tiger.idp.version}.jar
-    startupTimeoutSec: 60
-    active: true
-
-  idpsektoral:
-    type: externalJar
-    healthcheckUrl: http://127.0.0.1:${tiger.ports.idpsektoral}
-    externalJarOptions:
-      arguments:
-        - --server.port=${tiger.ports.idpsektoral}
-      workingDir: ../idp-sektoral/target
-    source:
-      - local://idp-sektoral-${tiger.idp.version}.jar
     startupTimeoutSec: 60
     active: true
