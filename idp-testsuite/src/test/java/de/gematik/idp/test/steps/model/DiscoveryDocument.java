@@ -73,8 +73,6 @@ public class DiscoveryDocument {
   private final String tokenEndpoint;
   private final String pairingEndpoint;
   private final String jwksUri;
-  private final String thirdPartyEndpoint;
-  private final String kkAppListUri;
   private JSONObject pukUriEnc;
   private JSONObject pukUriSign;
   private JSONObject pukUriDisc;
@@ -97,12 +95,6 @@ public class DiscoveryDocument {
         jsoBody.has("auth_pair_endpoint") ? jsoBody.getString("auth_pair_endpoint") : "UNDEFINED";
     pairingEndpoint = jsoBody.has("uri_pair") ? jsoBody.getString("uri_pair") : "UNDEFINED";
     jwksUri = jsoBody.getString("jwks_uri");
-    thirdPartyEndpoint =
-        jsoBody.has("third_party_authorization_endpoint")
-            ? jsoBody.getString("third_party_authorization_endpoint")
-            : "UNDEFINED";
-    kkAppListUri =
-        jsoBody.has("kk_app_list_uri") ? jsoBody.getString("kk_app_list_uri") : "UNDEFINED";
     IdpTestEnvironmentConfigurator.initializeIDPTestEnvironment();
   }
 

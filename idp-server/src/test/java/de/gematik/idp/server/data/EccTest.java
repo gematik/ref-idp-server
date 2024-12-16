@@ -64,11 +64,10 @@ class EccTest {
                 1, Base64.getUrlDecoder().decode("mHuknfNkoMmSbytt4br0YGihOixcmBKy80UfSLdXGe4")));
     final ECPublicKeySpec keySpec = new ECPublicKeySpec(ecPoint, BrainpoolCurves.BP256);
 
-    final PublicKey pk =
-        Assertions.assertDoesNotThrow(
-            () ->
-                KeyFactory.getInstance("EC", BouncyCastleProvider.PROVIDER_NAME)
-                    .generatePublic(keySpec));
+    Assertions.assertDoesNotThrow(
+        () ->
+            KeyFactory.getInstance("EC", BouncyCastleProvider.PROVIDER_NAME)
+                .generatePublic(keySpec));
   }
 
   @SneakyThrows

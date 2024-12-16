@@ -25,10 +25,7 @@ import de.gematik.idp.IdpConstants;
 import de.gematik.idp.TestConstants;
 import de.gematik.idp.authentication.UriUtils;
 import de.gematik.idp.error.IdpErrorType;
-import de.gematik.idp.server.configuration.IdpConfiguration;
-import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.exceptions.IdpServerException;
-import de.gematik.idp.server.exceptions.handler.IdpServerExceptionHandler;
 import de.gematik.idp.server.services.IdpAuthenticator;
 import de.gematik.idp.tests.PkiKeyResolver;
 import kong.unirest.core.HttpResponse;
@@ -39,7 +36,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -55,10 +51,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 class IdpControllerExceptionHandlerTest {
 
   private static final String EXCEPTION_TEXT = "exception text";
-  @Autowired private IdpKey discSig;
-  @Autowired private ServerUrlService serverUrlService;
-  @Autowired private IdpConfiguration idpConfiguration;
-  private IdpServerExceptionHandler idpServerExceptionHandler;
 
   @LocalServerPort private int port;
   @MockBean private IdpAuthenticator idpAuthenticator;
@@ -69,9 +61,6 @@ class IdpControllerExceptionHandlerTest {
     serverUrl = "http://localhost:" + port;
     Unirest.config().reset();
     Unirest.config().followRedirects(false);
-    idpServerExceptionHandler =
-        new IdpServerExceptionHandler(
-            serverUrlService, discSig, idpConfiguration, idpAuthenticator);
   }
 
   @Test

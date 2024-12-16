@@ -6,12 +6,12 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>29.0.4</version>
+    <version>29.1.0</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>idp-commons</artifactId>
 
-  <version>29.0.4</version>
+  <version>29.1.0</version>
 
   <dependencies>
 

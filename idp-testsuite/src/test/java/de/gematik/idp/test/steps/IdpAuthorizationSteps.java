@@ -179,20 +179,6 @@ public class IdpAuthorizationSteps extends IdpStepsBase {
                     .orElse(Pair.of("exp", ZonedDateTime.now().plusMinutes(30).toEpochSecond()))));
         path = Context.getDiscoveryDocument().getAltAuthEndpoint();
         break;
-      case THIRD_PARTY_AUTHORIZATION_CODE:
-        path = Context.getDiscoveryDocument().getThirdPartyEndpoint();
-        final String location = getLocationHeader(Context.getCurrentResponse());
-        final Map<String, String> parameters =
-            UriComponentsBuilder.fromUriString(location)
-                .build()
-                .getQueryParams()
-                .toSingleValueMap();
-        assertThat(parameters).containsKey("code").containsKey("state");
-        params.put("code", parameters.get("code"));
-        params.put("state", parameters.get("state"));
-        // TODO: dieser parameter muss aus einer config datei kommen oder so
-        params.put("kk_app_redirect_uri", "https://kk.dev.gematik.solutions");
-        break;
     }
     return path;
   }

@@ -17,13 +17,11 @@
 package de.gematik.idp.server.services;
 
 import static de.gematik.idp.IdpConstants.ALTERNATIVE_AUTHORIZATION_ENDPOINT;
-import static de.gematik.idp.IdpConstants.APPLIST_ENDPOINT;
 import static de.gematik.idp.IdpConstants.BASIC_AUTHORIZATION_ENDPOINT;
 import static de.gematik.idp.IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT;
 import static de.gematik.idp.IdpConstants.FEDIDP_LIST_ENDPOINT;
 import static de.gematik.idp.IdpConstants.PAIRING_ENDPOINT;
 import static de.gematik.idp.IdpConstants.SSO_ENDPOINT;
-import static de.gematik.idp.IdpConstants.THIRD_PARTY_ENDPOINT;
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
 
 import de.gematik.idp.data.IdpDiscoveryDocument;
@@ -47,7 +45,6 @@ public class DiscoveryDocumentBuilder {
         .authPairEndpoint(serverUrl + ALTERNATIVE_AUTHORIZATION_ENDPOINT)
         .ssoEndpoint(serverUrl + SSO_ENDPOINT)
         .uriPair(serverUrl + PAIRING_ENDPOINT)
-        .thirdPartyAuthorizationEndpoint(serverUrl + THIRD_PARTY_ENDPOINT)
         .federationAuthorizationEndpoint(fedAuthEndpoint)
         .grantTypesSupported(new String[] {"authorization_code"})
         .idTokenSigningAlgValuesSupported(new String[] {"BP256R1"})
@@ -64,7 +61,6 @@ public class DiscoveryDocumentBuilder {
         .uriPukIdpEnc(serverUrl + KeyInformationController.PUK_URI_ENC)
         .uriPukIdpSig(serverUrl + KeyInformationController.PUK_URI_SIG)
         .codeChallengeMethodsSupported(new String[] {"S256"})
-        .kkAppListUri(serverUrl + APPLIST_ENDPOINT)
         .fedIdpListUri(serverUrl + FEDIDP_LIST_ENDPOINT)
         .build();
   }

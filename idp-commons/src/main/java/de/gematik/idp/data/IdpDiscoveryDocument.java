@@ -35,7 +35,6 @@ public class IdpDiscoveryDocument {
   private String ssoEndpoint;
   private String uriPair;
   private String tokenEndpoint;
-  private String thirdPartyAuthorizationEndpoint;
   private String federationAuthorizationEndpoint;
   private String uriDisc;
   private String issuer;
@@ -53,6 +52,5 @@ public class IdpDiscoveryDocument {
   private String[] acrValuesSupported;
   private String[] tokenEndpointAuthMethodsSupported;
   private String[] codeChallengeMethodsSupported;
-  private String kkAppListUri;
   private String fedIdpListUri;
 }

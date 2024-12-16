@@ -140,7 +140,7 @@ class KeyRetrievalTest {
   }
 
   @Test
-  void retrieveJwksKeyStore_shouldContainUseClaims() throws UnirestException, JoseException {
+  void retrieveJwksKeyStore_shouldContainUseClaims() throws UnirestException {
     final HttpResponse<String> httpResponse = retrieveDiscoveryDocument();
     final String jwksUri =
         TokenClaimExtraction.extractClaimsFromJwtBody(httpResponse.getBody())

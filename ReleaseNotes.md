@@ -1,3 +1,8 @@
+# Release 29.1.0
+
+- remove fasttrack functionality
+- update dependencies
+
 # Release 29.0.4
 
 - add method isExpired() to IdpJoseObject

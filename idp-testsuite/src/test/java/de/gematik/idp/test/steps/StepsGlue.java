@@ -102,8 +102,6 @@ public class StepsGlue {
 
   @Steps ClaimsStepHelper claimStepHelper;
 
-  @Steps IdpSektoralIdpSteps sektoralIdp;
-
   // =================================================================================================================
   //
   // B A S I C F L O W S
@@ -512,31 +510,6 @@ public class StepsGlue {
   @SneakyThrows
   public void iRequestAChallengeWith(final DataTable params) {
     auth.getChallenge(cucumberValuesConverter.getMapFromDatatable(params), HttpStatus.NOCHECK);
-  }
-
-  /**
-   * send an authorization request to auth endpoint with given parameters.
-   *
-   * @param params list of params to be sent to the server
-   * @gematik.context.in USER_AGENT
-   * @gematik.context.out CLIENT_ID, RESPONSE, CHALLENGE, USER_CONSENT
-   * @see CucumberValuesConverter
-   */
-  @When("IDP Authenticator Module sends an authorization request to Fed_Sektoral_IDP_APP with")
-  @SneakyThrows
-  public void authenticatorModuleSendsAuthorizationRequestWith(final DataTable params) {
-    auth.sendAuthorizationRequest(
-        IdpEndpointType.Fed_Sektoral_IDP_APP,
-        cucumberValuesConverter.getMapFromDatatable(params),
-        HttpStatus.NOCHECK);
-  }
-
-  @When("IDP Frontend sends an authorization request to {IdpEndpointType} with")
-  @SneakyThrows
-  public void frontendSendsAuthorizationRequestWith(
-      final IdpEndpointType idpEndpointType, final DataTable params) {
-    auth.sendAuthorizationRequest(
-        idpEndpointType, cucumberValuesConverter.getMapFromDatatable(params), HttpStatus.NOCHECK);
   }
 
   // =================================================================================================================
@@ -1237,25 +1210,6 @@ public class StepsGlue {
   @And("IDP I set user agent to {string}")
   public void iSetUserAgent(final String userAgent) {
     Context.get().put(ContextKey.USER_AGENT, cucumberValuesConverter.parseDocString(userAgent));
-  }
-
-  // =================================================================================================================
-  //
-  // S E K T O R A L E R   I D P
-  //
-  // =================================================================================================================
-
-  /**
-   * put sektoral idp enpoints in context
-   *
-   * @gematik.context.in USER_AGENT
-   * @gematik.context.out RESPONSE, DISC_DOC
-   */
-  @Given("IDP I initialize the sektoral idp endpoints")
-  @Gegebensei("IDP ich initialisiere die Endpunkte des Sektoralen IDPs")
-  @SneakyThrows
-  public void iInitializeSektoralIdpEndpoints() {
-    sektoralIdp.initializeSektoralIdp();
   }
 
   @And("IDP I add the token key {string} to the key folder")

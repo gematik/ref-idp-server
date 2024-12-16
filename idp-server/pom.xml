@@ -7,19 +7,19 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>29.0.4</version>
+    <version>29.1.0</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>idp-server</artifactId>
-  <version>29.0.4</version>
+  <version>29.1.0</version>
   <packaging>jar</packaging>
 
   <properties>
     <commit_hash>undefined</commit_hash>
     <version.jaxb-api>2.4.0-b180830.0359</version.jaxb-api>
     <version.jaxb-impl>4.0.5</version.jaxb-impl>
-    <version.tiger-rbel>3.4.2</version.tiger-rbel>
+    <version.tiger-rbel>3.4.6</version.tiger-rbel>
   </properties>
 
   <dependencies>
@@ -60,7 +60,7 @@
     <dependency>
       <groupId>org.springdoc</groupId>
       <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-      <version>2.6.0</version>
+      <version>2.7.0</version>
     </dependency>
 
     <dependency>
@@ -136,7 +136,7 @@
     <dependency>
       <groupId>org.modelmapper</groupId>
       <artifactId>modelmapper</artifactId>
-      <version>3.2.1</version>
+      <version>3.2.2</version>
     </dependency>
     <dependency>
       <groupId>com.mysql</groupId>
@@ -145,7 +145,7 @@
     <dependency>
       <groupId>org.wiremock</groupId>
       <artifactId>wiremock-standalone</artifactId>
-      <version>3.9.1</version>
+      <version>3.10.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
