@@ -109,7 +109,7 @@ public class IdpAccessTokenSteps extends IdpStepsBase {
     final SecretKey tokenKey = new SecretKeySpec(tokenKeyBytes, "AES");
     if (IdpTestEnvironmentConfigurator.isRbelLoggerActive()) {
       TigerDirector.getTigerTestEnvMgr()
-          .getLocalTigerProxy()
+          .getLocalTigerProxyOrFail()
           .getRbelLogger()
           .getRbelKeyManager()
           .addKey("token_key", tokenKey, RbelKey.PRECEDENCE_KEY_FOLDER);

@@ -132,8 +132,13 @@ public class AccessTokenBuilder {
     claimsMap.put(JWT_ID.getJoseName(), Nonce.getNonceAsHex(IdpConstants.JTI_LENGTH));
     Object amrValue =
         authenticationToken.getBodyClaim(AUTHENTICATION_METHODS_REFERENCE).orElse(getAmrString());
-    // workaround for authenticator with substantial, TIIAM-178
-    if (amrValue.equals("urn:telematik:auth:mEW")) {
+    // workaround for authentication with substantial or sso, TIIAM-178
+    // maybe it would be better when auth code contains just ["mfa"]
+    final Set<String> amrValuesOfSectoralIdToken =
+        Set.of("urn:telematik:auth:eGK", "urn:telematik:auth:mEW", "urn:telematik:auth:sso");
+
+    if ((amrValue instanceof final String amrValueString)
+        && (amrValuesOfSectoralIdToken.contains(amrValueString))) {
       amrValue = new String[] {"mfa"};
     }
     claimsMap.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), amrValue);

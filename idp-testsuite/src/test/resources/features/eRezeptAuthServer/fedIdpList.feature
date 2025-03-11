@@ -22,7 +22,7 @@ Feature: Fed Idp List Endpoint
 
   Background: Initialisiere Testkontext durch Abfrage des Discovery Dokuments
     Given IDP I initialize scenario from discovery document endpoint
-    And TGR find request to path "/.well-known/openid-configuration"
+    And TGR find first request to path "/.well-known/openid-configuration"
     And TGR set local variable "fed_list_endpoint" to "!{rbel:currentResponseAsString('$.body.body.fed_idp_list_uri')}"
 
   @TCID:IDP_REF_FEDLIST_001
@@ -35,7 +35,7 @@ Feature: Fed Idp List Endpoint
 
     Given TGR clear recorded messages
     When TGR sende eine leere GET Anfrage an "${fed_list_endpoint}"
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR current response with attribute "$.header.Content-Type" matches "application/jwt.*"
 
@@ -50,7 +50,7 @@ Feature: Fed Idp List Endpoint
 
     Given TGR clear recorded messages
     When TGR sende eine leere GET Anfrage an "${fed_list_endpoint}"
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response at "$.body.header" matches as JSON:
             """
           {
@@ -72,7 +72,7 @@ Feature: Fed Idp List Endpoint
 
     Given TGR clear recorded messages
     When TGR sende eine leere GET Anfrage an "${fed_list_endpoint}"
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response at "$.body.body.fed_idp_list.[?(@.idp_iss.content == 'https://gsi.dev.gematik.solutions')]" matches as JSON:
             """
             {

@@ -32,7 +32,7 @@ public class ThreadedContextProvider {
   private final Map<String, Map<String, Object>> threadedContexts = new HashMap<>();
 
   protected static String getThreadId() {
-    return String.valueOf(Thread.currentThread().getId());
+    return String.valueOf(Thread.currentThread().threadId());
   }
 
   public Map<String, Object> getMapForCurrentThread() {

@@ -3,18 +3,10 @@ idp:
 
 ports:
   idp: ${free.port.100}
-  idpsektoral: ${free.port.101}
 
 tigerProxy:
   adminPort: ${free.port.201}
   proxyPort: ${free.port.200}
-  forwardToProxy:
-    hostname: 192.168.110.10
-    port: 3128
-    type: http
-    noProxyHosts:
-      - "localhost"
-      - "127.0.0.1"
 
 lib:
   activateWorkflowUI: false
@@ -31,8 +23,6 @@ servers:
     externalJarOptions:
       arguments:
         - --server.port=${tiger.ports.idp}
-      options:
-        - -DIDP_SEKTORAL_PORT=${tiger.ports.idpsektoral}
       workingDir: ../idp-server/target
     source:
       - local://idp-server-${tiger.idp.version}.jar

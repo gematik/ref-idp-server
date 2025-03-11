@@ -23,7 +23,7 @@ Feature: Authentisierung mit sektoralem IDP
   Background: Initialisiere Testkontext durch Abfrage des Discovery Dokuments
     Given IDP I initialize scenario from discovery document endpoint
     And IDP I add the token key "fed.tokenKey" to the key folder
-    And TGR find request to path "/.well-known/openid-configuration"
+    And TGR find first request to path "/.well-known/openid-configuration"
     And TGR set local variable "fedAuthEndpoint" to "!{rbel:currentResponseAsString('$.body.body.federation_authorization_endpoint')}"
     And TGR set local variable "tokenEndpoint" to "!{rbel:currentResponseAsString('$.body.body.token_endpoint')}"
     And TGR disable HttpClient followRedirects configuration
@@ -41,7 +41,7 @@ Feature: Authentisierung mit sektoralem IDP
     When TGR sende eine GET Anfrage an "${fedAuthEndpoint}" mit folgenden Daten:
       | client_id  | state       | redirect_uri                        | code_challenge                              | code_challenge_method | response_type | nonce | scope           | idp_iss                           |
       | eRezeptApp | xxxstatexxx | https://redirect.gematik.de/erezept | ds7JaEfpdLidWekR52OhoVpjXHDlplLyV3GtUezxfY0 | S256                  | code          | 1234  | openid e-rezept | https://gsi.dev.gematik.solutions |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "302"
     And TGR current response with attribute "$.header.Location.request_uri.value" matches "urn.*"
 
@@ -59,14 +59,14 @@ Feature: Authentisierung mit sektoralem IDP
     And TGR sende eine GET Anfrage an "${fedAuthEndpoint}" mit folgenden Daten:
       | client_id  | state       | redirect_uri                        | code_challenge                              | code_challenge_method | response_type | nonce | scope           | idp_iss                           |
       | eRezeptApp | xxxstatexxx | https://redirect.gematik.de/erezept | ds7JaEfpdLidWekR52OhoVpjXHDlplLyV3GtUezxfY0 | S256                  | code          | 1234  | openid e-rezept | https://gsi.dev.gematik.solutions |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$.header.Location.request_uri.value')}"
     And TGR set local variable "gsiAuthEndpoint" to "!{rbel:currentResponseAsString('$.header.Location.basicPath')}"
     And TGR clear recorded messages
     When TGR sende eine GET Anfrage an "${gsiAuthEndpoint}" mit folgenden Daten:
       | request_uri   | user_id  |
       | ${requestUri} | 12345678 |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "302"
     And TGR current response with attribute "$.header.Location.code.value" matches ".*"
 
@@ -86,21 +86,21 @@ Feature: Authentisierung mit sektoralem IDP
     And TGR sende eine GET Anfrage an "${fedAuthEndpoint}" mit folgenden Daten:
       | client_id  | state       | redirect_uri                        | code_challenge                              | code_challenge_method | response_type | nonce | scope           | idp_iss                           |
       | eRezeptApp | xxxstatexxx | https://redirect.gematik.de/erezept | ds7JaEfpdLidWekR52OhoVpjXHDlplLyV3GtUezxfY0 | S256                  | code          | 1234  | openid e-rezept | https://gsi.dev.gematik.solutions |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$.header.Location.request_uri.value')}"
     And TGR set local variable "gsiAuthEndpoint" to "!{rbel:currentResponseAsString('$.header.Location.basicPath')}"
     And TGR clear recorded messages
     And TGR sende eine GET Anfrage an "${gsiAuthEndpoint}" mit folgenden Daten:
       | request_uri   | user_id  |
       | ${requestUri} | 12345678 |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     And TGR set local variable "gsiAuthCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
     And TGR set local variable "fachdienstState" to "!{rbel:currentResponseAsString('$.header.Location.state.value')}"
     And TGR clear recorded messages
     When TGR sende eine POST Anfrage an "${fedAuthEndpoint}" mit folgenden Daten:
       | code           | state              |
       | ${gsiAuthCode} | ${fachdienstState} |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "302"
     And TGR current response with attribute "$.header.Location.code.value" matches ".*"
     And TGR current response with attribute "$.header.Location.basicPath" matches "https://redirect.gematik.de/erezept"
@@ -122,27 +122,27 @@ Feature: Authentisierung mit sektoralem IDP
     And TGR sende eine GET Anfrage an "${fedAuthEndpoint}" mit folgenden Daten:
       | client_id  | state       | redirect_uri                        | code_challenge                              | code_challenge_method | response_type | nonce | scope           | idp_iss                           |
       | eRezeptApp | xxxstatexxx | https://redirect.gematik.de/erezept | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | code          | 1234  | openid e-rezept | https://gsi.dev.gematik.solutions |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$.header.Location.request_uri.value')}"
     And TGR set local variable "gsiAuthEndpoint" to "!{rbel:currentResponseAsString('$.header.Location.basicPath')}"
     And TGR clear recorded messages
     And TGR sende eine GET Anfrage an "${gsiAuthEndpoint}" mit folgenden Daten:
       | request_uri   | user_id  |
       | ${requestUri} | 12345678 |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     And TGR set local variable "gsiAuthCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
     And TGR set local variable "fachdienstState" to "!{rbel:currentResponseAsString('$.header.Location.state.value')}"
     And TGR clear recorded messages
     And TGR sende eine POST Anfrage an "${fedAuthEndpoint}" mit folgenden Daten:
       | code           | state              |
       | ${gsiAuthCode} | ${fachdienstState} |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     And TGR set local variable "fachdienstCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
     And TGR clear recorded messages
     When TGR sende eine POST Anfrage an "${tokenEndpoint}" mit folgenden Daten:
       | code              | key_verifier       | grant_type         | redirect_uri                        | client_id  |
       | ${fachdienstCode} | ${fed.keyVerifier} | authorization_code | https://redirect.gematik.de/erezept | eRezeptApp |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "200"
     Then TGR current response at "$.body" matches as JSON:
             """
@@ -173,7 +173,7 @@ Feature: Authentisierung mit sektoralem IDP
         """
           {
             acr:              "gematik-ehealth-loa-high",
-            amr:              "urn:telematik:auth:eGK",
+            amr:              ["mfa"],
             aud:              "${json-unit.ignore}",
             auth_time:        "${json-unit.ignore}",
             azp:              "eRezeptApp",
@@ -209,7 +209,7 @@ Feature: Authentisierung mit sektoralem IDP
     When TGR sende eine GET Anfrage an "${fedAuthEndpoint}" mit folgenden Daten:
       | client_id  | state       | redirect_uri  | code_challenge                              | code_challenge_method | response_type  | nonce | scope   | idp_iss  |
       | <clientId> | xxxstatexxx | <redirectUri> | ds7JaEfpdLidWekR52OhoVpjXHDlplLyV3GtUezxfY0 | S256                  | <responseType> | 1234  | <scope> | <idpIss> |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "<errorCode>"
     And TGR current response with attribute "<errorLocation>" matches "<errorMessage>"
 
@@ -238,21 +238,21 @@ Feature: Authentisierung mit sektoralem IDP
     And TGR sende eine GET Anfrage an "${fedAuthEndpoint}" mit folgenden Daten:
       | client_id  | state       | redirect_uri                        | code_challenge                              | code_challenge_method | response_type | nonce | scope           | idp_iss                           |
       | eRezeptApp | xxxstatexxx | https://redirect.gematik.de/erezept | ds7JaEfpdLidWekR52OhoVpjXHDlplLyV3GtUezxfY0 | S256                  | code          | 1234  | openid e-rezept | https://gsi.dev.gematik.solutions |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$.header.Location.request_uri.value')}"
     And TGR set local variable "gsiAuthEndpoint" to "!{rbel:currentResponseAsString('$.header.Location.basicPath')}"
     And TGR clear recorded messages
     And TGR sende eine GET Anfrage an "${gsiAuthEndpoint}" mit folgenden Daten:
       | request_uri   | user_id  |
       | ${requestUri} | 12345678 |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     And TGR set local variable "gsiAuthCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
     And TGR set local variable "fachdienstState" to "!{rbel:currentResponseAsString('$.header.Location.state.value')}"
     And TGR clear recorded messages
     When TGR sende eine POST Anfrage an "${fedAuthEndpoint}" mit folgenden Daten:
       | code   | state   |
       | <code> | <state> |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "<errorCode>"
 
     Examples:
@@ -262,9 +262,9 @@ Feature: Authentisierung mit sektoralem IDP
 
 
   @TCID:IDP_REF_FEDAUTH_007
-  @Approval
-  @TESTSTUFE:4
-  Scenario: Fed Auth Endpoint - Auth Code des eRezept Authservers beim Token Endpoint einreichen (substantial)
+    @Approval
+    @TESTSTUFE:4
+  Scenario Outline: Fed Auth Endpoint - Auth Code des eRezept Authservers beim Token Endpoint einreichen (substantial)
 
   ```
   Wir fordern vom fed_auth_endpoint eine request_uri an. Mit dieser gehen wir zum GSI
@@ -277,27 +277,27 @@ Feature: Authentisierung mit sektoralem IDP
     And TGR sende eine GET Anfrage an "${fedAuthEndpoint}" mit folgenden Daten:
       | client_id  | state       | redirect_uri                        | code_challenge                              | code_challenge_method | response_type | nonce | scope           | idp_iss                           |
       | eRezeptApp | xxxstatexxx | https://redirect.gematik.de/erezept | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | code          | 1234  | openid e-rezept | https://gsi.dev.gematik.solutions |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$.header.Location.request_uri.value')}"
     And TGR set local variable "gsiAuthEndpoint" to "!{rbel:currentResponseAsString('$.header.Location.basicPath')}"
     And TGR clear recorded messages
     And TGR sende eine GET Anfrage an "${gsiAuthEndpoint}" mit folgenden Daten:
-      | request_uri   | user_id    |
-      | ${requestUri} | O018753329 |
-    And TGR find request to path ".*"
+      | request_uri   | user_id |
+      | ${requestUri} | <kvnr>  |
+    And TGR find first request to path ".*"
     And TGR set local variable "gsiAuthCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
     And TGR set local variable "fachdienstState" to "!{rbel:currentResponseAsString('$.header.Location.state.value')}"
     And TGR clear recorded messages
     And TGR sende eine POST Anfrage an "${fedAuthEndpoint}" mit folgenden Daten:
       | code           | state              |
       | ${gsiAuthCode} | ${fachdienstState} |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     And TGR set local variable "fachdienstCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
     And TGR clear recorded messages
     When TGR sende eine POST Anfrage an "${tokenEndpoint}" mit folgenden Daten:
       | code              | key_verifier       | grant_type         | redirect_uri                        | client_id  |
       | ${fachdienstCode} | ${fed.keyVerifier} | authorization_code | https://redirect.gematik.de/erezept | eRezeptApp |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "200"
     Then TGR current response at "$.body" matches as JSON:
             """
@@ -328,7 +328,7 @@ Feature: Authentisierung mit sektoralem IDP
         """
           {
             acr:              "gematik-ehealth-loa-high",
-            amr:              ".*mfa.*",
+            amr:              <amr>,
             aud:              "${json-unit.ignore}",
             auth_time:        "${json-unit.ignore}",
             azp:              "eRezeptApp",
@@ -338,12 +338,17 @@ Feature: Authentisierung mit sektoralem IDP
             family_name:      "",
             given_name:       "",
             iat:              "${json-unit.ignore}",
-            idNummer:         "O018753329",
+            idNummer:         "<kvnr>",
             iss:              "${fed.idpIss}",
             organizationName: "106589300",
             professionOID:    "1.2.276.0.76.4.49",
             scope:            "openid e-rezept",
             sub:              ".*",
-            display_name:     "Hildur Fürsich"
+            display_name:     "<displyName>"
           }
         """
+
+    Examples:
+      | kvnr       | displyName      | amr     |
+      | O018753329 | Hildur Fürsich  | ["mfa"] |
+      | O018753330 | Substantial Sso | ["mfa"] |

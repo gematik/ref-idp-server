@@ -203,7 +203,8 @@ public class KeyAndCertificateStepsHelper {
     // check for self signed
     assertThatThrownBy(() -> cert.verify(cert.getPublicKey()))
         .isInstanceOf(SignatureException.class);
-    assertThat(cert.getSubjectX500Principal().getName()).isNotEqualTo(cert.getIssuerDN().getName());
+    assertThat(cert.getSubjectX500Principal().getName())
+        .isNotEqualTo(cert.getIssuerX500Principal().getName());
 
     // TODO pkilib check revocation of cert once pkilib is able to do it
 

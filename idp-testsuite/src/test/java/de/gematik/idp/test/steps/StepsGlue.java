@@ -1169,7 +1169,7 @@ public class StepsGlue {
       case ContextKey.ID_TOKEN:
         Context.get().put(key, str);
         break;
-        // TODO add support for all other keys
+      // TODO add support for all other keys
       default:
         Assertions.fail("Unsupported key (Feel free to implement)");
     }

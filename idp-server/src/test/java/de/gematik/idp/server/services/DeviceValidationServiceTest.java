@@ -58,7 +58,8 @@ class DeviceValidationServiceTest {
   void testValidationRepository() {
     final DeviceValidationData expected =
         deviceValidationRepository.save(createDeviceValidationData());
-    final DeviceValidationData validationData = deviceValidationRepository.getOne(expected.getId());
+    final DeviceValidationData validationData =
+        deviceValidationRepository.getReferenceById(expected.getId());
     assertThat(validationData).usingRecursiveComparison().isEqualTo(expected);
     final Optional<DeviceValidationData> findData = findDeviceValidationDataFromRepo(expected);
     assertThat(findData).isPresent();

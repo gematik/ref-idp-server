@@ -39,7 +39,8 @@ import de.gematik.rbellogger.renderer.RbelHtmlRenderer;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.security.KeyPair;
 import java.util.HashMap;
@@ -449,7 +450,7 @@ class TokenLoggerTest {
     this.smcbIdentity = smcbIdentity;
   }
 
-  private void initializeWiremockCapture() throws MalformedURLException {
+  private void initializeWiremockCapture() throws MalformedURLException, URISyntaxException {
     rbelLogger.clearAllMessages();
 
     wiremockCapture =
@@ -458,7 +459,7 @@ class TokenLoggerTest {
             .proxyFor("http://localhost:" + localServerPort)
             .build()
             .initialize();
-    wiremockPort.set(new URL(wiremockCapture.getProxyAdress()).getPort());
+    wiremockPort.set(new URI(wiremockCapture.getProxyAdress()).toURL().getPort());
 
     ReflectionTestUtils.setField(
         authenticationChallengeBuilder, "uriIdpServer", wiremockCapture.getProxyAdress());
@@ -477,7 +478,7 @@ class TokenLoggerTest {
   }
 
   @Test
-  void writeAllTokensToFile() throws IOException {
+  void writeAllTokensToFile() throws IOException, URISyntaxException {
     performAndWriteFlow(
         () -> {
           patchIdpUrls(idpClient);
@@ -550,7 +551,8 @@ class TokenLoggerTest {
   }
 
   private void performAndWriteFlow(
-      final Runnable performer, final String filename, final String title) throws IOException {
+      final Runnable performer, final String filename, final String title)
+      throws IOException, URISyntaxException {
     try {
       initializeWiremockCapture();
 
