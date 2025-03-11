@@ -1,3 +1,11 @@
+# Release 29.1.5
+
+- update TSL
+- add testcase for auth with substantial and SSO
+- update test certificate
+- remove module idp-operations
+- update dependencies and refactor deprecated code
+
 # Release 29.1.0
 
 - remove fasttrack functionality

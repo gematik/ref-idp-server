@@ -22,6 +22,7 @@ import static de.gematik.idp.field.ClaimName.ENCRYPTION_ALGORITHM;
 import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
 import static de.gematik.idp.field.ClaimName.NESTED_JWT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtBuilder;
@@ -154,7 +155,7 @@ class JsonWebTokenTest {
 
     assertThat(jsonWebToken.getDateTimeClaim(CONFIRMATION, jsonWebToken::getBodyClaims))
         .get(InstanceOfAssertFactories.ZONED_DATE_TIME)
-        .isEqualToIgnoringNanos(now);
+        .isCloseTo(now, within(1, java.time.temporal.ChronoUnit.SECONDS));
   }
 
   @Test

@@ -37,11 +37,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
@@ -53,7 +53,7 @@ class IdpControllerExceptionHandlerTest {
   private static final String EXCEPTION_TEXT = "exception text";
 
   @LocalServerPort private int port;
-  @MockBean private IdpAuthenticator idpAuthenticator;
+  @MockitoBean private IdpAuthenticator idpAuthenticator;
   private String serverUrl;
 
   @BeforeAll

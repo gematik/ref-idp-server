@@ -24,6 +24,7 @@ import static de.gematik.idp.field.ClaimName.ISSUED_AT;
 import static de.gematik.idp.field.ClaimName.PROFESSION_OID;
 import static de.gematik.idp.field.ClaimName.TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.Afo;
@@ -32,6 +33,7 @@ import de.gematik.idp.tests.PkiKeyResolver.Filename;
 import de.gematik.idp.token.JsonWebToken;
 import java.security.Security;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -148,6 +150,7 @@ class AuthenticationTokenBuilderTest {
             .buildAuthenticationToken(clientIdentity.getCertificate(), Collections.emptyMap(), now)
             .decryptNestedJwt(encryptionKey);
 
-    assertThat(authenticationToken.getExpiresAt()).isEqualToIgnoringNanos(now.plusMinutes(1));
+    assertThat(authenticationToken.getExpiresAt())
+        .isCloseTo(now.plusMinutes(1), within(1, ChronoUnit.SECONDS));
   }
 }

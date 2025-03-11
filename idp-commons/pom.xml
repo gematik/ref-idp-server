@@ -6,12 +6,12 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>29.1.0</version>
+    <version>29.1.5</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>idp-commons</artifactId>
 
-  <version>29.1.0</version>
+  <version>29.1.5</version>
 
   <dependencies>
 
@@ -77,7 +77,7 @@
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
-      <version>1.17.1</version>
+      <version>1.18.0</version>
     </dependency>
     <dependency>
       <groupId>com.konghq</groupId>

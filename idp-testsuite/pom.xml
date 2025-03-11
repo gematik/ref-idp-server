@@ -6,7 +6,7 @@
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-testsuite</artifactId>
-  <version>29.1.0</version>
+  <version>29.1.5</version>
   <packaging>jar</packaging>
 
   <properties>
@@ -14,10 +14,10 @@
     <sektoral-idp.spring.profile>sektoralIdp</sektoral-idp.spring.profile>
     <version.build-helper-maven-plugin>3.6.0</version.build-helper-maven-plugin>
     <version.commons-lang3>3.17.0</version.commons-lang3>
-    <version.maven-compiler-plugin>3.13.0</version.maven-compiler-plugin>
+    <version.maven-compiler-plugin>3.14.0</version.maven-compiler-plugin>
     <version.copy-rename-maven-plugin>1.0.1</version.copy-rename-maven-plugin>
     <java.version>21</java.version>
-    <version.json>20240303</version.json>
+    <version.json>20250107</version.json>
     <version.maven-clean-plugin>3.4.0</version.maven-clean-plugin>
     <version.maven-failsafe-plugin>3.5.2</version.maven-failsafe-plugin>
     <version.maven-jar-plugin>3.4.2</version.maven-jar-plugin>
@@ -25,9 +25,9 @@
     <version.maven-resources-plugin>3.3.1</version.maven-resources-plugin>
     <version.maven-source-plugin>3.3.1</version.maven-source-plugin>
     <version.maven-surefire-plugin>3.5.2</version.maven-surefire-plugin>
-    <version.rest-assured>5.5.0</version.rest-assured>
-    <version.slf4j-api>2.0.16</version.slf4j-api>
-    <version.tiger>3.4.6</version.tiger>
+    <version.rest-assured>5.5.1</version.rest-assured>
+    <version.slf4j-api>2.0.17</version.slf4j-api>
+    <version.tiger>3.7.0</version.tiger>
   </properties>
 
   <dependencyManagement>
@@ -35,7 +35,7 @@
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>1.5.12</version>
+        <version>1.5.17</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -196,9 +196,13 @@
               <!--suppress UnresolvedMavenProperty -->
               <GEMATIK_TESTCONFIG>${gematik.testconfig}</GEMATIK_TESTCONFIG>
               <!--suppress UnresolvedMavenProperty -->
-              <cucumber.filter.tags>@Approval and not @OpenBug and not @WiP and not @LongRunning
+              <cucumber.filter.tags>@Approval and not @OpenBug and not @WiP and not @LongRunning and
+                not @SektAuth
               </cucumber.filter.tags>
             </systemPropertyVariables>
+            <environmentVariables>
+              <TIGER_IDP_VERSION>${project.version}</TIGER_IDP_VERSION>
+            </environmentVariables>
             <classesDirectory>D:\repos\idp\idp-testsuite\target\classes</classesDirectory>
           </configuration>
           <executions>
@@ -217,23 +221,6 @@
     </pluginManagement>
 
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-clean-plugin</artifactId>
-        <version>${version.maven-clean-plugin}</version>
-        <configuration>
-          <filesets>
-            <!-- delete tiger config file -->
-            <fileset>
-              <directory>.</directory>
-              <includes>
-                <include>tiger.yaml</include>
-              </includes>
-              <followSymlinks>false</followSymlinks>
-            </fileset>
-          </filesets>
-        </configuration>
-      </plugin>
       <!-- =================== INITIALIZE PROPERTIES -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -368,35 +355,6 @@
       </plugin>
 
       <plugin>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>${version.maven-resources-plugin}</version>
-        <executions>
-          <execution>
-            <id>default-resources</id>
-            <goals>
-              <goal>testResources</goal>
-            </goals>
-            <phase>generate-test-sources</phase>
-            <configuration>
-              <outputDirectory>${basedir}</outputDirectory>
-              <useDefaultDelimiters>true</useDefaultDelimiters>
-              <resources>
-                <resource>
-                  <directory>src/test/resources</directory>
-                  <includes>
-                    <include>tiger.yaml</include>
-                    <include>tiger-jenkins.yaml</include>
-                    <include>tiger-rise.yaml</include>
-                    <include>tiger-rise-tu.yaml</include>
-                  </includes>
-                  <filtering>true</filtering>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
         <version>3.5.0</version>
@@ -448,7 +406,7 @@
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
-        <version>2.43.0</version>
+        <version>2.44.3</version>
         <configuration>
           <formats>
             <!-- you can define as many formats as you want, each is independent -->
