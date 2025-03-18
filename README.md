@@ -44,8 +44,8 @@ $ docker run --rm -it -p 8571:8080 gematik1/idp-server
 or use docker compose:
 
 ```console
-$ mvn clean install -pl idp-server -am -Dskip.unittests -Dskip.inttests
-$ export appVersion=<...> # e.g. 29.1.5
+$ mvn clean install -pl idp-server -am -Dskip.unittests -Dskip.inttests -Dskip.dockerbuild=false
+$ export appVersion=<...> # e.g. 29.1.6
 $ export serverLoglevel=info (default)
 $ docker-compose --project-name myidp -f docker-compose-ref.yml up -d
 ```
@@ -96,7 +96,8 @@ In unit tests, random (free) ports are used, and with that they are part of the 
 
 disable: `-Dskip.unittests`
 
-The key `ref-es-sig` can be published and was therefore added for unit tests (KeyUtilityTest).
+All keys and p12 containers inside this repository were intentionally published. They allow the
+project to be built ootb after a clean checkout and run the testsuite.
 
 ### Integration Testing/Approval Testing
 

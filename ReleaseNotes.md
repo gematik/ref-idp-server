@@ -1,3 +1,10 @@
+# Release 29.1.7
+
+- fix https://github.com/gematik/ref-idp-server/issues/43
+- skip docker build as default
+- add ability to customize IdpClient Unirest instance
+- remove deprecated version-string in docker-compose file
+
 # Release 29.1.5
 
 - update TSL
