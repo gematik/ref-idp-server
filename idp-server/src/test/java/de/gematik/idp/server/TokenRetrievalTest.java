@@ -61,6 +61,7 @@ import kong.unirest.core.HttpResponse;
 import kong.unirest.core.MultipartBody;
 import kong.unirest.core.Unirest;
 import kong.unirest.core.UnirestException;
+import kong.unirest.core.UnirestInstance;
 import org.apache.http.HttpHeaders;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.json.JSONException;
@@ -88,6 +89,7 @@ class TokenRetrievalTest {
   @Autowired private IdpConfiguration idpConfiguration;
   private IdpClient idpClient;
   private PkiIdentity egkUserIdentity;
+  private UnirestInstance unirestInstance;
   @LocalServerPort private int localServerPort;
 
   @BeforeEach
@@ -101,7 +103,7 @@ class TokenRetrievalTest {
             .build();
 
     idpClient.initialize();
-
+    unirestInstance = idpClient.getAuthenticatorClient().getUnirestInstance();
     egkUserIdentity = egkIdentity;
   }
 
@@ -447,7 +449,8 @@ class TokenRetrievalTest {
   void stateParameterNotGivenInInitialRequest_ServerShouldGiveError() throws UnirestException {
     idpClient.setBeforeAuthorizationMapper(
         request ->
-            Unirest.get(request.getUrl().replaceFirst("&state=[\\w-_.~]*", ""))
+            unirestInstance
+                .get(request.getUrl().replaceFirst("&state=[\\w-_.~]*", ""))
                 .headers(getAllHeaderElementsAsMap(request)));
 
     assertThatThrownBy(() -> idpClient.login(egkUserIdentity))
