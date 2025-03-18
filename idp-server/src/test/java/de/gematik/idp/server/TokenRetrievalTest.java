@@ -447,7 +447,10 @@ class TokenRetrievalTest {
   void stateParameterNotGivenInInitialRequest_ServerShouldGiveError() throws UnirestException {
     idpClient.setBeforeAuthorizationMapper(
         request ->
-            Unirest.get(request.getUrl().replaceFirst("&state=[\\w-_.~]*", ""))
+            idpClient
+                .getAuthenticatorClient()
+                .getUnirestInstance()
+                .get(request.getUrl().replaceFirst("&state=[\\w-_.~]*", ""))
                 .headers(getAllHeaderElementsAsMap(request)));
 
     assertThatThrownBy(() -> idpClient.login(egkUserIdentity))

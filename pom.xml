@@ -13,7 +13,7 @@
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-global</artifactId>
-  <version>29.1.5</version>
+  <version>29.1.6</version>
   <packaging>pom</packaging>
 
   <description>IDP</description>
@@ -69,8 +69,6 @@
     <docker.registry.gematik>local</docker.registry.gematik>
     <docker.image.name.smartcard>${docker.registry.gematik}/idm/idp-server
     </docker.image.name.smartcard>
-    <docker.image.name.fachdienst>${docker.registry.gematik}/idp/idp-fachdienst
-    </docker.image.name.fachdienst>
     <java.version>21</java.version>
     <mpir.skip>true</mpir.skip>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -93,7 +91,6 @@
     <version.json>20250107</version.json>
     <version.plexus-utils>3.4.2</version.plexus-utils>
     <version.rest-assured>5.5.1</version.rest-assured>
-    <version.serenity.core>3.2.4</version.serenity.core>
     <version.unirest>4.4.5</version.unirest>
     <version.unirest-objectmapper-jackson>4.2.9</version.unirest-objectmapper-jackson>
 

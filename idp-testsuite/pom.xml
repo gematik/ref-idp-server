@@ -6,7 +6,7 @@
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-testsuite</artifactId>
-  <version>29.1.5</version>
+  <version>29.1.6</version>
   <packaging>jar</packaging>
 
   <properties>
@@ -27,7 +27,7 @@
     <version.maven-surefire-plugin>3.5.2</version.maven-surefire-plugin>
     <version.rest-assured>5.5.1</version.rest-assured>
     <version.slf4j-api>2.0.17</version.slf4j-api>
-    <version.tiger>3.7.0</version.tiger>
+    <version.tiger>3.7.1</version.tiger>
   </properties>
 
   <dependencyManagement>
