@@ -13,7 +13,7 @@
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-global</artifactId>
-  <version>29.1.7</version>
+  <version>29.1.8</version>
   <packaging>pom</packaging>
 
   <description>IDP</description>
@@ -122,7 +122,7 @@
     <version.sonar-maven-plugin>5.0.0.4389</version.sonar-maven-plugin>
     <version.spotless-maven-plugin>2.44.3</version.spotless-maven-plugin>
     <version.spotless.google-java-format>1.17.0</version.spotless.google-java-format>
-    <version.spring-boot-maven-plugin>3.4.3</version.spring-boot-maven-plugin>
+    <version.spring-boot-maven-plugin>3.4.4</version.spring-boot-maven-plugin>
     <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
   </properties>
 

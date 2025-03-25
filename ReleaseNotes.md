@@ -1,3 +1,8 @@
+# Release 29.1.8
+
+- fix tokenflow files containing error "HTTP/1.1 request does not contain Host header"
+- update dependencies
+
 # Release 29.1.7
 
 - fix https://github.com/gematik/ref-idp-server/issues/43

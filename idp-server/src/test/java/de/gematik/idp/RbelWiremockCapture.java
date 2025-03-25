@@ -74,7 +74,7 @@ public class RbelWiremockCapture extends RbelCapturer {
         (request, response) -> {
           getRbelConverter()
               .parseMessage(
-                  requestToRbelMessage(request),
+                  requestToRbelMessage(request, request.getHost()),
                   new RbelHostname(request.getClientIp(), -1),
                   new RbelHostname(request.getHost(), request.getPort()),
                   Optional.empty());
@@ -108,12 +108,15 @@ public class RbelWiremockCapture extends RbelCapturer {
     return wireMockConfiguration;
   }
 
-  private byte[] requestToRbelMessage(final Request request) {
+  private byte[] requestToRbelMessage(final Request request, final String host) {
     final byte[] httpRequestHeader =
         (request.getMethod().toString()
                 + " "
                 + getRequestUrl(request)
                 + " HTTP/1.1\r\n"
+                + "Host: "
+                + host
+                + "\r\n"
                 + request.getHeaders().all().stream()
                     .map(HttpHeader::toString)
                     .collect(Collectors.joining("\r\n"))
