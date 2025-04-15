@@ -1,5 +1,5 @@
 /*
- *  Copyright 2023 gematik GmbH
+ * Copyright (Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 package de.gematik.idp.server;
@@ -39,8 +43,8 @@ import de.gematik.idp.tests.Rfc;
 import de.gematik.idp.token.IdpJwe;
 import java.security.Key;
 import java.util.Map;
-import kong.unirest.core.Unirest;
 import kong.unirest.core.UnirestException;
+import kong.unirest.core.UnirestInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -60,6 +64,7 @@ class PkceServerTest {
   @Autowired private IdpKey idpSig;
   private IdpClient idpClient;
   private PkiIdentity egkUserIdentity;
+  private UnirestInstance unirestInstance;
   @LocalServerPort private int localServerPort;
 
   @BeforeEach
@@ -73,6 +78,7 @@ class PkceServerTest {
             .redirectUrl(TestConstants.REDIRECT_URI_E_REZEPT_APP)
             .build();
 
+    unirestInstance = idpClient.getAuthenticatorClient().getUnirestInstance();
     idpClient.initialize();
 
     egkUserIdentity =
@@ -113,7 +119,8 @@ class PkceServerTest {
   void pkceNegativNoCodeChallengeInAuthorization() throws UnirestException {
     idpClient.setBeforeAuthorizationMapper(
         request ->
-            Unirest.get(
+            unirestInstance
+                .get(
                     request
                         .getUrl()
                         .replaceFirst("&code_challenge=[\\w-_.~]*&code_challenge_method=S256", ""))
@@ -163,7 +170,8 @@ class PkceServerTest {
         request -> {
           final Map<String, Object> newFields = getAllFieldElementsAsMap(request);
           newFields.remove("key_verifier");
-          return Unirest.post(request.getUrl())
+          return unirestInstance
+              .post(request.getUrl())
               .headers(getAllHeaderElementsAsMap(request))
               .fields(newFields);
         });

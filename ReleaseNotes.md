@@ -1,3 +1,11 @@
+# Release 29.2.0
+
+- refactor setting/printing log level - see [idp-server logging](README.md#idp-server-logging)
+- fix unirest instance in unit tests
+- fix content of tokenflow files on gitHub pages
+- update almost expired certificates
+- update dependencies
+
 # Release 29.1.9
 
 - fix tokenflow files on gitHub pages

@@ -13,7 +13,7 @@
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-global</artifactId>
-  <version>29.1.9</version>
+  <version>29.2.0</version>
   <packaging>pom</packaging>
 
   <description>IDP</description>
@@ -84,9 +84,9 @@
     <sonar.language>java</sonar.language>
 
     <version.bouncycastle.bcpkix>1.80</version.bouncycastle.bcpkix>
-    <version.commons-io>2.18.0</version.commons-io>
+    <version.commons-io>2.19.0</version.commons-io>
     <version.commons-lang3>3.17.0</version.commons-lang3>
-    <version.gemLibPki>3.1.1</version.gemLibPki>
+    <version.gemLibPki>3.1.2</version.gemLibPki>
     <version.h2>2.3.232</version.h2>
     <version.json>20250107</version.json>
     <version.plexus-utils>3.4.2</version.plexus-utils>
@@ -95,9 +95,9 @@
     <version.unirest-objectmapper-jackson>4.2.9</version.unirest-objectmapper-jackson>
 
     <version.build-helper-maven-plugin>3.6.0</version.build-helper-maven-plugin>
-    <version.docker-maven-plugin>0.45.1</version.docker-maven-plugin>
+    <version.docker-maven-plugin>0.46.0</version.docker-maven-plugin>
     <version.copy-rename-maven-plugin>1.0.1</version.copy-rename-maven-plugin>
-    <version.jacoco-maven-plugin>0.8.12</version.jacoco-maven-plugin>
+    <version.jacoco-maven-plugin>0.8.13</version.jacoco-maven-plugin>
     <version.jakarta.ws.rs-api>4.0.0</version.jakarta.ws.rs-api>
     <version.log4j2>2.24.3</version.log4j2>
     <version.maven>3.8.6</version.maven>
@@ -106,7 +106,7 @@
     <!-- Overwrite Version from Parent -->
     <maven-deploy-plugin.version>3.1.4</maven-deploy-plugin.version>
     <version.maven-enforcer-plugin>3.5.0</version.maven-enforcer-plugin>
-    <version.maven-failsafe-plugin>3.5.2</version.maven-failsafe-plugin>
+    <version.maven-failsafe-plugin>3.5.3</version.maven-failsafe-plugin>
     <version.maven-gpg-plugin>3.2.7</version.maven-gpg-plugin>
     <version.maven-jar-plugin>3.4.1</version.maven-jar-plugin>
     <version.maven-javadoc-plugin>3.11.2</version.maven-javadoc-plugin>
@@ -116,11 +116,11 @@
     <version.maven-site-plugin>3.21.0</version.maven-site-plugin>
     <!-- settings for upload to sonar server -->
     <version.maven-source-plugin>3.3.1</version.maven-source-plugin>
-    <version.maven-surefire-plugin>3.5.2</version.maven-surefire-plugin>
+    <version.maven-surefire-plugin>3.5.3</version.maven-surefire-plugin>
     <version.nexus-staging-maven-plugin>1.7.0</version.nexus-staging-maven-plugin>
     <version.slf4j-api>2.0.17</version.slf4j-api>
-    <version.sonar-maven-plugin>5.0.0.4389</version.sonar-maven-plugin>
-    <version.spotless-maven-plugin>2.44.3</version.spotless-maven-plugin>
+    <version.sonar-maven-plugin>5.1.0.4751</version.sonar-maven-plugin>
+    <version.spotless-maven-plugin>2.44.4</version.spotless-maven-plugin>
     <version.spotless.google-java-format>1.17.0</version.spotless.google-java-format>
     <version.spring-boot-maven-plugin>3.4.4</version.spring-boot-maven-plugin>
     <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
@@ -329,6 +329,15 @@
                 <spacesPerTab>2</spacesPerTab>
               </indent>
             </format>
+            <format>
+              <includes>
+                <include>**/*.feature</include>
+              </includes>
+              <licenseHeader>
+                <file>LICENSE_PLACEHOLDER_FEATURE</file>
+                <delimiter>^(?!#|\s).*</delimiter>
+              </licenseHeader>
+            </format>
           </formats>
 
           <java>
@@ -338,6 +347,9 @@
               <style>GOOGLE</style>
               <reflowLongStrings>true</reflowLongStrings>
             </googleJavaFormat>
+            <licenseHeader>
+              <file>LICENSE_PLACEHOLDER</file>
+            </licenseHeader>
           </java>
           <groovy>
             <includes>

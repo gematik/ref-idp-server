@@ -16,9 +16,6 @@ idp:
   symmetricEncryptionKey: "geheimerSchluesselDerNochGehashtWird"
   defaultLocale: US
   fedAuthEndpoint: "https://idpfadi.dev.gematik.solutions/auth"
-  debug:
-    requestLogging: true
-  loglevel: info
   subjectSaltValue: fkdlsjaviaen4evdsnavaew4vcxo
   blockedClientSystems:
     - "blocked_user_agent"
@@ -243,14 +240,15 @@ management:
     web:
       exposure:
         include: "health"
-    enabled-by-default: true
+    access:
+      default: read_only
   endpoint:
     health:
-      enabled: true
+      access: read_only
     metrics:
-      enabled: true
+      access: read_only
     logfile:
-      enabled: true
+      access: read_only
 spring:
   datasource:
     url: "jdbc:h2:mem:idp;INIT=CREATE SCHEMA IF NOT EXISTS IDP;"
@@ -273,3 +271,7 @@ springdoc:
     path: /swagger-ui.html
   api-docs:
     enabled: true
+logging:
+  level:
+    de.gematik: ${LOG_LEVEL_GEMATIK:info}
+  CommonsRequestLoggingEnabled: ${REQUEST_LOGGING_ENABLED:false}
