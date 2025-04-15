@@ -1,5 +1,5 @@
 /*
- *  Copyright 2023 gematik GmbH
+ * Copyright (Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 package de.gematik.idp.server;
@@ -23,9 +27,9 @@ import java.security.Security;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.util.StackLocatorUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Logger;
+import org.apache.logging.log4j.status.StatusLogger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -55,7 +59,7 @@ public class IdpServer implements WebMvcConfigurer {
   }
 
   @Bean
-  @ConditionalOnProperty(value = "idp.debug.requestLogging")
+  @ConditionalOnProperty(value = "logging.CommonsRequestLoggingEnabled", havingValue = "true")
   public CommonsRequestLoggingFilter requestLoggingFilter() {
     final CommonsRequestLoggingFilter loggingFilter = new CommonsRequestLoggingFilter();
     loggingFilter.setIncludeClientInfo(true);
@@ -63,6 +67,7 @@ public class IdpServer implements WebMvcConfigurer {
     loggingFilter.setIncludePayload(true);
     loggingFilter.setMaxPayloadLength(64000);
     loggingFilter.setIncludeHeaders(true);
+    log.info("CommonsRequestLoggingFilter enabled");
     return loggingFilter;
   }
 
@@ -74,15 +79,15 @@ public class IdpServer implements WebMvcConfigurer {
   }
 
   @PostConstruct
-  public void setIdpLogLevel() {
-    final String loggerServer = "de.gematik.idp.server";
-    final String loggerRequests = "org.springframework.web.filter.CommonsRequestLoggingFilter";
-    Configurator.setLevel(loggerServer, idpConfiguration.getLoglevel());
-    Configurator.setLevel(loggerRequests, idpConfiguration.getLoglevel());
+  public void printConfiguration() {
+    log.info("idpConfiguration: {}", idpConfiguration);
 
-    final LoggerContext loggerContext =
-        LoggerContext.getContext(StackLocatorUtil.getCallerClassLoader(2), false, null);
-    log.info("loglevel: {}", loggerContext.getLogger(loggerServer).getLevel());
+    final Logger loggerGematik = (Logger) LogManager.getLogger("de.gematik");
+    StatusLogger.getLogger()
+        .log(
+            org.apache.logging.log4j.Level.OFF,
+            "loglevel for de.gematik: {}",
+            loggerGematik.getLevel());
   }
 
   @Bean

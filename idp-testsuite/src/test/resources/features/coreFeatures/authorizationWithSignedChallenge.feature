@@ -1,5 +1,5 @@
 #
-# Copyright 2023 gematik GmbH
+# Copyright (Date see Readme), gematik GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# *******
+#
+# For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
 #
 
 @PRODUKT:IDP-D
@@ -39,7 +43,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 1234  | code          |
-    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000161754-C_CH_AUT_E256.p12'
 
     When IDP I extract the header claims from token SIGNED_CHALLENGE
     Then IDP the header claims should match in any order
@@ -108,7 +112,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | state123456 | 12345 | code          |
-    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000161754-C_CH_AUT_E256.p12'
 
     When IDP I request a code token with signed challenge
     Then the response status is 302
@@ -137,7 +141,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And IDP I request a challenge with
       | client_id     | scope                      | code_challenge              | code_challenge_method | redirect_uri                      | state       | nonce | response_type |
       | gematikTestPs | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | http://test-ps.gematik.de/erezept | xxxstatexxx | 12345 | code          |
-    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000161754-C_CH_AUT_E256.p12'
 
     When IDP I request a code token with signed challenge
     Then the response status is 302
@@ -167,7 +171,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state      | nonce | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | state23456 | 12345 | code          |
-    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000161754-C_CH_AUT_E256.p12'
     And IDP I request a code token with signed challenge successfully
 
     When IDP I extract the header claims from token TOKEN_CODE_ENCRYPTED
@@ -238,7 +242,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 3333  | code          |
-    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000161754-C_CH_AUT_E256.p12'
 
     When IDP I request a code token with signed challenge successfully
     Then IDP the context TOKEN_CODE must be signed with cert PUK_SIGN
@@ -271,7 +275,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 3333  | code          |
-    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000161754-C_CH_AUT_E256.p12'
 
     When IDP I request a code token with signed challenge successfully
     Then IDP the context SSO_TOKEN must be signed with cert PUK_SIGN
@@ -295,7 +299,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 3333  | code          |
-    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000161754-C_CH_AUT_E256.p12'
 
     When IDP I wait PT3M5S
     And IDP I request a code token with signed challenge
@@ -434,7 +438,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 220022 | code          |
 
     When IDP I set the context with key CHALLENGE to 'malicious content test'
-    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000161754-C_CH_AUT_E256.p12'
     And IDP I request a code token with signed challenge
     Then IDP the response is an 400 error with gematik code 2031 and error 'invalid_request'
 
@@ -457,7 +461,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 3322  | code          |
 
-    When IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    When IDP I sign the challenge with '/certs/valid/80276883110000161754-C_CH_AUT_E256.p12'
     #flipping bits seems to be tricky. due to bits as bytes and bytes as base64 the last couple of bits may or may not have influence on the signature
     And IDP I flip bit -20 on context with key SIGNED_CHALLENGE
     And IDP I request a code token with signed challenge
@@ -478,7 +482,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state         | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx1a | 997755 | code          |
-    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000161754-C_CH_AUT_E256.p12'
     And IDP I request a code token with signed challenge successfully
     And IDP I request an access token
     And IDP I start new interaction keeping only
@@ -538,7 +542,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 3344  | code          |
 
     When IDP I sign the challenge with '/certs/invalid/smcb-idp-expired.p12'
-    When IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12' and Header Claims
+    When IDP I sign the challenge with '/certs/valid/80276883110000161754-C_CH_AUT_E256.p12' and Header Claims
       | typ   | cty   |
       | <typ> | <cty> |
     And IDP I request a code token with signed challenge

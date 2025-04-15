@@ -7,12 +7,12 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>29.1.9</version>
+    <version>29.2.0</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>idp-server</artifactId>
-  <version>29.1.9</version>
+  <version>29.2.0</version>
   <packaging>jar</packaging>
 
   <properties>
@@ -20,7 +20,7 @@
     <skip.dockerbuild>true</skip.dockerbuild>
     <version.jaxb-api>2.4.0-b180830.0359</version.jaxb-api>
     <version.jaxb-impl>4.0.5</version.jaxb-impl>
-    <version.tiger-rbel>3.7.1</version.tiger-rbel>
+    <version.tiger-rbel>3.7.6</version.tiger-rbel>
   </properties>
 
   <dependencies>
@@ -61,7 +61,7 @@
     <dependency>
       <groupId>org.springdoc</groupId>
       <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-      <version>2.8.5</version>
+      <version>2.8.6</version>
     </dependency>
 
     <dependency>
@@ -159,6 +159,12 @@
       <groupId>de.gematik.test</groupId>
       <artifactId>tiger-rbel</artifactId>
       <version>${version.tiger-rbel}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-classic</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>io.rest-assured</groupId>
@@ -178,10 +184,6 @@
           <artifactId>groovy</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>

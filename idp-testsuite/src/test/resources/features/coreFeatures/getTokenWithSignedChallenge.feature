@@ -1,5 +1,5 @@
 #
-# Copyright 2023 gematik GmbH
+# Copyright (Date see Readme), gematik GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# *******
+#
+# For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
 #
 
 @PRODUKT:IDP-D
@@ -57,7 +61,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
         """
     Examples: GetToken - Zertifikate zur Signatur der Challenge
       | cert                                                   |
-      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12    |
+      | /certs/valid/80276883110000161754-C_CH_AUT_E256.p12    |
       | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 |
 
 
@@ -199,9 +203,9 @@ Feature: Fordere Access Token mit einer signierten Challenge an
           }
         """
     Examples: GetToken - Zertifikate zur Signatur der Challenge
-      | cert                                                   | professionOID     | idNumber   | organisationName     | family_name | given_name                | displyName                         | organizationIK |
-      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12    | 1.2.276.0.76.4.49 | X110411675 | Test GKV-SVNOT-VALID | Bödefeld    | Darius Michael Brian Ubbo | Darius Michael Brian Ubbo Bödefeld | 109500969      |
-      | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 | 1.2.276.0.76.4.49 | X110471380 | Test GKV-SVNOT-VALID | Burgund     | Ulrich Hans Johann von    | Ulrich Hans Johann von Burgund     | 109500969      |
+      | cert                                                   | professionOID     | idNumber   | organisationName                 | family_name | given_name             | displyName                     | organizationIK |
+      | /certs/valid/80276883110000161754-C_CH_AUT_E256.p12    | 1.2.276.0.76.4.49 | X110675903 | gematik Musterkasse1GKVNOT-VALID | Hüllmann    | Franz Daniel Julian    | Franz Daniel Julian Hüllmann   | 999567890      |
+      | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 | 1.2.276.0.76.4.49 | X110471380 | Test GKV-SVNOT-VALID             | Burgund     | Ulrich Hans Johann von | Ulrich Hans Johann von Burgund | 109500969      |
 
 
   @TCID:IDP_REF_TOK_003 @PRIO:1
@@ -268,7 +272,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
         """
     Examples: GetToken - Zertifikate zur Signatur der Challenge
       | cert                                                   |
-      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12    |
+      | /certs/valid/80276883110000161754-C_CH_AUT_E256.p12    |
       | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 |
 
 
@@ -464,7 +468,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     Then IDP the context ACCESS_TOKEN must be signed with cert PUK_SIGN
     Examples: GetToken - Zertifikate zur Signatur der Challenge
       | cert                                                   |
-      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12    |
+      | /certs/valid/80276883110000161754-C_CH_AUT_E256.p12    |
       | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 |
 
   @TCID:IDP_REF_TOK_008 @PRIO:1
@@ -489,7 +493,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     Then IDP the context ID_TOKEN must be signed with cert PUK_SIGN
     Examples: GetToken - Zertifikate zur Signatur der Challenge
       | cert                                                   |
-      | /certs/valid/80276883110000018680-C_CH_AUT_E256.p12    |
+      | /certs/valid/80276883110000161754-C_CH_AUT_E256.p12    |
       | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 |
 
 
@@ -507,7 +511,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 98765 | code          |
-    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000161754-C_CH_AUT_E256.p12'
     And IDP I request a code token with signed challenge successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
 
@@ -528,7 +532,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 777766 | code          |
-    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000161754-C_CH_AUT_E256.p12'
     And IDP I request a code token with signed challenge successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     When IDP I request an access token with
@@ -557,7 +561,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 776655 | code          |
-    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000161754-C_CH_AUT_E256.p12'
     And IDP I request a code token with signed challenge successfully
     When IDP I request an access token with
       | grant_type   | redirect_uri   | token_code_encrypted   | code_verifier   | client_id   |
@@ -586,7 +590,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 776655 | code          |
-    And IDP I sign the challenge with '/certs/valid/80276883110000018680-C_CH_AUT_E256.p12'
+    And IDP I sign the challenge with '/certs/valid/80276883110000161754-C_CH_AUT_E256.p12'
     And IDP I request a code token with signed challenge successfully
     When IDP I request an access token with
       | grant_type   | redirect_uri   | token_code_encrypted   | code_verifier   | client_id   |
