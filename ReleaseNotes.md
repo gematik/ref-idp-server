@@ -1,3 +1,8 @@
+# Release 29.2.1
+
+- bugfix ANFIM-64:retrieveDiscoveryDocument failed on missing endpoints and given fixedIdpUrl
+- update dependencies
+
 # Release 29.2.0
 
 - refactor setting/printing log level - see [idp-server logging](README.md#idp-server-logging)

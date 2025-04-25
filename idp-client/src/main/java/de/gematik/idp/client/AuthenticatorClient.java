@@ -363,17 +363,15 @@ public class AuthenticatorClient {
                 fixedIdpHost))
         .discSig(discoveryDocument.getClientCertificateFromHeader().orElseThrow(exceptionSupplier))
         .pairingEndpoint(
-            patchIdpHost(
-                discoveryDocument
-                    .getStringBodyClaim(URI_PAIR)
-                    .orElse("<IDP DOES NOT SUPPORT ALTERNATIVE AUTHENTICATION>"),
-                fixedIdpHost))
+            discoveryDocument
+                .getStringBodyClaim(URI_PAIR)
+                .map(uriPair -> patchIdpHost(uriPair, fixedIdpHost))
+                .orElse("<IDP DOES NOT SUPPORT ALTERNATIVE AUTHENTICATION>"))
         .authPairEndpoint(
-            patchIdpHost(
-                discoveryDocument
-                    .getStringBodyClaim(AUTH_PAIR_ENDPOINT)
-                    .orElse("<IDP DOES NOT SUPPORT ALTERNATIVE AUTHENTICATION>"),
-                fixedIdpHost))
+            discoveryDocument
+                .getStringBodyClaim(AUTH_PAIR_ENDPOINT)
+                .map(uriPair -> patchIdpHost(uriPair, fixedIdpHost))
+                .orElse("<IDP DOES NOT SUPPORT ALTERNATIVE AUTHENTICATION>"))
         .idpSig(
             retrieveServerCertFromLocation(
                 patchIdpHost(
@@ -430,7 +428,7 @@ public class AuthenticatorClient {
     }
   }
 
-  private X509Certificate retrieveServerCertFromLocation(final String uri) {
+  X509Certificate retrieveServerCertFromLocation(final String uri) {
     final HttpResponse<JsonNode> pukAuthResponse =
         unirestInstance.get(uri).header(HttpHeaders.USER_AGENT, USER_AGENT).asJson();
     final JSONObject keyObject = pukAuthResponse.getBody().getObject();
@@ -439,7 +437,7 @@ public class AuthenticatorClient {
     return getCertificateFromPem(Base64.getDecoder().decode(verificationCertificate));
   }
 
-  private PublicKey retrieveServerPuKFromLocation(final String uri) {
+  PublicKey retrieveServerPuKFromLocation(final String uri) {
     final HttpResponse<JsonNode> pukAuthResponse =
         unirestInstance.get(uri).header(HttpHeaders.USER_AGENT, USER_AGENT).asJson();
     final JSONObject keyObject = pukAuthResponse.getBody().getObject();
