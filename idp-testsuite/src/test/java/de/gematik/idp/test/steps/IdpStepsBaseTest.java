@@ -73,7 +73,8 @@ public class IdpStepsBaseTest {
     final byte[] data =
         IOUtils.toByteArray(
             getClass()
-                .getResourceAsStream("/certs/valid/80276883110000129068-C_SMCB_HCI_AUT_E256.p12"));
+                .getResourceAsStream(
+                    "/certs/valid/80276883110000129068-2-C_SMCB_HCI_AUT_E256.p12"));
     final X509Certificate cert = CryptoLoader.getCertificateFromP12(data, "00");
     assertThat(cert).isNotNull();
     final IdpKeyDescriptor desc = IdpKeyDescriptor.constructFromX509Certificate(cert, "test");
