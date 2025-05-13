@@ -7,13 +7,13 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.4.4</version>
+    <version>3.4.5</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-global</artifactId>
-  <version>29.2.1</version>
+  <version>29.2.2</version>
   <packaging>pom</packaging>
 
   <description>IDP</description>
@@ -91,7 +91,7 @@
     <version.json>20250107</version.json>
     <version.plexus-utils>3.4.2</version.plexus-utils>
     <version.rest-assured>5.5.1</version.rest-assured>
-    <version.unirest>4.4.6</version.unirest>
+    <version.unirest>4.4.7</version.unirest>
     <version.unirest-objectmapper-jackson>4.2.9</version.unirest-objectmapper-jackson>
 
     <version.build-helper-maven-plugin>3.6.0</version.build-helper-maven-plugin>
@@ -122,7 +122,7 @@
     <version.sonar-maven-plugin>5.1.0.4751</version.sonar-maven-plugin>
     <version.spotless-maven-plugin>2.44.4</version.spotless-maven-plugin>
     <version.spotless.google-java-format>1.17.0</version.spotless.google-java-format>
-    <version.spring-boot-maven-plugin>3.4.4</version.spring-boot-maven-plugin>
+    <version.spring-boot-maven-plugin>3.4.5</version.spring-boot-maven-plugin>
     <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
   </properties>
 

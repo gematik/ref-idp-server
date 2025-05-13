@@ -422,7 +422,7 @@ class TokenLoggerTest {
   public void startup(
       @PkiKeyResolver.Filename("80276883110000161754-C_CH_AUT_E256.p12")
           final PkiIdentity clientIdentity,
-      @PkiKeyResolver.Filename("80276883110000129084-C_HP_AUT_E256.p12")
+      @PkiKeyResolver.Filename("80276883110000129084-2-C_HP_AUT_E256.p12")
           final PkiIdentity smcbIdentity) {
     rbelLogger =
         RbelLogger.build(

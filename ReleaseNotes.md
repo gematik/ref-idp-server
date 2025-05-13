@@ -1,3 +1,8 @@
+# Release 29.2.2
+
+- update almost expired certificates
+- update dependencies
+
 # Release 29.2.1
 
 - bugfix ANFIM-64:retrieveDiscoveryDocument failed on missing endpoints and given fixedIdpUrl
