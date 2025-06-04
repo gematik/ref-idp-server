@@ -7,12 +7,12 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>29.2.2</version>
+    <version>29.2.4</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>idp-server</artifactId>
-  <version>29.2.2</version>
+  <version>29.2.4</version>
   <packaging>jar</packaging>
 
   <properties>
@@ -20,7 +20,7 @@
     <skip.dockerbuild>true</skip.dockerbuild>
     <version.jaxb-api>2.4.0-b180830.0359</version.jaxb-api>
     <version.jaxb-impl>4.0.5</version.jaxb-impl>
-    <version.tiger-rbel>3.7.7</version.tiger-rbel>
+    <version.tiger-rbel>3.7.9</version.tiger-rbel>
   </properties>
 
   <dependencies>
@@ -148,11 +148,6 @@
       <artifactId>wiremock-standalone</artifactId>
       <version>3.13.0</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>commons-validator</groupId>
-      <artifactId>commons-validator</artifactId>
-      <version>1.9.0</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/de.gematik.test/tiger-rbel -->
     <dependency>

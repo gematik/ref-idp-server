@@ -46,4 +46,22 @@ class UriUtilsTest {
     final String uri = "https://build.top.local/sonar/dashboard?id=de.gematik.idp%3Aidp-global";
     assertThat(extractParameterValue(uri, "id")).isEqualTo("de.gematik.idp:idp-global");
   }
+
+  @Test
+  void checkValidUrlBoolean() {
+    final String url = "https://example.org/?a=1&b=2&c=3";
+    assertThat(UriUtils.isValidUrl(url)).isTrue();
+  }
+
+  @Test
+  void checkInvalidUrlBoolean() {
+    final String invalidUrl = "42";
+    assertThat(UriUtils.isValidUrl(invalidUrl)).isFalse();
+  }
+
+  @Test
+  void checkInvalidUrlButUri() {
+    final String uri = "urn:isbn:978-3-16-148410-0";
+    assertThat(UriUtils.isValidUrl(uri)).isFalse();
+  }
 }
