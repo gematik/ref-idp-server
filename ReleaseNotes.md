@@ -1,3 +1,8 @@
+# Release 29.2.4
+
+- refactoring to remove commons-validator due to vulnerability CVE-2025-48734 and others
+- update dependencies
+
 # Release 29.2.2
 
 - update almost expired certificates

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2023 gematik GmbH
+ * Copyright (Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,12 +12,17 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 package de.gematik.idp.test.steps.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import de.gematik.idp.authentication.UriUtils;
 import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
 import de.gematik.idp.test.steps.IdpStepsBase;
 import de.gematik.idp.test.steps.helpers.IdpTestEnvironmentConfigurator;
@@ -48,7 +53,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.validator.routines.UrlValidator;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
@@ -82,7 +86,7 @@ public class DiscoveryDocument {
     if (!IdpTestEnvironmentConfigurator.getFqdnInternet().isEmpty()) {
       jsoBody.keySet().stream()
           .filter(key -> jsoBody.get(key) instanceof String)
-          .filter(key -> UrlValidator.getInstance().isValid(jsoBody.getString(key)))
+          .filter(key -> UriUtils.isValidUrl(jsoBody.getString(key)))
           .forEach(key -> jsoBody.put(key, adaptUrlToSymbolicIdpHost(jsoBody.getString(key))));
     }
     jsonBody = jsoBody;
