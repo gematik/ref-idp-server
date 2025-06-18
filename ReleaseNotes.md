@@ -1,3 +1,8 @@
+# Release 29.2.5
+
+- add a test case for eRezept auth servers entity statement
+- update dependencies
+
 # Release 29.2.4
 
 - refactoring to remove commons-validator due to vulnerability CVE-2025-48734 and others
