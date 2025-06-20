@@ -7,12 +7,15 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>29.2.5</version>
+    <version>29.2.7</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>idp-server</artifactId>
-  <version>29.2.5</version>
+  <version>29.2.7</version>
+  <name>${project.artifactId}</name>
+  <description>idp server</description>
+
   <packaging>jar</packaging>
 
   <properties>
@@ -137,7 +140,7 @@
     <dependency>
       <groupId>org.modelmapper</groupId>
       <artifactId>modelmapper</artifactId>
-      <version>3.2.3</version>
+      <version>3.2.4</version>
     </dependency>
     <dependency>
       <groupId>com.mysql</groupId>

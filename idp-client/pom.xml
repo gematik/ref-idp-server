@@ -7,13 +7,14 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>29.2.5</version>
+    <version>29.2.7</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-  <groupId>de.gematik.idp</groupId>
-  <artifactId>idp-client</artifactId>
 
-  <version>29.2.5</version>
+  <artifactId>idp-client</artifactId>
+  <version>29.2.7</version>
+  <name>${project.artifactId}</name>
+  <description>idp client</description>
   <packaging>jar</packaging>
 
   <dependencies>

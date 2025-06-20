@@ -1,3 +1,8 @@
+# Release 29.2.7
+
+- adjust POMs to meet Maven Central standards
+- update dependencies
+
 # Release 29.2.5
 
 - add a test case for eRezept auth servers entity statement
