@@ -7,13 +7,13 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.5.0</version>
+    <version>3.5.3</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-global</artifactId>
-  <version>29.2.5</version>
+  <version>29.2.7</version>
   <packaging>pom</packaging>
   <url>https://github.com/gematik/ref-idp-server</url>
   <description>IDP</description>
@@ -118,12 +118,12 @@
     <!-- settings for upload to sonar server -->
     <version.maven-source-plugin>3.3.1</version.maven-source-plugin>
     <version.maven-surefire-plugin>3.5.3</version.maven-surefire-plugin>
-    <version.central-publishing-maven-plugin>0.7.0</version.central-publishing-maven-plugin>
+    <version.central-publishing-maven-plugin>0.8.0</version.central-publishing-maven-plugin>
     <version.slf4j-api>2.0.17</version.slf4j-api>
     <version.sonar-maven-plugin>5.1.0.4751</version.sonar-maven-plugin>
     <version.spotless-maven-plugin>2.44.5</version.spotless-maven-plugin>
     <version.spotless.google-java-format>1.17.0</version.spotless.google-java-format>
-    <version.spring-boot-maven-plugin>3.5.0</version.spring-boot-maven-plugin>
+    <version.spring-boot-maven-plugin>3.5.3</version.spring-boot-maven-plugin>
     <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
   </properties>
 
@@ -169,6 +169,7 @@
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter</artifactId>
+        <version>3.5.3</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework.boot</groupId>
