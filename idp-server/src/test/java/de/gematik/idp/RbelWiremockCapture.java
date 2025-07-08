@@ -29,10 +29,10 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.http.HttpHeader;
 import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.http.Response;
+import de.gematik.rbellogger.RbelConverter;
 import de.gematik.rbellogger.captures.RbelCapturer;
-import de.gematik.rbellogger.converter.RbelConverter;
 import de.gematik.rbellogger.data.RbelHostname;
-import java.util.Optional;
+import de.gematik.rbellogger.data.RbelMessageMetadata;
 import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
@@ -79,15 +79,15 @@ public class RbelWiremockCapture extends RbelCapturer {
           getRbelConverter()
               .parseMessage(
                   requestToRbelMessage(request, request.getHost()),
-                  new RbelHostname(request.getClientIp(), -1),
-                  new RbelHostname(request.getHost(), request.getPort()),
-                  Optional.empty());
+                  new RbelMessageMetadata()
+                      .withSender(new RbelHostname(request.getClientIp(), -1))
+                      .withReceiver(new RbelHostname(request.getHost(), request.getPort())));
           getRbelConverter()
               .parseMessage(
                   responseToRbelMessage(response),
-                  new RbelHostname(request.getClientIp(), -1),
-                  new RbelHostname(request.getHost(), request.getPort()),
-                  Optional.empty());
+                  new RbelMessageMetadata()
+                      .withSender(new RbelHostname(request.getClientIp(), -1))
+                      .withReceiver(new RbelHostname(request.getHost(), request.getPort())));
         });
 
     log.info("Started Wiremock-Server at '{}'.", wireMockServer.baseUrl());

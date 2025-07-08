@@ -65,6 +65,7 @@ Feature: Autorisiere Anwendung am IDP Server mit signierter Challenge
   @TCID:IDP_REF_AUTH_067 @PRIO:2
   @Approval @Ready
   @TESTSTUFE:4
+  @RSA
   Scenario: AuthorChallenge - Validiere signierte Challenge mit PS256
   ```
   Wir wählen einen gültigen Code verifier, fordern einen Challenge Token an und signieren diesen mit einem RSA Zertifikat.

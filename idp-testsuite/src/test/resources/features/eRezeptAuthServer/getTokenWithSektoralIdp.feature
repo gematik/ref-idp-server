@@ -68,8 +68,8 @@ Feature: Authentisierung mit sektoralem IDP
     And TGR set local variable "gsiAuthEndpoint" to "!{rbel:currentResponseAsString('$.header.Location.basicPath')}"
     And TGR clear recorded messages
     When TGR sende eine GET Anfrage an "${gsiAuthEndpoint}" mit folgenden Daten:
-      | request_uri   | user_id  |
-      | ${requestUri} | 12345678 |
+      | request_uri   | user_id    |
+      | ${requestUri} | X110411675 |
     And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "302"
     And TGR current response with attribute "$.header.Location.code.value" matches ".*"
@@ -95,8 +95,8 @@ Feature: Authentisierung mit sektoralem IDP
     And TGR set local variable "gsiAuthEndpoint" to "!{rbel:currentResponseAsString('$.header.Location.basicPath')}"
     And TGR clear recorded messages
     And TGR sende eine GET Anfrage an "${gsiAuthEndpoint}" mit folgenden Daten:
-      | request_uri   | user_id  |
-      | ${requestUri} | 12345678 |
+      | request_uri   | user_id    |
+      | ${requestUri} | X110411675 |
     And TGR find first request to path ".*"
     And TGR set local variable "gsiAuthCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
     And TGR set local variable "fachdienstState" to "!{rbel:currentResponseAsString('$.header.Location.state.value')}"
@@ -131,8 +131,8 @@ Feature: Authentisierung mit sektoralem IDP
     And TGR set local variable "gsiAuthEndpoint" to "!{rbel:currentResponseAsString('$.header.Location.basicPath')}"
     And TGR clear recorded messages
     And TGR sende eine GET Anfrage an "${gsiAuthEndpoint}" mit folgenden Daten:
-      | request_uri   | user_id  |
-      | ${requestUri} | 12345678 |
+      | request_uri   | user_id    |
+      | ${requestUri} | X110411675 |
     And TGR find first request to path ".*"
     And TGR set local variable "gsiAuthCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
     And TGR set local variable "fachdienstState" to "!{rbel:currentResponseAsString('$.header.Location.state.value')}"
@@ -247,8 +247,8 @@ Feature: Authentisierung mit sektoralem IDP
     And TGR set local variable "gsiAuthEndpoint" to "!{rbel:currentResponseAsString('$.header.Location.basicPath')}"
     And TGR clear recorded messages
     And TGR sende eine GET Anfrage an "${gsiAuthEndpoint}" mit folgenden Daten:
-      | request_uri   | user_id  |
-      | ${requestUri} | 12345678 |
+      | request_uri   | user_id    |
+      | ${requestUri} | X110411675 |
     And TGR find first request to path ".*"
     And TGR set local variable "gsiAuthCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
     And TGR set local variable "fachdienstState" to "!{rbel:currentResponseAsString('$.header.Location.state.value')}"

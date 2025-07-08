@@ -36,9 +36,9 @@ import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.rbellogger.RbelLogger;
 import de.gematik.rbellogger.configuration.RbelConfiguration;
-import de.gematik.rbellogger.converter.initializers.RbelKeyFolderInitializer;
+import de.gematik.rbellogger.initializers.RbelKeyFolderInitializer;
 import de.gematik.rbellogger.key.RbelKey;
-import de.gematik.rbellogger.key.RbelKeyManager;
+import de.gematik.rbellogger.key.RbelKeyManager.RbelIdpTokenKeyListener;
 import de.gematik.rbellogger.renderer.RbelHtmlRenderer;
 import java.io.File;
 import java.io.IOException;
@@ -433,7 +433,7 @@ class TokenLoggerTest {
                         DigestUtils.sha256("geheimerSchluesselDerNochGehashtWird"), "AES"),
                     RbelKey.PRECEDENCE_KEY_FOLDER)
                 .addInitializer(new RbelKeyFolderInitializer("src/main/resources"))
-                .addPostConversionListener(RbelKeyManager.RBEL_IDP_TOKEN_KEY_LISTENER));
+                .addPostConversionListener(new RbelIdpTokenKeyListener()));
 
     JEXL_NOTE_FUNCTIONS.forEach((k, v) -> rbelLogger.getValueShader().addJexlNoteCriterion(k, v));
     MASKING_FUNCTIONS.forEach(

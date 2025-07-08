@@ -1,3 +1,9 @@
+# Release 29.3.0
+
+- remove spring dependencies from idp-crypto and idp-commons
+- update certificates
+- refactor some tests with respect to ecc-migration
+
 # Release 29.2.7
 
 - adjust POMs to meet Maven Central standards

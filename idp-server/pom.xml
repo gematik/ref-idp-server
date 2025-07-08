@@ -7,12 +7,12 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>29.2.7</version>
+    <version>29.3.0</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>idp-server</artifactId>
-  <version>29.2.7</version>
+  <version>29.3.0</version>
   <name>${project.artifactId}</name>
   <description>idp server</description>
 
@@ -23,7 +23,7 @@
     <skip.dockerbuild>true</skip.dockerbuild>
     <version.jaxb-api>2.4.0-b180830.0359</version.jaxb-api>
     <version.jaxb-impl>4.0.5</version.jaxb-impl>
-    <version.tiger-rbel>3.7.9</version.tiger-rbel>
+    <version.tiger-rbel>4.0.7</version.tiger-rbel>
   </properties>
 
   <dependencies>

@@ -60,8 +60,45 @@ Feature: Fordere Access Token mit einer signierten Challenge an
           }
         """
     Examples: GetToken - Zertifikate zur Signatur der Challenge
+      | cert                                                |
+      | /certs/valid/80276883110000161754-C_CH_AUT_E256.p12 |
+
+
+  @TCID:IDP_REF_TOK_001rsa @PRIO:1
+    @AFO-ID:A_20463 @AFO-ID:A_20321-01
+    @Approval @Ready
+    @TESTSTUFE:4
+    @RSA
+  Scenario Outline: GetTokenSigned - Gutfall RSA - Validiere Antwortstruktur
+  ```
+  Wir fordern einen Access Token an und überprüfen dass die JSON Antwort folgende Felder enthält:
+
+  - den Access Token
+  - den ID Token
+  - Ablaufzeitraum (expires, 300 Sekunden)
+  - Token Typ Bearer
+
+
+    Given IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
+      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
+    And IDP I sign the challenge with '<cert>'
+    And IDP I request a code token with signed challenge successfully
+    And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
+
+    When IDP I request an access token
+    Then the response status is 200
+    And IDP the JSON response should match
+        """
+          { access_token: "ey.*",
+            expires_in:   300,
+            id_token:     "ey.*",
+            token_type:   "Bearer"
+          }
+        """
+    Examples: GetToken - Zertifikate zur Signatur der Challenge
       | cert                                                   |
-      | /certs/valid/80276883110000161754-C_CH_AUT_E256.p12    |
       | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 |
 
 
@@ -134,12 +171,80 @@ Feature: Fordere Access Token mit einer signierten Challenge an
       | /certs/valid/80276883110000129077-2-C_SMCB_HCI_AUT_E256.p12 | 1.2.276.0.76.4.50  | 1-SMC-B-Testkarte-883110000129077 | Praxis Rainer Graf d' AgóstinoTEST-ONLY                          | Agóstino    | Rainer        | Rainer Agóstino           |
       | /certs/valid/80276883110000129080-2-C_SMCB_HCI_AUT_E256.p12 | 1.2.276.0.76.4.51  | 2-SMC-B-Testkarte-883110000129080 | Zahnarztpraxis Dr. Hillbert TangerðalTEST-ONLY                   | $NULL       | $NULL         | $NULL                     |
       | /certs/valid/80276883110000129083-2-C_HP_AUT_E256.p12       | 1.2.276.0.76.4.30  | 1-HBA-Testkarte-883110000129083   | $NULL                                                            | MaiÞer      | Roland        | Roland MaiÞer             |
-      | /certs/valid/80276001011699902101-C_HP_AUT_R2048.p12        | 1.2.276.0.76.4.31  | 2-1-ZAHNARZT-DietlindeDornbusch   | $NULL                                                            | Dornbusch   | Dietlinde     | Dietlinde Dornbusch       |
       | /certs/valid/80276001011699802001-2-C_HP_AUT_E256.p12       | 1.2.276.0.76.4.233 | 9-1-AP-AaronAal01                 | $NULL                                                            | Aal         | Aaron         | Aaron Aal                 |
-      | /certs/valid/80276001011699802002-2-C_HP_AUT_R2048.p12      | 1.2.276.0.76.4.32  | 3-1-APO-BeaBiene02                | $NULL                                                            | Biene       | Bea           | Bea Biene                 |
       | /certs/valid/80276001011699802003-2-C_HP_AUT_E256.p12       | 1.2.276.0.76.4.46  | 4-1-PSY-DianaDorsch03             | $NULL                                                            | Dorsch      | Diana         | Diana Dorsch              |
-      | /certs/valid/80276001011699802004-2-C_HP_AUT_R2048.p12      | 1.2.276.0.76.4.235 | 9-1-HBM-EllaElster04              | $NULL                                                            | Elster      | Ella          | Ella Elster               |
       | /certs/valid/80276001011699901340-C_SMCB_AUT_E256_X509.p12  | 1.2.276.0.76.4.53  | 5-2-KHAUS-KOMMA-20230327          | Tolles kleines Krankenhaus, am ruhigen,erholsamen Park TEST-ONLY | $NULL       | $NULL         | $NULL                     |
+
+
+  #noinspection NonAsciiCharacters
+  @TCID:IDP_REF_TOK_002rsa @PRIO:1
+    @AFO-ID:A_20731 @AFO-ID:A_20464 @AFO-ID:A_20952 @AFO-ID:A_21320 @AFO-ID:A_21321 @AFO-ID:A_20313-01
+    @Approval @Ready
+    @TESTSTUFE:4
+    @RSA
+  Scenario Outline: GetTokenSigned - Gutfall RSA- Validiere Access Token Claims
+  ```
+  Wir fordern einen Access Token an und überprüfen dass der Access Token korrekte Header und Body Claims enthält.
+
+
+    Given IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
+      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
+    And IDP I sign the challenge with '<cert>'
+    And IDP I request a code token with signed challenge successfully
+    And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
+    And IDP I request an access token
+
+    When IDP I extract the header claims from token ACCESS_TOKEN_ENCRYPTED
+    Then IDP the header claims should match in any order
+        """
+          {
+            alg: "dir",
+            enc: "A256GCM",
+            cty: "NJWT",
+            exp: "[\\d]*"
+          }
+        """
+    When IDP I extract the header claims from token ACCESS_TOKEN
+    Then IDP the header claims should match in any order
+        """
+          { alg: "BP256R1",
+            kid: "${json-unit.ignore}",
+            typ: "at+JWT"
+          }
+        """
+    When IDP I extract the body claims from token ACCESS_TOKEN
+    Then IDP the body claims should match in any order
+        """
+          { acr:              "gematik-ehealth-loa-high",
+            amr:              ["mfa", "sc", "pin"],
+            aud:              "${TESTENV.aud}",
+            auth_time:        "[\\d]*",
+            azp:              "${TESTENV.client_id}",
+            client_id:        "${TESTENV.client_id}",
+            exp:              "[\\d]*",
+            jti:              "${json-unit.ignore}",
+            family_name:      "<family_name>",
+            given_name:       "<given_name>",
+            iat:              "[\\d]*",
+            idNummer:         "<idNumber>",
+            iss:              "${TESTENV.issuer}",
+            organizationName: "<organisationName>",
+            professionOID:    "<professionOID>",
+            scope:            "${TESTENV.scopes_basisflow_regex}",
+            sub:              ".*",
+            display_name:     "<displayName>",
+            organizationIK:   $NULL
+          }
+        """
+    Examples: GetToken - Zertifikate zur Signatur der Challenge
+      | cert                                                   | professionOID      | idNumber                        | organisationName | family_name | given_name | displayName         |
+      | /certs/valid/80276001011699902101-C_HP_AUT_R2048.p12   | 1.2.276.0.76.4.31  | 2-1-ZAHNARZT-DietlindeDornbusch | $NULL            | Dornbusch   | Dietlinde  | Dietlinde Dornbusch |
+      | /certs/valid/80276001011699802002-2-C_HP_AUT_R2048.p12 | 1.2.276.0.76.4.32  | 3-1-APO-BeaBiene02              | $NULL            | Biene       | Bea        | Bea Biene           |
+      | /certs/valid/80276001011699802004-2-C_HP_AUT_R2048.p12 | 1.2.276.0.76.4.235 | 9-1-HBM-EllaElster04            | $NULL            | Elster      | Ella       | Ella Elster         |
+
+
 
   #noinspection NonAsciiCharacters
   @TCID:IDP_REF_TOK_017 @PRIO:1
@@ -203,9 +308,75 @@ Feature: Fordere Access Token mit einer signierten Challenge an
           }
         """
     Examples: GetToken - Zertifikate zur Signatur der Challenge
-      | cert                                                   | professionOID     | idNumber   | organisationName                 | family_name | given_name             | displyName                     | organizationIK |
-      | /certs/valid/80276883110000161754-C_CH_AUT_E256.p12    | 1.2.276.0.76.4.49 | X110675903 | gematik Musterkasse1GKVNOT-VALID | Hüllmann    | Franz Daniel Julian    | Franz Daniel Julian Hüllmann   | 999567890      |
-      | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 | 1.2.276.0.76.4.49 | X110471380 | Test GKV-SVNOT-VALID             | Burgund     | Ulrich Hans Johann von | Ulrich Hans Johann von Burgund | 109500969      |
+      | cert                                                | professionOID     | idNumber   | organisationName                 | family_name | given_name          | displyName                   | organizationIK |
+      | /certs/valid/80276883110000161754-C_CH_AUT_E256.p12 | 1.2.276.0.76.4.49 | X110675903 | gematik Musterkasse1GKVNOT-VALID | Hüllmann    | Franz Daniel Julian | Franz Daniel Julian Hüllmann | 999567890      |
+
+
+  #noinspection NonAsciiCharacters
+  @TCID:IDP_REF_TOK_017rsa @PRIO:1
+    @AFO-ID:A_20731 @AFO-ID:A_20464 @AFO-ID:A_20952 @AFO-ID:A_21320 @AFO-ID:A_21321 @AFO-ID:A_20313-01
+    @Approval @Ready
+    @TESTSTUFE:4
+    @RSA
+  Scenario Outline: GetTokenSigned - Gutfall RSA - Validiere Access Token Claims für eGK
+  ```
+  Wir fordern einen Access Token an und überprüfen dass der Access Token korrekte Header und Body Claims enthält.
+
+
+    Given IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
+      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
+    And IDP I sign the challenge with '<cert>'
+    And IDP I request a code token with signed challenge successfully
+    And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
+    And IDP I request an access token
+
+    When IDP I extract the header claims from token ACCESS_TOKEN_ENCRYPTED
+    Then IDP the header claims should match in any order
+        """
+          {
+            alg: "dir",
+            enc: "A256GCM",
+            cty: "NJWT",
+            exp: "[\\d]*"
+          }
+        """
+    When IDP I extract the header claims from token ACCESS_TOKEN
+    Then IDP the header claims should match in any order
+        """
+          { alg: "BP256R1",
+            kid: "${json-unit.ignore}",
+            typ: "at+JWT"
+          }
+        """
+    When IDP I extract the body claims from token ACCESS_TOKEN
+    Then IDP the body claims should match in any order
+        """
+          { acr:              "gematik-ehealth-loa-high",
+            amr:              ["mfa", "sc", "pin"],
+            aud:              "${TESTENV.aud}",
+            auth_time:        "[\\d]*",
+            azp:              "${TESTENV.client_id}",
+            client_id:        "${TESTENV.client_id}",
+            exp:              "[\\d]*",
+            jti:              "${json-unit.ignore}",
+            family_name:      "<family_name>",
+            given_name:       "<given_name>",
+            iat:              "[\\d]*",
+            idNummer:         "<idNumber>",
+            iss:              "${TESTENV.issuer}",
+            organizationName: "<organisationName>",
+            professionOID:    "<professionOID>",
+            scope:            "${TESTENV.scopes_basisflow_regex}",
+            sub:              ".*",
+            display_name:     "<displyName>",
+            organizationIK:   "<organizationIK>"
+          }
+        """
+    Examples: GetToken - Zertifikate zur Signatur der Challenge
+      | cert                                                   | professionOID     | idNumber   | organisationName     | family_name | given_name             | displyName                     | organizationIK |
+      | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 | 1.2.276.0.76.4.49 | X110471380 | Test GKV-SVNOT-VALID | Burgund     | Ulrich Hans Johann von | Ulrich Hans Johann von Burgund | 109500969      |
 
 
   @TCID:IDP_REF_TOK_003 @PRIO:1
@@ -271,8 +442,75 @@ Feature: Fordere Access Token mit einer signierten Challenge an
           }
         """
     Examples: GetToken - Zertifikate zur Signatur der Challenge
+      | cert                                                |
+      | /certs/valid/80276883110000161754-C_CH_AUT_E256.p12 |
+
+
+  @TCID:IDP_REF_TOK_003rsa @PRIO:1
+    @AFO-ID:A_21321 @AFO-ID:A_20313-01
+    @Approval @Ready
+    @TESTSTUFE:4
+    @RSA
+  Scenario Outline: GetTokenSigned - Gutfall RSA - Validiere ID Token Claims für eGK
+  ```
+  Wir fordern einen Access Token an und überprüfen dass der ID Token korrekte Header und Body Claims enthält.
+
+  -  Der at_hash Wert muss base64 URL encoded sein (enthält keine URL inkompatiblen Zeichen +/=)
+
+
+    Given IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
+      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 98765 | code          |
+    And IDP I sign the challenge with '<cert>'
+    And IDP I request a code token with signed challenge successfully
+    And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
+    And IDP I request an access token
+
+    When IDP I extract the header claims from token ID_TOKEN_ENCRYPTED
+    Then IDP the header claims should match in any order
+        """
+          {
+            alg: "dir",
+            enc: "A256GCM",
+            cty: "NJWT",
+            exp: "[\\d]*"
+          }
+        """
+    When IDP I extract the header claims from token ID_TOKEN
+    Then IDP the header claims should match in any order
+        """
+          { alg: "BP256R1",
+            kid: "${json-unit.ignore}",
+            typ: "JWT"
+          }
+        """
+    When IDP I extract the body claims from token ID_TOKEN
+    Then IDP the body claims should match in any order
+        """
+          { acr:              "gematik-ehealth-loa-high",
+            amr:              ["mfa","sc","pin"],
+            at_hash:          "[A-Za-z0-9\\-\\_]*",
+            aud:              "${TESTENV.client_id}",
+            auth_time:        "[\\d]*",
+            azp:              "${TESTENV.client_id}",
+            exp:              "[\\d]*",
+            family_name:      "(.{1,64})",
+            given_name:       "(.{1,64})",
+            iat:              "[\\d]*",
+            idNummer:         "[A-Z][\\d]{9,10}",
+            iss:              "${TESTENV.issuer}",
+            nonce:            "98765",
+            professionOID:    "1\\.2\\.276\\.0\\.76\\.4\\.(3\\d|4\\d|178|23[2-90]|240|241)",
+            organizationName: "(.{1,64})",
+            sub:              ".*",
+            jti:              ".*",
+            display_name:     "(.{3,129})",
+            organizationIK:   "[\\d]{9,10}"
+          }
+        """
+    Examples: GetToken - Zertifikate zur Signatur der Challenge
       | cert                                                   |
-      | /certs/valid/80276883110000161754-C_CH_AUT_E256.p12    |
       | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 |
 
 
@@ -347,12 +585,80 @@ Feature: Fordere Access Token mit einer signierten Challenge an
       | /certs/valid/80276883110000129077-2-C_SMCB_HCI_AUT_E256.p12 | 1.2.276.0.76.4.50  | 1-SMC-B-Testkarte-883110000129077 | Praxis Rainer Graf d' AgóstinoTEST-ONLY                          | Agóstino    | Rainer        | Rainer Agóstino           |
       | /certs/valid/80276883110000129080-2-C_SMCB_HCI_AUT_E256.p12 | 1.2.276.0.76.4.51  | 2-SMC-B-Testkarte-883110000129080 | Zahnarztpraxis Dr. Hillbert TangerðalTEST-ONLY                   | $NULL       | $NULL         | $NULL                     |
       | /certs/valid/80276883110000129083-2-C_HP_AUT_E256.p12       | 1.2.276.0.76.4.30  | 1-HBA-Testkarte-883110000129083   | $NULL                                                            | MaiÞer      | Roland        | Roland MaiÞer             |
-      | /certs/valid/80276001011699902101-C_HP_AUT_R2048.p12        | 1.2.276.0.76.4.31  | 2-1-ZAHNARZT-DietlindeDornbusch   | $NULL                                                            | Dornbusch   | Dietlinde     | Dietlinde Dornbusch       |
       | /certs/valid/80276001011699802001-2-C_HP_AUT_E256.p12       | 1.2.276.0.76.4.233 | 9-1-AP-AaronAal01                 | $NULL                                                            | Aal         | Aaron         | Aaron Aal                 |
-      | /certs/valid/80276001011699802002-2-C_HP_AUT_R2048.p12      | 1.2.276.0.76.4.32  | 3-1-APO-BeaBiene02                | $NULL                                                            | Biene       | Bea           | Bea Biene                 |
       | /certs/valid/80276001011699802003-2-C_HP_AUT_E256.p12       | 1.2.276.0.76.4.46  | 4-1-PSY-DianaDorsch03             | $NULL                                                            | Dorsch      | Diana         | Diana Dorsch              |
-      | /certs/valid/80276001011699802004-2-C_HP_AUT_R2048.p12      | 1.2.276.0.76.4.235 | 9-1-HBM-EllaElster04              | $NULL                                                            | Elster      | Ella          | Ella Elster               |
       | /certs/valid/80276001011699901340-C_SMCB_AUT_E256_X509.p12  | 1.2.276.0.76.4.53  | 5-2-KHAUS-KOMMA-20230327          | Tolles kleines Krankenhaus, am ruhigen,erholsamen Park TEST-ONLY | $NULL       | $NULL         | $NULL                     |
+
+
+  @TCID:IDP_REF_TOK_018rsa @PRIO:1
+    @AFO-ID:A_21321 @AFO-ID:A_20313-01
+    @Approval @Ready
+    @TESTSTUFE:4
+    @RSA
+  Scenario Outline: GetTokenSigned - Gutfall RSA - Validiere ID Token Claims
+  ```
+  Wir fordern einen Access Token an und überprüfen dass der ID Token korrekte Header und Body Claims enthält.
+
+  -  Der at_hash Wert muss base64 URL encoded sein (enthält keine URL inkompatiblen Zeichen +/=)
+
+
+    Given IDP I choose code verifier '${TESTENV.code_verifier01}'
+    And IDP I request a challenge with
+      | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 98765 | code          |
+    And IDP I sign the challenge with '<cert>'
+    And IDP I request a code token with signed challenge successfully
+    And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
+    And IDP I request an access token
+
+    When IDP I extract the header claims from token ID_TOKEN_ENCRYPTED
+    Then IDP the header claims should match in any order
+        """
+          {
+            alg: "dir",
+            enc: "A256GCM",
+            cty: "NJWT",
+            exp: "[\\d]*"
+          }
+        """
+    When IDP I extract the header claims from token ID_TOKEN
+    Then IDP the header claims should match in any order
+        """
+          { alg: "BP256R1",
+            kid: "${json-unit.ignore}",
+            typ: "JWT"
+          }
+        """
+    When IDP I extract the body claims from token ID_TOKEN
+    Then IDP the body claims should match in any order
+        """
+          { acr:              "gematik-ehealth-loa-high",
+            amr:              ["mfa","sc","pin"],
+            at_hash:          "[A-Za-z0-9\\-\\_]*",
+            aud:              "${TESTENV.client_id}",
+            auth_time:        "[\\d]*",
+            azp:              "${TESTENV.client_id}",
+            exp:              "[\\d]*",
+            family_name:      "<family_name>",
+            given_name:       "<given_name>",
+            iat:              "[\\d]*",
+            idNummer:         "<idNumber>",
+            iss:              "${TESTENV.issuer}",
+            nonce:            "98765",
+            professionOID:    "<professionOID>",
+            organizationName: "<organisationName>",
+            sub:              ".*",
+            jti:              ".*",
+            display_name:     "<displayName>",
+            organizationIK:   $NULL
+
+          }
+        """
+    Examples: GetToken - Zertifikate zur Signatur der Challenge
+      | cert                                                   | professionOID      | idNumber                        | organisationName | family_name | given_name | displayName         |
+      | /certs/valid/80276001011699902101-C_HP_AUT_R2048.p12   | 1.2.276.0.76.4.31  | 2-1-ZAHNARZT-DietlindeDornbusch | $NULL            | Dornbusch   | Dietlinde  | Dietlinde Dornbusch |
+      | /certs/valid/80276001011699802002-2-C_HP_AUT_R2048.p12 | 1.2.276.0.76.4.32  | 3-1-APO-BeaBiene02              | $NULL            | Biene       | Bea        | Bea Biene           |
+      | /certs/valid/80276001011699802004-2-C_HP_AUT_R2048.p12 | 1.2.276.0.76.4.235 | 9-1-HBM-EllaElster04            | $NULL            | Elster      | Ella       | Ella Elster         |
 
 
   @TCID:IDP_REF_TOK_004 @PRIO:1
@@ -362,7 +668,6 @@ Feature: Fordere Access Token mit einer signierten Challenge an
   ```
   Wir fordern einen Access Token an und überprüfen, dass der subject claim und die Id Nummer im ID Token und im
   Access Token ident sind.
-
 
     Given IDP I choose code verifier '${TESTENV.code_verifier01}'
     And IDP I request a challenge with
@@ -406,7 +711,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge02} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
 
-    When IDP I sign the challenge with '/certs/valid/egk-idp-idnumber-a-valid-2.p12'
+    When IDP I sign the challenge with '/certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12'
     And IDP I request a code token with signed challenge successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     And IDP I request an access token
@@ -428,7 +733,7 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     And IDP I request a challenge with
       | client_id            | scope                      | code_challenge              | code_challenge_method | redirect_uri            | state       | nonce  | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | ${TESTENV.code_challenge01} | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 887766 | code          |
-    And IDP I sign the challenge with '/certs/valid/egk-idp-idnumber-a-valid-2.p12'
+    And IDP I sign the challenge with '/certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12'
     And IDP I request a code token with signed challenge successfully
     And IDP I set the context with key REDIRECT_URI to '${TESTENV.redirect_uri}'
     And IDP I request an access token
@@ -467,9 +772,9 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     When IDP I request an access token
     Then IDP the context ACCESS_TOKEN must be signed with cert PUK_SIGN
     Examples: GetToken - Zertifikate zur Signatur der Challenge
-      | cert                                                   |
-      | /certs/valid/80276883110000161754-C_CH_AUT_E256.p12    |
-      | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 |
+      | cert                                                |
+      | /certs/valid/80276883110000161754-C_CH_AUT_E256.p12 |
+
 
   @TCID:IDP_REF_TOK_008 @PRIO:1
     @AFO-ID:A_20327-02
@@ -492,9 +797,8 @@ Feature: Fordere Access Token mit einer signierten Challenge an
     When IDP I request an access token
     Then IDP the context ID_TOKEN must be signed with cert PUK_SIGN
     Examples: GetToken - Zertifikate zur Signatur der Challenge
-      | cert                                                   |
-      | /certs/valid/80276883110000161754-C_CH_AUT_E256.p12    |
-      | /certs/valid/80276883110000104481-2-C_CH_AUT_R2048.p12 |
+      | cert                                                |
+      | /certs/valid/80276883110000161754-C_CH_AUT_E256.p12 |
 
 
   @TCID:IDP_REF_TOK_009 @PRIO:2

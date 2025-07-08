@@ -47,7 +47,7 @@ class CryptoLoaderTest {
   void loadEccCertificateFromP12() throws IOException {
     final byte[] p12FileContent =
         FileUtils.readFileToByteArray(
-            new File("src/test/resources/authenticatorModule_idpServer.p12"));
+            new File("src/test/resources/833621999741600-2_c.hci.aut-apo-ecc.p12"));
     final X509Certificate certificate = CryptoLoader.getCertificateFromP12(p12FileContent, "00");
 
     assertThat(certificate.getSubjectX500Principal().toString()).containsIgnoringCase("CN=");
@@ -66,7 +66,7 @@ class CryptoLoaderTest {
   void loadIdentityFromP12() throws IOException {
     final byte[] p12FileContent =
         FileUtils.readFileToByteArray(
-            new File("src/test/resources/authenticatorModule_idpServer.p12"));
+            new File("src/test/resources/833621999741600-2_c.hci.aut-apo-ecc.p12"));
     final PkiIdentity identity = CryptoLoader.getIdentityFromP12(p12FileContent, "00");
 
     assertThat(identity.getCertificate().getSubjectX500Principal().toString())
