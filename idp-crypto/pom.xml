@@ -7,12 +7,12 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>29.3.0</version>
+    <version>29.3.1</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>idp-crypto</artifactId>
-  <version>29.3.0</version>
+  <version>29.3.1</version>
   <name>${project.artifactId}</name>
   <description>crypto functions</description>
 

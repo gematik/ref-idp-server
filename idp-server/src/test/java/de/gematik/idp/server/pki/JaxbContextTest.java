@@ -1,5 +1,5 @@
 /*
- * Copyright (Date see Readme), gematik GmbH
+ * Copyright (Change Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.junit.jupiter.api.Test;
 
 /** Creation of TucPki018Verifier needs a JAXBContext. */
 class JaxbContextTest {
+
   private static final String TSL_FILEPATH = "TSL_default.xml";
 
   @Test

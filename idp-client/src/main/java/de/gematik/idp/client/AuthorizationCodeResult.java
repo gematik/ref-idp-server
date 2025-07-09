@@ -1,5 +1,5 @@
 /*
- * Copyright (Date see Readme), gematik GmbH
+ * Copyright (Change Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuthorizationCodeResult {
+
   private String authorizationCode;
   private String state;
   private String redirectUri;

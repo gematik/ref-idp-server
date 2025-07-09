@@ -1,5 +1,5 @@
 /*
- * Copyright (Date see Readme), gematik GmbH
+ * Copyright (Change Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 @ExtendWith(PkiKeyResolver.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class EpaClientTest {
+
   private IdpClient idpClient;
   private PkiIdentity smcbIdentity;
   @LocalServerPort private int localServerPort;

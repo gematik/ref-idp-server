@@ -1,5 +1,5 @@
 /*
- * Copyright (Date see Readme), gematik GmbH
+ * Copyright (Change Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 
 class Oauth2ErrorResponseTest {
+
   static final String OAUTH_2_ERROR_CODE_AS_STRING_VALID = "{\"error\":\"invalid_grant\"}";
   static final String OAUTH_2_ERROR_CODE_AS_STRING_WITH_DESCRIPTION =
       "{\"error\":\"invalid_client\",\"error_description\":\"something strange happened\"}";
