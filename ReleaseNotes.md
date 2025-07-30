@@ -1,3 +1,8 @@
+# Release 29.3.2
+
+- renew signer for discovery document
+- update dependencies
+
 # Release 29.3.1
 
 - update file headers
