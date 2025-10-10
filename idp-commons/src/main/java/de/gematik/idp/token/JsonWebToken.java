@@ -103,10 +103,23 @@ public class JsonWebToken extends IdpJoseObject {
    * @return encrypted JWT
    */
   public IdpJwe encryptAsJwt(final JsonWebKey key) {
+    return encryptAsJwt(key, null);
+  }
+
+  /**
+   * @param key encryption key as JSON
+   * @param additionalHeaders additional headers to set in the JWE
+   * @return encrypted JWT
+   */
+  public IdpJwe encryptAsJwt(final JsonWebKey key, final Map<ClaimName, Object> additionalHeaders) {
     final Consumer<JsonWebEncryption> setContentTypeAndKid =
         jwe -> {
           jwe.setHeader(ClaimName.CONTENT_TYPE.getJoseName(), "JWT");
           jwe.setHeader(ClaimName.KEY_ID.getJoseName(), key.getKeyId());
+          if (additionalHeaders != null) {
+            additionalHeaders.forEach(
+                (claimName, value) -> jwe.setHeader(claimName.getJoseName(), value));
+          }
         };
     return IdpJwe.createJweWithPayloadAndHeaders(
         getRawString(), key.getKey(), setContentTypeAndKid);

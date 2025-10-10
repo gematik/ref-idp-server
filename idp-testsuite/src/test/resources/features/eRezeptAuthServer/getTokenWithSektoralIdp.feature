@@ -199,11 +199,11 @@ Feature: Authentisierung mit sektoralem IDP
 
 
   @TCID:IDP_REF_FEDAUTH_005
-    @Approval
-    @OpenBug
-    @GRAS-22
-    @TESTSTUFE:4
-    @TESTFALL:Negativ
+  @Approval
+  @OpenBug
+  @GRAS-22
+  @TESTSTUFE:4
+  @TESTFALL:Negativ
   Scenario Outline: Fed Auth Endpoint - Fehlerhafte Parameter bei GET an Federation Auth Endpoint
 
   ```
@@ -226,11 +226,11 @@ Feature: Authentisierung mit sektoralem IDP
 
 
   @TCID:IDP_REF_FEDAUTH_006
-    @Approval
-    @OpenBug
-    @GRAS-22
-    @TESTSTUFE:4
-    @TESTFALL:Negativ
+  @Approval
+  @OpenBug
+  @GRAS-22
+  @TESTSTUFE:4
+  @TESTFALL:Negativ
   Scenario Outline: Fed Auth Endpoint - Fehlerhafte Parameter bei POST an Federation Auth Endpoint
 
   ```
@@ -266,8 +266,8 @@ Feature: Authentisierung mit sektoralem IDP
 
 
   @TCID:IDP_REF_FEDAUTH_007
-    @Approval
-    @TESTSTUFE:4
+  @Approval
+  @TESTSTUFE:4
   Scenario Outline: Fed Auth Endpoint - Auth Code des eRezept Authservers beim Token Endpoint einreichen (substantial)
 
   ```
@@ -354,5 +354,5 @@ Feature: Authentisierung mit sektoralem IDP
 
     Examples:
       | kvnr       | displyName      | amr     |
-      | O018753329 | Hildur Fürsich  | ["mfa"] |
-      | O018753330 | Substantial Sso | ["mfa"] |
+      | O018753325 | Hildur Fürsich  | ["mfa"] |
+      | O018753337 | Substantial Sso | ["mfa"] |

@@ -7,13 +7,13 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.5.4</version>
+    <version>3.5.6</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-global</artifactId>
-  <version>29.3.2</version>
+  <version>29.3.3</version>
   <packaging>pom</packaging>
   <url>https://github.com/gematik/ref-idp-server</url>
   <description>IDP</description>
@@ -84,16 +84,16 @@
     <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
     <sonar.language>java</sonar.language>
 
-    <version.assertj-core>3.27.3</version.assertj-core>
-    <version.bouncycastle.bcpkix>1.81</version.bouncycastle.bcpkix>
+    <version.assertj-core>3.27.6</version.assertj-core>
+    <version.bouncycastle.bcpkix>1.82</version.bouncycastle.bcpkix>
     <version.commons-io>2.20.0</version.commons-io>
-    <version.commons-lang3>3.18.0</version.commons-lang3>
+    <version.commons-lang3>3.19.0</version.commons-lang3>
     <version.gemLibPki>3.2.0</version.gemLibPki>
-    <version.h2>2.3.232</version.h2>
+    <version.h2>2.4.240</version.h2>
     <version.json>20250517</version.json>
     <version.plexus-utils>3.4.2</version.plexus-utils>
-    <version.rest-assured>5.5.5</version.rest-assured>
-    <version.unirest>4.5.0</version.unirest>
+    <version.rest-assured>5.5.6</version.rest-assured>
+    <version.unirest>4.5.1</version.unirest>
     <version.unirest-objectmapper-jackson>4.2.9</version.unirest-objectmapper-jackson>
 
     <version.build-helper-maven-plugin>3.6.0</version.build-helper-maven-plugin>
@@ -101,30 +101,30 @@
     <version.copy-rename-maven-plugin>1.0.1</version.copy-rename-maven-plugin>
     <version.jacoco-maven-plugin>0.8.13</version.jacoco-maven-plugin>
     <version.jakarta.ws.rs-api>4.0.0</version.jakarta.ws.rs-api>
-    <version.log4j2>2.25.1</version.log4j2>
+    <version.log4j2>2.25.2</version.log4j2>
     <version.maven>3.8.6</version.maven>
     <version.maven-clean-plugin>3.5.0</version.maven-clean-plugin>
-    <version.maven-compiler-plugin>3.14.0</version.maven-compiler-plugin>
+    <version.maven-compiler-plugin>3.14.1</version.maven-compiler-plugin>
     <!-- Overwrite Version from Parent -->
     <maven-deploy-plugin.version>3.1.4</maven-deploy-plugin.version>
-    <version.maven-enforcer-plugin>3.6.1</version.maven-enforcer-plugin>
-    <version.maven-failsafe-plugin>3.5.3</version.maven-failsafe-plugin>
+    <version.maven-enforcer-plugin>3.6.2</version.maven-enforcer-plugin>
+    <version.maven-failsafe-plugin>3.5.4</version.maven-failsafe-plugin>
     <version.maven-gpg-plugin>3.2.8</version.maven-gpg-plugin>
     <version.maven-jar-plugin>3.4.1</version.maven-jar-plugin>
-    <version.maven-javadoc-plugin>3.11.2</version.maven-javadoc-plugin>
+    <version.maven-javadoc-plugin>3.12.0</version.maven-javadoc-plugin>
     <version.maven-project-info-reports-plugin>3.9.0</version.maven-project-info-reports-plugin>
     <!-- only needed for mvn site to avoid stack traces flooding the console -->
     <version.maven-resources-plugin>3.3.1</version.maven-resources-plugin>
     <version.maven-site-plugin>3.21.0</version.maven-site-plugin>
     <!-- settings for upload to sonar server -->
     <version.maven-source-plugin>3.3.1</version.maven-source-plugin>
-    <version.maven-surefire-plugin>3.5.3</version.maven-surefire-plugin>
-    <version.central-publishing-maven-plugin>0.8.0</version.central-publishing-maven-plugin>
+    <version.maven-surefire-plugin>3.5.4</version.maven-surefire-plugin>
+    <version.central-publishing-maven-plugin>0.9.0</version.central-publishing-maven-plugin>
     <version.slf4j-api>2.0.17</version.slf4j-api>
-    <version.sonar-maven-plugin>5.1.0.4751</version.sonar-maven-plugin>
-    <version.spotless-maven-plugin>2.46.1</version.spotless-maven-plugin>
+    <version.sonar-maven-plugin>5.2.0.4988</version.sonar-maven-plugin>
+    <version.spotless-maven-plugin>3.0.0</version.spotless-maven-plugin>
     <version.spotless.google-java-format>1.17.0</version.spotless.google-java-format>
-    <version.spring-boot-maven-plugin>3.5.4</version.spring-boot-maven-plugin>
+    <version.spring-boot-maven-plugin>3.5.6</version.spring-boot-maven-plugin>
     <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
   </properties>
 
@@ -170,7 +170,7 @@
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter</artifactId>
-        <version>3.5.4</version>
+        <version>3.5.6</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework.boot</groupId>
@@ -374,11 +374,19 @@
             </excludes>
           </markdown>
         </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>apply</goal>
+            </goals>
+            <phase>compile</phase>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>license-maven-plugin</artifactId>
-        <version>2.6.0</version>
+        <version>2.7.0</version>
         <executions>
           <execution>
             <goals>

@@ -22,6 +22,7 @@ package de.gematik.idp.token;
 
 import static de.gematik.idp.field.ClaimName.CONFIRMATION;
 import static de.gematik.idp.field.ClaimName.CONTENT_TYPE;
+import static de.gematik.idp.field.ClaimName.DEVICE_OS_VERSION;
 import static de.gematik.idp.field.ClaimName.ENCRYPTION_ALGORITHM;
 import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
 import static de.gematik.idp.field.ClaimName.NESTED_JWT;
@@ -274,10 +275,12 @@ class JsonWebTokenTest {
         idpJwtProcessor.buildJwt(
             new JwtBuilder().addAllBodyClaims(Map.of(CONFIRMATION.getJoseName(), "foobarschmar")));
 
-    final IdpJwe idpJwe = jsonWebToken.encryptAsJwt(jwk);
+    final IdpJwe idpJwe = jsonWebToken.encryptAsJwt(jwk, Map.of(DEVICE_OS_VERSION, "1.0.0"));
 
     assertThat(idpJwe.getHeaderClaims().keySet()).contains("kid", "cty");
     assertThat(idpJwe.getHeaderClaim(CONTENT_TYPE)).contains("JWT");
+    // check added custom header
+    assertThat(idpJwe.getHeaderClaim(DEVICE_OS_VERSION)).contains("1.0.0");
   }
 
   @SneakyThrows

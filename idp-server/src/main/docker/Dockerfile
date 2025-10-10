@@ -6,7 +6,7 @@ ARG VERSION
 LABEL de.gematik.vendor="gematik GmbH" \
       maintainer="software-development@gematik.de" \
       de.gematik.app="IDP Referenzimplementierung" \
-      de.gematik.git-repo-name="https://gitlab.prod.ccs.gematik.solutions/git/idp/idp-global.git" \
+      de.gematik.git-repo-name="https://gitlab.prod.ccs.gematik.solutions/idm/idp-global.git" \
       de.gematik.commit-sha=$COMMIT_HASH \
       de.gematik.version=$VERSION
 

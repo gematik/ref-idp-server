@@ -28,9 +28,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PairingRepository extends JpaRepository<PairingData, Long> {
 
-  long deleteByIdNumber(String idNumber);
+  Long deleteByIdNumber(String idNumber);
 
-  long deleteByIdNumberAndKeyIdentifier(String idNumber, String keyIdentifier);
+  Long deleteByIdNumberAndKeyIdentifier(String idNumber, String keyIdentifier);
 
   List<PairingData> findByIdNumber(String idNumber);
 

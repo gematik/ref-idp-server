@@ -1,3 +1,9 @@
+# Release 29.3.3
+
+- add custom encryption header claims to JWE
+- fix KVNRs in testsuite
+- update dependencies
+
 # Release 29.3.2
 
 - renew signer for discovery document

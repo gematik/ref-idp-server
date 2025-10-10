@@ -6,28 +6,28 @@
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-testsuite</artifactId>
-  <version>29.3.2</version>
+  <version>29.3.3</version>
   <packaging>jar</packaging>
 
   <properties>
     <idp-server.spring.profile>idp</idp-server.spring.profile>
     <sektoral-idp.spring.profile>sektoralIdp</sektoral-idp.spring.profile>
     <version.build-helper-maven-plugin>3.6.1</version.build-helper-maven-plugin>
-    <version.commons-lang3>3.18.0</version.commons-lang3>
-    <version.maven-compiler-plugin>3.14.0</version.maven-compiler-plugin>
+    <version.commons-lang3>3.19.0</version.commons-lang3>
+    <version.maven-compiler-plugin>3.14.1</version.maven-compiler-plugin>
     <version.copy-rename-maven-plugin>1.0.1</version.copy-rename-maven-plugin>
     <java.version>21</java.version>
     <version.json>20250517</version.json>
     <version.maven-clean-plugin>3.4.0</version.maven-clean-plugin>
-    <version.maven-failsafe-plugin>3.5.3</version.maven-failsafe-plugin>
+    <version.maven-failsafe-plugin>3.5.4</version.maven-failsafe-plugin>
     <version.maven-jar-plugin>3.4.2</version.maven-jar-plugin>
-    <version.maven-javadoc-plugin>3.11.2</version.maven-javadoc-plugin>
+    <version.maven-javadoc-plugin>3.12.0</version.maven-javadoc-plugin>
     <version.maven-resources-plugin>3.3.1</version.maven-resources-plugin>
     <version.maven-source-plugin>3.3.1</version.maven-source-plugin>
-    <version.maven-surefire-plugin>3.5.3</version.maven-surefire-plugin>
-    <version.rest-assured>5.5.5</version.rest-assured>
+    <version.maven-surefire-plugin>3.5.4</version.maven-surefire-plugin>
+    <version.rest-assured>5.5.6</version.rest-assured>
     <version.slf4j-api>2.0.17</version.slf4j-api>
-    <version.tiger>4.0.8</version.tiger>
+    <version.tiger>4.0.9</version.tiger>
   </properties>
 
   <dependencyManagement>
@@ -35,7 +35,7 @@
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>1.5.18</version>
+        <version>1.5.19</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -88,7 +88,7 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.18.38</version>
+      <version>1.18.42</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -183,7 +183,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-failsafe-plugin</artifactId>
-          <version>3.5.3</version>
+          <version>3.5.4</version>
           <configuration>
             <includes>
               <include>**/Driver*.java</include>
@@ -357,7 +357,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.5.1</version>
+        <version>3.6.1</version>
         <executions>
           <execution>
             <id>check-file-existence</id>
@@ -406,7 +406,7 @@
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
-        <version>2.46.1</version>
+        <version>3.0.0</version>
         <configuration>
           <formats>
             <!-- you can define as many formats as you want, each is independent -->
