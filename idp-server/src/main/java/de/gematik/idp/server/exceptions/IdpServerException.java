@@ -98,8 +98,13 @@ public class IdpServerException extends ResponseStatusException {
   }
 
   private static HttpStatus mapToStatus(final IdpErrorResponse errorResponse) {
-    if (errorResponse.getHttpStatusCode() > 100 && errorResponse.getHttpStatusCode() < 600) {
-      return HttpStatus.valueOf(errorResponse.getHttpStatusCode());
+    if (errorResponse == null) {
+      return HttpStatus.BAD_REQUEST;
+    }
+
+    final Integer statusCode = errorResponse.getHttpStatusCode();
+    if (statusCode != null && statusCode > 100 && statusCode < 600) {
+      return HttpStatus.valueOf(statusCode);
     } else {
       return HttpStatus.BAD_REQUEST;
     }

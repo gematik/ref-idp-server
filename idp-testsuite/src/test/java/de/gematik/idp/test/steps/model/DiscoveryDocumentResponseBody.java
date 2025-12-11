@@ -34,7 +34,6 @@ import io.restassured.path.xml.config.XmlPathConfig;
 import io.restassured.response.ResponseBody;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
@@ -58,7 +57,7 @@ public class DiscoveryDocumentResponseBody implements ResponseBody {
   @SneakyThrows
   public DiscoveryDocumentResponseBody(
       final File templateBody, final File templateHeader, final File privateKey)
-      throws IOException, JSONException {
+      throws JSONException {
     jsonBody =
         new JSONObject(IOUtils.toString(new FileReader(templateBody, StandardCharsets.UTF_8)));
 

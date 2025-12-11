@@ -46,7 +46,6 @@ import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.junit.jupiter.api.BeforeEach;
@@ -122,7 +121,7 @@ class AuthenticationResponseBuilderTest {
   }
 
   @Test
-  void verifyResponseIsSignedByClientIdentity() throws InvalidJwtException {
+  void verifyResponseIsSignedByClientIdentity() {
     final AuthenticationResponse authenticationResponse =
         authenticationResponseBuilder.buildResponseForChallenge(challenge, clientIdentity);
     assertDoesNotThrow(

@@ -38,7 +38,6 @@ import org.assertj.core.api.Assertions;
 import org.jose4j.json.JsonUtil;
 import org.jose4j.jwe.JsonWebEncryption;
 import org.jose4j.jws.JsonWebSignature;
-import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.jose4j.jwx.Headers;
 import org.jose4j.lang.JoseException;
@@ -83,7 +82,7 @@ public class ClaimsStepHelper {
 
   @Step
   public void extractClaimsFromToken(final ClaimLocation cType, final String token)
-      throws JoseException, InvalidJwtException, JSONException {
+      throws JoseException, JSONException {
     if (Set.of(
             ContextKey.ACCESS_TOKEN_ENCRYPTED,
             ContextKey.ID_TOKEN_ENCRYPTED,
@@ -146,7 +145,7 @@ public class ClaimsStepHelper {
   }
 
   @SneakyThrows
-  public JSONObject getClaims(final String jwt) throws InvalidJwtException {
+  public JSONObject getClaims(final String jwt) {
     final JwtConsumerBuilder jwtConsBuilder =
         new JwtConsumerBuilder().setSkipDefaultAudienceValidation().setSkipSignatureVerification();
     return new JSONObject(
@@ -155,7 +154,7 @@ public class ClaimsStepHelper {
 
   protected void extractClaimsFromString(
       final ClaimLocation cType, final String tokenAsCompactSerialization, final boolean jwe)
-      throws InvalidJwtException, JSONException, JoseException {
+      throws JSONException, JoseException {
     if (cType == ClaimLocation.body) {
       Context.get().put(ContextKey.CLAIMS, getClaims(tokenAsCompactSerialization));
       SerenityReportUtils.addCustomData(

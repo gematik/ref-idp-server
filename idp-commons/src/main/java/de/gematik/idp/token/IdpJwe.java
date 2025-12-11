@@ -23,15 +23,8 @@ package de.gematik.idp.token;
 import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
 import static de.gematik.idp.field.ClaimName.NESTED_JWT;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.field.ClaimName;
-import de.gematik.idp.token.IdpJwe.Deserializer;
-import java.io.IOException;
 import java.security.Key;
 import java.security.PublicKey;
 import java.time.ZonedDateTime;
@@ -49,12 +42,15 @@ import org.jose4j.jwe.ContentEncryptionAlgorithmIdentifiers;
 import org.jose4j.jwe.JsonWebEncryption;
 import org.jose4j.jwe.KeyManagementAlgorithmIdentifiers;
 import org.jose4j.lang.JoseException;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 @EqualsAndHashCode
 @Getter
 @Setter
 @JsonSerialize(using = IdpJoseObject.Serializer.class)
-@JsonDeserialize(using = Deserializer.class)
+@JsonDeserialize(using = ValueDeserializer.class)
 public class IdpJwe extends IdpJoseObject {
 
   private Key decryptionKey;
@@ -179,15 +175,6 @@ public class IdpJwe extends IdpJoseObject {
       return JsonUtil.parseJson(decryptJweAndReturnPayloadString(decryptionKey));
     } catch (final JoseException e) {
       throw new IdpJoseException("Exception occurred during body-claim extraction", e);
-    }
-  }
-
-  public static class Deserializer extends JsonDeserializer<IdpJoseObject> {
-
-    @Override
-    public IdpJoseObject deserialize(final JsonParser p, final DeserializationContext ctxt)
-        throws IOException {
-      return new IdpJwe(ctxt.readValue(p, String.class));
     }
   }
 }

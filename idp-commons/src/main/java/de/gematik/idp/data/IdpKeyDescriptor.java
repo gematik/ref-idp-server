@@ -25,8 +25,6 @@ import static de.gematik.idp.crypto.KeyAnalysis.isEcKey;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import de.gematik.idp.exceptions.IdpJoseException;
 import java.security.PublicKey;
@@ -41,6 +39,8 @@ import lombok.Setter;
 import org.jose4j.json.internal.json_simple.JSONAware;
 import org.jose4j.jwk.EllipticCurveJsonWebKey;
 import org.jose4j.jwk.RsaJsonWebKey;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 @Getter
 @Setter
@@ -109,10 +109,13 @@ public class IdpKeyDescriptor implements JSONAware {
   @Override
   public String toJSONString() {
     try {
-      final ObjectMapper objectMapper = new ObjectMapper();
-      objectMapper.setSerializationInclusion(Include.NON_NULL);
-      return objectMapper.writeValueAsString(this);
-    } catch (final JsonProcessingException e) {
+      final JsonMapper jsonMapper =
+          JsonMapper.builder()
+              .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(Include.NON_NULL))
+              .build();
+
+      return jsonMapper.writeValueAsString(this);
+    } catch (final JacksonException e) {
       throw new IdpJoseException("Error during Claim serialization", e);
     }
   }

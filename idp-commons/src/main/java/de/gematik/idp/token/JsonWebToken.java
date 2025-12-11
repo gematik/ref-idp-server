@@ -20,17 +20,11 @@
 
 package de.gematik.idp.token;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.exceptions.IdpJwtExpiredException;
 import de.gematik.idp.exceptions.IdpJwtSignatureInvalidException;
 import de.gematik.idp.field.ClaimName;
-import java.io.IOException;
 import java.security.Key;
 import java.security.PublicKey;
 import java.time.ZonedDateTime;
@@ -45,6 +39,12 @@ import org.jose4j.jwt.consumer.ErrorCodes;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 @Getter
 @EqualsAndHashCode
@@ -148,11 +148,11 @@ public class JsonWebToken extends IdpJoseObject {
     return TokenClaimExtraction.extractClaimsFromJwtBody(getRawString());
   }
 
-  public static class Deserializer extends JsonDeserializer<IdpJoseObject> {
+  public static class Deserializer extends ValueDeserializer<IdpJoseObject> {
 
     @Override
     public IdpJoseObject deserialize(final JsonParser p, final DeserializationContext ctxt)
-        throws IOException {
+        throws JacksonException {
       return new JsonWebToken(ctxt.readValue(p, String.class));
     }
   }

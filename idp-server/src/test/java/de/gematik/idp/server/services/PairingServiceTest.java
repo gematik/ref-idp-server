@@ -21,16 +21,24 @@
 package de.gematik.idp.server.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
+import de.gematik.idp.server.exceptions.oauth2spec.IdpServerInvalidRequestException;
 import de.gematik.idp.server.pairing.PairingData;
 import de.gematik.idp.tests.PkiKeyResolver;
+import de.gematik.idp.token.IdpJwe;
 import java.time.ZonedDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -70,5 +78,25 @@ class PairingServiceTest {
         .signedPairingData("bla")
         .timestampPairing(ZonedDateTime.now())
         .build();
+  }
+
+  @TestConfiguration
+  static class TestConfig {
+
+    @Bean
+    public IdpJwe idpJwe() {
+      return Mockito.mock(IdpJwe.class);
+    }
+  }
+
+  @Autowired private IdpJwe jwe; // from TestConfig above
+
+  @Test
+  void validatePairingData_JacksonFailsToDeserialize() {
+    when(jwe.decryptJweAndReturnPayloadString(any())).thenReturn("{ invalid json }");
+
+    assertThatThrownBy(() -> pairingService.validatePairingData(null, jwe))
+        .isInstanceOf(IdpServerInvalidRequestException.class)
+        .hasMessage("Invalid Registration Data");
   }
 }

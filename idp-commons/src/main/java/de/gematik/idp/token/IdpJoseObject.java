@@ -26,12 +26,8 @@ import static de.gematik.idp.field.ClaimName.ISSUED_AT;
 import static de.gematik.idp.field.ClaimName.SCOPE;
 import static de.gematik.idp.field.ClaimName.X509_CERTIFICATE_CHAIN;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
 import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.field.ClaimName;
-import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -45,6 +41,10 @@ import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
 
 @RequiredArgsConstructor
 public abstract class IdpJoseObject {
@@ -173,8 +173,6 @@ public abstract class IdpJoseObject {
 
   public Optional<JsonWebToken> getNestedJwtForClaimName(final ClaimName claimName) {
     return getStringBodyClaim(claimName)
-        .filter(String.class::isInstance)
-        .map(String.class::cast)
         .filter(org.apache.commons.lang3.StringUtils::isNotBlank)
         .map(JsonWebToken::new);
   }
@@ -183,12 +181,12 @@ public abstract class IdpJoseObject {
     return rawString;
   }
 
-  public static class Serializer extends JsonSerializer<IdpJoseObject> {
+  public static class Serializer extends ValueSerializer<IdpJoseObject> {
 
     @Override
     public void serialize(
-        final IdpJoseObject value, final JsonGenerator gen, final SerializerProvider serializers)
-        throws IOException {
+        final IdpJoseObject value, final JsonGenerator gen, final SerializationContext ctxt)
+        throws JacksonException {
       gen.writeString(value.getRawString());
     }
   }

@@ -1,0 +1,17 @@
+clientid: eRezeptApp
+
+redirectUri: https://redirect.testsuite.gsi
+
+scope: urn:telematik:display_name urn:telematik:versicherter openid
+
+idpIss: https://idp-ref.app.ti-dienste.de
+
+codeVerifier: drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj
+
+codeChallenge: Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg
+
+tokenKey: TWxxDLL6pLEWvmJJcYEo-aCEmcPPoImh7Jc02q3UeoQ
+
+keyVerifier: eyJhbGciOiJFQ0RILUVTIiwiY3R5IjoiTkpXVCIsImVuYyI6IkEyNTZHQ00iLCJlcGsiOnsia3R5IjoiRUMiLCJ4IjoiZk43TVRSUkJkLU54Y3B0aFZCR0lVUE1VZklKNTRCbXR3bXVtLXhJUlVUayIsInkiOiJWWENZRkY3aEV4OTlsczBSLXhvVnI0LVlRcmZrbEJoZ2dleGdTU1BOd3NvIiwiY3J2IjoiQlAtMjU2In19..f943ujXVX3B5pWcV.MaYG9H-DMN5HU86xgX-0ZGDMEVLsRSksZx42rLfQA66tQlhQd3UqdQ_L6UNbTZLrC4BE9IqK7Oj97kFezCcDnfPcRxa9Uu_ELx3zR3N27KLqlE0HH_wZ6br4Bq4RudFQmwAcFIJ1-HAulxeldKpbXPVMKGnzKktdAIWtyS_yoHP_kQEyVPzfUo92U-t4uMZRaWuFR0E5HbyFK4D9GS7jJw.04VQ_4vQkD8bMNZRZMQBTg
+
+sekIdpIss: https://gsi-ref.dev.gematik.solutions

@@ -81,16 +81,12 @@ public class HttpStatus {
 
   @Override
   public String toString() {
-    switch (value) {
-      case -1:
-        return "HTTP STATUS NO CHECK";
-      case -2:
-        return "HTTP STATUS SUCCESS";
-      case -3:
-        return "HTTP STATUS FAIL";
-      default:
-        return "HTTP STATUS CODE " + value;
-    }
+    return switch (value) {
+      case -1 -> "HTTP STATUS NO CHECK";
+      case -2 -> "HTTP STATUS SUCCESS";
+      case -3 -> "HTTP STATUS FAIL";
+      default -> "HTTP STATUS CODE " + value;
+    };
   }
 
   @SuppressWarnings("unused")

@@ -35,7 +35,6 @@ import io.restassured.response.Response;
 import io.restassured.response.ResponseBody;
 import io.restassured.response.ValidatableResponse;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -48,7 +47,7 @@ public class DiscoveryDocumentResponse implements Response {
 
   public DiscoveryDocumentResponse(
       final File templateBody, final File templateHeader, final File privateKey)
-      throws IOException, JSONException {
+      throws JSONException {
     body = new DiscoveryDocumentResponseBody(templateBody, templateHeader, privateKey);
   }
 

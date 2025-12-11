@@ -23,13 +23,15 @@ package de.gematik.idp.data;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import com.fasterxml.jackson.databind.exc.PropertyBindingException;
 import java.util.HashMap;
 import java.util.List;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.exc.InvalidFormatException;
+import tools.jackson.databind.exc.PropertyBindingException;
+import tools.jackson.databind.json.JsonMapper;
 
 class Oauth2ErrorResponseTest {
 
@@ -40,6 +42,8 @@ class Oauth2ErrorResponseTest {
   static final String OAUTH_2_ERROR_CODE_AS_STRING_INVALID_PARAM =
       "{\"timestamp\":\"2023-02-16T11:26:09.900+00:00\",\"status\":\"400\",\"error\":\"Bad"
           + " Request\",\"path\":\"/auth\"}";
+  static final String OAUTH_2_ERROR_CODE_AS_STRING_UNKNOWN_PROPERTY =
+      "{\"error\":\"invalid_grant\",\"unknown_field\":\"some_value\"}";
 
   @SneakyThrows
   @Test
@@ -53,20 +57,29 @@ class Oauth2ErrorResponseTest {
     }
   }
 
-  @SneakyThrows
   @Test
   void constructFromStringInvalid() {
     assertThatThrownBy(
             () ->
-                new ObjectMapper()
+                JsonMapper.builder()
+                    .build()
                     .readValue(
                         OAUTH_2_ERROR_CODE_AS_STRING_INVALID_LETTER, Oauth2ErrorResponse.class))
         .isInstanceOf(InvalidFormatException.class);
     assertThatThrownBy(
             () ->
-                new ObjectMapper()
+                JsonMapper.builder()
+                    .build()
                     .readValue(
                         OAUTH_2_ERROR_CODE_AS_STRING_INVALID_PARAM, Oauth2ErrorResponse.class))
+        .isInstanceOf(InvalidFormatException.class);
+    assertThatThrownBy(
+            () ->
+                JsonMapper.builder()
+                    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true)
+                    .build()
+                    .readValue(
+                        OAUTH_2_ERROR_CODE_AS_STRING_UNKNOWN_PROPERTY, Oauth2ErrorResponse.class))
         .isInstanceOf(PropertyBindingException.class);
   }
 

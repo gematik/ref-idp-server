@@ -127,7 +127,7 @@ Feature: eRezept Entity Statement Endpoint
             ____jwks:                                     "${json-unit.ignore}",
             ____signed_jwks_uri:                          'http.*',
             organization_name:                            '.*',
-            client_name:                                  'E-Rezept Fachdienst',
+            client_name:                                  'E-Rezept App',
             redirect_uris:                                "${json-unit.ignore}",
             response_types:                               ["code"],
             client_registration_types:                    ["automatic"],

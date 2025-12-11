@@ -1,0 +1,28 @@
+ports:
+  idp: 443
+
+tigerProxy:
+  adminPort: ${free.port.201}
+  proxyPort: ${free.port.200}
+  forwardToProxy:
+    hostname: 192.168.110.10
+    port: 3128
+    type: http
+
+lib:
+  activateWorkflowUI: false
+  rbelPathDebugging: false
+
+additionalConfigurationFiles:
+  - filename: tc_properties-rise-ru.yaml
+    baseKey: fed
+
+servers:
+  idp:
+    type: externalUrl
+    healthcheckUrl: NONE
+    startupTimeoutSec: 1
+    active: true
+    source:
+      - https://idp-ref.app.ti-dienste.de:${tiger.ports.idp}
+

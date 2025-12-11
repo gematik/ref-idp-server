@@ -135,23 +135,29 @@ public class JsonChecker {
                 assertThat(jsoValue)
                     .withFailMessage(
                         String.format(
-                            "JSON object does not match at key '%s'\n"
-                                + "Expected:\n"
-                                + "%s\n\n"
-                                + "--------\n\n"
-                                + "Received:\n"
-                                + "%s",
+                            """
+                                JSON object does not match at key '%s'
+                                Expected:
+                                %s
+
+                                --------
+
+                                Received:
+                                %s""",
                             oracleKey, oracleValue, jsoValue))
                     .matches(oracleValue);
               } catch (final Exception ex) {
                 Assertions.fail(
                     String.format(
-                        "JSON object does differ at key '%s'\n"
-                            + "Expected:\n"
-                            + "%s\n\n"
-                            + "--------\n\n"
-                            + "Received:\n"
-                            + "%s",
+                        """
+                            JSON object does differ at key '%s'
+                            Expected:
+                            %s
+
+                            --------
+
+                            Received:
+                            %s""",
                         oracleKey, oracleValue, jsoValue));
               }
             }
@@ -241,12 +247,15 @@ public class JsonChecker {
       assertThat(jsoValue)
           .withFailMessage(
               String.format(
-                  "JSON object does not match at key '%s'\n"
-                      + "Expected:\n"
-                      + "%s\n\n"
-                      + "--------\n\n"
-                      + "Received:\n"
-                      + "%s",
+                  """
+                      JSON object does not match at key '%s'
+                      Expected:
+                      %s
+
+                      --------
+
+                      Received:
+                      %s""",
                   claimName, regex, jsoValue))
           .matches(regex);
     }

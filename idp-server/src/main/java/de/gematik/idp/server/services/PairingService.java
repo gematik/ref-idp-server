@@ -30,8 +30,6 @@ import static de.gematik.idp.field.ClaimName.DEVICE_PRODUCT;
 import static de.gematik.idp.field.ClaimName.KEY_IDENTIFIER;
 import static de.gematik.idp.field.ClaimName.SE_SUBJECT_PUBLIC_KEY_INFO;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
 import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.crypto.X509ClaimExtraction;
@@ -61,6 +59,8 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 @Service
 @RequiredArgsConstructor
@@ -159,14 +159,13 @@ public class PairingService {
     return convertToDto(insertPairing(data));
   }
 
-  private RegistrationData decryptAndValidateRegistrationData(
-      final IdpJwe encryptedRegistrationData) {
+  RegistrationData decryptAndValidateRegistrationData(final IdpJwe encryptedRegistrationData) {
     try {
       final String payload =
           encryptedRegistrationData.decryptJweAndReturnPayloadString(
               idpEnc.getIdentity().getPrivateKey());
       final RegistrationData registrationData =
-          new ObjectMapper().readValue(payload, RegistrationData.class);
+          JsonMapper.builder().build().readValue(payload, RegistrationData.class);
       final Set<ConstraintViolation<RegistrationData>> validationViolations =
           validator.validate(registrationData);
       if (!validationViolations.isEmpty()) {
@@ -179,7 +178,7 @@ public class PairingService {
       dataVersionService.checkDataVersion(registrationData);
 
       return registrationData;
-    } catch (final JsonProcessingException e) {
+    } catch (final JacksonException e) {
       throw new IdpServerInvalidRequestException("Invalid Registration Data", e);
     }
   }

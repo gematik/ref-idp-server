@@ -37,8 +37,6 @@ import static de.gematik.idp.field.ClaimName.TYPE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.crypto.X509ClaimExtraction;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.exceptions.IdpJoseException;
@@ -51,7 +49,6 @@ import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.tests.PkiKeyResolver.Filename;
 import de.gematik.idp.token.JsonWebToken;
 import jakarta.transaction.Transactional;
-import java.security.cert.CertificateEncodingException;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import lombok.SneakyThrows;
@@ -63,6 +60,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest
 @ExtendWith(PkiKeyResolver.class)
@@ -94,7 +93,7 @@ class ChallengeTokenValidationServiceTest {
   }
 
   @Test
-  void validateValidPairingChallenge() throws CertificateEncodingException {
+  void validateValidPairingChallenge() {
     createPairingDataEntry();
     challengeTokenValidationService.validateChallengeToken(
         createSignedAuthenticationData(altIdentity, new String[] {"mfa", "hwk", "face"}));
@@ -139,7 +138,9 @@ class ChallengeTokenValidationServiceTest {
             .withoutPadding()
             .encodeToString(authModuleIdentity.getCertificate().getEncoded()));
     final Map<String, Object> devInfoMap =
-        new ObjectMapper().readValue(createDeviceInformation().toJson(), new TypeReference<>() {});
+        JsonMapper.builder()
+            .build()
+            .readValue(createDeviceInformation().toJson(), new TypeReference<>() {});
     authDataClaims.setClaim(DEVICE_INFORMATION.getJoseName(), devInfoMap);
     authDataClaims.setClaim(AUTHENTICATION_DATA_VERSION.getJoseName(), "1.0");
 

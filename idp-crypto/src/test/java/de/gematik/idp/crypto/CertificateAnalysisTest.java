@@ -25,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import org.apache.commons.io.FileUtils;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -37,7 +36,7 @@ class CertificateAnalysisTest {
       "src/test/resources/109500969_X114428530-2_c.ch.aut-ecc.p12";
 
   @Test
-  void testPolicyExtensionForEgk() throws IOException, CertificateEncodingException {
+  void testPolicyExtensionForEgk() throws IOException {
     final X509Certificate certificate = certificateDataFrom(EGK_FILE);
     assertThat(
             doesCertificateContainPolicyExtensionOid(

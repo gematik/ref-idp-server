@@ -165,7 +165,7 @@ public class FlowBeanCreation {
             .idpSek2(true)
             .idpLogo(
                 "https://raw.githubusercontent.com/gematik/zero-lab/main/static/images/GID_App_light_mode.svg")
-            .idpPkv(true)
+            .idpPkv(false)
             .build());
     theFederationIdpList.add(
         FedIdpListEntry.builder()

@@ -41,7 +41,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -136,7 +135,6 @@ public class IdpServerExceptionHandler {
       final UriBuilder uriBuilder, final IdpServerException exc) {
     try {
       Optional.ofNullable(exc)
-          .filter(Objects::nonNull)
           .map(IdpServerException::getMessage)
           .filter(org.apache.commons.lang3.StringUtils::isNotEmpty)
           .map(str -> str.substring(0, Math.min(str.length(), MAX_HEADER_SIZE)))
@@ -150,7 +148,6 @@ public class IdpServerExceptionHandler {
   private void addStateIfAvailable(final UriBuilder uriBuilder, final WebRequest request) {
     try {
       Optional.ofNullable(request.getParameter("signed_challenge"))
-          .filter(Objects::nonNull)
           .map(IdpJwe::new)
           .map(jwe -> jwe.decryptNestedJwt(idpEnc.getIdentity().getPrivateKey()))
           .flatMap(jwt -> jwt.getStringBodyClaim(ClaimName.NESTED_JWT))
@@ -300,14 +297,17 @@ public class IdpServerExceptionHandler {
       return idpConfiguration.getErrors().getGenericErrorMap().get(parameterName);
     }
 
-    if (idpConfiguration.getErrors().getGenericErrorMap().get(parameterName).getHttpStatusCode()
-        == HttpStatus.FOUND.value()) {
+    final IdpErrorResponse errorResponse =
+        idpConfiguration.getErrors().getGenericErrorMap().get(parameterName);
+    if (errorResponse != null
+        && errorResponse.getHttpStatusCode() != null
+        && errorResponse.getHttpStatusCode() == HttpStatus.FOUND.value()) {
       // invalid case, client_id and/or redirect_uri not present but response as 302 -
       // IdpErrorResponse not possible
       return null;
     } else {
       // positive case, client_id and/or redirect_uri not validated because response not as 302
-      return idpConfiguration.getErrors().getGenericErrorMap().get(parameterName);
+      return errorResponse;
     }
   }
 

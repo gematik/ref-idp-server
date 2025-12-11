@@ -43,8 +43,8 @@ Feature: Authentisierung mit sektoralem IDP
 
     Given TGR clear recorded messages
     When TGR sende eine GET Anfrage an "${fedAuthEndpoint}" mit folgenden Daten:
-      | client_id  | state       | redirect_uri                        | code_challenge                              | code_challenge_method | response_type | nonce | scope           | idp_iss                           |
-      | eRezeptApp | xxxstatexxx | https://redirect.gematik.de/erezept | ds7JaEfpdLidWekR52OhoVpjXHDlplLyV3GtUezxfY0 | S256                  | code          | 1234  | openid e-rezept | https://gsi.dev.gematik.solutions |
+      | client_id  | state       | redirect_uri                        | code_challenge                              | code_challenge_method | response_type | nonce | scope           | idp_iss          |
+      | eRezeptApp | xxxstatexxx | https://redirect.gematik.de/erezept | ds7JaEfpdLidWekR52OhoVpjXHDlplLyV3GtUezxfY0 | S256                  | code          | 1234  | openid e-rezept | ${fed.sekIdpIss} |
     And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "302"
     And TGR current response with attribute "$.header.Location.request_uri.value" matches "urn.*"
@@ -61,8 +61,8 @@ Feature: Authentisierung mit sektoralem IDP
 
     Given TGR clear recorded messages
     And TGR sende eine GET Anfrage an "${fedAuthEndpoint}" mit folgenden Daten:
-      | client_id  | state       | redirect_uri                        | code_challenge                              | code_challenge_method | response_type | nonce | scope           | idp_iss                           |
-      | eRezeptApp | xxxstatexxx | https://redirect.gematik.de/erezept | ds7JaEfpdLidWekR52OhoVpjXHDlplLyV3GtUezxfY0 | S256                  | code          | 1234  | openid e-rezept | https://gsi.dev.gematik.solutions |
+      | client_id  | state       | redirect_uri                        | code_challenge                              | code_challenge_method | response_type | nonce | scope           | idp_iss          |
+      | eRezeptApp | xxxstatexxx | https://redirect.gematik.de/erezept | ds7JaEfpdLidWekR52OhoVpjXHDlplLyV3GtUezxfY0 | S256                  | code          | 1234  | openid e-rezept | ${fed.sekIdpIss} |
     And TGR find first request to path ".*"
     And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$.header.Location.request_uri.value')}"
     And TGR set local variable "gsiAuthEndpoint" to "!{rbel:currentResponseAsString('$.header.Location.basicPath')}"
@@ -88,8 +88,8 @@ Feature: Authentisierung mit sektoralem IDP
 
     Given TGR clear recorded messages
     And TGR sende eine GET Anfrage an "${fedAuthEndpoint}" mit folgenden Daten:
-      | client_id  | state       | redirect_uri                        | code_challenge                              | code_challenge_method | response_type | nonce | scope           | idp_iss                           |
-      | eRezeptApp | xxxstatexxx | https://redirect.gematik.de/erezept | ds7JaEfpdLidWekR52OhoVpjXHDlplLyV3GtUezxfY0 | S256                  | code          | 1234  | openid e-rezept | https://gsi.dev.gematik.solutions |
+      | client_id  | state       | redirect_uri                        | code_challenge                              | code_challenge_method | response_type | nonce | scope           | idp_iss          |
+      | eRezeptApp | xxxstatexxx | https://redirect.gematik.de/erezept | ds7JaEfpdLidWekR52OhoVpjXHDlplLyV3GtUezxfY0 | S256                  | code          | 1234  | openid e-rezept | ${fed.sekIdpIss} |
     And TGR find first request to path ".*"
     And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$.header.Location.request_uri.value')}"
     And TGR set local variable "gsiAuthEndpoint" to "!{rbel:currentResponseAsString('$.header.Location.basicPath')}"
@@ -124,8 +124,8 @@ Feature: Authentisierung mit sektoralem IDP
 
     Given TGR clear recorded messages
     And TGR sende eine GET Anfrage an "${fedAuthEndpoint}" mit folgenden Daten:
-      | client_id  | state       | redirect_uri                        | code_challenge                              | code_challenge_method | response_type | nonce | scope           | idp_iss                           |
-      | eRezeptApp | xxxstatexxx | https://redirect.gematik.de/erezept | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | code          | 1234  | openid e-rezept | https://gsi.dev.gematik.solutions |
+      | client_id  | state       | redirect_uri                        | code_challenge                              | code_challenge_method | response_type | nonce | scope           | idp_iss          |
+      | eRezeptApp | xxxstatexxx | https://redirect.gematik.de/erezept | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | code          | 1234  | openid e-rezept | ${fed.sekIdpIss} |
     And TGR find first request to path ".*"
     And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$.header.Location.request_uri.value')}"
     And TGR set local variable "gsiAuthEndpoint" to "!{rbel:currentResponseAsString('$.header.Location.basicPath')}"
@@ -240,8 +240,8 @@ Feature: Authentisierung mit sektoralem IDP
 
     Given TGR clear recorded messages
     And TGR sende eine GET Anfrage an "${fedAuthEndpoint}" mit folgenden Daten:
-      | client_id  | state       | redirect_uri                        | code_challenge                              | code_challenge_method | response_type | nonce | scope           | idp_iss                           |
-      | eRezeptApp | xxxstatexxx | https://redirect.gematik.de/erezept | ds7JaEfpdLidWekR52OhoVpjXHDlplLyV3GtUezxfY0 | S256                  | code          | 1234  | openid e-rezept | https://gsi.dev.gematik.solutions |
+      | client_id  | state       | redirect_uri                        | code_challenge                              | code_challenge_method | response_type | nonce | scope           | idp_iss          |
+      | eRezeptApp | xxxstatexxx | https://redirect.gematik.de/erezept | ds7JaEfpdLidWekR52OhoVpjXHDlplLyV3GtUezxfY0 | S256                  | code          | 1234  | openid e-rezept | ${fed.sekIdpIss} |
     And TGR find first request to path ".*"
     And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$.header.Location.request_uri.value')}"
     And TGR set local variable "gsiAuthEndpoint" to "!{rbel:currentResponseAsString('$.header.Location.basicPath')}"
@@ -279,8 +279,8 @@ Feature: Authentisierung mit sektoralem IDP
 
     Given TGR clear recorded messages
     And TGR sende eine GET Anfrage an "${fedAuthEndpoint}" mit folgenden Daten:
-      | client_id  | state       | redirect_uri                        | code_challenge                              | code_challenge_method | response_type | nonce | scope           | idp_iss                           |
-      | eRezeptApp | xxxstatexxx | https://redirect.gematik.de/erezept | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | code          | 1234  | openid e-rezept | https://gsi.dev.gematik.solutions |
+      | client_id  | state       | redirect_uri                        | code_challenge                              | code_challenge_method | response_type | nonce | scope           | idp_iss          |
+      | eRezeptApp | xxxstatexxx | https://redirect.gematik.de/erezept | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | code          | 1234  | openid e-rezept | ${fed.sekIdpIss} |
     And TGR find first request to path ".*"
     And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$.header.Location.request_uri.value')}"
     And TGR set local variable "gsiAuthEndpoint" to "!{rbel:currentResponseAsString('$.header.Location.basicPath')}"

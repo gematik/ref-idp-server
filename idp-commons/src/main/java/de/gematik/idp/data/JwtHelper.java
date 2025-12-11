@@ -20,12 +20,7 @@
 
 package de.gematik.idp.data;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.gematik.idp.authentication.IdpJwtProcessor;
-import de.gematik.idp.exceptions.IdpRuntimeException;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -33,21 +28,6 @@ import lombok.NonNull;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class JwtHelper {
-
-  public static String signJson(
-      final IdpJwtProcessor jwtProcessor,
-      final ObjectMapper objectMapper,
-      final Object object,
-      final String typ) {
-    try {
-      return jwtProcessor
-          .buildJws(
-              objectMapper.writeValueAsString(object), Map.ofEntries(Map.entry("typ", typ)), false)
-          .getRawString();
-    } catch (final JsonProcessingException e) {
-      throw new IdpRuntimeException("EntityStatement to json failed", e);
-    }
-  }
 
   public static String invalidateJsonSignature(final String jwsRawString) {
     final String invalidSignatureValue =

@@ -94,7 +94,7 @@ public class IdpEccKeyDescriptor extends IdpKeyDescriptor {
       final PublicKey publicKey, final IdpEccKeyDescriptorBuilder descriptorBuilder) {
     try {
       final BCECPublicKey bcecPublicKey = (BCECPublicKey) publicKey;
-      String eccCurveName = "";
+      final String eccCurveName;
       String alg = null;
       if (((ECNamedCurveParameterSpec) bcecPublicKey.getParameters())
           .getName()
