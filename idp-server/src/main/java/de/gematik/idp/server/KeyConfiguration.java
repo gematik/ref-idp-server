@@ -81,7 +81,7 @@ public class KeyConfiguration {
       final IdpKey idpKey = new IdpKey(pkiIdentity);
       idpKey.setKeyId(Optional.ofNullable(keyConfiguration.getKeyId()));
       idpKey.setUse(Optional.ofNullable(keyConfiguration.getUse()));
-      idpKey.setAddX5c(Optional.ofNullable(keyConfiguration.isX5cInJwks()));
+      idpKey.setAddX5c(Optional.of(keyConfiguration.isX5cInJwks()));
       return idpKey;
     } catch (final IOException e) {
       throw new IdpServerStartupException(

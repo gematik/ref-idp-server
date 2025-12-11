@@ -213,7 +213,7 @@ public class KeyAndCertificateStepsHelper {
     // TODO pkilib check revocation of cert once pkilib is able to do it
 
     // check for outdated
-    cert.checkValidity(new Date());
+    cert.checkValidity(Date.from(java.time.Instant.now()));
   }
 
   @SneakyThrows

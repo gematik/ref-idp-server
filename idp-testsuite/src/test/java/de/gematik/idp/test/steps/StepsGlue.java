@@ -22,6 +22,7 @@ package de.gematik.idp.test.steps;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.test.steps.helpers.ClaimsStepHelper;
 import de.gematik.idp.test.steps.helpers.CucumberValuesConverter;
 import de.gematik.idp.test.steps.helpers.IdpTestEnvironmentConfigurator;
@@ -63,7 +64,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.serenitybdd.annotations.Steps;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.api.Assertions;
 import org.json.JSONObject;
 
@@ -418,8 +418,7 @@ public class StepsGlue {
       final String certFile,
       final String password,
       final Map<String, String> data) {
-    final String codeVerifier =
-        data.getOrDefault("codeVerifier", RandomStringUtils.random(60, true, true));
+    final String codeVerifier = data.getOrDefault("codeVerifier", Nonce.getNonceAsHex(60));
     data.remove("codeVerifier");
     auth.setCodeVerifier(codeVerifier);
 
@@ -428,8 +427,8 @@ public class StepsGlue {
     data.putIfAbsent("code_challenge", auth.generateCodeChallenge(codeVerifier));
     data.putIfAbsent("code_challenge_method", "S256");
     data.putIfAbsent("redirect_uri", IdpTestEnvironmentConfigurator.getTestEnvVar("redirect_uri"));
-    data.putIfAbsent("state", RandomStringUtils.random(16, true, true));
-    data.putIfAbsent("nonce", RandomStringUtils.random(20, true, true));
+    data.putIfAbsent("state", Nonce.getNonceAsHex(16));
+    data.putIfAbsent("nonce", Nonce.getNonceAsHex(20));
     data.putIfAbsent("response_type", "code");
 
     auth.getChallenge(data, HttpStatus.SUCCESS);
@@ -1173,7 +1172,7 @@ public class StepsGlue {
       case ContextKey.ID_TOKEN:
         Context.get().put(key, str);
         break;
-      // TODO add support for all other keys
+        // TODO add support for all other keys
       default:
         Assertions.fail("Unsupported key (Feel free to implement)");
     }

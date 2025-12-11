@@ -26,8 +26,6 @@ import static de.gematik.idp.field.ClaimName.DEVICE_INFORMATION;
 import static de.gematik.idp.field.ClaimName.KEY_IDENTIFIER;
 import static de.gematik.idp.field.ClaimName.SE_SUBJECT_PUBLIC_KEY_INFO;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
 import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.crypto.X509ClaimExtraction;
@@ -54,6 +52,8 @@ import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 @RequiredArgsConstructor
 @Service
@@ -216,11 +216,10 @@ public class ChallengeTokenValidationService {
   }
 
   private DeviceInformation createDeviceInfoFromJson(final String json) {
-    final ObjectMapper mapper = new ObjectMapper();
     final DeviceInformation deviceInformation;
     try {
-      deviceInformation = mapper.readValue(json, DeviceInformation.class);
-    } catch (final JsonProcessingException e) {
+      deviceInformation = JsonMapper.builder().build().readValue(json, DeviceInformation.class);
+    } catch (final JacksonException e) {
       throw new IdpServerException(
           IdpErrorResponse.builder()
               .detailMessage("Device information in auth data invalid")

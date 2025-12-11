@@ -80,11 +80,11 @@ import kong.unirest.core.MultipartBody;
 import kong.unirest.core.Unirest;
 import kong.unirest.core.UnirestInstance;
 import kong.unirest.core.json.JSONObject;
-import kong.unirest.jackson.JacksonObjectMapper;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jose4j.jwt.JwtClaims;
 import org.springframework.http.MediaType;
+import tools.jackson.databind.json.JsonMapper;
 
 @Slf4j
 public class AuthenticatorClient {
@@ -95,7 +95,31 @@ public class AuthenticatorClient {
   public AuthenticatorClient() {
     this.unirestInstance = Unirest.spawnInstance();
     unirestInstance.config().followRedirects(false);
-    unirestInstance.config().setObjectMapper(new JacksonObjectMapper());
+
+    final JsonMapper jsonMapper = JsonMapper.builder().build();
+
+    unirestInstance
+        .config()
+        .setObjectMapper(
+            new kong.unirest.core.ObjectMapper() {
+              @Override
+              public <T> T readValue(final String value, final Class<T> valueType) {
+                try {
+                  return jsonMapper.readValue(value, valueType);
+                } catch (final Exception e) {
+                  throw new IdpClientRuntimeException("Failed to deserialize JSON", e);
+                }
+              }
+
+              @Override
+              public String writeValue(final Object value) {
+                try {
+                  return jsonMapper.writeValueAsString(value);
+                } catch (final Exception e) {
+                  throw new IdpClientRuntimeException("Failed to serialize to JSON", e);
+                }
+              }
+            });
   }
 
   public AuthenticatorClient(final UnirestInstance unirestInstance) {
@@ -179,11 +203,12 @@ public class AuthenticatorClient {
     }
     if (loginResponse.getStatus() / 100 == 4) {
       IdpErrorResponse response = new IdpErrorResponse();
-      try {
-        response = loginResponse.mapError(IdpErrorResponse.class);
-      } catch (final Exception e) {
-        // swallow
+
+      final String errorBody = loginResponse.getBody().toString();
+      if (errorBody != null && !errorBody.isEmpty()) {
+        response = JsonMapper.builder().build().readValue(errorBody, IdpErrorResponse.class);
       }
+
       throw new IdpClientRuntimeException(
           "Unexpected Server-Response "
               + loginResponse.getStatus()
@@ -234,29 +259,6 @@ public class AuthenticatorClient {
             .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
     final HttpResponse<String> loginResponse =
         beforeAuthenticationCallback.apply(request).asString();
-    afterAuthenticationCallback.accept(loginResponse);
-    checkResponseForErrorsAndThrowIfAny(loginResponse);
-    final String location = retrieveLocationFromResponse(loginResponse);
-    return AuthenticationResponse.builder()
-        .code(extractParameterValue(location, "code"))
-        .location(location)
-        .build();
-  }
-
-  public AuthenticationResponse performAuthenticationWithAltAuth(
-      final AuthenticationRequest authenticationRequest,
-      final UnaryOperator<MultipartBody> beforeAuthenticationMapper,
-      final Consumer<HttpResponse<String>> afterAuthenticationCallback) {
-    final MultipartBody request =
-        unirestInstance
-            .post(authenticationRequest.getAuthenticationEndpointUrl())
-            .field(
-                "encrypted_signed_authentication_data",
-                authenticationRequest.getEncryptedSignedAuthenticationData().getRawString())
-            .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-            .header(HttpHeaders.USER_AGENT, USER_AGENT)
-            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-    final HttpResponse<String> loginResponse = beforeAuthenticationMapper.apply(request).asString();
     afterAuthenticationCallback.accept(loginResponse);
     checkResponseForErrorsAndThrowIfAny(loginResponse);
     final String location = retrieveLocationFromResponse(loginResponse);

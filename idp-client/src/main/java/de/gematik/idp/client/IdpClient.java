@@ -28,7 +28,6 @@ import static org.jose4j.jws.AlgorithmIdentifiers.RSA_PSS_USING_SHA256;
 import static org.jose4j.jws.EcdsaUsingShaAlgorithm.convertDerToConcatenated;
 
 import de.gematik.idp.authentication.AuthenticationChallenge;
-import de.gematik.idp.authentication.JwtBuilder;
 import de.gematik.idp.authentication.UriUtils;
 import de.gematik.idp.brainPoolExtension.BrainpoolCurves;
 import de.gematik.idp.client.data.AuthenticationRequest;
@@ -36,7 +35,6 @@ import de.gematik.idp.client.data.AuthenticationResponse;
 import de.gematik.idp.client.data.AuthorizationRequest;
 import de.gematik.idp.client.data.AuthorizationResponse;
 import de.gematik.idp.client.data.DiscoveryDocumentResponse;
-import de.gematik.idp.client.data.RegistrationData;
 import de.gematik.idp.client.data.TokenRequest;
 import de.gematik.idp.crypto.EcSignerUtility;
 import de.gematik.idp.crypto.Nonce;
@@ -49,20 +47,20 @@ import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
-import kong.unirest.core.*;
+import kong.unirest.core.GetRequest;
+import kong.unirest.core.HttpResponse;
+import kong.unirest.core.JsonNode;
+import kong.unirest.core.MultipartBody;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -397,121 +395,6 @@ public class IdpClient implements IIdpClient {
             .clientId(clientId)
             .code(authenticationResponse.getCode())
             .ssoToken(ssoToken.getRawString())
-            .redirectUrl(redirectUrl)
-            .codeVerifier(codeVerifier)
-            .idpEnc(discoveryDocumentResponse.getIdpEnc())
-            .build(),
-        beforeTokenMapper,
-        afterTokenCallback);
-  }
-
-  public IdpTokenResult loginWithAltAuth(
-      final RegistrationData registrationData, final PrivateKey privateKey) {
-    assertThatClientIsInitialized();
-
-    final String codeVerifier = ClientUtilities.generateCodeVerifier();
-    final String nonce = Nonce.getNonceAsBase64UrlEncodedString(24);
-
-    // Authorization
-    final String state = Nonce.getNonceAsBase64UrlEncodedString(24);
-    LOGGER.debug(
-        "Performing Authorization with remote-URL '{}'",
-        discoveryDocumentResponse.getAuthorizationEndpoint());
-    final AuthorizationResponse authorizationResponse =
-        authorizationResponseMapper.apply(
-            authenticatorClient.doAuthorizationRequest(
-                AuthorizationRequest.builder()
-                    .clientId(clientId)
-                    .link(discoveryDocumentResponse.getAuthorizationEndpoint())
-                    .codeChallenge(ClientUtilities.generateCodeChallenge(codeVerifier))
-                    .codeChallengeMethod(codeChallengeMethod)
-                    .redirectUri(redirectUrl)
-                    .state(state)
-                    .scopes(scopes)
-                    .nonce(nonce)
-                    .build(),
-                beforeAuthorizationMapper,
-                afterAuthorizationCallback));
-
-    final JsonWebToken signedPairingData =
-        new JsonWebToken(registrationData.getSignedPairingData());
-    final JsonWebToken signedAuthenticationData =
-        new JwtBuilder()
-            .addBodyClaim(
-                ClaimName.EXPIRES_AT,
-                authorizationResponse
-                    .getAuthenticationChallenge()
-                    .getChallenge()
-                    .getBodyClaim(ClaimName.EXPIRES_AT)
-                    .orElseThrow())
-            .addBodyClaim(
-                ClaimName.CHALLENGE_TOKEN,
-                authorizationResponse.getAuthenticationChallenge().getChallenge().getRawString())
-            .addBodyClaim(ClaimName.AUTHENTICATION_CERTIFICATE, registrationData.getAuthCert())
-            .addBodyClaim(ClaimName.AUTHENTICATION_DATA_VERSION, "1.0")
-            .addBodyClaim(
-                ClaimName.KEY_IDENTIFIER,
-                signedPairingData.getBodyClaim(ClaimName.KEY_IDENTIFIER).orElseThrow())
-            .addBodyClaim(
-                ClaimName.DEVICE_INFORMATION,
-                Map.of(
-                    "name",
-                    registrationData.getDeviceInformation().getName(),
-                    "device_information_data_version",
-                    registrationData.getDeviceInformation().getDeviceInformationDataVersion(),
-                    "device_type",
-                    Map.of(
-                        "device_type_data_version",
-                        registrationData
-                            .getDeviceInformation()
-                            .getDeviceType()
-                            .getDeviceTypeDataVersion(),
-                        "product",
-                        registrationData.getDeviceInformation().getDeviceType().getProduct(),
-                        "model",
-                        registrationData.getDeviceInformation().getDeviceType().getModel(),
-                        "os",
-                        registrationData.getDeviceInformation().getDeviceType().getOs(),
-                        "os_version",
-                        registrationData.getDeviceInformation().getDeviceType().getOsVersion(),
-                        "manufacturer",
-                        registrationData.getDeviceInformation().getDeviceType().getManufacturer())))
-            .addBodyClaim(ClaimName.AUTHENTICATION_METHODS_REFERENCE, List.of("mfa", "hwk", "face"))
-            .setSignerKey(privateKey)
-            .buildJwt();
-
-    // Authentication
-    LOGGER.debug(
-        "Performing Authentication with remote-URL '{}'",
-        discoveryDocumentResponse.getAuthorizationEndpoint());
-    final AuthenticationResponse authenticationResponse =
-        authenticationResponseMapper.apply(
-            authenticatorClient.performAuthenticationWithAltAuth(
-                AuthenticationRequest.builder()
-                    .authenticationEndpointUrl(discoveryDocumentResponse.getAuthPairEndpoint())
-                    .encryptedSignedAuthenticationData(
-                        signedAuthenticationData.encryptAsNjwt(
-                            discoveryDocumentResponse.getIdpEnc()))
-                    .build(),
-                beforeAuthenticationMapper,
-                afterAuthenticationCallback));
-    if (shouldVerifyState) {
-      final String stringInTokenUrl =
-          UriUtils.extractParameterValue(authenticationResponse.getLocation(), "state");
-      if (!state.equals(stringInTokenUrl)) {
-        throw new IdpClientRuntimeException("state-parameter unexpected changed");
-      }
-    }
-
-    // get Token
-    LOGGER.debug(
-        "Performing getToken with remote-URL '{}'", discoveryDocumentResponse.getTokenEndpoint());
-    return authenticatorClient.retrieveAccessToken(
-        TokenRequest.builder()
-            .tokenUrl(discoveryDocumentResponse.getTokenEndpoint())
-            .clientId(clientId)
-            .code(authenticationResponse.getCode())
-            .ssoToken(authenticationResponse.getSsoToken())
             .redirectUrl(redirectUrl)
             .codeVerifier(codeVerifier)
             .idpEnc(discoveryDocumentResponse.getIdpEnc())

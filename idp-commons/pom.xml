@@ -7,12 +7,11 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>29.3.3</version>
+    <version>30.0.1</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>idp-commons</artifactId>
-  <version>29.3.3</version>
   <name>${project.artifactId}</name>
   <description>common functions</description>
 
@@ -47,14 +46,11 @@
       <version>${version.slf4j-api}</version>
     </dependency>
 
-    <dependency>
-      <groupId>com.konghq</groupId>
-      <artifactId>unirest-java-core</artifactId>
-    </dependency>
 
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
+      <groupId>tools.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>3.0.2</version>
     </dependency>
 
     <dependency>
@@ -88,11 +84,23 @@
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
-      <version>1.19.0</version>
+      <version>1.20.0</version>
     </dependency>
     <dependency>
       <groupId>com.konghq</groupId>
-      <artifactId>unirest-objectmapper-jackson</artifactId>
+      <artifactId>unirest-java-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.mock-server</groupId>
+      <artifactId>mockserver-netty</artifactId>
+      <version>5.15.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>5.20.0</version>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
 

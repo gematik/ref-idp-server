@@ -7,12 +7,11 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>29.3.3</version>
+    <version>30.0.1</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>idp-crypto</artifactId>
-  <version>29.3.3</version>
   <name>${project.artifactId}</name>
   <description>crypto functions</description>
 
@@ -20,7 +19,7 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>6.0.0</version>
+      <version>6.0.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>

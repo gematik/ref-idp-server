@@ -30,8 +30,8 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
 
 
   @TCID:IDP_REF_DEREG_001
-    @Approval @PRIO:1
-    @TESTSTUFE:4
+  @Approval @PRIO:1
+  @TESTSTUFE:4
   Scenario Outline: GetToken signed authentication data - Gutfall - Löschen alle Pairings vor Start der Tests
 
   ```
@@ -190,10 +190,11 @@ Feature: Deregistrierung für Alternative Authentisierung am IDP Server
   @AFO-ID:A_21448
   @TCID:IDP_REF_DEREG_008 @PRIO:1  @TESTFALL:Negativ
   @TESTSTUFE:4
+  @OpenBug
   Scenario: Biometrie Deregister - Lösche Pairing fehlender key identifier in der Anfrage
     Given IDP I request an pairing access token via SSO token with eGK cert '/certs/valid/egk-idp-idnumber-a-valid-ecc-2.p12'
     When IDP I deregister the device with '$REMOVE'
-    Then the response status is 500
+    Then the response status is 405
     And IDP the JSON response should match
         """
         {

@@ -113,8 +113,6 @@ class IdpControllerExceptionHandlerTest {
             .accept(MediaType.APPLICATION_JSON.toString())
             .asJson();
 
-    final JSONObject errorObject = response.getBody().getObject();
-
     assertThat(response.getStatus()).isEqualTo(302);
     assertThat(response.getHeaders().get("Location").get(0))
         .contains("nonce%20ist%20ung%C3%BCltig");

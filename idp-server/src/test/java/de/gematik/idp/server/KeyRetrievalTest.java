@@ -68,7 +68,7 @@ class KeyRetrievalTest {
             .toString();
     final HttpResponse<String> jwk = Unirest.get(pukUriToken).asString();
     final JsonWebKeySet keySet = constructKeySetFromJwkBody(jwk);
-    assertThat(keySet.getJsonWebKeys()).extracting(k -> k.getKey()).isNotEmpty();
+    assertThat(keySet.getJsonWebKeys()).extracting(JsonWebKey::getKey).isNotEmpty();
   }
 
   @Afo("A_20458")
@@ -81,7 +81,7 @@ class KeyRetrievalTest {
             .toString();
     final HttpResponse<String> jwk = Unirest.get(pukUriAuth).asString();
     final JsonWebKeySet keySet = constructKeySetFromJwkBody(jwk);
-    assertThat(keySet.getJsonWebKeys()).extracting(k -> k.getKey()).isNotEmpty();
+    assertThat(keySet.getJsonWebKeys()).extracting(JsonWebKey::getKey).isNotEmpty();
   }
 
   @Afo("A_20458")
@@ -136,7 +136,7 @@ class KeyRetrievalTest {
             .toString();
     final HttpResponse<String> jwks = Unirest.get(jwksUri).asString();
     final JsonWebKeySet keySet = new JsonWebKeySet(jwks.getBody());
-    assertThat(keySet.getJsonWebKeys()).extracting(k -> k.getKey()).isNotEmpty();
+    assertThat(keySet.getJsonWebKeys()).extracting(JsonWebKey::getKey).isNotEmpty();
     assertThat(keySet.getJsonWebKeys()).hasSize(2);
     assertThat(
             keySet.getJsonWebKeys().stream().map(JsonWebKey::getKeyId).collect(Collectors.toList()))

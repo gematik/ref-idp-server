@@ -34,6 +34,7 @@ import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.server.configuration.IdpConfiguration;
 import de.gematik.idp.server.controllers.IdpKey;
 import de.gematik.idp.server.exceptions.IdpServerException;
+import de.gematik.idp.server.services.ServerPortListener;
 import de.gematik.idp.server.services.SsoTokenValidator;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.IdpJwe;
@@ -58,7 +59,8 @@ class SsoTokenValidatorTest {
     Security.insertProviderAt(new BouncyCastleProvider(), 1);
   }
 
-  private final ServerUrlService urlService = new ServerUrlService(new IdpConfiguration());
+  private final ServerUrlService urlService =
+      new ServerUrlService(new ServerPortListener(), new IdpConfiguration());
   private SsoTokenValidator ssoTokenValidator;
   private PkiIdentity rsaUserIdentity;
   private PkiIdentity egkUserIdentity;

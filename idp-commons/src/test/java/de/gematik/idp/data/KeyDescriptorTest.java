@@ -22,8 +22,10 @@ package de.gematik.idp.data;
 
 import static de.gematik.idp.data.IdpEccKeyDescriptor.constructFromX509Certificate;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import de.gematik.idp.crypto.CryptoLoader;
+import de.gematik.idp.exceptions.IdpJoseException;
 import java.io.File;
 import java.security.cert.X509Certificate;
 import lombok.SneakyThrows;
@@ -44,5 +46,21 @@ class KeyDescriptorTest {
         .isEqualTo("YzEPFvphu4T3GgWmjPXxPT0-Pdm_Q04OLENAH98zn-M");
     assertThat(keyDescriptor.getEccPointYValue())
         .isEqualTo("AHPHggsq6YwFfW2fSIJtawMLAh9ZoKPFTZqPFgQW0t4");
+  }
+
+  @SneakyThrows
+  @Test
+  void toJSONString_ObjectMapperWriteValue_exception() {
+    // IdpKeyDescriptor with anonymous class that always throws RuntimeException when serializing
+    final IdpKeyDescriptor badIdpKeyDescriptor =
+        new IdpKeyDescriptor() {
+          public Object getFail() {
+            throw new RuntimeException("boom");
+          }
+        };
+
+    assertThatThrownBy(badIdpKeyDescriptor::toJSONString)
+        .isInstanceOf(IdpJoseException.class)
+        .hasMessage("Error during Claim serialization");
   }
 }

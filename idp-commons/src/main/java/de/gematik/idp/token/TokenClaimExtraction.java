@@ -27,7 +27,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Objects;
-import kong.unirest.core.json.JSONObject;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jose4j.json.JsonUtil;
@@ -39,6 +38,8 @@ import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.jose4j.lang.JoseException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TokenClaimExtraction {
@@ -81,8 +82,9 @@ public class TokenClaimExtraction {
             .setSkipAllValidators()
             .build();
     try {
-      final JSONObject payload =
-          new JSONObject(jwtConsumer.process(token).getJwtClaims().getRawJson());
+      final JsonMapper mapper = JsonMapper.builder().build();
+      final JsonNode payload =
+          mapper.readTree(jwtConsumer.process(token).getJwtClaims().getRawJson());
       return new JsonWebKeySet(payload.get("jwks").toString());
     } catch (final InvalidJwtException | JoseException e) {
       throw new IdpJoseException(e);

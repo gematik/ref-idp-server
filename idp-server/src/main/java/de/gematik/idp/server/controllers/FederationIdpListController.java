@@ -22,8 +22,6 @@ package de.gematik.idp.server.controllers;
 
 import static de.gematik.idp.IdpConstants.FEDIDP_LIST_ENDPOINT;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.server.data.FederationIdpList;
@@ -35,6 +33,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 @RestController
 @Validated
@@ -43,7 +43,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class FederationIdpListController {
 
   private IdpJwtProcessor jwtProcessor;
-  private final ObjectMapper objectMapper;
   private final FederationIdpList federationIdpList;
   private final IdpKey discSig;
 
@@ -61,11 +60,11 @@ public class FederationIdpListController {
     try {
       return jwtProcessor
           .buildJws(
-              objectMapper.writeValueAsString(federationIdpList),
+              JsonMapper.builder().build().writeValueAsString(federationIdpList),
               Map.ofEntries(Map.entry("typ", "JWT")),
               true)
           .getRawString();
-    } catch (final JsonProcessingException e) {
+    } catch (final JacksonException e) {
       throw new IdpServerException(
           2100, IdpErrorType.SERVER_ERROR, "Ein Fehler ist aufgetreten", e);
     }

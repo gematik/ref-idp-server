@@ -1,3 +1,12 @@
+# Release 30.0.1
+
+- migrate to spring boot 4.0.0
+- migrate to jackson 3.x
+- remove generation of TokenFlow HTML files (TokenloggerTest)
+- idp-client: remove unused login with alternative authentication
+- remove unused BiometrieClient
+- update dependencies
+
 # Release 29.3.3
 
 - add custom encryption header claims to JWE

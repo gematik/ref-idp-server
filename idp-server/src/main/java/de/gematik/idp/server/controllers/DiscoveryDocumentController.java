@@ -22,8 +22,6 @@ package de.gematik.idp.server.controllers;
 
 import static de.gematik.idp.IdpConstants.DISCOVERY_DOCUMENT_ENDPOINT;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.data.IdpDiscoveryDocument;
 import de.gematik.idp.data.IdpJwksDocument;
@@ -43,6 +41,8 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 @RestController
 @RequiredArgsConstructor
@@ -51,7 +51,6 @@ public class DiscoveryDocumentController {
   private final IdpKey idpSig;
   private final IdpKey idpEnc;
   private final IdpKey discSig;
-  private final ObjectMapper objectMapper;
   private final ServerUrlService serverUrlService;
   private final DiscoveryDocumentBuilder discoveryDocumentBuilder;
   private final String fedAuthEndpoint;
@@ -109,17 +108,18 @@ public class DiscoveryDocumentController {
   }
 
   private String signDiscoveryDocument(final IdpDiscoveryDocument discoveryDocument) {
+
+    final String payload;
     try {
-      return jwtProcessor
-          .buildJws(
-              objectMapper.writeValueAsString(discoveryDocument),
-              Map.ofEntries(Map.entry("typ", "JWT")),
-              true)
-          .getRawString();
-    } catch (final JsonProcessingException e) {
+      payload = JsonMapper.builder().build().writeValueAsString(discoveryDocument);
+    } catch (final JacksonException e) {
       throw new IdpServerException(
           2100, IdpErrorType.SERVER_ERROR, "Ein Fehler ist aufgetreten", e);
     }
+
+    return jwtProcessor
+        .buildJws(payload, Map.ofEntries(Map.entry("typ", "JWT")), true)
+        .getRawString();
   }
 
   private void setNoCacheHeader(final HttpServletResponse response) {

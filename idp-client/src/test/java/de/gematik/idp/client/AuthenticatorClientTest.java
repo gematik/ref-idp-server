@@ -22,6 +22,7 @@ package de.gematik.idp.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
@@ -29,10 +30,13 @@ import static org.mockito.Mockito.when;
 import de.gematik.idp.client.data.DiscoveryDocumentResponse;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.PkiKeyResolver;
+import java.util.Map;
 import java.util.Optional;
 import kong.unirest.core.GetRequest;
 import kong.unirest.core.HttpResponse;
+import kong.unirest.core.ObjectMapper;
 import kong.unirest.core.UnirestInstance;
+import lombok.SneakyThrows;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -139,5 +143,36 @@ class AuthenticatorClientTest {
     assertNotNull(response);
     assertThat(response.getAuthPairEndpoint())
         .isEqualTo("<IDP DOES NOT SUPPORT ALTERNATIVE AUTHENTICATION>");
+  }
+
+  @Test
+  void jsonMapperWriteValue_ok() {
+    final AuthenticatorClient client = new AuthenticatorClient();
+    final ObjectMapper mapper = client.getUnirestInstance().config().getObjectMapper();
+
+    final String json = mapper.writeValue(Map.of("purpose", 42));
+    assertThat(json).contains("{\"purpose\":42}");
+  }
+
+  @SneakyThrows
+  @Test
+  void jsonMapperWriteValue_exceptionIsHandled() {
+
+    final AuthenticatorClient client = new AuthenticatorClient();
+    final ObjectMapper mapper = client.getUnirestInstance().config().getObjectMapper();
+
+    // Create an object whose serialization will throw an exception
+    final Object obj =
+        new Object() {
+          public String getValue() {
+            throw new RuntimeException("boom");
+          }
+        };
+
+    final IdpClientRuntimeException ex =
+        assertThrows(IdpClientRuntimeException.class, () -> mapper.writeValue(obj));
+
+    assertThat(ex).hasMessage("Failed to serialize to JSON");
+    assertThat(ex).hasRootCauseMessage("boom");
   }
 }

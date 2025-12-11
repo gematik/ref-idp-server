@@ -21,11 +21,6 @@
 package de.gematik.idp.server.data;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.gematik.idp.exceptions.IdpJoseException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -35,6 +30,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jose4j.json.internal.json_simple.JSONAware;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.annotation.JsonNaming;
+import tools.jackson.databind.json.JsonMapper;
 
 @Data
 @Builder
@@ -51,10 +51,12 @@ public class RegistrationData implements JSONAware, DataVersion {
   @Override
   public String toJSONString() {
     try {
-      final ObjectMapper objectMapper = new ObjectMapper();
-      objectMapper.setSerializationInclusion(Include.NON_NULL);
-      return objectMapper.writeValueAsString(this);
-    } catch (final JsonProcessingException e) {
+      final JsonMapper jsonMapper =
+          JsonMapper.builder()
+              .configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false)
+              .build();
+      return jsonMapper.writeValueAsString(this);
+    } catch (final JacksonException e) {
       throw new IdpJoseException("Error during Claim serialization", e);
     }
   }

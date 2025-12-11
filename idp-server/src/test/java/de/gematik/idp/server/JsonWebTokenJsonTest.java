@@ -22,7 +22,6 @@ package de.gematik.idp.server;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.authentication.AuthenticationChallenge;
 import de.gematik.idp.client.data.AuthorizationResponse;
 import de.gematik.idp.token.JsonWebToken;
@@ -31,6 +30,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.json.JsonContent;
+import tools.jackson.databind.json.JsonMapper;
 
 class JsonWebTokenJsonTest {
 
@@ -38,8 +38,9 @@ class JsonWebTokenJsonTest {
 
   @BeforeEach
   public void setup() {
-    final ObjectMapper objectMapper = new ObjectMapper();
-    JacksonTester.initFields(this, objectMapper);
+    final JsonMapper jsonMapper = JsonMapper.builder().build();
+
+    JacksonTester.initFields(this, jsonMapper);
   }
 
   @Test
