@@ -1,4 +1,4 @@
-# Release 30.0.1
+# Release 30.0.2
 
 - migrate to spring boot 4.0.0
 - migrate to jackson 3.x

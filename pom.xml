@@ -13,7 +13,7 @@
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-global</artifactId>
-  <version>30.0.1</version>
+  <version>30.0.2</version>
   <packaging>pom</packaging>
   <url>https://github.com/gematik/ref-idp-server</url>
   <description>IDP</description>
@@ -169,6 +169,7 @@
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter</artifactId>
+        <version>4.0.0</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework.boot</groupId>
