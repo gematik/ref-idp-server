@@ -28,7 +28,7 @@ import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.Logger;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.status.StatusLogger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.boot.SpringApplication;
@@ -82,12 +82,15 @@ public class IdpServer implements WebMvcConfigurer {
   public void printConfiguration() {
     log.info("idpConfiguration: {}", idpConfiguration);
 
-    final Logger loggerGematik = (Logger) LogManager.getLogger("de.gematik");
+    final var ctx = (org.apache.logging.log4j.core.LoggerContext) LogManager.getContext(false);
+
+    final LoggerConfig loggerConfig = ctx.getConfiguration().getLoggerConfig("de.gematik");
+
     StatusLogger.getLogger()
         .log(
             org.apache.logging.log4j.Level.OFF,
             "loglevel for de.gematik: {}",
-            loggerGematik.getLevel());
+            loggerConfig.getLevel());
   }
 
   @Bean

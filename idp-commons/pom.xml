@@ -7,7 +7,7 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>idp-global</artifactId>
-    <version>30.0.2</version>
+    <version>30.0.3</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -50,7 +50,7 @@
     <dependency>
       <groupId>tools.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>3.0.2</version>
+      <version>3.0.4</version>
     </dependency>
 
     <dependency>
@@ -84,7 +84,7 @@
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
-      <version>1.20.0</version>
+      <version>1.21.0</version>
     </dependency>
     <dependency>
       <groupId>com.konghq</groupId>
@@ -99,7 +99,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>5.20.0</version>
+      <version>5.21.0</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
