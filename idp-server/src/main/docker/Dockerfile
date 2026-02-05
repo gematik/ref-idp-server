@@ -14,7 +14,7 @@ LABEL de.gematik.vendor="gematik GmbH" \
 # SIGTERM = 15 - https://de.wikipedia.org/wiki/Signal_(Unix)
 STOPSIGNAL SIGTERM
 
-HEALTHCHECK CMD curl --fail http://localhost:8080/actuator/health | grep UP || exit 1
+HEALTHCHECK CMD curl --fail http://localhost:8180/actuator/health | grep UP || exit 1
 
 # Default USERID and GROUPID
 ARG USERID=10000

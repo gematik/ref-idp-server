@@ -6,18 +6,17 @@
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-testsuite</artifactId>
-  <version>30.0.2</version>
+  <version>30.0.3</version>
   <packaging>jar</packaging>
 
   <properties>
     <idp-server.spring.profile>idp</idp-server.spring.profile>
     <sektoral-idp.spring.profile>sektoralIdp</sektoral-idp.spring.profile>
     <version.build-helper-maven-plugin>3.6.1</version.build-helper-maven-plugin>
-    <version.commons-lang3>3.20.0</version.commons-lang3>
-    <version.maven-compiler-plugin>3.14.1</version.maven-compiler-plugin>
+    <version.maven-compiler-plugin>3.15.0</version.maven-compiler-plugin>
     <version.copy-rename-maven-plugin>1.0.1</version.copy-rename-maven-plugin>
     <java.version>21</java.version>
-    <version.json>20250517</version.json>
+    <version.json>20251224</version.json>
     <version.maven-clean-plugin>3.4.0</version.maven-clean-plugin>
     <version.maven-failsafe-plugin>3.5.4</version.maven-failsafe-plugin>
     <version.maven-jar-plugin>3.5.0</version.maven-jar-plugin>
@@ -25,18 +24,20 @@
     <version.maven-resources-plugin>3.3.1</version.maven-resources-plugin>
     <version.maven-source-plugin>3.4.0</version.maven-source-plugin>
     <version.maven-surefire-plugin>3.5.4</version.maven-surefire-plugin>
-    <version.rest-assured>5.5.6</version.rest-assured>
+    <version.rest-assured>6.0.0</version.rest-assured>
     <version.slf4j-api>2.0.17</version.slf4j-api>
     <version.spotless.google-java-format>1.17.0</version.spotless.google-java-format>
-    <version.tiger>4.1.11</version.tiger>
+    <version.tiger>4.1.16</version.tiger>
   </properties>
 
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>ch.qos.logback</groupId>
-        <artifactId>logback-classic</artifactId>
-        <version>1.5.21</version>
+        <groupId>de.gematik.test</groupId>
+        <artifactId>tiger-bom</artifactId>
+        <version>${version.tiger}</version>
+        <scope>import</scope>
+        <type>pom</type>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -81,27 +82,10 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>${version.commons-lang3}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <version>1.18.42</version>
       <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>${version.slf4j-api}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.skyscreamer</groupId>
-      <artifactId>jsonassert</artifactId>
-      <version>1.5.3</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.coderplus.maven.plugins</groupId>
@@ -131,41 +115,8 @@
       <artifactId>tiger-test-lib</artifactId>
       <version>${version.tiger}</version>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.commons</groupId>
-          <artifactId>commons-lang3</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
-    <dependency>
-      <groupId>io.rest-assured</groupId>
-      <artifactId>rest-assured</artifactId>
-      <version>${version.rest-assured}</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.codehaus.groovy</groupId>
-          <artifactId>groovy-xml</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.codehaus.groovy</groupId>
-          <artifactId>groovy-json</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.codehaus.groovy</groupId>
-          <artifactId>groovy</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.commons</groupId>
-          <artifactId>commons-lang3</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
+
   </dependencies>
   <build>
 
@@ -269,7 +220,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>properties-maven-plugin</artifactId>
-        <version>1.2.1</version>
+        <version>1.3.0</version>
         <executions>
           <execution>
             <goals>
@@ -358,7 +309,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.6.2</version>
+        <version>3.6.3</version>
         <executions>
           <execution>
             <id>check-file-existence</id>
@@ -407,7 +358,7 @@
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.2.1</version>
         <configuration>
           <formats>
             <!-- you can define as many formats as you want, each is independent -->

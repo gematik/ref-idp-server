@@ -1,3 +1,9 @@
+# Release 30.0.3
+
+- adapt docker configuration to spring 4.x.x
+- refactor logging configuration
+- update dependencies
+
 # Release 30.0.2
 
 - migrate to spring boot 4.0.0

@@ -24,7 +24,6 @@ services:
   # Database
   db:
     image: mysql:8.0.29
-    container_name: idp-mysql
     <<: [*service-network-ref, *service-setup-ref]
     environment:
       MYSQL_ROOT_USER: root
@@ -52,7 +51,8 @@ services:
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: "com.mysql.cj.jdbc.Driver"
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: idp
-      SPRING_DATASOURCE_INITIALIZATION_MODE: always
+      SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT: "30000"
+      SPRING_SQL_INIT_MODE: always
       SPRING_JPA_DATABASE_PLATFORM: "org.hibernate.dialect.MySQLDialect"
       SPRING_H2_CONSOLE_ENABLED: "false"
       IDP_SERVER_URL: "${IDP_SERVER_URL:-http://localhost:8571}"
@@ -64,6 +64,9 @@ services:
       - "8571:8080"
     healthcheck:
       <<: *healthcheck-ref
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   idp-data-db:
