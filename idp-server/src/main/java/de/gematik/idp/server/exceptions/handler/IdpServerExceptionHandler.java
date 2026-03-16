@@ -36,7 +36,6 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ValidationException;
 import jakarta.ws.rs.core.UriBuilder;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
@@ -95,40 +94,57 @@ public class IdpServerExceptionHandler {
       final WebRequest request,
       final HttpServletResponse response,
       final IdpServerException exc) {
+
     response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
     response.setHeader(HttpHeaders.PRAGMA, "no-cache");
-    final String redirectUri = request.getParameter("redirect_uri");
-    if (redirectUri == null) {
-      final IdpErrorResponse body = getBody(exc);
-      if (!StringUtils.isEmpty(exc.getMessage())) {
-        body.setDetailMessage(exc.getMessage());
-      }
-      return new ResponseEntity<>(body, getHeader(), HttpStatus.BAD_REQUEST);
-    } else {
-      final UriBuilder uriBuilder =
-          UriBuilder.fromPath(redirectUri)
-              .queryParam(
-                  "error",
-                  UriUtils.encodeQueryParam(
-                      errorResponse.getError().getSerializationValue(), Charset.defaultCharset()))
-              .queryParam(
-                  "gematik_code",
-                  UriUtils.encodeQueryParam(errorResponse.getCode(), Charset.defaultCharset()))
-              .queryParam("gematik_timestamp", errorResponse.getTimestamp())
-              .queryParam(
-                  "gematik_uuid",
-                  UriUtils.encodeQueryParam(errorResponse.getErrorUuid(), Charset.defaultCharset()))
-              .queryParam(
-                  "gematik_error_text",
-                  UriUtils.encodeQueryParam(
-                      errorResponse.getDetailMessage(), Charset.defaultCharset()));
-      addStateIfAvailable(uriBuilder, request);
-      addDescriptionIfAvailable(uriBuilder, exc);
-      final URI location = uriBuilder.build();
-      response.setHeader(HttpHeaders.LOCATION, location.toString());
 
-      return new ResponseEntity<>(HttpStatus.FOUND);
+    final Map<String, String[]> paramMap = request.getParameterMap();
+    final boolean hasClientAndRedirect =
+        paramMap.containsKey("client_id") && paramMap.containsKey("redirect_uri");
+
+    if (!hasClientAndRedirect) {
+      return badRequest(exc);
     }
+
+    try {
+      idpAuthenticator.validateRedirectUri(
+          paramMap.get("client_id")[0], paramMap.get("redirect_uri")[0]);
+    } catch (final IdpServerException ex) {
+      return badRequest(exc);
+    }
+
+    // redirect_uri is valid here, build redirect response
+    final String redirectUri = paramMap.get("redirect_uri")[0];
+    final UriBuilder uriBuilder =
+        UriBuilder.fromPath(redirectUri)
+            .queryParam(
+                "error",
+                UriUtils.encodeQueryParam(
+                    errorResponse.getError().getSerializationValue(), Charset.defaultCharset()))
+            .queryParam(
+                "gematik_code",
+                UriUtils.encodeQueryParam(errorResponse.getCode(), Charset.defaultCharset()))
+            .queryParam("gematik_timestamp", errorResponse.getTimestamp())
+            .queryParam(
+                "gematik_uuid",
+                UriUtils.encodeQueryParam(errorResponse.getErrorUuid(), Charset.defaultCharset()))
+            .queryParam(
+                "gematik_error_text",
+                UriUtils.encodeQueryParam(
+                    errorResponse.getDetailMessage(), Charset.defaultCharset()));
+    addStateIfAvailable(uriBuilder, request);
+    addDescriptionIfAvailable(uriBuilder, exc);
+
+    response.setHeader(HttpHeaders.LOCATION, uriBuilder.build().toString());
+    return new ResponseEntity<>(HttpStatus.FOUND);
+  }
+
+  private ResponseEntity<IdpErrorResponse> badRequest(final IdpServerException exc) {
+    final IdpErrorResponse body = getBody(exc);
+    if (StringUtils.isNotBlank(exc.getMessage())) {
+      body.setDetailMessage(exc.getMessage());
+    }
+    return new ResponseEntity<>(body, getHeader(), HttpStatus.BAD_REQUEST);
   }
 
   private void addDescriptionIfAvailable(

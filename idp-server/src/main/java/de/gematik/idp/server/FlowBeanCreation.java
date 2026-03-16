@@ -20,12 +20,12 @@
 
 package de.gematik.idp.server;
 
-import static de.gematik.pki.gemlibpki.certificate.CertificateProfile.CERT_PROFILE_C_CH_AUT_ECC;
-import static de.gematik.pki.gemlibpki.certificate.CertificateProfile.CERT_PROFILE_C_CH_AUT_RSA;
-import static de.gematik.pki.gemlibpki.certificate.CertificateProfile.CERT_PROFILE_C_HCI_AUT_ECC;
-import static de.gematik.pki.gemlibpki.certificate.CertificateProfile.CERT_PROFILE_C_HCI_AUT_RSA;
-import static de.gematik.pki.gemlibpki.certificate.CertificateProfile.CERT_PROFILE_C_HP_AUT_ECC;
-import static de.gematik.pki.gemlibpki.certificate.CertificateProfile.CERT_PROFILE_C_HP_AUT_RSA;
+import static de.gematik.pki.gemlibpki.commons.certificate.CertificateProfile.CERT_PROFILE_C_CH_AUT_ECC;
+import static de.gematik.pki.gemlibpki.commons.certificate.CertificateProfile.CERT_PROFILE_C_CH_AUT_RSA;
+import static de.gematik.pki.gemlibpki.commons.certificate.CertificateProfile.CERT_PROFILE_C_HCI_AUT_ECC;
+import static de.gematik.pki.gemlibpki.commons.certificate.CertificateProfile.CERT_PROFILE_C_HCI_AUT_RSA;
+import static de.gematik.pki.gemlibpki.commons.certificate.CertificateProfile.CERT_PROFILE_C_HP_AUT_ECC;
+import static de.gematik.pki.gemlibpki.commons.certificate.CertificateProfile.CERT_PROFILE_C_HP_AUT_RSA;
 
 import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
 import de.gematik.idp.authentication.AuthenticationChallengeVerifier;
@@ -40,10 +40,10 @@ import de.gematik.idp.server.services.DiscoveryDocumentBuilder;
 import de.gematik.idp.token.AccessTokenBuilder;
 import de.gematik.idp.token.IdTokenBuilder;
 import de.gematik.idp.token.SsoTokenBuilder;
-import de.gematik.pki.gemlibpki.certificate.TucPki018Verifier;
-import de.gematik.pki.gemlibpki.tsl.TslConverter;
-import de.gematik.pki.gemlibpki.tsl.TslInformationProvider;
-import de.gematik.pki.gemlibpki.tsl.TspService;
+import de.gematik.pki.gemlibpki.commons.certificate.TucPki018Verifier;
+import de.gematik.pki.gemlibpki.commons.tsl.TslConverter;
+import de.gematik.pki.gemlibpki.commons.tsl.TslInformationProvider;
+import de.gematik.pki.gemlibpki.commons.tsl.TspService;
 import eu.europa.esig.trustedlist.jaxb.tsl.TrustStatusListType;
 import java.io.IOException;
 import java.security.Key;

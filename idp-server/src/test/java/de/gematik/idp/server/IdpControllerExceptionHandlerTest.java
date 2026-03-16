@@ -20,6 +20,8 @@
 
 package de.gematik.idp.server;
 
+import static de.gematik.idp.TestConstants.CODE_CHALLENGE_VALID;
+import static de.gematik.idp.TestConstants.REDIRECT_URI_E_REZEPT_APP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -27,6 +29,7 @@ import static org.mockito.Mockito.when;
 
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.TestConstants;
+import de.gematik.idp.authentication.AuthenticationChallengeBuilder;
 import de.gematik.idp.authentication.UriUtils;
 import de.gematik.idp.error.IdpErrorType;
 import de.gematik.idp.server.exceptions.IdpServerException;
@@ -58,6 +61,7 @@ class IdpControllerExceptionHandlerTest {
 
   @LocalServerPort private int port;
   @MockitoBean private IdpAuthenticator idpAuthenticator;
+  @MockitoBean private AuthenticationChallengeBuilder authenticationChallengeBuilder;
   private String serverUrl;
 
   @BeforeAll
@@ -104,7 +108,7 @@ class IdpControllerExceptionHandlerTest {
             .queryString("signed_challenge", "signed_challenge")
             .queryString("client_id", TestConstants.CLIENT_ID_E_REZEPT_APP)
             .queryString("state", "state")
-            .queryString("redirect_uri", TestConstants.REDIRECT_URI_E_REZEPT_APP)
+            .queryString("redirect_uri", REDIRECT_URI_E_REZEPT_APP)
             .queryString("nonce", nonceToLong)
             .queryString("response_type", "code")
             .queryString("code_challenge", "P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk")
@@ -130,7 +134,7 @@ class IdpControllerExceptionHandlerTest {
             .queryString("signed_challenge", "signed_challenge")
             .queryString("client_id", TestConstants.CLIENT_ID_E_REZEPT_APP)
             .queryString("state", stateToLong)
-            .queryString("redirect_uri", TestConstants.REDIRECT_URI_E_REZEPT_APP)
+            .queryString("redirect_uri", REDIRECT_URI_E_REZEPT_APP)
             .queryString("nonce", nonceCorrectLength)
             .queryString("response_type", "code")
             .queryString("code_challenge", "P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk")
@@ -145,20 +149,20 @@ class IdpControllerExceptionHandlerTest {
   }
 
   @Test
-  void authentication_idpServerException_expectRedirect() {
-    doThrow(new IdpServerException(EXCEPTION_TEXT, IdpErrorType.INVALID_REQUEST, HttpStatus.FOUND))
-        .when(idpAuthenticator)
-        .validateRedirectUri(any(), any());
-    final String redirectUri = "https://redirect.test";
+  void authentication_genericError_expectRedirect() {
+
+    doThrow(new IdpServerException(EXCEPTION_TEXT, IdpErrorType.SERVER_ERROR, HttpStatus.FOUND))
+        .when(authenticationChallengeBuilder)
+        .buildAuthenticationChallenge(any(), any(), any(), any(), any(), any());
     final HttpResponse response =
         Unirest.get(serverUrl + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
             .queryString("signed_challenge", "signed_challenge")
             .queryString("client_id", TestConstants.CLIENT_ID_E_REZEPT_APP)
             .queryString("state", "state")
-            .queryString("redirect_uri", redirectUri)
+            .queryString("redirect_uri", REDIRECT_URI_E_REZEPT_APP)
             .queryString("nonce", "fdsalkfdksalfdsa")
             .queryString("response_type", "code")
-            .queryString("code_challenge", "fkdsjfkdsjfkjdskafjdksljfkdsjfkldsjjjjjjjjj")
+            .queryString("code_challenge", CODE_CHALLENGE_VALID)
             .queryString("code_challenge_method", "S256")
             .queryString("scope", "openid e-rezept")
             .accept(MediaType.APPLICATION_JSON.toString())
@@ -166,39 +170,13 @@ class IdpControllerExceptionHandlerTest {
 
     assertThat(response.getStatus()).isEqualTo(HttpStatus.FOUND.value());
     final String uri = response.getHeaders().getFirst(HttpHeaders.LOCATION);
-    assertThat(uri).startsWith(redirectUri);
-    assertThat(UriUtils.extractParameterMap(uri))
-        .containsEntry("error", "invalid_request")
+    assertThat(uri).startsWith(REDIRECT_URI_E_REZEPT_APP);
+    assertThat(UriUtils.extractParameterMap(response.getHeaders().getFirst(HttpHeaders.LOCATION)))
+        .containsEntry("error", "server_error")
         .containsEntry("error_description", EXCEPTION_TEXT)
         .containsEntry("gematik_error_text", EXCEPTION_TEXT)
         .containsKey("gematik_timestamp")
         .containsKey("gematik_uuid");
-  }
-
-  @Test
-  void authentication_genericError_expectRedirect() {
-
-    doThrow(new IdpServerException(EXCEPTION_TEXT, IdpErrorType.SERVER_ERROR, HttpStatus.FOUND))
-        .when(idpAuthenticator)
-        .validateRedirectUri(any(), any());
-    final HttpResponse response =
-        Unirest.get(serverUrl + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT)
-            .queryString("signed_challenge", "signed_challenge")
-            .queryString("client_id", TestConstants.CLIENT_ID_E_REZEPT_APP)
-            .queryString("state", "state")
-            .queryString("redirect_uri", "fdsafdsavs")
-            .queryString("nonce", "fdsalkfdksalfdsa")
-            .queryString("response_type", "code")
-            .queryString("code_challenge", "fkdsjfkdsjfkjdskafjdksljfkdsjfkldsjjjjjjjjj")
-            .queryString("code_challenge_method", "S256")
-            .queryString("scope", "openid e-rezept")
-            .accept(MediaType.APPLICATION_JSON.toString())
-            .asEmpty();
-
-    assertThat(response.getStatus()).isEqualTo(HttpStatus.FOUND.value());
-    assertThat(UriUtils.extractParameterMap(response.getHeaders().getFirst(HttpHeaders.LOCATION)))
-        .containsEntry("error", "server_error")
-        .containsEntry("error_description", EXCEPTION_TEXT);
     assertThat(response.getHeaders().getFirst("Cache-Control")).containsOnlyOnce("no-store");
   }
 

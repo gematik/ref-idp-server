@@ -1,3 +1,8 @@
+# Release 30.0.5
+
+- fix CWE-601 Open Redirect Vulnerability, thanks to Machine Spirits UG
+- update dependencies
+
 # Release 30.0.3
 
 - adapt docker configuration to spring 4.x.x
