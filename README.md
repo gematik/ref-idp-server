@@ -131,7 +131,7 @@ find generated API at: /swagger-ui/index.html
 
 ## License
 
-Copyright 2020-2025 gematik GmbH
+Copyright 2020-2026 gematik GmbH
 
 Apache License, Version 2.0
 

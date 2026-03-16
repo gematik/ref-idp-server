@@ -238,6 +238,33 @@ class IdpControllerParameterValidationTest {
   }
 
   @Test
+  void getAuthenticationChallenge_invalidRedirect_shouldGiveError() {
+    final GetRequest getRequest =
+        unirestInstance.get("http://localhost:" + port + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT);
+
+    getChallengeParameterMap.stream()
+        .map(getInvalidationFunction("redirect_uri", "http://invalid.redirect.com"))
+        .filter(Objects::nonNull)
+        .forEach(entry -> getRequest.queryString(entry.getKey(), entry.getValue()));
+
+    assertThat(getRequest.asString().getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+  }
+
+  @Test
+  void getAuthenticationChallenge_invalidCodeChallenge_invalidRedirect_shouldGiveError() {
+    final GetRequest getRequest =
+        unirestInstance.get("http://localhost:" + port + IdpConstants.BASIC_AUTHORIZATION_ENDPOINT);
+
+    getChallengeParameterMap.stream()
+        .map(getInvalidationFunction("code_challenge", "INVALID"))
+        .map(getInvalidationFunction("redirect_uri", "http://invalid.redirect.com"))
+        .filter(Objects::nonNull)
+        .forEach(entry -> getRequest.queryString(entry.getKey(), entry.getValue()));
+
+    assertThat(getRequest.asString().getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+  }
+
+  @Test
   void getAccessToken_missingCode_shouldGiveError() {
     assertErrorResponseMatches(
         buildGetAccessTokenRequest(getInvalidationFunction("code", null)),

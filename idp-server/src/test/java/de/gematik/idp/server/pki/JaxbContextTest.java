@@ -22,7 +22,7 @@ package de.gematik.idp.server.pki;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import de.gematik.pki.gemlibpki.tsl.TslConverter;
+import de.gematik.pki.gemlibpki.commons.tsl.TslConverter;
 import eu.europa.esig.trustedlist.jaxb.tsl.TrustStatusListType;
 import java.io.IOException;
 import java.net.URISyntaxException;

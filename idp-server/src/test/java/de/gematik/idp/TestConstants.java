@@ -26,4 +26,5 @@ public class TestConstants {
   public static final String REDIRECT_URI_E_REZEPT_APP = "http://redirect.gematik.de/erezept";
   public static final String CLIENT_ID_GEAMTIK_TEST_PS = "gematikTestPs";
   public static final String REDIRECT_URI_GEAMTIK_TEST_PS = "http://test-ps.gematik.de/erezept";
+  public static final String CODE_CHALLENGE_VALID = "fkdsjfkdsjfkjdskafjdksljfkdsjfkldsjjjjjjjjj";
 }
