@@ -6,7 +6,7 @@
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-testsuite</artifactId>
-  <version>30.0.5</version>
+  <version>30.0.9</version>
   <packaging>jar</packaging>
 
   <properties>
@@ -27,7 +27,7 @@
     <version.rest-assured>6.0.0</version.rest-assured>
     <version.slf4j-api>2.0.17</version.slf4j-api>
     <version.spotless.google-java-format>1.17.0</version.spotless.google-java-format>
-    <version.tiger>4.2.2</version.tiger>
+    <version.tiger>4.2.5</version.tiger>
   </properties>
 
   <dependencyManagement>
@@ -84,7 +84,7 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.18.42</version>
+      <version>1.18.44</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -358,7 +358,7 @@
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
-        <version>3.3.0</version>
+        <version>3.4.0</version>
         <configuration>
           <formats>
             <!-- you can define as many formats as you want, each is independent -->

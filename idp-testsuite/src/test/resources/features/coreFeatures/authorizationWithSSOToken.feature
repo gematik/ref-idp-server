@@ -295,7 +295,7 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
   @AFO-ID:A_20589
   @Approval @Ready
   @TESTSTUFE:4
-  Scenario: Auth - Gesperrter User Agent
+  Scenario Outline: Auth - Gesperrter User Agent
 
   ```
   Wir fordern einen Challenge Token mit einem gesperrten User Agent an.
@@ -303,10 +303,46 @@ Feature: Autorisiere Anwendung am IDP Server mittels SSO Token
 
     Given IDP I choose code verifier 'zdrfcvz3iw47fgderuzbq834werb3q84wgrb3zercb8q3wbd834wefb348ch3rq9e8fd9sac'
         # REM code_challenge for given verifier can be obtained from https://tonyxu-io.github.io/pkce-generator/
-    And IDP I set user agent to 'Bad-Actor-App/2.0'
+    And IDP I set user agent to '<userAgent>'
     When IDP I request a challenge with
       | client_id            | scope                      | code_challenge                              | code_challenge_method | redirect_uri            | state       | nonce     | response_type |
       | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | code          |
     Then the response status is failed state
     And IDP the response is an 401 error with gematik code 1041 and error 'invalid_request'
     And IDP I set user agent to 'gematik.Testsuite/1.0/eRezeptApp'
+
+    Examples:
+      | userAgent                     |
+      | Bad-Actor-App/2.0             |
+      | BadCorp Bad-App/2.0/GemC0ffEE |
+      | outdated-app/2.0.8/Gemblup    |
+      | outdated-app/1.1/Gemblip      |
+      | nice-app/3.0/GemC0ffEE        |
+
+
+  @TCID:IDP_REF_AUTH_108 @PRIO:2
+  @OpenBug
+  @issue:IDP-659
+  @AFO-ID:A_20588-01
+  @AFO-ID:A_20589
+  @Approval @Ready
+  @TESTSTUFE:4
+  Scenario Outline: Auth - Nicht gesperrter User Agent
+
+  ```
+  Wir fordern einen Challenge Token mit einem nicht gesperrten User Agent an.
+  Als Antwort erwarten wir keinen error
+
+    Given IDP I choose code verifier 'zdrfcvz3iw47fgderuzbq834werb3q84wgrb3zercb8q3wbd834wefb348ch3rq9e8fd9sac'
+        # REM code_challenge for given verifier can be obtained from https://tonyxu-io.github.io/pkce-generator/
+    And IDP I set user agent to '<userAgent>'
+    When IDP I request a challenge with
+      | client_id            | scope                      | code_challenge                              | code_challenge_method | redirect_uri            | state       | nonce     | response_type |
+      | ${TESTENV.client_id} | ${TESTENV.scope_basisflow} | P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk | S256                  | ${TESTENV.redirect_uri} | xxxstatexxx | 123456789 | code          |
+    Then the response status is 200
+
+    Examples:
+      | userAgent                            |
+      | Outdated-App/2.13.0/Gemblip          |
+      | nice-app/3.0/GemC0ffee               |
+      | GoodCorp Outdated-App/2.12.0/Gemblip |
