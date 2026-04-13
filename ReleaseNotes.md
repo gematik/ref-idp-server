@@ -1,3 +1,7 @@
+# Release 30.0.9
+
+- update dependencies
+
 # Release 30.0.5
 
 - fix CWE-601 Open Redirect Vulnerability, thanks to Machine Spirits UG
