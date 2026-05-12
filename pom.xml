@@ -7,13 +7,13 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>4.0.5</version>
+    <version>4.0.6</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>idp-global</artifactId>
-  <version>30.0.9</version>
+  <version>30.0.11</version>
   <packaging>pom</packaging>
   <url>https://github.com/gematik/ref-idp-server</url>
   <description>IDP</description>
@@ -84,8 +84,8 @@
     <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
     <sonar.language>java</sonar.language>
 
-    <version.bouncycastle.bcpkix>1.83</version.bouncycastle.bcpkix>
-    <version.commons-io>2.21.0</version.commons-io>
+    <version.bouncycastle.bcpkix>1.84</version.bouncycastle.bcpkix>
+    <version.commons-io>2.22.0</version.commons-io>
     <version.commons-lang3>3.20.0</version.commons-lang3>
     <version.gemLibPki>4.0.2</version.gemLibPki>
     <version.h2>2.4.240</version.h2>
@@ -120,10 +120,10 @@
     <version.maven-surefire-plugin>3.5.5</version.maven-surefire-plugin>
     <version.central-publishing-maven-plugin>0.10.0</version.central-publishing-maven-plugin>
     <version.slf4j-api>2.0.17</version.slf4j-api>
-    <version.sonar-maven-plugin>5.5.0.6356</version.sonar-maven-plugin>
+    <version.sonar-maven-plugin>5.6.0.6792</version.sonar-maven-plugin>
     <version.spotless-maven-plugin>3.4.0</version.spotless-maven-plugin>
     <version.spotless.google-java-format>1.17.0</version.spotless.google-java-format>
-    <version.spring-boot-maven-plugin>4.0.5</version.spring-boot-maven-plugin>
+    <version.spring-boot-maven-plugin>4.0.6</version.spring-boot-maven-plugin>
     <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
   </properties>
 
@@ -169,7 +169,7 @@
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter</artifactId>
-        <version>4.0.5</version>
+        <version>4.0.6</version>
         <exclusions>
           <exclusion>
             <groupId>org.springframework.boot</groupId>

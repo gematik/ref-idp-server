@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:21.0.10_7-jre
 
 ARG COMMIT_HASH
 ARG VERSION
@@ -6,7 +6,7 @@ ARG VERSION
 LABEL de.gematik.vendor="gematik GmbH" \
       maintainer="software-development@gematik.de" \
       de.gematik.app="IDP Referenzimplementierung" \
-      de.gematik.git-repo-name="https://gitlab.prod.ccs.gematik.solutions/idm/idp-global.git" \
+      de.gematik.git-repo-name="...idp-global.git" \
       de.gematik.commit-sha=$COMMIT_HASH \
       de.gematik.version=$VERSION
 
@@ -14,7 +14,12 @@ LABEL de.gematik.vendor="gematik GmbH" \
 # SIGTERM = 15 - https://de.wikipedia.org/wiki/Signal_(Unix)
 STOPSIGNAL SIGTERM
 
-HEALTHCHECK CMD curl --fail http://localhost:8180/actuator/health | grep UP || exit 1
+HEALTHCHECK --interval=15s \
+            --timeout=10s \
+            --start-period=30s \
+            --retries=3 \
+  CMD ["/usr/bin/wget", "--quiet", "--tries=1", "--spider", \
+       "http://localhost:8180/actuator/health"]
 
 # Default USERID and GROUPID
 ARG USERID=10000
