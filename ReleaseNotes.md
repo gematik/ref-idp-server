@@ -1,3 +1,7 @@
+# Release 30.0.10
+
+- update dependencies
+
 # Release 30.0.9
 
 - update dependencies
