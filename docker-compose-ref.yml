@@ -1,12 +1,3 @@
-# Common Health Check Properties
-x-healthcheck-config: &healthcheck-ref
-  # Expects that the Spring Actuator port is 8180
-  test: "curl --fail --silent http://localhost:8180/actuator/health | grep UP"
-  interval: 15s
-  timeout: 10s
-  retries: 40
-  start_period: 30s
-
 # Common Environment Timezone Entry
 x-environment-timezone: &environment-timezone-ref
   TZ: Europe/Berlin
@@ -62,8 +53,6 @@ services:
       <<: *environment-timezone-ref
     ports:
       - "8571:8080"
-    healthcheck:
-      <<: *healthcheck-ref
     depends_on:
       db:
         condition: service_healthy

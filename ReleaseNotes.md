@@ -1,3 +1,8 @@
+# Release 30.0.11
+
+- update dependencies
+- docker health check without curl
+
 # Release 30.0.9
 
 - update dependencies
