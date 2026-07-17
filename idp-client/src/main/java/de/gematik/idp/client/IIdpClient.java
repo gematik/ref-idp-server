@@ -21,10 +21,17 @@
 package de.gematik.idp.client;
 
 import de.gematik.idp.crypto.model.PkiIdentity;
+import java.security.cert.X509Certificate;
+import java.util.function.UnaryOperator;
 
 public interface IIdpClient {
 
-  IdpTokenResult login(PkiIdentity idpIdentity);
+  IdpTokenResult login(final PkiIdentity idpIdentity);
+
+  default IdpTokenResult login(
+      final X509Certificate certificate, final UnaryOperator<byte[]> contentSigner) {
+    throw new UnsupportedOperationException("login(certificate, contentSigner) not implemented");
+  }
 
   IIdpClient initialize();
 }

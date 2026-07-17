@@ -1,3 +1,8 @@
+# Release 30.1.0
+
+- extend IIdpClient
+- update dependencies
+
 # Release 30.0.11
 
 - update dependencies

@@ -197,6 +197,7 @@ public class IdpClient implements IIdpClient {
     return login(idpIdentity.getCertificate(), getContentSigner(idpIdentity));
   }
 
+  @Override
   public IdpTokenResult login(
       final X509Certificate certificate, final UnaryOperator<byte[]> contentSigner) {
     assertThatClientIsInitialized();

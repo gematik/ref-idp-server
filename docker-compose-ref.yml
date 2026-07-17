@@ -14,7 +14,7 @@ x-service-network: &service-network-ref
 services:
   # Database
   db:
-    image: mysql:8.0.29
+    image: mysql:9.7.0
     <<: [*service-network-ref, *service-setup-ref]
     environment:
       MYSQL_ROOT_USER: root
