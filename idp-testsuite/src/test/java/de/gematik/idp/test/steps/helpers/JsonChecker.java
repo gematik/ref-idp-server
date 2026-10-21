@@ -136,28 +136,30 @@ public class JsonChecker {
                     .withFailMessage(
                         String.format(
                             """
-                                JSON object does not match at key '%s'
-                                Expected:
-                                %s
-
-                                --------
-
-                                Received:
-                                %s""",
-                            oracleKey, oracleValue, jsoValue))
-                    .matches(oracleValue);
-              } catch (final Exception ex) {
-                Assertions.fail(
-                    String.format(
-                        """
-                            JSON object does differ at key '%s'
+                            JSON object does not match at key '%s'
                             Expected:
                             %s
 
                             --------
 
                             Received:
-                            %s""",
+                            %s\
+                            """,
+                            oracleKey, oracleValue, jsoValue))
+                    .matches(oracleValue);
+              } catch (final Exception ex) {
+                Assertions.fail(
+                    String.format(
+                        """
+                        JSON object does differ at key '%s'
+                        Expected:
+                        %s
+
+                        --------
+
+                        Received:
+                        %s\
+                        """,
                         oracleKey, oracleValue, jsoValue));
               }
             }
@@ -248,14 +250,15 @@ public class JsonChecker {
           .withFailMessage(
               String.format(
                   """
-                      JSON object does not match at key '%s'
-                      Expected:
-                      %s
+                  JSON object does not match at key '%s'
+                  Expected:
+                  %s
 
-                      --------
+                  --------
 
-                      Received:
-                      %s""",
+                  Received:
+                  %s\
+                  """,
                   claimName, regex, jsoValue))
           .matches(regex);
     }

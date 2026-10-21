@@ -1,3 +1,8 @@
+# Release 30.1.1
+
+- ready for Java 25
+- update dependencies
+
 # Release 30.1.0
 
 - extend IIdpClient

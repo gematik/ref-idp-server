@@ -436,7 +436,7 @@ class TokenRetrievalTest {
 
   @Test
   void testLoginHba(
-      @Filename("80276883110000129084-2-C_HP_AUT_E256") final PkiIdentity failIdentity)
+      @Filename("80276883110000129084-2a-C_HP_AUT_E256") final PkiIdentity failIdentity)
       throws UnirestException {
     final PkiIdentity smcbIdentity =
         PkiIdentity.builder()
@@ -517,7 +517,7 @@ class TokenRetrievalTest {
 
   @Test
   void resignedChallengeTokenWithDifferentIdentity_ShouldGiveServerError(
-      @Filename("80276883110000129084-2-C_HP_AUT_E256.p12") final PkiIdentity notTheServerIdentity)
+      @Filename("80276883110000129084-2a-C_HP_AUT_E256.p12") final PkiIdentity notTheServerIdentity)
       throws UnirestException {
     final IdpJwtProcessor differentSigner = new IdpJwtProcessor(notTheServerIdentity);
     idpClient.setAuthorizationResponseMapper(
@@ -542,7 +542,7 @@ class TokenRetrievalTest {
 
   @Test
   void resignedAuthenticationTokenWithDifferentIdentity_ShouldGiveServerError(
-      @Filename("80276883110000129084-2-C_HP_AUT_E256") final PkiIdentity notTheServerIdentity)
+      @Filename("80276883110000129084-2a-C_HP_AUT_E256") final PkiIdentity notTheServerIdentity)
       throws UnirestException {
     final IdpJwtProcessor differentSigner = new IdpJwtProcessor(notTheServerIdentity);
     idpClient.setAuthenticationResponseMapper(

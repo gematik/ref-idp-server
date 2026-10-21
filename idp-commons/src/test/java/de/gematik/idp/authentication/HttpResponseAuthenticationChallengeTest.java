@@ -140,19 +140,19 @@ class HttpResponseAuthenticationChallengeTest {
   void shouldHandleUserConsentWithSnakeCaseFields() {
     final String responseJson =
         """
-            {
-              "user_consent": {
-                "requested_scopes": {
-                  "email": "read",
-                  "profile": "write"
-                },
-                "requested_claims": {
-                  "email": "required",
-                  "picture": "optional"
-                }
-              }
+        {
+          "user_consent": {
+            "requested_scopes": {
+              "email": "read",
+              "profile": "write"
+            },
+            "requested_claims": {
+              "email": "required",
+              "picture": "optional"
             }
-            """;
+          }
+        }
+        """;
 
     mockServer
         .when(request().withMethod("GET").withPath("/auth"))
@@ -185,13 +185,13 @@ class HttpResponseAuthenticationChallengeTest {
   void shouldHandleEmptyUserConsentMaps() {
     final String responseJson =
         """
-            {
-              "user_consent": {
-                "requested_scopes": {},
-                "requested_claims": {}
-              }
-            }
-            """;
+        {
+          "user_consent": {
+            "requested_scopes": {},
+            "requested_claims": {}
+          }
+        }
+        """;
 
     mockServer
         .when(request().withMethod("GET").withPath("/auth"))

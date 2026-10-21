@@ -78,13 +78,13 @@ class AuthenticationChallengeTest {
   void shouldDeserializeUserConsentFromCustomFieldName() {
     final String json =
         """
-                {
-                  "user_consent": {
-                    "requested_scopes": {"profile": "read"},
-                    "requested_claims": {"email": "optional"}
-                  }
-                }
-                """;
+        {
+          "user_consent": {
+            "requested_scopes": {"profile": "read"},
+            "requested_claims": {"email": "optional"}
+          }
+        }
+        """;
 
     final AuthenticationChallenge challenge =
         jsonMapper.readValue(json, AuthenticationChallenge.class);
@@ -133,13 +133,13 @@ class AuthenticationChallengeTest {
   void shouldDeserializeUserConsentWithEmptyMaps() {
     final String json =
         """
-                {
-                  "user_consent": {
-                    "requested_scopes": {},
-                    "requested_claims": {}
-                  }
-                }
-                """;
+        {
+          "user_consent": {
+            "requested_scopes": {},
+            "requested_claims": {}
+          }
+        }
+        """;
 
     final AuthenticationChallenge challenge =
         jsonMapper.readValue(json, AuthenticationChallenge.class);
