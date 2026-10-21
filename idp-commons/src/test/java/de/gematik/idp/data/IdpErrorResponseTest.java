@@ -38,7 +38,8 @@ class IdpErrorResponseTest {
           "gematik_timestamp" : 1764757439,
           "gematik_uuid" : "885f677b-a2c7-4fe4-b15a-b200b71c70d2",
           "gematik_error_text" : "code_verifier stimmt nicht mit code_challenge überein"
-        }""";
+        }
+        """;
 
     final JsonMapper jsonMapper = JsonMapper.builder().build();
     final IdpErrorResponse idpErrorResponse;
