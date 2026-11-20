@@ -1,3 +1,7 @@
+# Release 30.1.2
+
+- update dependencies
+
 # Release 30.1.1
 
 - ready for Java 25
